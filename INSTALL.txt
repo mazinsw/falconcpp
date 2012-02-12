@@ -7,9 +7,6 @@ install NSIS found on 'http://nsis.sourceforge.net/Download'
 download UPX from 'http://upx.sourceforge.net/' where OS/Hardware: Win32/i386
     copy upx to System32 folder
     
-download all MinGW packages from 'http://sourceforge.net/projects/falconcpp/files/Packages/MinGW/'
-    copy all to '/res/packages'
-
 compile projects 
     'src\falconcpp\Falcon.dpr'
     'src\pkgeditor\PkgEditor.dpr'

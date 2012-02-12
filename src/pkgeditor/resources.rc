@@ -1,0 +1,4 @@
+ADDDEL RCDATA "..\..\res\images\pke\adddel.png"
+CONTENTS RCDATA "..\..\res\images\pke\content.png"
+TOOLBARIMG RCDATA "..\..\res\images\pke\toolbar.png"
+

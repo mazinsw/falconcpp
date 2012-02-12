@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<FalconCPP>
+	<Core Version="3.1.0.0">
+		<File Name="Falcon.exe" URL="https://downloads.sourceforge.net/project/falconcpp/Binaries/3.1.0.0/Falcon C++-3.1.0.0.zip">
+            Date: 2011/01/12
+            Debug added(F9 to run only with breakpoint), debug menu removed
+            Source formatter(Ctrl+Shift+F)
+            Fix hint flink
+            Outline function with params and icons changed
+            Fix loading bug while parse project
+            Code completion recognize this->, now process class scope
+            Full screen shortcut changed to F12
+            parser namespace support
+            Help menu tree
+            Package Manager and Falcon C++ integration (reload packages on install/uninstall)
+            Help params support overloading functions
+            Theme switching enabled
+		</File>
+	</Core>
+	<Packages>
+	</Packages>
+</FalconCPP>

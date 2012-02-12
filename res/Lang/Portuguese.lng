@@ -1,0 +1,749 @@
+[FALCON]
+
+#Language definitions
+LangID=1046
+LangName=Português(Brasil)
+ImageIndex=28
+
+#Translated by
+Name=Mazinsw
+Version=2.0
+
+#Main Form
+#Top Menu
+1=&Arquivo
+2=&Editar
+3=&Procurar
+4=&Visualizar
+5=Pro&jeto
+6=E&xecutar
+7=&Ferramentas
+8=Aju&da
+
+#Menu File
+109=&Novo
+110=&Abrir...
+111=Reabrir
+#-----------
+113=&Salvar
+114=Salvar &como...
+115=Salvar todos
+#-----------
+117=Importar
+118=Exportar
+#-----------
+120=&Fechar
+121=Fechar &todos
+122=&Remover
+#-----------
+124=Im&primir
+#-----------
+126=Sai&r
+
+#Menu Edit
+221=Desfazer
+222=Refazer
+#-----------
+224=Cortar
+225=Copiar
+226=Colar
+#-----------
+228=Trocar cabeçalho/fonte
+#-----------
+230=Deletar
+231=Selecionar tudo
+#-----------
+233=Adicionar/Remover marcador
+234=Ir para um marcador
+#-----------
+236=Identar
+237=Unidentar
+#-----------
+239=Formatar
+
+#Menu Search
+334=Procurar...
+335=Próxima ocorrência
+336=Ocorrência anterior
+337=Procurar nos arquivos...
+338=Substituir...
+339=Busca Avançada...
+#-----------
+341=Ir para Função...
+342=Ir para função anterior
+343=Ir para próxima função
+344=Ir para Linha...
+
+#Menu View
+391=Gerenciador de Projetos
+392=Barra de Status
+393=Visualizador de Classes
+394=Saida do Compilador
+395=Barra de Ferramentas
+396=Temas
+397=Zoom
+#-----------
+399=Tela Cheia
+#-----------
+401=Restaurar padrão
+
+#Menu Project
+435=Adicionar...
+436=Remover...
+#-----------
+438=Construir
+#-----------
+440=Propriedades...
+
+#Menu Run
+541=Compilar e executar
+542=Compilar
+543=Executar
+#-----------
+545=Inserir/Remover Breakpoint
+546=Passar por dentro
+547=Próximo passo
+548=Sair da função
+549=Ir para o Cursor
+550=Parar
+
+#Menu Tools
+646=Opções do Ambiente...
+647=Opções do Compilador...
+648=Opções do Editor...
+#-----------
+650=Criador de Modelos...
+651=Criador de Pacotes...
+#-----------
+653=Pacotes...
+
+#Menu Help
+854=Ajuda do Falcon
+855=Dica do dia...
+#-----------
+857=Atualizações
+858=Relatar um erro ou comentário
+#-----------
+860=Sobre...
+
+#SubMenu New from File
+959=&Projeto
+960=Arquivo C
+961=Arquivo C++
+962=Arquivo de cabeçalho
+963=Arquivo de recurso
+964=Arquivo vazio
+#-----------
+966=Pasta
+
+#SubMenu Toolbars from view
+978=Barra Padrão
+979=Barra de Edição
+980=Barra de Busca
+981=Barra de Compilação
+982=Barra de Navegação
+983=Barra de Projetos
+984=Barra de Ajuda
+985=Barra de Depuração
+
+#DefaultBar ToolBar
+1067=Novo
+1068=Abrir
+1069=Remover
+#-----------
+1071=Salvar
+1072=Salvar todos
+
+#EditBar ToolBar
+1080=Desfazer
+1081=Refazer
+
+#NavigatorBar ToolBar
+1089=Aba anterior
+1090=Próxima aba
+#------------
+1092=Adicionar/Remover marcador
+1093=Ir para um marcador
+
+#CompilerBar ToolBar
+1098=Compilar e Executar
+1099=Compilar
+1100=Executar
+#------------
+1102=Parar
+
+#HelpBar ToolBar
+1110=Ajuda
+1111=Contexto de ajuda
+
+#ProjectBar ToolBar
+1119=Novo Projeto
+1120=Propriedades
+
+#DebugBar Toolbar
+1128=Passar por dentro
+1129=Próximo passo
+1130=Sair da função
+
+#SearchBar Toolbar
+1138=Procurar
+1139=Substituir
+#------------
+1141=Ir para linha
+
+#PopupMenu from Project List
+1181=&Novo
+#------------
+1183=Editar
+1184=Abrir
+#------------
+1186=Adicionar para o projeto
+1187=Remover
+1188=Renomear
+1189=Deletar do disco
+#------------
+1191=Propriedades...
+
+#PopupMenu from Editor
+1291=Abrir declaração
+#------------
+1293=Completar classe do cursor
+1294=Trocar cabeçalho/fonte
+#------------
+1296=Desfazer
+1297=Refazer
+#------------
+1299=Cortar
+1300=Copiar
+1301=Colar
+1302=Deletar
+1303=Selecionar tudo
+#------------
+1305=Ferramentas
+#------------
+1307=Adicionar/Remover marcador
+1308=Ir para um marcador
+#------------
+1310=Propriedades...
+
+#PopupMenu from Tabs
+1351=&Fechar
+1352=Fechar &todos
+1353=Fechar todos os outros
+#------------
+1355=Salvar
+1356=Salvar todos
+#------------
+1358=Trocar cabeçalho/fonte
+#------------
+1360=Abas no topo
+1361=Abas em baixo
+#------------
+1363=Propriedades...
+
+#Tabs Left
+1405=Projetos
+1406=Explorar
+
+#Tabs Right
+1407=Estrutura
+
+#Tabs Down
+1408=Mensagens
+1409=Bate-Papo
+
+#Messages List
+1410=Arquivo
+1411=Linha
+1412=Notificação
+
+#Others
+1413=Projeto vazio
+1414=Deseja salvar as mudanças para "%s"? 
+
+#Filters
+1415=Arquivo de projeto do Falcon C++
+1416=Todos os tipos
+
+#Subject New FileName
+1417=NovoArquivo
+1418=Nova Pasta
+1419=Principal
+1420=Recurso
+
+#Others
+1421=Executando
+1422=Compilando
+1423=Criando
+1424=Deseja remover o arquivo "%s" do projeto?
+1425=Deseja excluir o arquivo "%s" do disco?
+1426=Erro generico
+1427=Projeto
+
+#splash screen
+1428=Traduzido por: %s
+1429=Criando templates padrão...
+1430=Carregando Templates...
+1431=Carregando Projetos...
+1432=Criando ferramentas padrão...
+1433=Ajustando Variáveis de ambiênte...
+1434=Preparando para Iniciar aplicação...
+1435=Vazio
+1436=Limpar Histórico 
+1437=Carregando Histórico...
+1438=Arquivo %s não encontrado
+
+#Filters
+1439=Todos os arquivos conhecidos
+1440=Carregando todos os pacotes instalados...
+1441=Verificando por novos pacotes instalados...
+1442=dddd, d "de" mmmm "de" yyyy t
+
+#compilation messages
+1443=Sucesso na compilação
+1444=Falha na compilação
+1445=Adicionando mensagens %d/%d
+1446=Traduzindo resultados %d/%d
+
+1447=Deseja cria-lo?
+1448=Debugando
+1449=Carregando configurações...
+
+#Property Form
+#Tabs
+1528=Aplicação
+1529=Informações de versão 
+1530=Compilador
+1531=Execução
+
+#Sheet Application
+1532=Configurações da aplicação
+1533=Nome do projeto:
+1534=Alvo:
+1535=Icone:
+1536=Clique duas vezes para alterar o icone
+1537=Mudar o icone...
+1538=Configurações de saida
+1539=Extensão do arquivo alvo:
+1540=Incluir todos os arquivos dentro do projeto
+#2.3.2.0
+1573=Propriedades
+1574=Tipo da aplicação
+1575=Aplicação console
+1576=Aplicação do windows
+1577=Biblioteca dinâmica(DLL)
+1578=Biblioteca estática
+1579=Abilitar tema
+1580=Requer nível de administrador
+1581=Criar uma biblioteca ligada
+
+#Btns
+1541=Ok
+1542=Cancelar
+1543=Aplicar
+
+#Sheet Version Info
+1544=Incluir informações de versão no projeto
+1545=Números da versão
+1546=Versão maior
+1547=Versão menor
+1548=Lançamento
+1549=Compilações
+1550=Incrementar um a cada compilação
+1551=Linguagem
+1552=Local:
+1553=Propriedade
+1554=Valor
+
+#Sheet Compiler
+1555=Tipo de compilador
+1556=Otimizações
+1557=Minimizar tamanho
+1558=Mostrar avisos
+1559=Otimizar velocidade
+1560=Bibliotecas
+1561=Adicionar
+1562=Remover selecionado
+1563=Mover para cima
+1564=Mover para baixo
+1565=Incluir diretórios
+1566=Limpeza
+1567=Excluir objetos antes da compilação
+1568=Excluir objetos depois da compilação
+1569=Excluir o arquivo makefile depois da compilação
+1570=Excluir os recursos depois da compilação
+
+#Sheet Run
+1571=Aplicação
+1572=Parâmetros:
+
+#Sheet Network
+1582=Rede
+1583=Programação em rede
+1584=Tipo
+1585=Servidor
+1586=Cliente
+1587=Opções do cliente
+1588=Porta
+1589=Reconectar automaticamente
+1590=Autenticação
+1591=Usuário
+1592=Senha
+1593=Opções do servidor
+1594=Desconectar
+1595=Conectar
+1596=Selecione uma pasta para incluir na compilação
+
+#New Project Form
+1673=Novo Projeto
+1674=< Voltar
+1675=Próximo >
+1676=Concluir
+#FraProjs
+1677=Descrição
+1678=Assistente de projeto do Falcon C++
+#FraPrjOpt
+1679=Mudar
+1680=Ícone da aplicação
+1681=Empresa
+1682=Versão
+1683=Nome do produto
+1684=Nome
+
+#FrmUpdate
+4001=Atualização do aplicativo
+4002=Verificando atualizações...
+4003=&Atualizar
+4004=Deseja reiniciar o Falcon C++?
+4005=Falha na atualização
+4006=Problema na conexão.
+4007=Atualização completada com sucesso.
+4008=Atualização completada.
+4009=Falha no download: tente novamente.
+4010=Falha no download
+4011=Baixando 0%...
+4012=Conectando...
+4013=Baixando...
+#FraGetVer
+4014=Localizando novas atualizações do Falcon C++...
+#FraUpdate
+4015=Mudanças:
+4016=Erro no arquivo XML
+4017=Nenhuma atualização disponível
+4018=Esta versão é mais recente que a do repositório
+4019=A versão instalada ja é a versão mais nova
+4020=Atualização disponível
+4021=Nova atualização disponível: %s
+4022=Instalando...
+
+#FrmFind
+4201=Localizar e substituir
+4202=&Localizar
+4203=&Substituir
+4204=Localizar nos ar&quivos
+4205=Localizar:
+4206=Substituir por:
+4207=Substituir
+4208=Na seleção
+4209=Substituir todos
+4210=Mais
+4211=Menos
+4212=Localizar próximo
+4213=Cancelar
+4214=Opções de pesquisa
+4215=Diferenciar maiúsculas/minúsculas
+4216=Coincidir palavra inteira
+4217=Pesquisa circular
+4218=Modo de pesquisa
+4219=Normal
+4220=Extendido (\n \r \t \0 \x...)
+4221=Expressão regular 
+4222=Direção
+4223=Acima
+4224=Abaixo
+4225=Transparência
+4226=Opacidade
+4227=Procurar no
+4228=Projeto
+4229=Objeto selecionado
+4230=Não foi possível encontrar o texto:\n"%s"
+4231=%d ocorrências foram substituidas
+#mingw messages
+#orders Order{1,3,2} on init of string
+#example
+# 1  2  3                          4
+#%s:%d:%d: error: invalid suffix "%s" on integer constant
+#253=Order{4,2}invalid suffix "%s" on integer constant, on Line %d
+
+
+#%s: In function '%s':
+1785=Order{2}Na função '%s':
+#%s:%d: warning: implicit declaration of function '%s'
+1786=Order{3}A função '%s' não foi declarada
+#%s:%d: warning: assignment makes pointer from integer without a cast
+1787=atribuição feita a um ponteiro a partir de um inteiro sem um cast
+#%s:%d:%d: error: invalid suffix "%s" on integer constant
+1788=Order{4}Sufixo "%s" inválido em uma constante inteira
+#%s:%d: warning: unused variable '%s'
+1789=Order{3}A variável '%s' não está sendo usada
+#%s:%d: error: '%s' was not declared in this scope
+1790=Order{3}'%s' não foi declarado anteriormente
+#%s:%d: error: expected '%s' before '%s'
+1791=order{3,4}Era esperado um '%s' antes de '%s'
+#%s:%d:%d: error: macro "%s" passed %d arguments, but takes just %d
+1792=Order{5,4,6}Foi passado %d argumentos para "%s", mas é necessário apenas %d
+#%s:%d:%d: error: macro "%s" requires %d arguments, but only %d given
+1793=Order{4,5,6}A função "%s" requer %d argumentos, e só foi passado %d
+#%s:%d: error: at this point in file
+1794=Erro Neste ponto do arquivo
+#%s:%d: error: too many arguments to function '%s'
+1795=Order{3}Há mais argumentos que o necessário na função '%s'
+#%s:%d: error: '%s' undeclared (first use in this function)
+1796=Order{3}'%s' não foi declarada para poder ser usada nesta função
+#%s:%d: error: expected '%s' before numeric constant
+1797=Order{3}Era esperado '%s' antes do numero
+#%s:%d: error: (Each undeclared identifier is reported only once for each function it appears in.)
+1798=Cada identificador não declarado que aparece é relatado somente uma vez para cada função
+#%s:%d: warning: statement has no effect
+1799=Declaração sem efeito
+#%s:%d: warning: passing argument %d of '%s' makes integer from pointer without a cast
+1800=Order{3,4,3}A Passagem do %dº argumento na função '%s' está sendo feita por um ponteiro sem um cast, sendo que o %dº argumento é do tipo inteiro
+#%s:%d: note: expected '%s' but argument is of type '%s'
+1801=Order{3,4}Nota: era esperado '%s' mas o argumento passado é do tipo '%s'
+#%s:%d: error: invalid conversion from '%s' to '%s'
+1802=Order{3,4}Erro na coversão de '%s' para '%s'
+#%s:%d: error:   initializing argument %d of '%s'
+1803=Order{3,4}Erro na inicialização do argumento %d da função '%s'
+#%s:%d: error: too few arguments to function '%s'
+1804=Order{3}Pouco argumento para a função '%s'
+#%s:%s:%s: undefined reference to `%s'
+1805=Order{4}Referência não definida para '%s'
+#%s:%d: error: cannot convert '%s' to '%s' for argument '%s' to '%s'
+1806=Order{3,4,5,6}Não foi possível converter '%s' para '%s' para o argumento '%s' até '%s'
+#%s:%d: warning: value computed is not used
+1807=Valor computado não está sendo usado
+#%s:%d: warning: '%s' is used uninitialized in this function
+1808=Order{3}'%s' está sendo usado sem ser inicializado nesta função
+#%s:%d: error: base operand of '%s' has non-pointer type '%s'
+1809=Order{3,4}Operando base de '%s' não é do tipo ponteiro '%s' 
+#%s:%d:%d: error: %s: No such file or directory
+1810=Order{4}O arquivo %s ou diretório não foi encontrado
+#%s:%d: error: '%s' does not name a type
+1811=Order{3}'%s' não é o nome de um tipo
+#%s:%d: error: expected initializer before '%s'
+1812=Order{3}Era esperado um inicializador antes de '%s'
+#%s:%d: error: a function-definition is not allowed here before '%s' token expected '%s' at end of input
+1813=Order{3,4}uma definição de função não é permitida aqui antes de '%s' sendo esperado '%s' no fim da entrada
+#%s:%d: warning: return makes integer from pointer without a cast
+1814=Está retornando um ponteiro ao invés de um inteiro, use pode usar um cast
+#%s:%d: warning: overflow in implicit constant conversion
+1815=Sobrecarregamento na conversão da constante
+#%s:%d: warning: integer constant is too large for '%s' type
+1816=Order{3}A constante inteira é muito grande para o tipo '%s'
+#%s:%d:%d: warning: integer constant is too large for its type
+1817=A constante inteira é muito grande para esse tipo
+#%s:%d: warning: this decimal constant is unsigned only in ISO C90
+1818=Esta constante decimal é sem sinal somente no padrão ISO C90
+#%s:%d: error: expected '%s' before '%s' token
+1819=Order{3,4}Era esperado um '%s' antes do símbolo '%s'
+#%s:%d: error: expected expression before '%s' token
+1820=Order{3}Era esperado uma expressão antes do símbolo '%s'
+#%s:%d: note: '%s' was declared here
+1821=Order{3}'%s' foi declarada aqui
+#%s:%d: warning: statement with no effect
+1822=Declaração sem nenhum efeito
+#%s:%d: error: lvalue required as left operand of assignment
+1823=É necessário uma variável para a atribuição
+#%s:%d: warning: type defaults to '%s' in declaration of '%s'
+1824=Order{3,4}Usando o tipo padrão '%s' na declaração de '%s'
+#%s:%d: warning: initialization makes integer from pointer without a cast
+1825=Inicialização sendo feita a um inteiro a partir de um ponteiro sem um cast
+#%s:%d:%d: warning: character constant too long for its type
+1826=Constante de caracteres muito grande para esse tipo
+#%s:%d: error: expected identifier or '%s' before numeric constant
+1827=Order{3}Era esperado um identificador ou '%s' antes da constante numérica
+#%s:%d: error: expected '=', ',', ';', 'asm' or '__attribute__' before '%s'
+1828=Order{3}Era esperado '=', ',', ';', 'asm' ou '__attribute__' antes de '%s'
+#%s:%d: warning: label '%s' defined but not used
+1829=Order{3}A indicação '%s' foi definida mas não está sendo usada
+#%s:%d: error: '%s' has no member named '%s'
+1830=Order{4,3}'%s' não faz parte de '%s'
+#%s:%d: error: array subscript is not an integer
+1831=O índice do vetor não é inteiro 
+#%s:%d: warning: too few arguments for format
+1832=Pouco parâmetro para o formato
+#%s:%d: warning: format '%s' expects type '%s', but argument %d has type '%s'
+1833=Order{3,4,5,6}O formato '%s' é usado para o tipo '%s', mas o parametro %d é do tipo '%s'
+#%s:%d: error: switch quantity not an integer
+1834=O parâmetro do switch não é um inteiro
+#%s:%d: error: incompatible type for argument %d of '%s'
+1835=Order{3,4}Tipo incompatível com o parametro %d da função '%s'
+#%s:%d: error: expected statement before '%s' token
+1836=Order{3}Era esperado alguma expressão ou símbolo antes de '%s'
+#%s:%d: warning: control reaches end of non-void function
+1837=A função não está retornando nenhum valor
+#%s:%d: warning: '%s' may be used uninitialized in this function
+1838=Order{3}A variavel '%s' pode está sendo usada sem ser inicializada nesta função
+#%s:%d: warning: missing braces around initializer
+1839=Está faltando chaves em torno da inicialização
+#%s:%d: warning: (near initialization for '%s')
+1840=Order{3}Inicialização sendo feita apenas para '%s'
+#%s:%d: warning: statement is a reference, not call, to function '%s'
+1841=Order{3}A declaração está sendo usada como uma referência, e não como chamada da função '%s'
+#%s:%d: error: case label '%s' not within a switch statement
+1842=Order{3}A indicação do caso '%s', está fora da declaração do switch
+#%s:%d: error: expected primary-expression before '%s' token
+1843=Order{3}Era esperado uma expressão primária antes de '%s'
+#%s:%d: warning: no return statement in function returning non-void
+1844=Esta função não é void e não foi encontrada uma expressão de retorno
+#%s:%d: error: expected unqualified-id before '%s'
+1845=Order{3}Era esperado um id incondicional antes de '%s'
+#%s:%d: warning: array subscript is above array bounds
+1846=O índice usado está acima dos limites do vetor
+#%s:%d: warning: suggest parentheses around assignment used as truth value
+1847=Sugerimos que use parênteses em torno da expressão usada como valor verdade
+#%s:%d: error: storage size of '%s' isn't known
+1848=Order{3}Tamanho de armazenamento de '%s' não é conhecido
+#%s:%d: error: invalid application of '%s' to incomplete type '%s' 
+1849=Order{3,4}Aplicação inválida de '%s' para o tipo incompleto '%s'
+#%s:%d: warning: incompatible implicit declaration of built-in function '%s'
+1850=Order{3}Declaração implícita incompatível da função interna '%s' 
+#%s:%d: warning: comparison between signed and unsigned integer expressions
+1851=Comparação entre expressões inteiras com sinal e sem sinal
+#%s:%d: warning: deprecated conversion from string constant to '%s'
+1852=Order{3}Conversão obsoleto de uma string constante para '%s'
+#%s:%d: error: expected class-name before '%s' token
+1853=Order{3}Era esperado o nome da classe antes do símbolo '%s'
+#%s:%d: error: ISO C++ forbids declaration of '%s' with no type
+1854=Order{3}O padrão ISO C++ proíbe a declaração de '%s' sem um tipo
+#%s:%s: error: typedef '%s' is initialized (use decltype instead)
+1855=Order{3}typedef '%s' é inicializado (use decltype em vez disso)
+#%s:%d: error: expected constructor, destructor, or type conversion before '%s' token
+1856=Order{3}Era esperado um construtor, destruidor ou um tipo de conversão antes do símbolo '%s'
+#%s:%d: error: expected initializer before '%s' token
+1857=Order{3}Era esperado um inicializador antes do símbolo '%s'
+#%s:%d: error: expected constructor, destructor, or type conversion before '%s'
+1858=Order{3}Era esperado um construtor, destruidor ou um tipo de conversão antes de '%s'
+#In file included from %s:%d:
+1859=Incluido no arquivo %s
+#%s:%s:(%s): first defined here
+1860=Primeiramente definido aqui
+#%s:%d: warning: enumeration value '%s' not handled in switch
+1861=Order{3}O valor da Enumeração '%s' não pode ser tratado no switch
+#%s: In member function '%s':
+1862=Na função membro '%s'
+#%s:%d: error: stray '%s' in program
+1863=Order{3}Caractere '%s' inválido no programa
+#%s:%d: error: expected '%s' at end of input
+1864=Order{3}Era esperado '%s' no fim da entrada
+#%s:%d: warning: field width should have type '%s', but argument %d has type '%s'
+1865=Order{3,4,5}A largura do campo deve ser do tipo '%s', mas o argumento %d é do tipo '%s' 
+#%s:%d: error: subscripted value is neither array nor pointer
+1866=O valor subscrito não é nem o ponteiro do vetor
+#%s:%d: error: array type has incomplete element type
+1867=Tipo de vetor tem o tipo com quantidade de elementos incompletos
+#%s:%d: warning: too many arguments for format
+1868=Muito argumento para o formato
+#%s:%d: warning: operation on '%s' may be undefined
+1869=Order{3}A operação em '%s' pode ser indefinida
+#%s:%d:%d: error: unterminated comment
+1870=Comentário sem fim
+#%s:%d:%d: warning: "%s" within comment
+1871=Order{4}Tem um "%s" dentro do comentário
+#%s:%d:%d: warning: missing terminating %s character
+1872=Order{4}Falta encerrar a string com %s
+#%s: %s: No such file or directory
+1873=Order{2}Arquivo ou diretório '%s' não encontrado
+#%s:%d: error: missing terminating %s character
+1874=Order{3}Falta encerrar a string com %s
+#%s:%d: error: array size missing in '%s'
+1875=Order{3}Tamanho da matriz incompleta em '%s'
+#%s:%d: warning: passing argument %d of '%s' from incompatible pointer type
+1876=Order{3,4}O %dº argumento de '%d' é incompatível com o tipo de ponteiro
+#%s:%d: warning: return type defaults to '%s'
+1877=Order{3}Usando '%s' como tipo de retorno
+#%s:%d: error: expected identifier or '%s' before '%s' token
+1878=Order{3,4}Era esperado um identificador ou um '%s' antes de '%s'
+#%s:%d: error: expected identifier or '%s' at end of input
+1879=Order{3}Era esperado um identificador ou um '%s' no fim da entrada
+#%s:%d: error: expected specifier-qualifier-list before '%s'
+1880=Order{3}Era esperado um especificador-qualificador-lista antes de '%s'
+#%s:%d: warning: declaration does not declare anything
+1881=Essa declaração não declara nada
+#%s:%d: error: bit-field '%s' width not an integer constant
+1882=Order{3}A largura do campo de bit '%s', não é uma constante inteira
+#%s:%d: error: '%s' undeclared here (not in a function)
+1883=Order{3}'%s' não foi declarado aqui (não nesta função)
+#%s: warning: '%s' after last input file has no effect
+1884=Os parâmetros '%s' depois da última entrada do arquivo não tem efeito
+#%s: no input files
+1885=Sem arquivos para compilar
+#%s: preprocessing failed.
+1886=Falha no pre-processamento
+#%s:%d: error: zero width for bit-field '%s'
+1887=Order{3}Largura zero para o campo de bits '%s'
+#%s:%d: error: width of '%s' exceeds its type
+1888=Order{3}A largura de '%s' excede o seu tipo
+#%s:%d: warning: braces around scalar initializer
+1889=Use parenteses em torno do inicializador escalar
+#%s:%d: warning: initialization from incompatible pointer type
+1890=Inicialização com tipo de ponteiro incompatível 
+#%s:%d: warning: excess elements in scalar initializer
+1891=Elementos em excesso no inicializador escalar
+#%s:%d: warning: left-hand operand of comma expression has no effect
+1892=O operando do lado esquerdo da expressão com vírgula não tem nenhum efeito
+#%s:%d: warning: assignment from incompatible pointer type
+1893=Atribuição com tipo de ponteiro incompatíveis
+#%s:%d: warning: initializer-string for array of chars is too long
+1894=A string de inicialização para o vetor de caracteres é muito grande
+#----------------------
+#%s: no resources
+1895=Sem recursos
+#%s:%d: error: invalid application of '%s' to incomplete type '%s'
+1896=Order{3,4}Aplicação inválida de '%s' para o tipo '%s' incompleto
+#%s:%d: error: void value not ignored as it ought to be
+1897=Valor vazio não ignorado como deveria ser
+#Creating library file: %s
+1898=Criando arquivo de biblioteca
+#%s:%d: warning: useless type name in empty declaration
+1899=Nome do tipo inútil na declaração vazia
+#%s:%d: warning: unknown conversion type character '%s' in format
+1900=Order{3}Conversão desconhecida do tipo de caractere '%s' no formato
+#%s:%d: error: parameter name omitted
+1901=Nome do parâmetro omitido
+#%s:%d: error: expected declaration specifiers before '%s'
+1902=Order{3}Era esperada a declaração de especificadores antes de '%s'
+#%s:%d: error: old-style parameter declarations in prototyped function definition
+1903=Velho estilo de declarações de parâmetro na definição da função prototipada
+#%s:%d: warning: empty declaration
+1904=Declaração vazia
+#%s:%d: error: expected declaration specifiers before '%s' token
+1905=Order{3}Esperada declaração de especificadores antes do simbolo '%s'
+#%s:%d: error: expected declaration specifiers or '%s' before '%s'
+1906=Order{3,4}Esperada declaração de especificadores ou '%s' antes de '%s'
+#%s:%d: error: storage class specified for parameter '%s'
+1907=Order{3}Classe de armazenamento especificado para o parâmetro '%s'
+#%s:%d: error: duplicate member '%s'
+1908=Order{3}Membro duplicado '%s'
+#%s:%d: error: expected '%s' before string constant
+1909=Order{3}Esperado '%s' antes string constante
+#%s:%d: error: called object '%s' is not a function
+1910=Order{3}Objeto chamado '%s' não é uma função
+#%s:%d: Error: too many memory references for `%s'
+1911=Order{3}Muitas referências de memória para '%s'
+#%s:%d: warning: excess elements in array initializer
+1912=Elementos em excesso no inicializador do vetor
+#%s:%d: error: size of array '%s' is too large
+1913=Order{3}O tamanho do vetor '%s' é muito grande
+#%s:%d: error: incompatible types when assigning to type '%s' from type '%s'
+1914=Order{3,4}Tipos incompatíveis na atribuição para o tipo '%s' apartir do tipo '%s'
+#%s:%d: error: invalid operands to binary %s (have '%s' and '%s')
+#%s:%d: warning: assuming signed overflow does not occur when assuming that %s is always %s
+#%s:%s:(%s): more undefined references to `%s' follow
+#%s:%d: warning: extended initializer lists only available with %s or %s
+#%s:%d: error: type of formal parameter %d is incomplete
+#%s:%d: warning: dereferencing '%s' pointer
+#%s:%d: error: request for member '%s' in something not a structure or union
+#%s:%d: error: conflicting types for '%s'
+#%s:%d: note: previous definition of '%s' was here'
+

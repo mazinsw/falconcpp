@@ -1,0 +1,10 @@
+1 24 "..\..\res\both.manifest"
+//1 24 "..\..\res\theme.manifest"
+GPL RCDATA "..\..\res\gpl-3.0.txt"
+LGPL RCDATA "..\..\res\lgpl-3.0.txt"
+AGPL RCDATA "..\..\res\agpl-3.0.txt"
+FDL RCDATA "..\..\res\fdl-1.3.txt"
+NORIMG RCDATA "..\..\res\images\pkm\Images.png"
+HOTIMG RCDATA "..\..\res\images\pkm\HotImages.png"
+PKGIMG RCDATA "..\..\res\images\pkm\packageimg.png"
+

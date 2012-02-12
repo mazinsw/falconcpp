@@ -1,0 +1,21 @@
+compiled in delphi 7
+install components in folder 'res/components'
+install NSIS found on 'http://nsis.sourceforge.net/Download'
+    compile 'res/plugin/NSIS_EnvSet/NSIS_EnvSet.dpr'
+    copy generated dll to NSIS plugin folder '%PROGRAMFILES%\NSIS\Plugins'
+    
+download UPX from 'http://upx.sourceforge.net/' where OS/Hardware: Win32/i386
+    copy upx to System32 folder
+    
+download all MinGW packages from 'http://sourceforge.net/projects/falconcpp/files/Packages/MinGW/'
+    copy all to '/res/packages'
+
+compile projects 
+    'src\falconcpp\Falcon.dpr'
+    'src\pkgeditor\PkgEditor.dpr'
+    'src\pkgmanager\PkgManager.dpr'
+    'src\updater\Updater.dpr'
+    'src\others\astyle\astyle_dll.fpj'
+
+run 'bin/make_installer.bat'
+run 'bin/Fancon C++-Version-[No-MinGW-]Setup.exe'

@@ -1,0 +1,330 @@
+unit UFrmCodeTemplates;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, ComCtrls, Buttons, SynEdit, SynMemo, StdCtrls, SynEditAutoComplete;
+
+type
+  TFrmCodeTemplates = class(TForm)
+    GroupBox1: TGroupBox;
+    BtnOk: TButton;
+    Label1: TLabel;
+    Label2: TLabel;
+    SynTemplates: TSynMemo;
+    BtnAdd: TSpeedButton;
+    BtnRem: TSpeedButton;
+    BtnEdit: TSpeedButton;
+    ListViewTemplates: TListView;
+    procedure FormCreate(Sender: TObject);
+    procedure ListViewTemplatesSelectItem(Sender: TObject; Item: TListItem;
+      Selected: Boolean);
+    procedure FormDestroy(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure ListViewTemplatesAdvancedCustomDrawItem(
+      Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
+      Stage: TCustomDrawStage; var DefaultDraw: Boolean);
+    procedure FormKeyPress(Sender: TObject; var Key: Char);
+    function IndexOf(const ctiName: String; skip: Integer = -1): Integer;
+    procedure OkButtonEvent(Sender: TObject; const Name, Description: String;
+      Data: Pointer; var Abort: Boolean);
+    procedure MakeCompletion(List: TStrings);
+    procedure BtnAddClick(Sender: TObject);
+    procedure BtnEditClick(Sender: TObject);
+    procedure ListViewTemplatesDeletion(Sender: TObject; Item: TListItem);
+    procedure BtnOkClick(Sender: TObject);
+    procedure BtnRemClick(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+    AutoComplete: TSynAutoComplete;
+  end;
+
+  TCodeTemplateItem = class
+  public
+    ReadOnly: Boolean;
+    Name: String;
+    Comment: String;
+    Code: String;
+  end;
+
+var
+  FrmCodeTemplates: TFrmCodeTemplates;
+
+implementation
+
+uses UFrmEditorOptions, UFrmMain, UFrmPromptCodeTemplate;
+
+{$R *.dfm}
+
+procedure TFrmCodeTemplates.FormCreate(Sender: TObject);
+var
+  I: Integer;
+  CTI: TCodeTemplateItem;
+  Item: TListItem;
+  Rs: TResourceStream;
+begin
+  AutoComplete := TSynAutoComplete.Create(Self);
+  SynTemplates.Highlighter := FrmEditorOptions.SynCpp;
+  
+  Rs := TResourceStream.Create(HInstance, 'AUTOCOMPLETE', RT_RCDATA);
+  Rs.Position := 0;
+  AutoComplete.AutoCompleteList.LoadFromStream(Rs);
+  Rs.Free;
+  for I := 0 to AutoComplete.Completions.Count - 1 do
+  begin
+    CTI := TCodeTemplateItem.Create;
+    CTI.ReadOnly := True;
+    CTI.Name := AutoComplete.Completions.Strings[I];
+    CTI.Comment := AutoComplete.CompletionComments.Strings[I];
+    CTI.Code := AutoComplete.CompletionValues.Strings[I];
+    Item := ListViewTemplates.Items.Add;
+    Item.Caption := CTI.Name;
+    Item.SubItems.Add(CTI.Comment);
+    Item.Data := CTI;
+  end;
+  AutoComplete.AutoCompleteList.Clear;
+
+  
+  if FileExists(FrmEditorOptions.EditCodeTemplate.Text) then
+    AutoComplete.AutoCompleteList.LoadFromFile(FrmEditorOptions.EditCodeTemplate.Text);
+  for I := 0 to AutoComplete.Completions.Count - 1 do
+  begin
+    CTI := TCodeTemplateItem.Create;
+    CTI.Name := AutoComplete.Completions.Strings[I];
+    CTI.Comment := AutoComplete.CompletionComments.Strings[I];
+    CTI.Code := AutoComplete.CompletionValues.Strings[I];
+    Item := ListViewTemplates.Items.Add;
+    Item.Caption := CTI.Name;
+    Item.SubItems.Add(CTI.Comment);
+    Item.Data := CTI;
+  end;
+  if ListViewTemplates.Items.Count > 0  then
+    ListViewTemplates.Items[0].Selected := True;
+end;
+
+procedure TFrmCodeTemplates.ListViewTemplatesSelectItem(Sender: TObject;
+  Item: TListItem; Selected: Boolean);
+var
+  CTI: TCodeTemplateItem;
+begin
+  if not Selected then
+  begin
+    BtnRem.Enabled := False;
+    BtnEdit.Enabled := False;
+    Exit;
+  end;
+  CTI := TCodeTemplateItem(Item.Data);
+  BtnRem.Enabled := not CTI.ReadOnly;
+  BtnEdit.Enabled := not CTI.ReadOnly;
+  SynTemplates.Text := CTI.Code;
+end;
+
+procedure TFrmCodeTemplates.FormDestroy(Sender: TObject);
+begin
+  FrmCodeTemplates := nil;
+end;
+
+procedure TFrmCodeTemplates.FormClose(Sender: TObject;
+  var Action: TCloseAction);
+begin
+  Action := caFree;
+end;
+
+procedure TFrmCodeTemplates.ListViewTemplatesAdvancedCustomDrawItem(
+  Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
+  Stage: TCustomDrawStage; var DefaultDraw: Boolean);
+var
+  CTI: TCodeTemplateItem;
+begin
+  CTI := TCodeTemplateItem(Item.Data);
+  if CTI.ReadOnly then
+    Sender.Canvas.Font.Color := clGray
+  //else
+  //  Sender.Canvas.Brush.Color := ListViewTemplates.Color;
+end;
+
+procedure TFrmCodeTemplates.FormKeyPress(Sender: TObject; var Key: Char);
+begin
+  if (Key = #27) then
+  begin
+    Key := #0;
+    Close;
+  end;
+end;
+
+function TFrmCodeTemplates.IndexOf(const ctiName: String; skip: Integer = -1): Integer;
+var
+  I: Integer;
+  CTI: TCodeTemplateItem;
+begin
+  for I := 0 to ListViewTemplates.Items.Count - 1 do
+  begin
+    if skip = I then Continue;
+    CTI := TCodeTemplateItem(ListViewTemplates.Items[I].Data);
+    if CTI.Name = ctiName then
+    begin
+      Result := I;
+      Exit;
+    end;
+  end;
+  Result := -1;
+end;
+
+procedure TFrmCodeTemplates.OkButtonEvent(Sender: TObject; const Name, Description: String;
+    Data: Pointer; var Abort: Boolean);
+begin
+  if Length(Name) = 0 then
+  begin
+    Abort := True;
+    MessageBox(TWinControl(Sender).Handle, 'Invalid Name!', 'Code Templates',
+        MB_ICONEXCLAMATION);
+    Exit;
+  end;
+  if Assigned(Data) then
+  begin
+    if IndexOf(Name, IndexOf(TCodeTemplateItem(Data).Name)) > -1 then
+    begin
+      Abort := True;
+      MessageBox(TWinControl(Sender).Handle, 'Name already exist', 'Code Templates',
+        MB_ICONEXCLAMATION);
+    end;
+  end
+  else
+  begin
+    if IndexOf(Name) > -1 then
+    begin
+      Abort := True;
+      MessageBox(TWinControl(Sender).Handle, 'Name already exist', 'Code Templates',
+        MB_ICONEXCLAMATION);
+    end;
+  end;
+end;
+
+procedure TFrmCodeTemplates.MakeCompletion(List: TStrings);
+var
+  I: Integer;
+begin
+  for I := 0 to AutoComplete.Completions.Count - 1 do
+  begin
+    List.Add('[' + AutoComplete.Completions.Strings[I] + ' | ' +
+      AutoComplete.CompletionComments.Strings[I] + ']');
+    List.Append(AutoComplete.CompletionValues.Strings[I]);
+  end;
+end;
+
+procedure TFrmCodeTemplates.BtnAddClick(Sender: TObject);
+var
+  CTI: TCodeTemplateItem;
+  Item: TListItem;
+  ctiName, ctiDesc: String;
+  List: TStrings;
+begin
+  if PromptDialog('Add Code Template', ctiName, ctiDesc, nil, OkButtonEvent) then
+  begin
+    CTI := TCodeTemplateItem.Create;
+    CTI.Name := ctiName;
+    CTI.Comment := ctiDesc;
+    CTI.Code := SynTemplates.Text;
+    AutoComplete.AddCompletion(CTI.Name, CTI.Code, CTI.Comment);
+    FrmFalconMain.AutoComplete.AddCompletion(CTI.Name, CTI.Code, CTI.Comment);
+    List := TStringList.Create;
+    MakeCompletion(List);
+    try
+      List.SaveToFile(FrmEditorOptions.EditCodeTemplate.Text);
+    finally
+      List.Free;
+    end;
+    Item := ListViewTemplates.Items.Add;
+    Item.Caption := CTI.Name;
+    Item.SubItems.Add(CTI.Comment);
+    Item.Data := CTI;
+  end;
+end;
+
+procedure TFrmCodeTemplates.BtnEditClick(Sender: TObject);
+var
+  CTI: TCodeTemplateItem;
+  Item: TListItem;
+  ctiName, ctiDesc: String;
+  I: integer;
+  List: TStrings;
+begin
+  Item := ListViewTemplates.Selected;
+  CTI := TCodeTemplateItem(Item.Data);
+  ctiName := CTI.Name;
+  ctiDesc := CTI.Comment;
+  if PromptDialog('Edit Code Template', ctiName, ctiDesc, CTI, OkButtonEvent) then
+  begin
+    I := AutoComplete.Completions.IndexOf(CTI.Name);
+    AutoComplete.Completions.Strings[I] := ctiName;
+    AutoComplete.CompletionComments.Strings[I] := ctiDesc;
+    AutoComplete.CompletionValues.Strings[I] := SynTemplates.Text;
+    //update autocompletion of Main Form
+    I := FrmFalconMain.AutoComplete.Completions.IndexOf(CTI.Name);
+    if I > -1 then
+    begin
+      FrmFalconMain.AutoComplete.Completions.Strings[I] := ctiName;
+      FrmFalconMain.AutoComplete.CompletionComments.Strings[I] := ctiDesc;
+      FrmFalconMain.AutoComplete.CompletionValues.Strings[I] := SynTemplates.Text;
+    end;
+    
+    List := TStringList.Create;
+    MakeCompletion(List);
+    try
+      List.SaveToFile(FrmEditorOptions.EditCodeTemplate.Text);
+    finally
+      List.Free;
+    end;
+    CTI.Name := ctiName;
+    CTI.Comment := ctiDesc;
+    CTI.Code := SynTemplates.Text;
+    Item.Caption := CTI.Name;
+    Item.SubItems.Strings[0] := CTI.Comment;
+  end;
+end;
+
+procedure TFrmCodeTemplates.ListViewTemplatesDeletion(Sender: TObject;
+  Item: TListItem);
+begin
+  TCodeTemplateItem(Item.Data).Free;
+end;
+
+procedure TFrmCodeTemplates.BtnOkClick(Sender: TObject);
+begin
+ Close;
+end;
+
+procedure TFrmCodeTemplates.BtnRemClick(Sender: TObject);
+var
+  I: integer;
+  List: TStrings;
+  Item: TListItem;
+begin
+  Item := ListViewTemplates.Selected;
+  I := AutoComplete.Completions.IndexOf(TCodeTemplateItem(Item.Data).Name);
+  AutoComplete.Completions.Delete(I);
+  AutoComplete.CompletionComments.Delete(I);
+  AutoComplete.CompletionValues.Delete(I);
+  //update autocompletion of Main Form
+  I := FrmFalconMain.AutoComplete.Completions.IndexOf(TCodeTemplateItem(Item.Data).Name);
+  if I > -1 then
+  begin
+    FrmFalconMain.AutoComplete.Completions.Delete(I);
+    FrmFalconMain.AutoComplete.CompletionComments.Delete(I);
+    FrmFalconMain.AutoComplete.CompletionValues.Delete(I);
+  end;
+  
+  List := TStringList.Create;
+  MakeCompletion(List);
+  try
+    List.SaveToFile(FrmEditorOptions.EditCodeTemplate.Text);
+  finally
+    List.Free;
+  end;
+  Item.Delete;
+end;
+
+end.

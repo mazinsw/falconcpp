@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Project>
+    <Libs Value=""/>
+    <Flags Value=""/>
+    <Target Value="TestClassScope.exe"/>
+    <ComandLine Value=""/>
+    <CompilerOptions Value="-Wall -s -O2"/>
+    <DeleteObjectsBefore Value="Yes"/>
+    <DeleteObjectsAfter Value="Yes"/>
+    <DeleteMakefileAfter Value="Yes"/>
+    <DeleteResourcesAfter Value="Yes"/>
+    <EnableTheme Value="No"/>
+    <RequiresAdmin Value="No"/>
+    <CompilerType Value="CPP"/>
+    <AppType Value="CONSOLE"/>
+    <Files>
+        <File Name="test_class_scope.cpp" Open="Yes"/>
+        <File Name="test_class_scope.h" Open="Yes"/>
+    </Files>
+</Project>

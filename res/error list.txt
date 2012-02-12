@@ -1,0 +1,86 @@
+conio_test.c:13: error: storage size of 'info' isn't known
+conio_test.c:34: error: invalid application of 'sizeof' to incomplete type 'struct char_info' 
+conio_test.c:35: warning: incompatible implicit declaration of built-in function 'gettext'
+grid.cpp:587: warning: comparison between signed and unsigned integer expressions
+grid.cpp:1401: warning: deprecated conversion from string constant to 'char*'
+EnumDevices.h:23: error: expected class-name before '{' token
+EnumDevices.h:40: error: ISO C++ forbids declaration of 'DECLARE_MESSAGE_MAP' with no type
+%MINGW_PATH%\include\prsht.h:173: error: typedef 'UINT' is initialized (use decltype instead)
+%MINGW_PATH%\include\prsht.h:175: error: expected constructor, destructor, or type conversion before '(' token
+%MINGW_PATH%\include\commctrl.h:1888: error: expected initializer before '*' token
+EnumDevices.cpp:22: error: expected constructor, destructor, or type conversion before 'ON_COMMAND'
+In file included from EnumDevices.cpp:4:
+teste.o:teste.c:(.text+0x0): first defined here
+lesson32.cpp:204: warning: enumeration value 'SDLK_POWER' not handled in switch
+lesson32.cpp: In member function 'void Dot::handle_input()':
+q2.c:1: error: stray '\341' in program
+test.c:19: error: expected '{' at end of input
+test.c:7: warning: field width should have type 'int', but argument 2 has type 'const char *'
+contrato.c:34: error: subscripted value is neither array nor pointer
+teste.c:3: error: array type has incomplete element type
+questao4.c:19: warning: too many arguments for format
+questao8.c:20: warning: operation on 'inicioY' may be undefined
+questao2.c:64:1: error: unterminated comment
+questao2.c:2:22: warning: "/*" within comment
+questao4.c:32:16: warning: missing terminating " character
+g++.exe: AppResource.res: No such file or directory
+******************************************************************************
+
+main.c:5: error: missing terminating " character
+main.c:8: error: array size missing in 'v'
+main.c:9: warning: passing argument 1 of 'funcion' from incompatible pointer type
+main.c:16: warning: return type defaults to 'int'
+main.c:15: error: expected identifier or '(' before ')' token
+main.c:17: error: expected identifier or '(' at end of input
+main.c:16: error: expected specifier-qualifier-list before 'a'
+main.c:16: warning: declaration does not declare anything
+main.c:16: error: bit-field 's' width not an integer constant
+main.c:16: error: 'a' undeclared here (not in a function)
+gcc: warning: '-x c' after last input file has no effect
+gcc: no input files
+windres.exe: preprocessing failed.
+main.c:16: error: zero width for bit-field 'a::s'
+main.c:16: error: width of 's' exceeds its type
+questao7.c:33: warning: braces around scalar initializer
+questao7.c:33: warning: initialization from incompatible pointer type
+questao7.c:33: warning: excess elements in scalar initializer
+questao7.c:33: warning: left-hand operand of comma expression has no effect
+questao7.c:45: warning: assignment from incompatible pointer type
+
+MySBK\backup.c:326: error: void value not ignored as it ought to be
+Creating library file: libMySBK.dll.a
+main.c:7: warning: useless type name in empty declaration
+main.c:5: warning: unknown conversion type character 'l' in format
+appwindow.c:157: error: parameter name omitted
+appwindow.c:421: error: expected declaration specifiers before 'GtkWidget'
+appwindow.c:157: error: old-style parameter declarations in prototyped function definition
+appwindow.c:237: warning: empty declaration
+appwindow.c:234: error: expected declaration specifiers before ';' token
+appwindow.c:157: error: expected declaration specifiers or '...' before 'GTK_TYPE_ACTION'
+%MINGW_PATH%\include\gtk-2.0\gtk\gtktreemodel.h:44: error: storage class specified for parameter 'GtkTreePath'
+%MINGW_PATH%\include\gtk-2.0\gtk\gtktreeviewcolumn.h:67: error: duplicate member 'GSEAL'
+teste.c:7: error: expected '(' before string constant
+teste.c:9: error: called object '"fdfd"' is not a function
+ccSnoM5B.s:18: Error: too many memory references for `add'
+Rascunho1.c:90: warning: unknown conversion type character '.' in format
+NovoArquivo.c:5: warning: excess elements in array initializer
+desvio.c:11: error: size of array 'rota' is too large
+guerra.c:39: error: incompatible types when assigning to type 'MENOR' from type 'double'
+guerra.c:40: error: invalid operands to binary < (have 'MENOR' and 'double')
+sqlite3.c:57535: warning: assuming signed overflow does not occur when assuming that (X - c) <= X is always true
+connection.o:connection.c:(.text+0x787): more undefined references to `append_str' follow
+main.cpp:85: warning: extended initializer lists only available with -std=c++0x or -std=gnu++0x
+Matriz_Deslocamento.c:269: error: type of formal parameter 1 is incomplete
+REDOTICA.c:14: warning: dereferencing 'void *' pointer
+REDOTICA.c:14: error: request for member 'a' in something not a structure or union
+notebook.c:75: error: conflicting types for 'p4'
+notebook.c:71: note: previous definition of 'p4' was here
+***********************************************
+NovoArquivo.c:7: warning: useless storage class specifier in empty declaration
+NovoArquivo.cpp:3: warning: 'typedef' was ignored in this declaration
+NovoArquivo.cpp:1: error: overflow in array dimension
+main.c:23: error: dereferencing pointer to incomplete type
+main.cpp:17: error: no matching function for call to 'Button::Button(Window*)'
+button.h:6: note: candidates are: Button::Button()
+button.cpp:5: error: declaration of 'Control parent' shadows a parameter
+main.c:7: error: within this context

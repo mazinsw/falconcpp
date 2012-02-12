@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Project>
+    <Libs Value="-mwindows -lcomctl32 -lwinmm"/>
+    <Flags Value=""/>
+    <Target Value="Screensaver.scr"/>
+    <ComandLine Value=""/>
+    <CompilerOptions Value="-Wall -s -O2"/>
+    <DeleteObjectsBefore Value="Yes"/>
+    <DeleteObjectsAfter Value="Yes"/>
+    <DeleteMakefileAfter Value="Yes"/>
+    <DeleteResourcesAfter Value="Yes"/>
+    <EnableTheme Value="Yes"/>
+    <RequiresAdmin Value="No"/>
+    <CompilerType Value="CPP"/>
+    <AppType Value="GUI"/>
+    <Files>
+        <File Name="simple.rc" Open="Yes"/>
+        <File Name="resource.h" Open="Yes"/>
+        <File Name="screensaver.cpp" Open="Yes"/>
+        <File Name="screensaver.h" Open="Yes"/>
+        <File Name="simple.cpp" Open="Yes"/>
+        <File Name="simple.h" Open="Yes"/>
+    </Files>
+</Project>

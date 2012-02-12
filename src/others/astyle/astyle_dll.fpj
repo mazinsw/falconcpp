@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Project>
+    <Libs Value="-shared -Wl,--add-stdcall-alias"/>
+    <Flags Value="-DBUILD_DLL"/>
+    <Target Value="../../../bin/astyle.dll"/>
+    <ComandLine Value=""/>
+    <CompilerOptions Value="-Wall -s -O2"/>
+    <DeleteObjectsBefore Value="Yes"/>
+    <DeleteObjectsAfter Value="Yes"/>
+    <DeleteMakefileAfter Value="Yes"/>
+    <DeleteResourcesAfter Value="Yes"/>
+    <EnableTheme Value="No"/>
+    <RequiresAdmin Value="No"/>
+    <CompilerType Value="CPP"/>
+    <AppType Value="DLL"/>
+    <Files>
+        <File Name="asstreamiterator.h" Open="No"/>
+        <File Name="ASFormatter.cpp" Open="No"/>
+        <File Name="ASEnhancer.cpp" Open="No"/>
+        <File Name="main.cpp" Open="Yes"/>
+        <File Name="astyle.h" Open="Yes"/>
+        <File Name="ASBeautifier.cpp" Open="No"/>
+        <File Name="ASResource.cpp" Open="No"/>
+        <File Name="ASStreamIterator.cpp" Open="No"/>
+    </Files>
+</Project>

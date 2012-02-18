@@ -25,6 +25,7 @@ type
     FCleanAfter: Boolean;
     FDebugMode: Boolean;
     FEcho: Boolean;
+    FForceClean: Boolean;
     procedure SetFiles(Value: TStrings);
     procedure SelectFilesByExt(Extensions: array of String; List: TStrings);
     procedure TransformToRelativePath;
@@ -46,6 +47,7 @@ type
     property CleanAfter: Boolean read FCleanAfter write FCleanAfter;
     property DebugMode: Boolean read FDebugMode write FDebugMode;
     property Echo: Boolean read FEcho write FEcho;
+    property ForceClean: Boolean read FForceClean write FForceClean;
   end;
 
 implementation
@@ -252,11 +254,11 @@ begin
   if not Echo then
     EchoStr := '@';
   S := 'build';
-  if CleanBefore then S := 'clean-before ' + S;
+  if CleanBefore or ForceClean then S := 'clean-before ' + S;
   if CleanAfter then S := S + ' clean-after';
   OutFile.Add('all: ' + S);
   OutFile.Add('');
-  if CleanBefore then
+  if CleanBefore or ForceClean then
   begin
     OutFile.Add('clean-before:');
     OutFile.Add(TabChar + EchoStr + 'for %%i in ($(OBJS)) do if exist %%i del /f %%i');

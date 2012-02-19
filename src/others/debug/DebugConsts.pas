@@ -17,6 +17,7 @@ const
   GDB_QUIT          = 'quit';
   GDB_DISPLAY       = 'display';
   GDB_SETARGS       = 'set args';
+  GDB_INFO          = 'info';
   GDB_OFF           = 'off';
   GDB_ON            = 'on';
   GDB_SET           = 'set';
@@ -25,6 +26,7 @@ const
   GDB_SETCONFIRM    = 'set confirm';
   GDB_SETNEWCONSOLE = 'set new-console';
   GDB_SETPRINTADDR  = 'set print address';
+  GDB_WATCH         = 'watch';
 
   CR = #13;
   LF = #10;
@@ -39,10 +41,12 @@ const
 
   REGEXP_PROMPT     = '(gdb)';
   REGEXP_PRINT      = '\$([0-9]+) = (.*)';
+  //5: messages = {hwnd = 0x401850, message = 2359024}
+  REGEXP_DISPLAY    = '([0-9]+): ([^ ]+) = (.*)';
   //main (argc=3, argv=0x324a8) at main.cpp:29
   REGEXP_LOCALIZE   = '(.*) [(].*[)] at (.*):([0-9]+)';
   //Breakpoint 1, main (argc=3, argv=) at main.cpp:28
-  REGEXP_ONBREAK    = 'Breakpoint ([0-9]+), .* [(].*[)] at (.*):([0-9]+)';
+  REGEXP_ONBREAK    = 'Breakpoint ([0-9]+), (.*) [(].*[)] at (.*):([0-9]+)';
   //28	    a.SetIdade(13);, Line: 1
   //REGEXP_NEXTLINE   = '([0-9]+)[\t].*';
   //#26#26D:\Estudos\Delphi 7\MZSW\Falcon C++\src\debug/main.cpp:28:1001:beg:0x4013a4
@@ -61,6 +65,12 @@ const
   REGEXP_LANGUAGE   = 'Current language:  (.*); currently (.*)';
   //0x77d28709 in USER32!GetDC () from C:\WINDOWS\system32\user32.dll
   REGEXP_EXTERNALSTEP   = '0x[0-9A-z]+ in ([^\(]+) \(\) from (.*)';
+  //0x004010b6 in __mingw_CRTStartup ()
+  REGEXP_EXITING = '(0x[0-9A-z]+) in (.*) ()';
+  //Hardware watchpoint 2: hInst
+  REGEXP_ONADDWATCH = 'Hardware watchpoint ([0-9]+): (.*)';
+  //Watchpoint 6: messages
+  REGEXP_ONWATCHPOINT = 'Watchpoint ([0-9]+): (.*)';
 
 implementation
 

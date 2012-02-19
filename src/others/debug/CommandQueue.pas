@@ -6,8 +6,10 @@ uses
   Windows, Classes;
 
 type
+  TDebugCommandType = (dctPrint, dctAutoWatch, dctNone);
   TDebugCommand = class
   public
+    CmdType: TDebugCommandType;
     ID: Integer;
     Command: String;
     VarName: String;
@@ -28,8 +30,8 @@ type
     procedure Clear;
     function Count: Integer;
     function Empty: Boolean;
-    procedure Push(Command: String; ID: Integer; VarName: String; Line,
-      SelStart: Integer; Data: Pointer; Point: TPoint);
+    procedure Push(CmdType: TDebugCommandType; Command: String; ID: Integer;
+      VarName: String; Line, SelStart: Integer; Data: Pointer; Point: TPoint);
     property Front: TDebugCommand read GetFront;
   end;
 
@@ -84,12 +86,14 @@ begin
   Result := FList.Count = 0;
 end;
 
-procedure TCommandQueue.Push(Command: String; ID: Integer; VarName: String;
-  Line, SelStart: Integer; Data: Pointer; Point: TPoint);
+procedure TCommandQueue.Push(CmdType: TDebugCommandType; Command: String;
+  ID: Integer; VarName: String; Line, SelStart: Integer; Data: Pointer;
+  Point: TPoint);
 var
   dbgc: TDebugCommand;
 begin
   dbgc := TDebugCommand.Create;
+  dbgc.CmdType := CmdType;
   dbgc.ID := ID;
   dbgc.Command := Command;
   dbgc.VarName := VarName;

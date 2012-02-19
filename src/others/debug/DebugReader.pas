@@ -3,12 +3,14 @@ unit DebugReader;
 interface
 
 uses
-  Windows, SysUtils, Classes, ShellAPI, regexp_tregexpr, Dialogs;
+  Windows, SysUtils, Classes, ShellAPI, regexp_tregexpr, Dialogs, ComCtrls,
+  TokenList;
 
 type
   TDebugCmd = (dcPrint, dcLocalize, dcNextLine, dcWatch, dcOnBreak,
     dcBreakpoint, dcTerminate, dcSegmentationFault, dcNewThread, dcNoSymbol,
-    dcIdle, dcUnknow, dcLanguage, dcExternalStep);
+    dcIdle, dcUnknow, dcLanguage, dcExternalStep, dcOnExiting, dcOnAddWatch,
+    dcOnWatchPoint, dcDisplay);
 
 const
   DebugCmdNames: array[TDebugCmd] of String = (
@@ -25,7 +27,11 @@ const
     'dcIdle',
     'dcUnknow',
     'dcLanguage',
-    'dcExternalStep'
+    'dcExternalStep',
+    'dcOnExiting',
+    'dcOnAddWatch',
+    'dcOnWatchPoint',
+    'dcDisplay'
   );
 
 type
@@ -64,6 +70,12 @@ type
     FProcessInfo: TProcessInformation;
     FRunning: Boolean;
     FLastPrintID: Integer;
+    FLastID: Integer;
+    FLastDisplayID: Integer;
+    FPriorFunction: String;
+    FLastFunction: String;
+    FPriorFileName: String;
+    FLastFileName: String;
     Reader: TReaderConsole;
     regexp: TRegExpr;
     procedure DoStart;
@@ -87,6 +99,10 @@ type
     procedure ProcessIdle;
     procedure ProcessLanguage;
     procedure ProcessExternalStep;
+    procedure ProcessOnExiting;
+    procedure ProcessOnAddWatch;
+    procedure ProcessOnWatchPoint;
+    procedure ProcessDisplay;
     //***********
     procedure Execute;
     function Launch(hInputRead, hOutputWrite,
@@ -103,6 +119,7 @@ type
     property Running: Boolean read FRunning;
     function SendCommand(const Command: String;
       const Params: String = ''): Boolean;
+    function FunctionChanged: Boolean;
   published
     { Published declarations }
     property OnStart: TStartEvent read FOnStart write FOnStart;
@@ -113,11 +130,33 @@ type
     property Directory: String read FDirectory write FDirectory;
     property ExitCode: Integer read FExitCode write FExitCode default 1;
     property LastPrintID: Integer read FLastPrintID;
+    property LastDisplayID: Integer read FLastDisplayID;
+    property LastID: Integer read FLastID;
+    property PriorFunction: String read FPriorFunction;
+    property LastFunction: String read FLastFunction;
+    property PriorFileName: String read FPriorFileName;
+    property LastFileName: String read FLastFileName;
+  end;
+
+  TDebugParser = class
+  private
+    FText: String;
+    fptr: PChar;
+    FTreeView: TTreeView;
+    function GetPair(openPair, closePair: Char): String;
+    function GetString(commaChar: Char): String;
+    function SearchVariable(const Name: String;
+      Parent: TTreeNode): TTreeNode;
+    procedure Parse(Parent: TTreeNode; Token: TTokenClass);
+  public
+    procedure Clear;
+    procedure Fill(const S: String; token: TTokenClass);
+    property TreeView: TTreeView read FTreeView write FTreeView;
   end;
 
 implementation
 
-uses DebugConsts;
+uses DebugConsts, DebugWatch;
 
 {TReaderConsole}
 constructor TReaderConsole.Create(DebugReader: TDebugReader);
@@ -142,7 +181,8 @@ begin
 
     Buffer[nRead] := #0;
     Output := Output + StrPas(Buffer);
-    if Pos(GDB_PROMPT, Output) > 0 then
+    if (Pos(GDB_PROMPT, Output) > 0) or
+       (Pos('No symbol "', Output) > 0) then
     begin
       //OemToAnsi(Buffer, Buffer);
       FDebugReader.FOutput := Output;
@@ -159,6 +199,8 @@ begin
   regexp := TRegExpr.Create;
   FExitCode := 1;
   FLastPrintID := 0;
+  FLastID := 0;
+  FLastDisplayID := 0;
 end;
 
 destructor TDebugReader.Destroy;
@@ -398,6 +440,10 @@ begin
   if Pos(':', FileName) = 0 then
     FileName := FDirectory + FileName;
   FileName := ExpandFileName(FileName);
+  FPriorFileName := FLastFileName;
+  FLastFileName := FileName;
+  FPriorFunction := FLastFunction;
+  FLastFunction := regexp.Match[1];
   if Assigned(FOnCommandEvent) then
     FOnCommandEvent(Self, dcLocalize, FileName, regexp.Match[1],
       StrToInt(regexp.Match[3]));
@@ -412,6 +458,8 @@ begin
   if Pos(':', FileName) = 0 then
     FileName := FDirectory + FileName;
   FileName := ExpandFileName(FileName);
+  FPriorFileName := FLastFileName;
+  FLastFileName := FileName;
   if Assigned(FOnCommandEvent) then
     FOnCommandEvent(Self, dcNextLine, FileName, regexp.Match[4],
       StrToInt(regexp.Match[3]));
@@ -431,22 +479,30 @@ end;
 
 procedure TDebugReader.ProcessOnBreak;
 var
+  ID: Integer;
   FileName: String;
 begin
-  FileName := regexp.Match[2];
+  ID := StrToInt(regexp.Match[1]);
+  if FLastID < ID then
+    FLastID := ID;
+  FileName := regexp.Match[3];
   FileName := StringReplace(FileName, '/', '\', [rfReplaceAll]);
   if Pos(':', FileName) = 0 then
     FileName := FDirectory + FileName;
   FileName := ExpandFileName(FileName);
+  FPriorFileName := FLastFileName;
+  FLastFileName := FileName;
+  FPriorFunction := FLastFunction;
+  FLastFunction := regexp.Match[2];
   if Assigned(FOnCommandEvent) then
     FOnCommandEvent(Self, dcOnBreak, FileName, regexp.Match[1],
-      StrToInt(regexp.Match[3]));
+      StrToInt(regexp.Match[4]));
 end;
 
 procedure TDebugReader.ProcessNoSymbol;
 begin
   if Assigned(FOnCommandEvent) then
-    FOnCommandEvent(Self, dcNoSymbol, '', regexp.Match[0], 0);
+    FOnCommandEvent(Self, dcNoSymbol, regexp.Match[1], regexp.Match[0], 0);
 end;
 
 procedure TDebugReader.ProcessBreakpoint;
@@ -493,6 +549,47 @@ begin
     FOnCommandEvent(Self, dcExternalStep, regexp.Match[1], regexp.Match[2], 0);
 end;
 
+procedure TDebugReader.ProcessOnExiting;
+begin
+  if Assigned(FOnCommandEvent) then
+    FOnCommandEvent(Self, dcOnExiting, regexp.Match[2], regexp.Match[1], 0);
+end;
+
+procedure TDebugReader.ProcessOnAddWatch;
+var
+  ID: Integer;
+begin
+  ID := StrToInt(regexp.Match[1]);
+  if FLastID < ID then
+    FLastID := ID;
+//  ShowMessage(FOutput);
+  if Assigned(FOnCommandEvent) then
+    FOnCommandEvent(Self, dcOnAddWatch, regexp.Match[2], regexp.Match[1], 0);
+end;
+
+procedure TDebugReader.ProcessOnWatchPoint;
+var
+  ID: Integer;
+begin
+  ID := StrToInt(regexp.Match[1]);
+  if FLastID < ID then
+    FLastID := ID;
+//  ShowMessage(FOutput);
+  if Assigned(FOnCommandEvent) then
+    FOnCommandEvent(Self, dcOnWatchPoint, regexp.Match[2], regexp.Match[1], 0);
+end;
+
+procedure TDebugReader.ProcessDisplay;
+var
+  DisplayID: Integer;
+begin
+  DisplayID := StrToInt(regexp.Match[1]);
+  if FLastDisplayID < DisplayID then
+    FLastDisplayID := DisplayID;
+  if Assigned(FOnCommandEvent) then
+    FOnCommandEvent(Self, dcDisplay, regexp.Match[2], regexp.Match[3], DisplayID);
+end;
+
 procedure TDebugReader.DoOutputWriter;
 var
   S: String;
@@ -522,8 +619,14 @@ begin
       ProcessNextLine
     else if regexp.Exec(REGEXP_BREAKPOINT, S) then
       ProcessBreakpoint
+    else if regexp.Exec(REGEXP_DISPLAY, S) then
+      ProcessDisplay
     else if regexp.Exec(REGEXP_ONBREAK, S) then
       ProcessOnBreak
+    else if regexp.Exec(REGEXP_ONADDWATCH, S) then
+      ProcessOnAddWatch
+    else if regexp.Exec(REGEXP_ONWATCHPOINT, S) then
+      ProcessOnWatchPoint
     else if regexp.Exec(REGEXP_LANGUAGE, S) then
       ProcessLanguage
     else if regexp.Exec(REGEXP_EXTERNALSTEP, S) then
@@ -536,6 +639,8 @@ begin
       ProcessTerminate
     else if regexp.Exec(REGEXP_TERMINATECODE, S) then
       ProcessTerminateCode
+    else if regexp.Exec(REGEXP_EXITING, S) then
+      ProcessOnExiting
     else
     begin
       if Assigned(FOnCommandEvent) then
@@ -548,8 +653,252 @@ end;
 procedure TDebugReader.DoFinish;
 begin
   FRunning := False;
+  FLastPrintID := 0;
+  FLastDisplayID := 0;
+  FLastID := 0;
+  FLastFunction := '';
+  FPriorFunction := '';
+  FLastFileName := '';
+  FPriorFileName := '';
   if Assigned(FOnFinish) then
     FOnFinish(Self, FeCode);
+end;
+
+function TDebugReader.FunctionChanged: Boolean;
+begin
+  Result := (FPriorFunction <> FLastFunction) or
+    (FPriorFileName <> FLastFileName);
+end;
+
+//*************************** debug functions ******************************//
+
+{TDebugParser}
+
+function TDebugParser.GetString(commaChar: Char): String;
+begin
+  Result := '';
+  if fptr^ = commaChar then
+  begin
+    Result := fptr^;
+    Inc(fptr);
+  end;
+  if fptr^ = #0 then
+    Exit;
+  repeat
+    Result := Result + fptr^;
+    Inc(fptr);
+  until (fptr^ = #0) or ((fptr^ = commaChar) and ((fptr - 1)^ <> '\'));
+  if fptr^ <> #0 then
+    Result := Result + fptr^;
+end;
+
+function TDebugParser.GetPair(openPair, closePair: Char): String;
+var
+  pairCount: Integer;
+begin
+  pairCount := 0;
+  Result := '';
+  if fptr^ = openPair then
+  begin
+    Result := fptr^;
+    Inc(fptr);
+    Inc(pairCount);
+  end;
+  if fptr^ = #0 then
+    Exit;
+  repeat
+    if (fptr^ in [openPair, closePair]) and ((fptr - 1)^ <> '\') then
+    begin
+      if fptr^ = openPair then
+        Inc(pairCount)
+      else if fptr^ = closePair then
+        Dec(pairCount);
+      if (pairCount = 0) then
+        Break;
+    end;
+    Result := Result + fptr^;
+    Inc(fptr);
+  until fptr^ = #0;
+  if fptr^ <> #0 then
+    Result := Result + fptr^;
+end;
+
+function TDebugParser.SearchVariable(const Name: String;
+  Parent: TTreeNode): TTreeNode;
+var
+  I: Integer;
+  Item: TWatchVariable;
+  Node: TTreeNode;
+begin
+  Result := nil;
+  if Assigned(Parent) then
+  begin
+    for I := 0 to Parent.Count - 1 do
+    begin
+      Item := TWatchVariable(Parent.Item[I].Data);
+      if Name = Item.Name then
+      begin
+        Result := Parent.Item[I];
+        Exit;
+      end;
+    end;
+  end
+  else
+  begin//level 0
+    Node := TreeView.Items.GetFirstNode;
+    while Node <> nil do
+    begin
+      Item := TWatchVariable(Node.Data);
+      if Name = Item.Name then
+      begin
+        Result := Node;
+        Exit;
+      end;
+      Node := Node.getNextSibling;
+    end;
+  end;
+end;
+
+procedure TDebugParser.Parse(Parent: TTreeNode; Token: TTokenClass);
+
+  function AddVar(Name, Value: String; var childToken: TTokenClass): TTreeNode;
+  var
+    tempToken: TTokenClass;
+    watchVar: TWatchVariable;
+  begin
+    tempToken := nil;
+    childToken := Token;
+    if Assigned(childToken) then
+    begin
+      if Assigned(Parent) then
+      begin
+        if childToken.SearchSource(Name, childToken) then
+          tempToken := childToken;
+      end
+      else
+        tempToken := childToken;
+    end;
+    Result := SearchVariable(Name, Parent);
+    if not Assigned(Result) then
+    begin
+      if Value = '' then
+        Result := FTreeView.Items.AddChild(Parent, Name)
+      else
+        Result := FTreeView.Items.AddChild(Parent, Name + ' = ' + Value);
+      watchVar := TWatchVariable.Create;
+    end
+    else
+    begin
+      if Value = '' then
+        Result.Text := Name
+      else
+        Result.Text := Name + ' = ' + Value;
+      watchVar := TWatchVariable(Result.Data);
+    end;
+    watchVar.Name := Name;
+    watchVar.Value := Value;
+    watchVar.Token := tempToken;
+    watchVar.Initialized := False;
+    if Assigned(tempToken) then
+    begin
+      watchVar.SelLine := TTokenClass(tempToken).SelLine;
+      watchVar.SelStart := TTokenClass(tempToken).SelStart;
+      watchVar.SelLength := TTokenClass(tempToken).SelLength;
+    end;
+    Result.ImageIndex := 0;
+    Result.SelectedIndex := Result.ImageIndex;
+    Result.Data := watchVar;
+  end;
+
+var
+  VarName, VarValue: String;
+  EqFind: Boolean;
+  closePair: Char;
+  Item: TTreeNode;
+  childToken: TTokenClass;
+begin
+  VarName := '';
+  VarValue := '';
+  EqFind := False;
+  repeat
+    case fptr^ of
+      '=':
+      begin
+        EqFind := True;
+        VarValue := '';
+      end;
+      #0 : Break;
+      '"', '''':
+      begin
+        if EqFind then
+          VarValue := VarValue + GetString(fptr^)
+        else
+          VarName := VarName + GetString(fptr^);
+      end;
+      '(', '<', '[':
+      begin
+        case fptr^ of
+          '(': closePair := ')';
+          '<': closePair := '>';
+          '[': closePair := ']';
+        else
+          closePair := #0;
+        end;
+        if EqFind then
+          VarValue := VarValue + GetPair(fptr^, closePair)
+        else
+          VarName := VarName + GetPair(fptr^, closePair);
+      end;
+      '{', ',', '}':
+      begin
+        VarName := Trim(VarName);
+        VarValue := Trim(VarValue);
+        Item := AddVar(VarName, VarValue, childToken);
+        VarName := '';
+        VarValue := '';
+        EqFind := False;
+        if fptr^ = '{' then
+        begin
+          Inc(fptr);
+          Parse(Item, childToken);
+        end;
+        if fptr^ = '}' then
+        begin
+          Inc(fptr);
+          Break;
+        end;
+        if fptr^ = #0 then
+          Break;
+      end;
+    else
+      if EqFind then
+        VarValue := VarValue + fptr^
+      else
+        VarName := VarName + fptr^;
+    end;
+    Inc(fptr);
+  until fptr^ = #0;
+  VarName := Trim(VarName);
+  VarValue := Trim(VarValue);
+  if (VarName = '') or (VarValue = '') then
+    Exit;
+  AddVar(VarName, VarValue, childToken);
+end;
+
+procedure TDebugParser.Clear;
+var
+  I: Integer;
+begin
+  for I := 0 to FTreeView.Items.Count - 1 do
+    TWatchVariable(FTreeView.Items.Item[I].Data).Free;
+  TreeView.Items.Clear;
+end;
+
+procedure TDebugParser.Fill(const S: String; token: TTokenClass);
+begin
+  FText := S;
+  fptr := PChar(FText);
+  Parse(nil, token);
 end;
 
 end.

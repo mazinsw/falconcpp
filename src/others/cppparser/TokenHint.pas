@@ -12,6 +12,7 @@ type
     FActivated: Boolean;
   protected
     procedure CreateParams(var Params: TCreateParams); override;
+    procedure Paint; override;
     procedure ReleaseHandle;
   public
     procedure Cancel; virtual;
@@ -190,6 +191,7 @@ end;
 constructor TTokenHintBase.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
+  Font.Color := Screen.HintFont.Color;
   Color := $E1FFFF;
 end;
 
@@ -225,6 +227,18 @@ procedure TTokenHintBase.ReleaseHandle;
 begin
   FActivated := False;
   DestroyHandle;
+end;
+
+procedure TTokenHintBase.Paint;
+var
+  R: TRect;
+begin
+  R := ClientRect;
+  Inc(R.Left, 2);
+  Inc(R.Top, 2);
+  Canvas.Font.Color := Font.Color;
+  DrawText(Canvas.Handle, PChar(Caption), -1, R, DT_LEFT or DT_NOPREFIX or
+    DT_WORDBREAK or DrawTextBiDiModeFlagsReadingOnly);
 end;
 
 {TTokenHintParams}
@@ -377,7 +391,7 @@ begin
   R.Right := R.Left + (FBitmap.Width div 2);
   P.X := X;
   P.Y := Y;
-  //down
+  //button down
   if PtInRect(R, P) then
   begin
     if FItemIndex >= FParams.Count - 1 then
@@ -389,7 +403,7 @@ begin
 
   Inc(R.Left, (FBitmap.Width div 2));
   R.Right := R.Left + (FBitmap.Width div 2);
-  //up
+  //button up
   if PtInRect(R, P) then
   begin
     if FItemIndex <= 0 then

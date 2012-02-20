@@ -180,11 +180,14 @@ type
 
     procedure Cancel;
 
-    //search and update
+    //search file and update
     function RemoveWithIncludes(const FileName: String): Integer;
     function IndexOfByFileName(FileName: String; ID: Pointer = nil): Integer;
     function IndexOfByParsedFileName(const ParsedFileName: String): Integer;
 
+    //search token
+    function GetAllTokensOfScope(SelStart: Integer; TokenFile: TTokenFile;
+      List: TStrings; var thisToken: TTokenClass): Boolean;
     function SearchSource(const S: String; TokenFile: TTokenFile;
       var TokenFileItem: TTokenFile; var Item: TTokenClass;
       SelStart: Integer = 0; ListAll: TStrings = nil;
@@ -198,11 +201,9 @@ type
       AllFunctions: Boolean = False): Boolean;
     function GetFieldsBaseParams(const S, Fields: String;
       SelStart: Integer; TokenFile: TTokenFile; ParamsList: TStrings): Boolean;
-
     function SearchToken(const S: String; TokenFile: TTokenFile;
       var TokenFileItem: TTokenFile; var Token: TTokenClass; Mode: TTokenSearchMode;
       SelStart: Integer): Boolean;
-
     function SearchTreeToken(const Fields: String; TokenFile: TTokenFile;
       var TokenFileItem: TTokenFile; var Token: TTokenClass; Mode: TTokenSearchMode;
       SelStart: Integer): Boolean;
@@ -1035,6 +1036,57 @@ begin
 
   //...
 end;
+
+function TTokenFiles.GetAllTokensOfScope(SelStart: Integer;
+  TokenFile: TTokenFile; List: TStrings; var thisToken: TTokenClass): Boolean;
+var
+  token, Scope: TTokenClass;
+  AllScope: Boolean;
+  Fields: String;
+begin
+  Result := False;
+  thisToken := nil;
+  if not TokenFile.GetScopeAt(token, SelStart) then
+    Exit;
+  List.AddObject('', token);
+  AllScope := False;
+  //TODO while parent is not nil fill objects
+  //get parent of Token
+  if Assigned(Token.Parent) and
+    (Token.Parent.Token in [tkClass, tkStruct, tkScopeClass]) then
+  begin
+    Token := Token.Parent;
+    AllScope := True;
+  end;
+  //tree parent object?
+  if Assigned(Token.Parent) and
+    (Token.Parent.Token in [tkClass, tkStruct]) then
+  begin
+    Token := Token.Parent;
+  end;
+  //Get class of scope
+  Scope := GetTokenByName(Token, 'Scope', tkScope);
+  if not AllScope and Assigned(Scope) and (Scope.Flag <> '') then
+  begin
+    Fields := Scope.Flag;
+    while Assigned(Token.Parent) and (Token.Parent.Token in [tkNamespace]) do
+    begin
+      Token := Token.Parent;
+      List.AddObject('', token);
+      Fields := Token.Name + '::' + Fields;
+    end;
+    AllScope := SearchTreeToken(Fields, TokenFile,
+        TokenFile, Token, [tkClass, tkNamespace], Token.SelStart);
+  end;
+  if AllScope then
+  begin
+    if Token.Token = tkClass then
+      thisToken := Token;
+    //List.AddObject('', token);
+  end;
+  Result := True;
+end;
+
 
 function TTokenFiles.SearchSourceRecursive(const S: String;
   TokenFile: TTokenFile; var TokenFileItem: TTokenFile; var Item: TTokenClass;

@@ -48,7 +48,7 @@ type
     procedure SkipSingleQuotes;
     procedure SkipMultLineComment;
     procedure SkipSingleComment;
-    procedure SkipPair(cStart, cEnd: Char);
+    procedure SkipPair(cStart, cEnd: Char; BreakOn: TSetOfChars  = []);
     //count
     function CountCharacters: Integer;
     function CountElements(cStart, cEnd: Char): Integer;
@@ -383,7 +383,7 @@ begin
   Result := Trim(Result);
 end;
 
-procedure TCppParser.SkipPair(cStart, cEnd: Char);
+procedure TCppParser.SkipPair(cStart, cEnd: Char; BreakOn: TSetOfChars);
 var
   PairCount: Integer;
 begin
@@ -393,7 +393,8 @@ begin
       Inc(PairCount)
     else if fptr^ = cEnd then
       Dec(PairCount);
-    if PairCount = 0 then Break;
+    if (PairCount = 0) or (fptr^ in BreakOn) then
+      Break;
     Inc(fptr);
     Inc(fCurrPos);
     DoProgress;
@@ -2005,6 +2006,7 @@ begin
         IsDestructor := False;
       end;
       '''': SkipSingleQuotes;
+      '"': SkipDoubleQuotes;
       '/':
       begin
           if (fptr + 1)^ = '/' then
@@ -2057,7 +2059,7 @@ begin
           ProcessFunction(StartPos, StartLine, CurrStr, IsDestructor);
         end
         else
-          SkipPair('(', ')');
+          SkipPair('(', ')', [';', '{', '}']);
         CurrStr := '';
         ChangedCurrPos := True;
         IsDestructor := False;
@@ -2169,7 +2171,7 @@ begin
         TempWord := GetFirstWord(CurrStr);
         if TempWord = 'template' then
         begin
-          DoTokenLog('Skip template' + TempWord);
+          //DoTokenLog('Skip template' + TempWord);
           SkipPair('<', '>');
           CurrStr := '';
           ChangedCurrPos := True;

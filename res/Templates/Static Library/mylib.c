@@ -3,5 +3,4 @@
 void hello_world()
 {
     printf("Hello world!\n");
-    getchar();
 }

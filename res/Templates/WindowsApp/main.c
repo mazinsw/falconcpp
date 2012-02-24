@@ -40,7 +40,8 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR cmdParam, int cmd
                           hInst,                 /* Program Instance handler */
                           NULL);                 /* No Window Creation data */
                           
-    ShowWindow(hWnd, SW_SHOW);  
+    ShowWindow(hWnd, SW_SHOW);
+	UpdateWindow(hWnd);  
     
     /* loop messages. run until GetMessage return 0*/  
     while (GetMessage(&messages, NULL, 0, 0))

@@ -16,7 +16,7 @@ switch(|)
 
 [while | simple while]
 while(|)
-
+    ;
 
 [whileb | block while]
 while(|)
@@ -31,23 +31,25 @@ do
 }while(|);
 
 [class | simple classes]
-class |{
+class |
+{
 
 };
 
 [classs | classes with scope]
-class |{
-  private:
+class |
+{
+private:
 
-  protected:
+protected:
 
-  public:
+public:
 
 };
 
 [for | simple for]
 for(|; ; )
-
+    ;
 
 [forb | block for]
 for(|; ; )
@@ -81,9 +83,9 @@ for(y = 0; y < |; y++)
 
 [if | simple if]
 if(|)
+    ;
 
-
-[ifb | block default if]
+[ifb | block if]
 if(|)
 {
 
@@ -91,9 +93,9 @@ if(|)
 
 [ife | if-else]
 if(|)
-
+    ;
 else
-
+    ;
 
 [ifeb | block if-else]
 if(|)
@@ -108,7 +110,7 @@ else
 [try | try catch]
 try
 {
-  | 
+    |
 }
 catch(...)
 {
@@ -159,31 +161,37 @@ int main(int argc, char *argv[])
 }
 
 [struct | insert struct]
-struct |{
+struct |
+{
 
 };
 
 [tstruct | insert typedef struct]
-typedef struct{
+typedef struct
+{
 
 } |;
 
 [enum | insert enum]
-enum |{
+enum |
+{
 
 };
 
 [tenum | insert typedef enum]
-typedef enum{
+typedef enum
+{
 
 } |;
 
 [union | insert union]
-union |{
+union |
+{
 
 };
 
 [tunion | insert typedef union]
-typedef union{
+typedef union
+{
 
 } |;

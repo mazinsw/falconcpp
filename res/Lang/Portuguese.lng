@@ -7,6 +7,7 @@ ImageIndex=28
 
 #Translated by
 Name=Mazinsw
+Email=mazin.z@hotmail.com
 Version=2.0
 
 #Main Form
@@ -468,6 +469,8 @@ Version=2.0
 4229=Objeto selecionado
 4230=Não foi possível encontrar o texto:\n"%s"
 4231=%d ocorrências foram substituidas
+4232=Parar
+4233=Procurando por '%s' no arquivo '%s'
 #mingw messages
 #orders Order{1,3,2} on init of string
 #example

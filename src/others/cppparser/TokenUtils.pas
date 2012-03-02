@@ -35,10 +35,12 @@ function GetParamsAfter(const S: String; Index: Integer): String;
 //strings
 function GetFirstWord(const S: String): String;
 function GetAfterWord(const S: String): String;
+procedure GetDescendents(const S: String; List: TStrings; scope: TScopeClass);
 function GetLastWord(const S: String): String;
 function GetPriorWord(const S: String): String;
 function GetVarType(const S: String): String;
 function Trim(Left: Char; const S: String; Rigth: Char): String; overload;
+function StringToScopeClass(const S: String): TScopeClass;
 function StringIn(const S: String; List: Array of String): Boolean;
 function CountWords(const S: String): Integer;
 
@@ -56,7 +58,7 @@ function FileDateTime(const FileName: string): TDateTime;
 function IsNumber(const S: String): Boolean;
 function ScopeInState(const S: String; ScopeClass: TScopeClassState): Boolean;
 function ConvertSlashes(const Path: String): String;
-function GetFirstOpenBrace(const S: String; InString: Boolean;
+function GetFirstOpenBrace(const S: String; QuoteChar: Char;
   var SelStart: Integer): Boolean;
 function ParseFields(const Text: String; SelStart: Integer;
   var S, Fields: String; var InputError: Boolean): Boolean;
@@ -1053,6 +1055,37 @@ begin
   Result := Trim(Copy(S, I, Len - I + 1));
 end;
 
+procedure GetDescendents(const S: String; List: TStrings; scope: TScopeClass);
+var
+  sc, Temp, ancs: String;
+begin
+  List.Clear;
+  Temp := S;
+  sc := GetFirstWord(S);
+  if not StringIn(sc, ScopeNames) then
+  begin
+    if scope <> scPrivate then
+      Exit;
+  end
+  else
+  begin
+    Temp := GetAfterWord(S);
+    if (sc = 'public') and (scope <> scPublic) then
+      Exit;
+    if (sc = 'private') and (scope <> scPrivate) then
+      Exit;
+    if (sc = 'protected') and (scope <> scProtected) then
+      Exit;
+  end;
+  while Temp <> '' do
+  begin
+    ancs := GetFirstWord(Temp);
+    List.Add(ancs);
+    Temp := GetAfterWord(Temp);
+  end;
+
+end;
+
 //strings
 function GetLastWord(const S: String): String;
 var
@@ -1117,6 +1150,15 @@ begin
   I := Pos('[', Result);
   if I > 0 then Result := Copy(Result, 1, I - 1);
   Result := GetLastWord(Result); 
+end;
+
+function StringToScopeClass(const S: String): TScopeClass;
+begin
+  Result := scPrivate;
+  if S = 'protected' then
+    Result := scProtected
+  else if S = 'public' then
+    Result := scPublic;
 end;
 
 function StringIn(const S: String; List: Array of String): Boolean;
@@ -1204,7 +1246,7 @@ function SkipStringInv(const init: PChar; var ptr: PChar): Boolean;
 begin
   if ptr^ = '"' then
     Dec(ptr);
-  while (ptr >= init) and (ptr^ <> '"') do
+  while (ptr >= init) and (ptr^ <> #10) and (ptr^ <> '"') do
     Dec(ptr);
   Result := (ptr^  = '"');
 end;
@@ -1269,6 +1311,8 @@ var
 begin
   init := PChar(Text);
   ptr := init + SelStart;
+  while (ptr^ <> #0) and (ptr^ in LetterChars+DigitChars) do
+    Inc(ptr);
   repeat
     case ptr^ of
       '/':
@@ -1380,7 +1424,7 @@ begin
       end;
       Dec(ptr);
     until ptr < init;
-    if (ptr < init) or ((sep = '') and (str <> '')) or
+    if (ptr < init) or ((sep = '') {and (str <> '')}) or
       ((field <> '') and (sep = '')) then
       Break;
     //skipspace
@@ -1427,7 +1471,7 @@ begin
   end;
 end;
 
-function GetFirstOpenBrace(const S: String; InString: Boolean;
+function GetFirstOpenBrace(const S: String; QuoteChar: Char;
   var SelStart: Integer): Boolean;
 var
   init, ptr: PChar;
@@ -1435,11 +1479,16 @@ begin
   Result := False;
   init := PChar(S);
   ptr := init + SelStart;
-  if ptr^ in ['(', ')', ';', '{', '}'] then
+  if (ptr^ in ['(', ')', ';', '{', '}']) and (QuoteChar = #0) then
     Dec(ptr);
-  if InString then
+  if QuoteChar =  '"' then
   begin
     if SkipStringInv(init, ptr) then
+      Dec(ptr);
+  end
+  else if QuoteChar =  '''' then
+  begin
+    if SkipSingleQuotesInv(init, ptr) then
       Dec(ptr);
   end;
   while (ptr^ <> '(') and (ptr >= init) do

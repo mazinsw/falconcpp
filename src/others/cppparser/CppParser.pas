@@ -157,8 +157,10 @@ begin
              Inc(fCurrPos, 2);
            end;
     end;
+    if (fptr^ = #10) and ((fptr - 1)^  <> '\') then
+      Break;
     if fCancel then Exit;
-  until fptr^ in ['"', #0];
+  until fptr^ in ['"', #0, #10];
 end;
 
 procedure TCppParser.SkipSingleQuotes;
@@ -175,6 +177,8 @@ begin
              Inc(fCurrPos, 2);
            end;
     end;
+    if (fptr^ = #10) and ((fptr - 1)^  <> '\') then
+      Break;
     if fCancel then Exit;
   until fptr^ in ['''', #0];
 end;
@@ -1650,7 +1654,7 @@ begin
       '{': SkipPair('{', '}');
       '[': SkipPair('[', ']');
     else
-      if fptr^ in LetterChars+DigitChars+['*'] then
+      if fptr^ in LetterChars+DigitChars+['*', ','] then
         Result := Result + fptr^
       else if fptr^ in LineChars+SpaceChars then
         Result := Result + ' ';

@@ -61,6 +61,7 @@ type
       const Name: String): Boolean;
     function DeleteWatch(const Name: String): Boolean; overload;
     function DeleteWatch(ID: Integer): Boolean; overload;
+    function UpdateID(const Name: String; ID: Integer): Integer;
   end;
 
 implementation
@@ -209,6 +210,13 @@ begin
       Break;
   end;
   Result := -1;
+end;
+
+function TDebugWatchList.UpdateID(const Name: String; ID: Integer): Integer;
+begin
+  Result := GetIndex(Name);
+  if Result > 0 then
+    Items[Result].FID := ID;
 end;
 
 end.

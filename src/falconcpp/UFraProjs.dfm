@@ -61,21 +61,6 @@ object FraProjs: TFraProjs
         TabOrder = 1
       end
     end
-    object PageControl: TRzPageControl
-      Left = 8
-      Top = 8
-      Width = 338
-      Height = 285
-      Color = 16119543
-      FlatColor = 10263441
-      ParentColor = False
-      TabColors.HighlightBar = 1350640
-      TabOrder = 1
-      TabStyle = tsRoundCorners
-      OnMouseMove = ProjectListMouseMove
-      OnPageChange = PageControlPageChange
-      FixedDimension = 0
-    end
     object Panel1: TPanel
       Left = 0
       Top = 293
@@ -84,7 +69,7 @@ object FraProjs: TFraProjs
       Align = alBottom
       BevelOuter = bvNone
       BorderWidth = 3
-      TabOrder = 2
+      TabOrder = 1
       object LblWidz: TLabel
         Left = 3
         Top = 3
@@ -113,6 +98,20 @@ object FraProjs: TFraProjs
           Shape = bsBottomLine
         end
       end
+    end
+    object PageControl: TModernPageControl
+      Left = 8
+      Top = 8
+      Width = 337
+      Height = 285
+      NormalColor = clWhite
+      FocusedColor = 15973017
+      ShowCloseButton = False
+      TabIndex = -1
+      TabOrder = 2
+      TabStop = True
+      OnMouseMove = ProjectListMouseMove
+      OnPageChange = PageControlPageChange
     end
   end
   object ImageList: TImageList

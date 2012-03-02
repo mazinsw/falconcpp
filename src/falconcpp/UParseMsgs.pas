@@ -6,11 +6,15 @@ uses
   SysUtils, Classes, Dialogs, Forms;
 
 type
-  TMinGWMsg = class
+  TMessageItemType = (mitCompiler, mitGoto, mitFound);
+  
+  TMessageItem = class
   public
+    MsgType: TMessageItemType;
     FileName: String;
     Line: Integer;
     Col: Integer;
+    EndCol: Integer;
     Msg: String;
     OriMsg: String;
     Selec: String;
@@ -36,9 +40,10 @@ implementation
 
 uses UUtils, StrUtils, UFrmMain, ULanguages, TokenUtils;
 
-constructor TMinGWMsg.Create;
+constructor TMessageItem.Create;
 begin
   inherited Create;
+  MsgType := mitGoto;
   FileName := '';
   Line := 0;
   Col := 0;
@@ -46,7 +51,7 @@ begin
   Msg := '';
 end;
 
-function TMinGWMsg.GetPosXY: String;
+function TMessageItem.GetPosXY: String;
 begin
   Result := '';
   if (Line > 0) then Result :=  IntToStr(Line);
@@ -545,7 +550,7 @@ const
   IMG_MSG: array[0..2] of Integer = (32, 33, 34);
 var
   Temp: TStrings;
-  Msg: TMinGWMsg;
+  Msg: TMessageItem;
   SLn, Params, fmt, order, OriMsg, Capt: String;
   I, X: Integer;
   Cont, Translated: Boolean;
@@ -556,7 +561,8 @@ begin
   Capt := FrmFalconMain.Caption;
   for I:= 0 to Pred(Value.Count) do
   begin
-    if FrmFalconMain.CompStoped then Break;
+    if FrmFalconMain.CompilationStopped then
+      Break;
     if (Value.Count > 500) then
       FrmFalconMain.Caption :=
         Format('Falcon C++ ['+STR_FRM_MAIN[42]+']', [I + 1, Value.Count]);
@@ -580,7 +586,8 @@ begin
     SLn := ResolveUnixFileName(SLn);
     if not (Pos('mingw32-make.exe', SLn) > 0) then
     begin
-      Msg := TMinGWMsg.Create;
+      Msg := TMessageItem.Create;
+      Msg.MsgType := mitCompiler;
       Msg.OriMsg := SLn;
       //* check message type *//
       if (Pos(': error:', SLn) > 0) or (Pos(': undefined', SLn) > 0) then

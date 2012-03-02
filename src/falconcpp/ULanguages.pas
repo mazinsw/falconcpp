@@ -349,7 +349,7 @@ const
     'Loading all installed packages...',
     'Checking for new installed packages...',
     'dddd, d of mmmm of yyyy t',
-    'Compilation sucess',
+    'Compilation sucess in %s seconds',
     'Compilation failed',
     'Adding messages %d/%d',
     'Parsing results %d/%d',
@@ -458,7 +458,7 @@ const
     'Name'
   );
 
-  MAX_FRM_FIND = 31;
+  MAX_FRM_FIND = 33;
   CONST_STR_FRM_FIND: array[1..MAX_FRM_FIND] of String  = (
     //New Project Form
     'Find and replace',
@@ -491,7 +491,9 @@ const
     'Project',
     'Selected object',
     'Can''t find the text:'#13'"%s"',
-    '%d occurrences were replaced.'
+    '%d occurrences were replaced.',
+    'Stop',
+    'Find ''%s'' in file ''%s'''
   );
 
   //Translate mingw messages  ' = 
@@ -675,6 +677,7 @@ type
     ImageIndex: TImageIndex;
     Version: String;
     Translator: String;
+    Email: String;
   end;
 
   TFalconLanguages = class
@@ -923,6 +926,7 @@ begin
     LangItem.ImageIndex := ini.ReadInteger('FALCON', 'ImageIndex', -1);
     LangItem.Name := ini.ReadString('FALCON', 'LangName', '');
     LangItem.Translator := ini.ReadString('FALCON', 'Name', '');
+    LangItem.Email := ini.ReadString('FALCON', 'Email', '');
     LangItem.Version := ini.ReadString('FALCON', 'Version', '1.0');
     FList.AddObject(Temp, LangItem);
     if SaveID = LangItem.ID then

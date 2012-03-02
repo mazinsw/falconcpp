@@ -216,6 +216,7 @@ SectionGroup "Falcon C++" GroupFalcon
     File "..\..\bin\Falcon.exe"
     File "..\..\bin\Updater.exe"
     File "..\..\bin\astyle.dll"
+    File "..\..\bin\ConsoleRunner.exe"
     
     StrCmpS "$INSTDIR" "$PROGRAMFILES\Falcon" 0 noadm
       File "..\..\bin\PkgManager.exe"
@@ -418,7 +419,9 @@ Section "Un.Falcon C++" UnSecCore
   Delete "$INSTDIR\Falcon.exe"
   Delete "$INSTDIR\PkgManager.exe"
   Delete "$INSTDIR\Updater.exe"
-  ;Delete "$INSTDIR\DelZip190.dll"
+  ;delete tools
+  Delete "$INSTDIR\astyle.dll"
+  Delete "$INSTDIR\ConsoleRunner.exe"
   Delete "$INSTDIR\Uninstall.exe"
   RMDir  "$INSTDIR"
   

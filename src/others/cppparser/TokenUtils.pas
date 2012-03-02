@@ -35,7 +35,7 @@ function GetParamsAfter(const S: String; Index: Integer): String;
 //strings
 function GetFirstWord(const S: String): String;
 function GetAfterWord(const S: String): String;
-procedure GetDescendents(const S: String; List: TStrings; scope: TScopeClass);
+procedure GetDescendants(const S: String; List: TStrings; scope: TScopeClass);
 function GetLastWord(const S: String): String;
 function GetPriorWord(const S: String): String;
 function GetVarType(const S: String): String;
@@ -1055,7 +1055,7 @@ begin
   Result := Trim(Copy(S, I, Len - I + 1));
 end;
 
-procedure GetDescendents(const S: String; List: TStrings; scope: TScopeClass);
+procedure GetDescendants(const S: String; List: TStrings; scope: TScopeClass);
 var
   sc, Temp, ancs: String;
 begin

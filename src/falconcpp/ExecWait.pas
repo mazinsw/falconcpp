@@ -55,12 +55,14 @@ type
     fExec: TExecThread;
     fIsRunning: boolean;
     fOnTermEvent: TNotifyEvent;
+    fFileName: String;
     procedure TerminateEvent(Sender: TObject);
   public
     class function Exec: TExecWait;
     procedure Reset;
     procedure ExecuteAndWatch(sFileName, sParams, sPath: string; bVisible: boolean; iTimeOut: Cardinal; OnTermEvent: TNotifyEvent);
   published
+    property FileName: string read fFileName write fFileName;
     property Running: boolean read fIsRunning;
   end;
 
@@ -133,6 +135,7 @@ begin
   fIsRunning := True;
   fOnTermEvent := OnTermEvent;
   fExec := TExecThread.Create(True);
+  FileName := sFileName;
   with fExec do begin
     FileName := sFileName;
     Params := sParams;

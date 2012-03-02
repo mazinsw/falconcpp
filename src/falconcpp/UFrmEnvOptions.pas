@@ -4,8 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ComCtrls, StdCtrls, ExtCtrls, Mask, RzEdit, RzSpnEdt, Buttons,
-  ShellAPI;
+  Dialogs, ComCtrls, StdCtrls, ExtCtrls, Mask, Buttons, ShellAPI, EditAlign;
 
 type
   TFrmEnvOptions = class(TForm)
@@ -18,21 +17,10 @@ type
     TSFilesandDir: TTabSheet;
     RadioGroupAutoOpen: TRadioGroup;
     CheckBoxDefCpp: TCheckBox;
-    GroupBoxCreateBkpFiles: TGroupBox;
-    CheckBoxCreateBkpFiles: TCheckBox;
-    LabelExtCreateBkp: TLabel;
-    EditExtension: TEdit;
     CheckBoxShowToolbars: TCheckBox;
     CheckBoxOneClickFile: TCheckBox;
     CheckBoxCheckForUpdate: TCheckBox;
-    GroupBoxAutoReloadExterModFiles: TGroupBox;
-    CheckBoxAutoReloadExterModFiles: TCheckBox;
-    LblDelay: TLabel;
-    TrackBarReloadDelay: TTrackBar;
-    LblSecStart: TLabel;
-    LblSecEnd: TLabel;
     LabelMaxFileReopenMenu: TLabel;
-    EditmaxFilesInReopen: TRzSpinEdit;
     LabelLang: TLabel;
     ComboBoxLanguage: TComboBoxEx;
     CheckBoxShowSplashScreen: TCheckBox;
@@ -57,23 +45,27 @@ type
     LabelConfFile: TLabel;
     EditAltConfFile: TEdit;
     BtnChooseConfFile: TSpeedButton;
-    TimerNormalDelay: TTimer;
     LabelProjDir: TLabel;
     EditProjDir: TEdit;
     BtnChooseProjDir: TSpeedButton;
     CheckBoxRemoveFileOnClose: TCheckBox;
+    CheckBoxCreateLayoutFiles: TCheckBox;
+    CheckBoxAskDeleteFile: TCheckBox;
+    CheckBoxRunConsoleRunner: TCheckBox;
+    EditmaxFilesInReopen: TEditAlign;
+    UpDownMaxFiles: TUpDown;
     procedure FormKeyPress(Sender: TObject; var Key: Char);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
     procedure BtnChooseDirClick(Sender: TObject);
     procedure BtnViewDirClick(Sender: TObject);
     procedure CheckBoxEnableGroupClick(Sender: TObject);
-    procedure TimerNormalDelayTimer(Sender: TObject);
-    procedure TrackBarReloadDelayChange(Sender: TObject);
     procedure EditorOptionsChanged(Sender: TObject);
     procedure BtnApplyClick(Sender: TObject);
     procedure BtnCancelClick(Sender: TObject);
     procedure BtnOkClick(Sender: TObject);
+    procedure EditmaxFilesInReopenKeyPress(Sender: TObject; var Key: Char);
+    procedure EditmaxFilesInReopenChange(Sender: TObject);
   private
     { Private declarations }
     Loading: Boolean;
@@ -142,15 +134,14 @@ begin
     CheckBoxRemoveFileOnClose.Checked := RemoveFileOnClose;
     CheckBoxOneClickFile.Checked := OneClickOpenFile;
     CheckBoxCheckForUpdate.Checked := CheckForUpdates;
-    CheckBoxCreateBkpFiles.Checked := CreateBackupFiles;
-    CheckBoxEnableGroupClick(CheckBoxCreateBkpFiles);
-    EditExtension.Text := BackupFilesExt;
     RadioGroupAutoOpen.ItemIndex := AutoOpen;
-    CheckBoxAutoReloadExterModFiles.Checked := AutoReloadExternalModFiles;
-    CheckBoxEnableGroupClick(CheckBoxAutoReloadExterModFiles);
-    TrackBarReloadDelay.Position := AutoReloadDelay;
+    CheckBoxCreateLayoutFiles.Checked := CreateLayoutFiles;
+    CheckBoxAskDeleteFile.Checked := AskForDeleteFile;
+    CheckBoxRunConsoleRunner.Checked := RunConsoleRunner;
+    CheckBoxRunConsoleRunner.Enabled :=
+      FileExists(FrmFalconMain.AppRoot + 'ConsoleRunner.exe');
     //Interface
-    EditmaxFilesInReopen.IntValue := MaxFileInReopen;
+    UpDownMaxFiles.Position := MaxFileInReopen;
     ReloadLanguages;
     CheckBoxShowSplashScreen.Checked := ShowSplashScreen;
     if Theme = 'Default' then
@@ -260,23 +251,6 @@ begin
   OptionsChange;
 end;
 
-procedure TFrmEnvOptions.TimerNormalDelayTimer(Sender: TObject);
-begin
-  LblDelay.Caption := '&Delay:';
-  TimerNormalDelay.Enabled := False;
-end;
-
-procedure TFrmEnvOptions.TrackBarReloadDelayChange(Sender: TObject);
-var
- S: String;
-begin
-  S := Format('%d', [TrackBarReloadDelay.Position]);
-  LblDelay.Caption := Format('&Delay: %s sec',[S]);
-  TimerNormalDelay.Enabled := False;
-  TimerNormalDelay.Enabled := True;
-  OptionsChange;
-end;
-
 procedure TFrmEnvOptions.EditorOptionsChanged(Sender: TObject);
 begin
   OptionsChange;
@@ -302,22 +276,23 @@ begin
     OneClickOpenFile := CheckBoxOneClickFile.Checked;
     FrmFalconMain.TreeViewProjects.HotTrack := OneClickOpenFile;
     CheckForUpdates := CheckBoxCheckForUpdate.Checked;
-    CreateBackupFiles := CheckBoxCreateBkpFiles.Checked;
-    if CreateBackupFiles and (EditExtension.Text <> '') then
-      BackupFilesExt := EditExtension.Text;
     AutoOpen := RadioGroupAutoOpen.ItemIndex;
-    AutoReloadExternalModFiles := CheckBoxAutoReloadExterModFiles.Checked;
-    AutoReloadDelay := TrackBarReloadDelay.Position;
+    CreateLayoutFiles := CheckBoxCreateLayoutFiles.Checked;
+    AskForDeleteFile := CheckBoxAskDeleteFile.Checked;
+    RunConsoleRunner := CheckBoxRunConsoleRunner.Checked;
     //Interface
-    MaxFileInReopen := EditmaxFilesInReopen.IntValue;
+    MaxFileInReopen := UpDownMaxFiles.Position;
     //get basic template before change language
     EmptyTemplate := FrmFalconMain.Templates.Find('Basic', STR_FRM_MAIN[9]);
     ShowSplashScreen := CheckBoxShowSplashScreen.Checked;
     OldTheme := Theme;
     case RadioGroupTheme.ItemIndex of
       0: Theme := 'Default';
-      1: Theme := 'Office11Adaptive';
+      1: Theme := 'Office2003';
       2: Theme := 'OfficeXP';
+      3: Theme := 'Stripes';
+      4: Theme := 'Professional';
+      5: Theme := 'Aluminum';
     end;
     if OldTheme <> Theme then
       FrmFalconMain.SelectTheme(Theme);
@@ -403,6 +378,19 @@ begin
   if BtnApply.Enabled then
     BtnApply.Click;
   Close;
+end;
+
+procedure TFrmEnvOptions.EditmaxFilesInReopenKeyPress(Sender: TObject;
+  var Key: Char);
+begin
+  if not (Key in ['0'..'9', #8, #27]) then
+    Key := #0;
+end;
+
+procedure TFrmEnvOptions.EditmaxFilesInReopenChange(Sender: TObject);
+begin
+  if Length(EditmaxFilesInReopen.Text) > 0 then
+    UpDownMaxFiles.Position := StrToInt(EditmaxFilesInReopen.Text);
 end;
 
 end.

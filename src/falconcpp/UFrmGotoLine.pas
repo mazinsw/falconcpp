@@ -4,15 +4,16 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Mask, RzEdit, RzSpnEdt, ExtCtrls;
+  Dialogs, StdCtrls, Mask, ExtCtrls, ComCtrls, EditAlign;
 
 type
   TFormGotoLine = class(TForm)
     BtnOk: TButton;
     BtnCancel: TButton;
     Bevel1: TBevel;
-    EditLine: TRzSpinEdit;
     LblLine: TLabel;
+    EditLine: TEditAlign;
+    UpDown: TUpDown;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
     procedure FormResize(Sender: TObject);
@@ -21,6 +22,7 @@ type
     procedure BtnCancelClick(Sender: TObject);
     procedure BtnOkClick(Sender: TObject);
     procedure EditLineKeyPress(Sender: TObject; var Key: Char);
+    procedure EditLineChange(Sender: TObject);
   private
     { Private declarations }
   public
@@ -51,9 +53,9 @@ end;
 
 procedure TFormGotoLine.ShowWithRange(MinLin, LineStart, LineEnd: Integer);
 begin
-  EditLine.Min := MinLin;
-  EditLine.Max := LineEnd;
-  EditLine.IntValue := LineStart;
+  UpDown.Min := MinLin;
+  UpDown.Max := LineEnd;
+  UpDown.Position := LineStart;
   EditLine.SelectAll;
   LblLine.Caption := Format('Line (%d - %d):', [MinLin, LineEnd]);
   ShowModal;
@@ -61,7 +63,7 @@ end;
 
 procedure TFormGotoLine.FormResize(Sender: TObject);
 begin
-  EditLine.Width := ClientWidth - 2 * EditLine.Left;
+  EditLine.Width := ClientWidth - 2 * EditLine.Left - UpDown.Width - 1;
 end;
 
 procedure TFormGotoLine.FormKeyDown(Sender: TObject; var Key: Word;
@@ -78,7 +80,7 @@ end;
 
 procedure TFormGotoLine.BtnOkClick(Sender: TObject);
 begin
-  SelectLine(EditLine.IntValue);
+  SelectLine(UpDown.Position);
 end;
 
 procedure TFormGotoLine.SelectLine(Line: Integer);
@@ -98,8 +100,16 @@ begin
   if Key = #13 then
   begin
     Key := #0;
-    SelectLine(EditLine.IntValue);
+    SelectLine(UpDown.Position);
   end;
+  if not (Key in ['0'..'9', #8, #27]) then
+    Key := #0;
+end;
+
+procedure TFormGotoLine.EditLineChange(Sender: TObject);
+begin
+  if Length(EditLine.Text) > 0 then
+    UpDown.Position := StrToInt(EditLine.Text);
 end;
 
 end.

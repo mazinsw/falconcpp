@@ -4,8 +4,9 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, RzCommon, Menus, ExtCtrls, StdCtrls, ComCtrls, Mask, RzEdit,
-  RzSpnEdt, ImgList, Grids, ListGridView, ExtDlgs, UFileProperty, SynMemo, TBX;
+  Dialogs, Menus, ExtCtrls, StdCtrls, ComCtrls, Mask, ImgList, Grids,
+  ListGridView, ExtDlgs, UFileProperty, SynMemo, TBX, SynEditTypes,
+  SynEditTextBuffer;
 
 type
   TToolMenuItem = class(TTBXItem)
@@ -81,11 +82,7 @@ begin
   CreateMenuTool(RMenuTool,
     'Selection to Hex', 'STD:TOHEX', 'STD:SELTEXT').ToolID := 0;
   CreateMenuTool(RMenuTool,
-    'Selection to Bin', 'STD:TOBIN', 'STD:SELTEXT').ToolID := 1;
-  CreateMenuTool(RMenuTool,
     'Selection to Int', 'STD:TOINT', 'STD:SELTEXT').ToolID := 2;
-  CreateMenuTool(RMenuTool,
-    'Selection to String', 'STD:TOSTR', 'STD:SELTEXT').ToolID := 3;
   ItemTool := CreateMenuTool(RMenuTool,
     'Resolve special chars', 'STD:TORES', 'STD:SELTEXT');
   ItemTool.ToolID := 4;
@@ -94,19 +91,10 @@ begin
   RMenuTool := CreateRootMenuTool('Samples');
   CreateMenuTool(RMenuTool,
     'Insert datetime', 'STD:INSDT', '').ToolID := 5;
-  CreateMenuTool(RMenuTool,
-    'Insert comment', 'STD:INSTCMT', '').ToolID := 6;
-  CreateMenuTool(RMenuTool,
-    'Insert standard includes', 'STD:INSINC', '').ToolID := 7;
-  CreateMenuTool(RMenuTool,
-    'Insert main function', 'STD:INSMFC', '').ToolID := 8;
   ItemTool := CreateMenuTool(RMenuTool,
     'Insert definition header', 'STD:INSDHD', '');
   ItemTool.ToolID := 9;
   ItemTool.ShortCut := ShortCut(Ord('H'), [ssCtrl, ssAlt]);
-
-  CreateMenuTool(RMenuTool,
-    'Insert class syntax', 'STD:INSCSY', '').ToolID := 10;
   RMenuTool := CreateRootMenuTool('Advanced');
   CreateMenuTool(RMenuTool,
     'Implement class functions...', 'STD:IMPCFC', 'STD:FILEH').ToolID := 11;
@@ -140,15 +128,9 @@ begin
   case ToolID of
     0: if (Length(SelText) > 0) then
         Memo.SelText := '0x' + IntToHex(StrToIntDef(SelText, 0), 6);
-    1: if (Length(SelText) > 0) then
-       begin
-         Memo.SelText := '(Not: Implemented)';
-       end;
     2: if (Length(SelText) > 0) then
         Memo.SelText := IntToStr(StrToIntDef(
           StringReplace(SelText, '0x', '$', []), 0));
-    3: if (Length(SelText) > 0) then
-        Memo.SelText := '(Not: Implemented)';
     4:
     begin
       Temp := Memo.SelText;
@@ -161,20 +143,6 @@ begin
       Memo.SelText := Temp;
     end;
     5: Memo.SelText := DateTimeToStr(Now);
-    6: Memo.SelText := '/**' + #13 + Ident +' *' + #13 + Ident + ' *' + #13 +
-         Ident + '**/';
-    7:
-    begin
-      Memo.Text := '#include <stdio.h>' + #13 + '#include <stdlib.h>'
-        + #13 + #13 + #13 + Memo.Text;
-      Memo.GotoLineAndCenter(Line + 3);
-    end;
-    8:
-    begin
-      Memo.SelText := 'int main(int argc, char * args[]){' + #13 +  #13 +
-        '    return 0;' + #13 + '}';
-      EditorGotoXY(Memo, Memo.DisplayX + 3, Memo.DisplayY - 2);
-    end;
     9:
     begin
       Temp := StringReplace(FileProp.Caption, '.', '_', [rfReplaceAll]);
@@ -184,16 +152,6 @@ begin
         #13 + Memo.Text + #13 + '#endif';
       Memo.GotoLineAndCenter(Line + 2);
     end;
-    10:
-    begin
-      Ident := GetIdent(Column - 1);
-      Memo.SelText := 'class NewClass' + #13 + Ident + '{' + #13 + Ident +
-        '    private:' + #13 + Ident + '    public:' + #13 + Ident +
-        '      NewClass();' + #13 + Ident + '     ~NewClass();' + #13 +
-        Ident + '};';
-    end;
-    11: ;
-    12: ;
   else
     //exec user functions
   end;

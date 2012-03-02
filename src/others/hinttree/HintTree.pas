@@ -12,13 +12,7 @@ type
   private
     TreeView: TTreeView;
     DebugParser: TDebugParser;
-    BottomPanel: TPanel;
-    NavEdit: TEdit;
-    Button3Dot: TButton;
-    HintTip: THintTreeTip;
-    FHintDelay: Integer;
     FFocusDelay: Integer;
-    TimerHint: TTimer;
     fptr: PChar;
     FValue: String;
     FActivated: Boolean;
@@ -26,8 +20,6 @@ type
     FLastActive: Cardinal;
     TreeViewOldProc: TWndMethod;
     Timer: TTimer;
-    FHintEnabled: Boolean;
-    FPointerNavigattion: Boolean;
     procedure TreeViewProc(var Msg: TMessage);
     procedure WMMouseActivate(var Message: TWMMouseActivate); message WM_MOUSEACTIVATE;
     procedure WMNCHitTest(var Message: TWMNCHitTest); message WM_NCHITTEST;
@@ -38,15 +30,10 @@ type
     procedure TreeViewKeyPress(Sender: TObject; var Key: Char);
     procedure HintMouseMove(Sender: TObject; Shift: TShiftState;
       X, Y: Integer);
-    procedure TreeViewChange(Sender: TObject; Node: TTreeNode);
     procedure TimerEvent(Sender: TObject);
-    procedure TimerHintEvent(Sender: TObject);
     procedure UpdateStyle;
     function GetClickable: Boolean;
     procedure SetFocusDelay(Value: Integer);
-    procedure SetHintDelay(Value: Integer);
-    procedure SetHintEnabled(Value: Boolean);
-    procedure SetPointerNavigattion(Value: Boolean);
   protected
     procedure CreateParams(var Params: TCreateParams); override;
   public
@@ -54,10 +41,6 @@ type
     property Activated: Boolean read FActivated;
     property WindowMode: Boolean read FWindowMode;
     property FocusDelay: Integer read FFocusDelay write SetFocusDelay;
-    property HintDelay: Integer read FHintDelay write SetHintDelay;
-    property HintEnabled: Boolean read FHintEnabled write SetHintEnabled;
-    property PointerNavigattion: Boolean read FPointerNavigattion
-                                         write SetPointerNavigattion;
     property Clickable: Boolean read GetClickable;
     property ImageList: TImageList write SetImageList;
     constructor Create(AOwner: TComponent); override;
@@ -71,13 +54,9 @@ implementation
 uses Types, TokenFile, TokenUtils;
 
 constructor THintTree.Create(AOwner: TComponent);
-var
-  Bevel: TBevel;
 begin
   inherited Create(AOwner);
   DebugParser := TDebugParser.Create;
-  FHintEnabled := False;
-  FPointerNavigattion := True;
   Color := $E1FFFF;
   Canvas.Font := Screen.HintFont;
   Canvas.Brush.Style := bsClear;
@@ -95,37 +74,15 @@ begin
   TreeViewOldProc := TreeView.WindowProc;
   TreeView.WindowProc := TreeViewProc;
   TreeView.DoubleBuffered := True;
-  TreeView.OnChange := TreeViewChange;
-  BottomPanel := TPanel.Create(Self);
-  BottomPanel.Parent := Self;
-  BottomPanel.Align := alBottom;
-  BottomPanel.Height := 25;
-  BottomPanel.BevelOuter := bvNone;
-  BottomPanel.Visible := False;
-  Bevel := TBevel.Create(BottomPanel);
-  Bevel.Parent := BottomPanel;
-  Bevel.Shape := bsTopLine;
-  Bevel.Align := alTop;
-  Bevel.Height := 1;
   Timer := TTimer.Create(nil);
   Timer.Enabled := False;
   FocusDelay := 500;
   Timer.OnTimer := TimerEvent;
-  HintTip := THintTreeTip.Create(nil);
-  SetClassLong(HintTip.Handle, GCL_STYLE,
-    GetClassLong(HintTip.Handle, GCL_STYLE) and not CS_DROPSHADOW);
-  HintTip.Color := clGray;
-  TimerHint := TTimer.Create(nil);
-  TimerHint.Enabled := False;
-  HintDelay := 200;
-  TimerHint.OnTimer := TimerHintEvent;
 end;
 
 destructor THintTree.Destroy;
 begin
   DebugParser.Free;
-  HintTip.Free;
-  TimerHint.Free;
   Timer.Free;
   inherited Destroy;
 end;
@@ -176,18 +133,12 @@ begin
     Timer.Enabled := False;
     Timer.Enabled := True;
   end;
-  if HintEnabled then
-  begin
-    TimerHint.Enabled := False;
-    TimerHint.Enabled := True;
-  end;
 end;
 
 procedure THintTree.CMMouseLeave(var Message: TMessage);
 begin
   if not FWindowMode and GetClickable then
     Timer.Enabled := False;
-  HintTip.Cancel;
 end;
 
 procedure THintTree.TreeViewProc(var Msg: TMessage);
@@ -223,7 +174,6 @@ begin
     FWindowMode := False;
     UpdateStyle;
   end;
-  HintTip.Cancel;
   ShowWindow(Handle, SW_HIDE);
   //Hide;
 end;
@@ -293,7 +243,6 @@ begin
     FValue := S;
     TreeView.Items.Clear;
     fptr := PChar(FValue);
-    BottomPanel.Hide;
     DebugParser.Clear;
     DebugParser.Fill(FValue, Token);
   end;
@@ -350,35 +299,6 @@ begin
   end;
 end;
 
-procedure THintTree.SetHintDelay(Value: Integer);
-begin
-  if (Value <> FHintDelay) then
-  begin
-    FHintDelay := Value;
-    TimerHint.Interval := FHintDelay;
-  end;
-end;
-
-procedure THintTree.SetHintEnabled(Value: Boolean);
-begin
-  if (Value <> FHintEnabled) then
-  begin
-    FHintEnabled := Value;
-    if not FHintEnabled then
-      HintTip.Cancel;
-  end;
-end;
-
-procedure THintTree.SetPointerNavigattion(Value: Boolean);
-begin
-  if (Value <> FPointerNavigattion) then
-  begin
-    FPointerNavigattion := Value;
-    if not FPointerNavigattion then
-      BottomPanel.Hide;
-  end;
-end;
-
 procedure THintTree.TimerEvent(Sender: TObject);
 var
   R: TRect;
@@ -409,86 +329,6 @@ begin
     R.Bottom := R.Top + newHeight - 4;
     AdjustHintRect(R);
   end;
-end;
-
-procedure THintTree.TimerHintEvent(Sender: TObject);
-var
-  Node: TTreeNode;
-  P: TPoint;
-  R: TRect;
-  S, FileName: String;
-  token: TTokenClass;
-  TokenFile: TTokenFile;
-begin
-  TimerHint.Enabled := False;
-  P := TreeView.ScreenToClient(Mouse.CursorPos);
-  Node := TreeView.GetNodeAt(P.X, P.Y);
-  if not Assigned(Node) or not HintEnabled then
-  begin
-    HintTip.Cancel;
-    Exit;
-  end;
-  token := TTokenClass(Node.Data);
-  if not Assigned(token) then
-  begin
-    HintTip.Cancel;
-    Exit;
-  end;
-  FileName := '';
-  TokenFile := TTokenFile(token.Owner);
-  if Assigned(TokenFile) then
-    FileName := TokenFile.FileName;
-  S := MakeTokenHint(Token, FileName);
-  R := Node.DisplayRect(True);
-  P.X := R.Left;
-  P.Y := R.Bottom;
-  P := TreeView.ClientToScreen(P);
-  HintTip.UpdateHint(S, P.X, P.Y);
-end;
-
-procedure THintTree.TreeViewChange(Sender: TObject; Node: TTreeNode);
-var
-  S, FileName, GDBType: String;
-  token: TTokenClass;
-  TokenFile: TTokenFile;
-  watchVar: TWatchVariable;
-  I: Integer;
-begin
-  if not PointerNavigattion then
-  begin
-    BottomPanel.Hide;
-    Exit;
-  end;
-  watchVar := TWatchVariable(Node.Data);
-  token := watchVar.Token;
-  if not Assigned(token) then
-  begin
-    BottomPanel.Hide;
-    Exit;
-  end;
-  GDBType := '';
-  I := Pos('= (', Node.Text);
-  if I > 0 then
-  begin
-    GDBType := Copy(Node.Text, I + 3, MaxInt);
-    I := Pos(')', GDBType);
-    if I > 0 then
-      GDBType := Copy(GDBType, 1, I - 1)
-    else
-      GDBType := '';
-  end;
-  if (GDBType = '') and (Pos('0x', Node.Text) = 0) then
-  begin
-    BottomPanel.Hide;
-    Exit;
-  end;
-  FileName := '';
-  TokenFile := TTokenFile(token.Owner);
-  if Assigned(TokenFile) then
-    FileName := TokenFile.FileName;
-  S := MakeTokenHint(Token, FileName);
-  BottomPanel.Caption := S;
-  BottomPanel.Show;
 end;
 
 end.

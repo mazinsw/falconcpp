@@ -1,6 +1,6 @@
 object FrmEnvOptions: TFrmEnvOptions
-  Left = 523
-  Top = 312
+  Left = 572
+  Top = 304
   BorderStyle = bsDialog
   Caption = 'Environment Options'
   ClientHeight = 428
@@ -31,7 +31,7 @@ object FrmEnvOptions: TFrmEnvOptions
       object RadioGroupAutoOpen: TRadioGroup
         Left = 4
         Top = 229
-        Width = 189
+        Width = 221
         Height = 122
         Caption = 'Auto open'
         ItemIndex = 4
@@ -53,44 +53,13 @@ object FrmEnvOptions: TFrmEnvOptions
         TabOrder = 1
         OnClick = EditorOptionsChanged
       end
-      object GroupBoxCreateBkpFiles: TGroupBox
-        Left = 4
-        Top = 154
-        Width = 185
-        Height = 73
-        Caption = '      Create backup files'
-        TabOrder = 2
-        object LabelExtCreateBkp: TLabel
-          Left = 8
-          Top = 24
-          Width = 46
-          Height = 13
-          Caption = 'Extension'
-        end
-        object CheckBoxCreateBkpFiles: TCheckBox
-          Left = 9
-          Top = -1
-          Width = 112
-          Height = 17
-          TabOrder = 0
-          OnClick = CheckBoxEnableGroupClick
-        end
-        object EditExtension: TEdit
-          Left = 8
-          Top = 40
-          Width = 89
-          Height = 21
-          TabOrder = 1
-          OnChange = EditorOptionsChanged
-        end
-      end
       object CheckBoxShowToolbars: TCheckBox
         Left = 4
         Top = 40
         Width = 201
         Height = 17
         Caption = 'Show toolbars in full screen'
-        TabOrder = 3
+        TabOrder = 2
         OnClick = EditorOptionsChanged
       end
       object CheckBoxOneClickFile: TCheckBox
@@ -99,7 +68,7 @@ object FrmEnvOptions: TFrmEnvOptions
         Width = 181
         Height = 17
         Caption = 'One click to open file'
-        TabOrder = 4
+        TabOrder = 3
         OnClick = EditorOptionsChanged
       end
       object CheckBoxCheckForUpdate: TCheckBox
@@ -108,57 +77,8 @@ object FrmEnvOptions: TFrmEnvOptions
         Width = 201
         Height = 17
         Caption = 'Check for updates automatically'
-        TabOrder = 5
+        TabOrder = 4
         OnClick = EditorOptionsChanged
-      end
-      object GroupBoxAutoReloadExterModFiles: TGroupBox
-        Left = 200
-        Top = 229
-        Width = 235
-        Height = 121
-        Caption = '      Auto reload external modified files'
-        TabOrder = 6
-        object LblDelay: TLabel
-          Left = 13
-          Top = 24
-          Width = 30
-          Height = 13
-          Caption = '&Delay:'
-        end
-        object LblSecStart: TLabel
-          Left = 12
-          Top = 80
-          Width = 26
-          Height = 13
-          Caption = '1 sec'
-        end
-        object LblSecEnd: TLabel
-          Left = 186
-          Top = 80
-          Width = 32
-          Height = 13
-          Caption = '15 sec'
-        end
-        object CheckBoxAutoReloadExterModFiles: TCheckBox
-          Left = 10
-          Top = -1
-          Width = 180
-          Height = 17
-          TabOrder = 0
-          OnClick = CheckBoxEnableGroupClick
-        end
-        object TrackBarReloadDelay: TTrackBar
-          Left = 6
-          Top = 48
-          Width = 222
-          Height = 33
-          Max = 15
-          Min = 1
-          PageSize = 1
-          Position = 1
-          TabOrder = 1
-          OnChange = TrackBarReloadDelayChange
-        end
       end
       object CheckBoxRemoveFileOnClose: TCheckBox
         Left = 4
@@ -166,7 +86,34 @@ object FrmEnvOptions: TFrmEnvOptions
         Width = 181
         Height = 17
         Caption = 'Remove file on close'
+        TabOrder = 5
+        OnClick = EditorOptionsChanged
+      end
+      object CheckBoxCreateLayoutFiles: TCheckBox
+        Left = 4
+        Top = 136
+        Width = 201
+        Height = 17
+        Caption = 'Create layout files'
+        TabOrder = 6
+        OnClick = EditorOptionsChanged
+      end
+      object CheckBoxAskDeleteFile: TCheckBox
+        Left = 4
+        Top = 160
+        Width = 277
+        Height = 17
+        Caption = 'Ask if you want to delete the project file'
         TabOrder = 7
+        OnClick = EditorOptionsChanged
+      end
+      object CheckBoxRunConsoleRunner: TCheckBox
+        Left = 4
+        Top = 184
+        Width = 381
+        Height = 17
+        Caption = 'Run console applications in console runner'
+        TabOrder = 8
         OnClick = EditorOptionsChanged
       end
     end
@@ -187,18 +134,6 @@ object FrmEnvOptions: TFrmEnvOptions
         Height = 13
         Caption = 'Language:'
       end
-      object EditmaxFilesInReopen: TRzSpinEdit
-        Left = 4
-        Top = 32
-        Width = 61
-        Height = 21
-        AllowKeyEdit = True
-        Max = 50.000000000000000000
-        Value = 10.000000000000000000
-        TabOnEnter = True
-        TabOrder = 0
-        OnChange = EditorOptionsChanged
-      end
       object ComboBoxLanguage: TComboBoxEx
         Left = 189
         Top = 32
@@ -207,7 +142,7 @@ object FrmEnvOptions: TFrmEnvOptions
         ItemsEx = <>
         Style = csExDropDownList
         ItemHeight = 16
-        TabOrder = 1
+        TabOrder = 0
         OnChange = EditorOptionsChanged
         Images = FrmFalconMain.ImgListCountry
         DropDownCount = 8
@@ -218,21 +153,43 @@ object FrmEnvOptions: TFrmEnvOptions
         Width = 172
         Height = 17
         Caption = 'Show splash screen'
-        TabOrder = 2
+        TabOrder = 1
         OnClick = EditorOptionsChanged
       end
       object RadioGroupTheme: TRadioGroup
         Left = 4
-        Top = 98
+        Top = 106
         Width = 133
-        Height = 91
+        Height = 143
         Caption = 'Theme'
         Items.Strings = (
           'Default'
-          'Office Adaptive'
-          'Office XP')
-        TabOrder = 3
+          'Office2003'
+          'OfficeXP'
+          'Stripes'
+          'Professional'
+          'Aluminum')
+        TabOrder = 2
         OnClick = EditorOptionsChanged
+      end
+      object EditmaxFilesInReopen: TEditAlign
+        Left = 4
+        Top = 32
+        Width = 69
+        Height = 21
+        TabOrder = 3
+        Text = '0'
+        OnChange = EditmaxFilesInReopenChange
+        OnKeyPress = EditmaxFilesInReopenKeyPress
+        Alignment = taRightJustify
+      end
+      object UpDownMaxFiles: TUpDown
+        Left = 73
+        Top = 32
+        Width = 17
+        Height = 21
+        Associate = EditmaxFilesInReopen
+        TabOrder = 4
       end
     end
     object TSFilesandDir: TTabSheet
@@ -829,12 +786,5 @@ object FrmEnvOptions: TFrmEnvOptions
     Enabled = False
     TabOrder = 3
     OnClick = BtnApplyClick
-  end
-  object TimerNormalDelay: TTimer
-    Enabled = False
-    Interval = 500
-    OnTimer = TimerNormalDelayTimer
-    Left = 8
-    Top = 396
   end
 end

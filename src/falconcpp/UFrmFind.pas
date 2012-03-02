@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ComCtrls, StdCtrls, ExtCtrls, Buttons, UFrmMain, SynMemo, StrMatch,
-  SynEditTypes;
+  SynEditTypes, SynEditSearch;
 
 type
   TFrmFind = class(TForm)
@@ -34,6 +34,7 @@ type
     GBoxDirection: TGroupBox;
     RdbtUp: TRadioButton;
     RdbtDown: TRadioButton;
+    ProgressBarFindFiles: TProgressBar;
     procedure FormDeactivate(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -55,11 +56,20 @@ type
     procedure BtnCancelClick(Sender: TObject);
     procedure TrkBarChange(Sender: TObject);
     procedure ChbTranspClick(Sender: TObject);
+    procedure FindInFiles;
   private
     { Private declarations }
     Frm: TFrmFalconMain;
+    FindFilesRunning, FindFilesCanceled: Boolean;
+    FindFilesMoreTag: Integer;
+    LastFindFilesDescription: String;
   public
     { Public declarations }
+    procedure ProgressFindFile(const FileName, Msg: String; Line,
+      Column, EndColumn: Integer);
+    procedure FinishFindAll(const aSearch: String; Results: Integer; Canceled: Boolean);
+    function StartFindAll(const OriFindText, aText: String; Sensitive,
+      WholeWord: Boolean): Boolean;
   end;
 
 var
@@ -76,7 +86,8 @@ function EncodeStr(const S: String): String;
 
 implementation
 
-uses UFileProperty, StrUtils, SynEdit, SynEditMiscClasses, ULanguages;
+uses UFileProperty, StrUtils, SynEdit, SynEditMiscClasses, ULanguages,
+  UUtils, UParseMsgs;
 
 {$R *.dfm}
 
@@ -119,7 +130,9 @@ begin
   begin
    if not memo.SelAvail then Exit;
    LastSearch.Search := memo.SelText;
-  end;
+  end
+  else if memo.SelAvail then
+   LastSearch.Search := memo.SelText;
   sopt := [];
   if LastSearch.DiffCase then
     sopt := sopt + [ssoMatchCase];
@@ -173,7 +186,9 @@ begin
   begin
    if not memo.SelAvail then Exit;
    LastSearch.Search := memo.SelText;
-  end;
+  end
+  else if memo.SelAvail then
+   LastSearch.Search := memo.SelText;
   sopt := [];
   if LastSearch.DiffCase then
     sopt := sopt + [ssoMatchCase];
@@ -217,13 +232,17 @@ var
   memo: TSynMemo;
   seltext: String;
 begin
-  if not frm.GetActiveFile(prop) then Exit;
-  if not prop.GetSheet(sheet) then Exit;
-  memo := sheet.Memo;
-  seltext := memo.SelText;
-  if not memo.SelAvail then
-    seltext := memo.GetWordAtRowCol(memo.PrevWordPos);
-
+  seltext := '';
+  if frm.GetActiveFile(prop) then
+  begin
+    if prop.GetSheet(sheet) then
+    begin
+      memo := sheet.Memo;
+      seltext := memo.SelText;
+      if not memo.SelAvail then
+        seltext := memo.GetWordAtRowCol(memo.PrevWordPos);
+    end;
+  end;
   if FrmFind = nil then
     FrmFind:= TFrmFind.Create(frm);
   FrmFind.Frm := frm;
@@ -396,6 +415,9 @@ procedure TFrmFind.TabCtrlChange(Sender: TObject);
 begin
   case TabCtrl.TabIndex of
     0: begin
+      ProgressBarFindFiles.Visible := False;
+      LblRep.Caption := STR_FRM_FIND[6];
+      BtnFind.Caption := STR_FRM_FIND[12];
       LblRep.Visible := False;
       CboReplace.Visible := False;
       BtnReplace.Visible := False;
@@ -404,10 +426,14 @@ begin
       GBoxDirection.Visible := BtnMore.Tag = 1;
       RdbtUp.Enabled := True;
       BtnMore.Left := 231;
+      BtnMore.Visible := True;
       if Visible then
         CboFind.SetFocus;
     end;
     1: begin
+      ProgressBarFindFiles.Visible := False;
+      LblRep.Caption := STR_FRM_FIND[6];
+      BtnFind.Caption := STR_FRM_FIND[12];
       BtnReplace.Left := 131;
       GBoxRplcAll.Left := 228;
       LblRep.Visible := True;
@@ -419,16 +445,32 @@ begin
       RdbtDown.Checked := True;
       RdbtUp.Enabled := False;
       BtnMore.Left := 31;
+      BtnMore.Visible := True;
       if Visible then
         CboFind.SetFocus;
     end;
     2: begin
-      LblRep.Visible := False;
+      //TODO
+      ProgressBarFindFiles.Visible := FindFilesRunning;
+      LblRep.Visible := FindFilesRunning;
+      if not FindFilesRunning then
+      begin
+        LblRep.Caption := STR_FRM_FIND[6];
+        BtnFind.Caption := STR_FRM_FIND[2];
+      end
+      else
+      begin
+        LblRep.Caption := LastFindFilesDescription;
+        BtnFind.Caption := STR_FRM_FIND[32];
+        BtnMore.Tag := 1;
+        BtnMoreClick(BtnMore);
+      end;
       CboReplace.Visible := False;
       BtnReplace.Visible := False;
       GBoxRplcAll.Visible := False;
       ChbCircSearch.Visible := False;
       GBoxDirection.Visible := False;
+      BtnMore.Visible := not FindFilesRunning;
       BtnMore.Left := 231;
       if Visible then
         CboFind.SetFocus;
@@ -484,6 +526,142 @@ begin
     Key := #0;
 end;
 
+procedure TFrmFind.ProgressFindFile(const FileName, Msg: String;
+  Line, Column, EndColumn: Integer);
+begin
+  FrmFalconMain.AddMessage(FileName, ExtractFileName(FileName), Msg, Line,
+    Column, EndColumn, mitFound, False);
+end;
+
+procedure TFrmFind.FinishFindAll(const aSearch: String; Results: Integer; Canceled: Boolean);
+begin
+  TabCtrl.TabIndex := 2;
+  //TODO Stop
+  FindFilesRunning := False;
+  FindFilesCanceled := False;
+  LblRep.Caption := STR_FRM_FIND[6];
+  LblRep.Visible := False;
+  BtnFind.Caption := STR_FRM_FIND[2];
+  ProgressBarFindFiles.Visible := False;
+  BtnMore.Visible := True;
+  BtnMore.Tag := FindFilesMoreTag;
+  BtnMoreClick(BtnMore);
+  LastFindFilesDescription := '';
+  if Canceled then
+    Exit;
+  if Results = 0 then
+  begin
+    AlphaBlend := False;
+    AlphaBlendValue := 255;
+    MessageBox(Handle, PChar(Format(STR_FRM_FIND[30], [aSearch])),
+      PChar(StringReplace(STR_FRM_FIND[2], '&', '', [])), MB_OK);
+    Exit;
+  end;
+  FrmFalconMain.PageControlMessages.Show;
+  Close;
+end;
+
+function TFrmFind.StartFindAll(const OriFindText, aText: String; Sensitive,
+  WholeWord: Boolean): Boolean;
+var
+  Files: TStrings;
+  FileName: String;
+  FileProp: TFileProperty;
+  I, J, Results, Line, Column, EndColumn: Integer;
+  Search: TSynEditSearch;
+  sheet: TFilePropertySheet;
+  sopt: TSynSearchOptions;
+  Lines: TStrings;
+
+  procedure CheckIfCanceled;
+  begin
+    if FindFilesCanceled then
+    begin
+      Files.Free;
+      Search.Free;
+      FinishFindAll(OriFindText, Results, FindFilesCanceled);
+      Exit;
+    end;
+  end;
+
+begin
+  sopt := [];
+  if Sensitive then
+    sopt := sopt + [ssoMatchCase];
+  if WholeWord then
+    sopt := sopt + [ssoWholeWord];
+  Result := False;
+  Results := 0;
+  Files := TStringList.Create;
+  Search := TSynEditSearch.Create(nil);
+  CheckIfCanceled;
+  Search.Options := sopt;
+  Search.Pattern := aText;
+  FrmFalconMain.ListViewMsg.Clear;
+  I := FrmFalconMain.GetSourcesFiles(Files, True);
+  ProgressBarFindFiles.Max := I;
+  for I := 0 to Files.Count - 1 do
+  begin
+    CheckIfCanceled;
+    ProgressBarFindFiles.Position := I + 1;
+    FileProp := TFileProperty(Files.Objects[I]);
+    FileName := FileProp.GetCompleteFileName;
+    LastFindFilesDescription := Format(STR_FRM_FIND[33], [OriFindText, FileProp.Caption]);
+    LblRep.Caption := LastFindFilesDescription;
+    if FileProp.GetSheet(sheet) then
+      Lines := sheet.Memo.Lines
+    else
+      Lines := FileProp.Text;
+    Results := Results + Search.FindAll(Lines.Text);
+    CheckIfCanceled;
+    for J := 0 to Search.ResultCount - 1 do
+    begin
+      GetRowColFromCharIndex(Search.Results[J], Lines, Line, Column);
+      if Column > 1 then
+        Dec(Column);
+      EndColumn := Column + Length(aText);
+      ProgressFindFile(FileName, Format('Found ''%s'' in line %d, column %d',
+        [OriFindText, Line, Column]), Line, Column, EndColumn);
+      Application.ProcessMessages;
+      CheckIfCanceled;
+    end;
+    Application.ProcessMessages;
+  end;
+  Search.Free;
+  Files.Free;
+  FinishFindAll(OriFindText, Results, FindFilesCanceled);
+end;
+
+procedure TFrmFind.FindInFiles;
+var
+  search: String;
+begin
+  if not FindFilesRunning then
+  begin
+    FindFilesCanceled := False;
+    FindFilesRunning := True;
+    LblRep.Visible := True;
+    BtnFind.Caption := STR_FRM_FIND[32];
+    ProgressBarFindFiles.Visible := True;
+    BtnMore.Visible := False;
+    if BtnMore.Tag = 1 then
+      FindFilesMoreTag := 0
+    else
+      FindFilesMoreTag := 1;
+    BtnMore.Tag := 1;
+    BtnMoreClick(BtnMore);
+    search := CboFind.Text;
+    if RGrpSearchMode.ItemIndex = 1 then //resolve \n \r \t
+      search := ResolveStr(search);
+    StartFindAll(CboFind.Text, search, ChbDiffCase.Checked, ChbFullWord.Checked);
+  end
+  else
+  begin
+    if FindFilesRunning then
+      FindFilesCanceled := True;
+  end;
+end;
+
 procedure TFrmFind.BtnFindClick(Sender: TObject);
 var
   sheet: TFilePropertySheet;
@@ -494,6 +672,11 @@ var
   rect: TRect;
   sopt: TSynSearchOptions;
 begin
+  if TabCtrl.TabIndex = 2 then
+  begin
+    FindInFiles;
+    Exit;
+  end;
   if not frm.GetActiveSheet(sheet) then Exit;
   memo := sheet.Memo;
   search := CboFind.Text;

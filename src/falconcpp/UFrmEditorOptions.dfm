@@ -1,6 +1,6 @@
 object FrmEditorOptions: TFrmEditorOptions
-  Left = 524
-  Top = 312
+  Left = 712
+  Top = 261
   BorderStyle = bsDialog
   Caption = 'Editor Options'
   ClientHeight = 428
@@ -464,7 +464,7 @@ object FrmEditorOptions: TFrmEditorOptions
         Top = 32
         Width = 65
         Height = 21
-        ItemHeight = 0
+        ItemHeight = 13
         TabOrder = 2
         Text = '10'
         OnChange = CboSizeChange
@@ -474,7 +474,7 @@ object FrmEditorOptions: TFrmEditorOptions
         Top = 32
         Width = 185
         Height = 21
-        ItemHeight = 0
+        ItemHeight = 13
         TabOrder = 3
         OnSelect = CboEditFontSelect
       end
@@ -682,7 +682,7 @@ object FrmEditorOptions: TFrmEditorOptions
         Width = 114
         Height = 21
         AutoComplete = False
-        ItemHeight = 0
+        ItemHeight = 13
         MaxLength = 48
         TabOrder = 1
         OnSelect = CbDefSinSelect
@@ -717,6 +717,7 @@ object FrmEditorOptions: TFrmEditorOptions
         Gutter.Font.Name = 'Courier New'
         Gutter.Font.Style = []
         Gutter.LeftOffset = 6
+        Gutter.RightOffset = 21
         Gutter.ShowLineNumbers = True
         HideSelection = True
         Highlighter = SynCpp
@@ -816,6 +817,7 @@ object FrmEditorOptions: TFrmEditorOptions
               Gutter.Font.Name = 'Courier New'
               Gutter.Font.Style = []
               Gutter.LeftOffset = 6
+              Gutter.RightOffset = 21
               Gutter.ShowLineNumbers = True
               Gutter.Visible = False
               HideSelection = True
@@ -865,6 +867,7 @@ object FrmEditorOptions: TFrmEditorOptions
             Caption = 'Preview'
             TabOrder = 2
             Visible = False
+            OnClick = BtnPrevStyleClick
           end
         end
         object TSFormatterIndentation: TTabSheet
@@ -875,40 +878,61 @@ object FrmEditorOptions: TFrmEditorOptions
             Top = 8
             Width = 147
             Height = 17
+            Hint = 'Indent using tab characters.'
             Caption = 'Force using TABs'
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 0
             OnClick = EditorOptionsChanged
           end
           object CheckBoxIndentClasses: TCheckBox
             Left = 6
-            Top = 32
+            Top = 24
             Width = 339
             Height = 17
+            Hint = 
+              'Indent '#39'class'#39' and '#39'struct'#39' blocks so that the blocks '#39'public:'#39',' +
+              ' '#39'protected:'#39' and '#39'private:'#39' are indented. The struct blocks are' +
+              #13'indented only if an access modifier is declared somewhere in th' +
+              'e struct. The entire block is indented. This option is'#13'effective' +
+              ' for C++ files only.'
             Caption = 'Indent classes (keywords public:, protected: and private:)'
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 1
             OnClick = EditorOptionsChanged
           end
           object CheckBoxIndentSwitches: TCheckBox
             Left = 6
-            Top = 56
+            Top = 40
             Width = 211
             Height = 17
+            Hint = 
+              'Indent '#39'switch'#39' blocks so that the '#39'case X:'#39' statements are inde' +
+              'nted in the switch block. The entire case block is indented.'
             Caption = 'Indent switches (keyword case:)'
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 2
             OnClick = EditorOptionsChanged
           end
           object CheckBoxIndentCase: TCheckBox
             Left = 6
-            Top = 80
+            Top = 56
             Width = 339
             Height = 17
+            Hint = 
+              'Indent '#39'case X:'#39' blocks from the '#39'case X:'#39' headers. Case stateme' +
+              'nts not enclosed in blocks are NOT indented.'
             Caption = 'Indent case: statements in switches (commands case:)'
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 3
             OnClick = EditorOptionsChanged
           end
           object CheckBoxIndentBrackets: TCheckBox
             Left = 6
-            Top = 104
+            Top = 72
             Width = 155
             Height = 17
             Caption = 'Indent brackets'
@@ -917,7 +941,7 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object CheckBoxIndentBlocks: TCheckBox
             Left = 6
-            Top = 128
+            Top = 88
             Width = 155
             Height = 17
             Caption = 'Indent blocks'
@@ -926,28 +950,192 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object CheckBoxIndentNamespaces: TCheckBox
             Left = 6
-            Top = 152
+            Top = 104
             Width = 155
             Height = 17
+            Hint = 'Add extra indentation to namespace blocks.'
             Caption = 'Indent namespaces'
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 6
             OnClick = EditorOptionsChanged
           end
           object CheckBoxIndentLabels: TCheckBox
             Left = 6
-            Top = 176
+            Top = 120
             Width = 155
             Height = 17
+            Hint = 
+              'Add extra indentation to labels so they appear 1 indent less tha' +
+              'n the current indentation, '#13'rather than being flushed to the lef' +
+              't (the default).'
             Caption = 'Indent labels'
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 7
             OnClick = EditorOptionsChanged
           end
           object CheckBoxIndentMultLinePreprocessor: TCheckBox
             Left = 6
-            Top = 200
+            Top = 136
             Width = 339
             Height = 17
+            Hint = 
+              'Indent multi-line preprocessor definitions ending with a backsla' +
+              'sh. Should be used with --convert-tabs for proper results. '#13'Does' +
+              ' a pretty good job, but cannot perform miracles in obfuscated pr' +
+              'eprocessor definitions. Without this option the '#13'preprocessor st' +
+              'atements remain unchanged.'
             Caption = 'Indent mult-line preprocessor definitions'
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 8
+            OnClick = EditorOptionsChanged
+          end
+          object CheckBoxIndentSingleLineComments: TCheckBox
+            Left = 6
+            Top = 152
+            Width = 259
+            Height = 17
+            Hint = 
+              'Indent C++ comments beginning in column one. By default C++ comm' +
+              'ents beginning in column one are not indented. '#13'This option will' +
+              ' allow the comments to be indented with the code.'
+            Caption = 'Indent single line comments'
+            TabOrder = 9
+            OnClick = EditorOptionsChanged
+          end
+        end
+        object TSFormatterPadding: TTabSheet
+          Caption = 'Padding'
+          ImageIndex = 4
+          object CheckBoxPadEmptyLines: TCheckBox
+            Left = 6
+            Top = 8
+            Width = 339
+            Height = 17
+            Hint = 
+              'Pad empty lines around header blocks (e.g. '#39'if'#39', '#39'for'#39', '#39'while'#39'.' +
+              '..).'
+            Caption = 'Pad empty lines around header blocks ('#39'if'#39', '#39'while'#39', ..)'
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 0
+            OnClick = EditorOptionsChanged
+          end
+          object CheckBoxInsertSpacePaddingOperators: TCheckBox
+            Left = 6
+            Top = 40
+            Width = 283
+            Height = 17
+            Hint = 
+              'Insert space padding around operators. Any end of line comments ' +
+              'will remain in the original column, if possible. '#13'Note that ther' +
+              'e is no option to unpad. Once padded, they stay padded.'
+            Caption = 'Insert space padding around operators'
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 1
+            OnClick = EditorOptionsChanged
+          end
+          object CheckBoxInsertSpacePaddingParenthesisOutside: TCheckBox
+            Left = 6
+            Top = 56
+            Width = 339
+            Height = 17
+            Hint = 
+              'Insert space padding around parenthesis on the outside only. Any' +
+              ' end of line comments will remain in the original column, '#13'if po' +
+              'ssible.'
+            Caption = 'Insert space padding around parenthesis on the outside'
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 2
+            OnClick = EditorOptionsChanged
+          end
+          object CheckBoxInsertSpacePaddingParenthesisInside: TCheckBox
+            Left = 6
+            Top = 72
+            Width = 339
+            Height = 17
+            Hint = 
+              'Insert space padding around parenthesis on the inside only. Any ' +
+              'end of line comments will remain in the original column, '#13'if pos' +
+              'sible.'
+            Caption = 'Insert space padding around parenthesis on the inside'
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 3
+            OnClick = EditorOptionsChanged
+          end
+          object CheckBoxRemoveExtraSpace: TCheckBox
+            Left = 6
+            Top = 104
+            Width = 331
+            Height = 17
+            Hint = 
+              'Remove extra space padding around parenthesis on the inside and ' +
+              'outside. Any end of line comments will remain in the '#13'original c' +
+              'olumn, if possible.'
+            Caption = 'Remove extra space padding around parenthesis'
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 4
+            OnClick = EditorOptionsChanged
+          end
+          object CheckBoxFillEmptyLines: TCheckBox
+            Left = 6
+            Top = 136
+            Width = 411
+            Height = 17
+            Hint = 'Fill empty lines with the white space of the previous line.'
+            Caption = 'Fill empty lines with the whitespace of their previous lines'
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 5
+            OnClick = EditorOptionsChanged
+          end
+          object CheckBoxDeleteEmptyLines: TCheckBox
+            Left = 6
+            Top = 120
+            Width = 283
+            Height = 17
+            Hint = 
+              'Delete empty lines within a function or method. Empty lines outs' +
+              'ide of functions or methods are NOT deleted.'
+            Caption = 'Delete empty lines'
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 6
+            OnClick = EditorOptionsChanged
+          end
+          object CheckBoxParenthesisHeaderPadding: TCheckBox
+            Left = 6
+            Top = 88
+            Width = 283
+            Height = 17
+            Hint = 
+              'Insert space padding after paren headers only (e.g. '#39'if'#39', '#39'for'#39',' +
+              ' '#39'while'#39'...). Any end of line comments will remain in the '#13'origi' +
+              'nal column, if possible.'
+            Caption = 'Parenthesis header padding'
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 7
+            OnClick = EditorOptionsChanged
+          end
+          object CheckBoxBreakClosingHeaderBlocks: TCheckBox
+            Left = 6
+            Top = 24
+            Width = 283
+            Height = 17
+            Hint = 
+              'Pad empty lines around header blocks (e.g. '#39'if'#39', '#39'for'#39', '#39'while'#39'.' +
+              '..). Treat closing header blocks (e.g. '#39'else'#39', '#39'catch'#39') as '#13'stan' +
+              'd-alone blocks.'
+            Caption = 'Break closing header blocks'
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 8
             OnClick = EditorOptionsChanged
           end
@@ -962,8 +1150,15 @@ object FrmEditorOptions: TFrmEditorOptions
             Height = 13
             Caption = 'Brackets style:'
           end
+          object Label26: TLabel
+            Left = 6
+            Top = 160
+            Width = 61
+            Height = 13
+            Caption = 'Pointer align:'
+          end
           object ComboBoxBracketStyle: TComboBox
-            Left = 104
+            Left = 120
             Top = 6
             Width = 137
             Height = 21
@@ -979,111 +1174,148 @@ object FrmEditorOptions: TFrmEditorOptions
               'Attach'
               'Linux')
           end
-          object CheckBoxBreakClosingHeaders: TCheckBox
+          object CheckBoxBreakClosingHeadersBrackets: TCheckBox
             Left = 6
             Top = 40
-            Width = 147
+            Width = 259
             Height = 17
-            Caption = 'Break closing headers'
+            Hint = 
+              'When used with brackets=attach, brackets=linux, this breaks clos' +
+              'ing headers (e.g. '#39'else'#39', '#39'catch'#39', ...) from their '#13'immediately ' +
+              'preceding closing brackets. Closing header brackets are always b' +
+              'roken with broken brackets, horstmann '#13'brackets, indented blocks' +
+              ', and indented brackets.'
+            Caption = 'Break closing headers brackets'
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 1
-            OnClick = EditorOptionsChanged
-          end
-          object CheckBoxPadEmptyLines: TCheckBox
-            Left = 6
-            Top = 64
-            Width = 339
-            Height = 17
-            Caption = 'Pad empty lines around header blocks ('#39'if'#39', '#39'while'#39', ..)'
-            TabOrder = 2
             OnClick = EditorOptionsChanged
           end
           object CheckBoxBreakElseIf: TCheckBox
             Left = 6
-            Top = 88
+            Top = 56
             Width = 339
             Height = 17
+            Hint = 
+              'Break "else if" header combinations into separate lines. This op' +
+              'tion has no effect if keep one line statements is used, the'#13'"els' +
+              'e if" statements will remain as they are.'#13'If this option is NOT ' +
+              'used, "else if" header combinations will be placed on a single l' +
+              'ine.'
             Caption = 'Break '#39'else if()'#39' header combinations into separate lines'
-            TabOrder = 3
-            OnClick = EditorOptionsChanged
-          end
-          object CheckBoxInsertSpacePaddingOperators: TCheckBox
-            Left = 6
-            Top = 112
-            Width = 283
-            Height = 17
-            Caption = 'Insert space padding around operators'
-            TabOrder = 4
-            OnClick = EditorOptionsChanged
-          end
-          object CheckBoxInsertSpacePaddingParenthesisOutside: TCheckBox
-            Left = 6
-            Top = 136
-            Width = 339
-            Height = 17
-            Caption = 'Insert space padding around parenthesis on the outside'
-            TabOrder = 5
-            OnClick = EditorOptionsChanged
-          end
-          object CheckBoxInsertSpacePaddingParenthesisInside: TCheckBox
-            Left = 6
-            Top = 160
-            Width = 339
-            Height = 17
-            Caption = 'Insert space padding around parenthesis on the inside'
-            TabOrder = 6
-            OnClick = EditorOptionsChanged
-          end
-          object CheckBoxRemoveExtraSpace: TCheckBox
-            Left = 6
-            Top = 184
-            Width = 331
-            Height = 17
-            Caption = 'Remove extra space padding around parenthesis'
-            TabOrder = 7
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 2
             OnClick = EditorOptionsChanged
           end
           object CheckBoxDontBreakComplex: TCheckBox
             Left = 6
-            Top = 208
+            Top = 120
             Width = 408
             Height = 17
+            Hint = 
+              'Don'#39't break complex statements and multiple statements residing ' +
+              'on a single line.'
             Caption = 
               'Don'#39't break complex statements and multiple statements residing ' +
               'in a single line'
-            TabOrder = 8
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 3
             OnClick = EditorOptionsChanged
           end
           object CheckBoxDontBreakOneLineBlocks: TCheckBox
             Left = 6
-            Top = 232
+            Top = 104
             Width = 219
             Height = 17
+            Hint = 'Don'#39't break one-line blocks.'
             Caption = 'Don'#39't break one-line blocks'
-            TabOrder = 9
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 4
             OnClick = EditorOptionsChanged
           end
           object CheckBoxConvToSpaces: TCheckBox
             Left = 6
-            Top = 256
+            Top = 136
             Width = 187
             Height = 17
+            Hint = 
+              'Converts tabs into spaces in the non-indentation part of the lin' +
+              'e. The number of spaces inserted will maintain the spacing '#13'of t' +
+              'he tab. The current setting for spaces per tab is used. It may n' +
+              'ot produce the expected results if convert-tabs is used '#13'when ch' +
+              'anging spaces per tab. Tabs are not replaced in quotes.'
             Caption = 'Convert TABs to spaces'
-            TabOrder = 10
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 5
             OnClick = EditorOptionsChanged
           end
-          object CheckBoxFillEmpyLines: TCheckBox
+          object CheckBoxAddBrackets: TCheckBox
             Left = 6
-            Top = 280
-            Width = 411
+            Top = 72
+            Width = 235
             Height = 17
-            Caption = 'Fill empty lines with the whitespace of their previous lines'
-            TabOrder = 11
+            Hint = 
+              'Add brackets to unbracketed one line conditional statements (e.g' +
+              '. '#39'if'#39', '#39'for'#39', '#39'while'#39'...). The statement must be on a single '#13'l' +
+              'ine. The brackets will be added according to the currently reque' +
+              'sted predefined style or bracket type. If no style or '#13'bracket t' +
+              'ype is requested the brackets will be attached. If add one line ' +
+              'brackets is also used the result will be one line '#13'brackets.'
+            Caption = 'Add brackets'
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 6
             OnClick = EditorOptionsChanged
+          end
+          object CheckBoxAddOneLineBrackets: TCheckBox
+            Left = 6
+            Top = 88
+            Width = 235
+            Height = 17
+            Hint = 
+              'Add one line brackets to unbracketed one line conditional statem' +
+              'ents  (e.g. '#39'if'#39', '#39'for'#39', '#39'while'#39'...). The statement must be on '#13 +
+              'a single line. The option implies keep one line blocks and will ' +
+              'not break the one line blocks.'
+            Caption = 'Add one line brackets'
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 7
+            OnClick = EditorOptionsChanged
+          end
+          object ComboBoxPointerAlign: TComboBox
+            Left = 120
+            Top = 158
+            Width = 137
+            Height = 21
+            Hint = 
+              'Attach a pointer or reference operator (* or &) to either the va' +
+              'riable type (left) or variable name (right), or place it '#13'betwee' +
+              'n the type and name (middle). The spacing between the type and n' +
+              'ame will be preserved, if possible. To format '#13'references separa' +
+              'tely use the following align-reference option.'
+            Style = csDropDownList
+            ItemHeight = 13
+            ItemIndex = 0
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 8
+            Text = 'None'
+            OnChange = ComboBoxPointerAlignChange
+            Items.Strings = (
+              'None'
+              'Type'
+              'Middle'
+              'Name')
           end
         end
       end
     end
-    object TabSheet4: TTabSheet
+    object TSCodeResources: TTabSheet
       Caption = 'Code Resources'
       ImageIndex = 3
       object GroupBox8: TGroupBox

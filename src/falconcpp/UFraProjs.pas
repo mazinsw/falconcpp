@@ -4,13 +4,12 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, RzTabs, StdCtrls, ExtCtrls, ImgList, ComCtrls;
+  Dialogs, StdCtrls, ExtCtrls, ImgList, ComCtrls, ModernTabs;
 
 type
   TFraProjs = class(TFrame)
     PanelControls: TPanel;
     GrBoxDesc: TGroupBox;
-    PageControl: TRzPageControl;
     ImageList: TImageList;
     MemoDesc: TMemo;
     ImageProj: TImage;
@@ -19,13 +18,15 @@ type
     LblWidz: TLabel;
     Panel2: TPanel;
     Bevel1: TBevel;
+    PageControl: TModernPageControl;
     procedure ProjectListSelectItem(Sender: TObject; Item: TListItem;
       Selected: Boolean);
     function GetListViewOfSheet(SheetCaption: String): TListView;
-    procedure PageControlPageChange(Sender: TObject);
     procedure ProjectListDblClick(Sender: TObject);
     procedure ProjectListMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
+    procedure PageControlPageChange(Sender: TObject;
+      TabIndex: Integer);
   private
     { Private declarations }
   public
@@ -87,38 +88,6 @@ begin
       if (FrmNewProj.Page = pwProj) then
         FrmNewProj.BtnFnsh.Enabled := Selected;
     end;
-  end;
-end;
-
-procedure TFraProjs.PageControlPageChange(Sender: TObject);
-var
-  Tmplt: TTemplate;
-  ListV: TListView;
-begin
-  if Assigned(FrmNewProj) and Assigned(PageControl.ActivePage) then
-  begin
-    ListV := TProjectsSheet(PageControl.ActivePage).ListView;
-    if not (ListV.SelCount > 0) then
-    begin
-      ImageProj.Picture := nil;
-      LastItemIndex := -1;
-      MemoCap.Clear;
-      MemoDesc.Clear;
-    end
-    else
-    begin
-      Tmplt := TTemplate(ListV.Selected.Data);
-      MemoCap.Text := Tmplt.Caption;
-      MemoDesc.Text := Tmplt.Description;
-      LastItemIndex := ListV.Selected.Index;
-      if Assigned(Tmplt.Icon) then
-        ImageProj.Picture.Icon := Tmplt.Icon
-      else
-        ImageProj.Picture.Icon.LoadFromStream(
-          TResourceStream.Create(HInstance, 'ICONFAL', RT_RCDATA));
-    end;
-    FrmNewProj.BtnProx.Enabled := (ListV.SelCount > 0);
-    FrmNewProj.BtnFnsh.Enabled := (ListV.SelCount > 0);
   end;
 end;
 
@@ -217,6 +186,39 @@ begin
               TResourceStream.Create(HInstance, 'ICONFAL', RT_RCDATA));
         end;
     end;
+  end;
+end;
+
+procedure TFraProjs.PageControlPageChange(Sender: TObject;
+  TabIndex: Integer);
+var
+  Tmplt: TTemplate;
+  ListV: TListView;
+begin
+  if Assigned(FrmNewProj) and Assigned(PageControl.ActivePage) then
+  begin
+    ListV := TProjectsSheet(PageControl.ActivePage).ListView;
+    if not (ListV.SelCount > 0) then
+    begin
+      ImageProj.Picture := nil;
+      LastItemIndex := -1;
+      MemoCap.Clear;
+      MemoDesc.Clear;
+    end
+    else
+    begin
+      Tmplt := TTemplate(ListV.Selected.Data);
+      MemoCap.Text := Tmplt.Caption;
+      MemoDesc.Text := Tmplt.Description;
+      LastItemIndex := ListV.Selected.Index;
+      if Assigned(Tmplt.Icon) then
+        ImageProj.Picture.Icon := Tmplt.Icon
+      else
+        ImageProj.Picture.Icon.LoadFromStream(
+          TResourceStream.Create(HInstance, 'ICONFAL', RT_RCDATA));
+    end;
+    FrmNewProj.BtnProx.Enabled := (ListV.SelCount > 0);
+    FrmNewProj.BtnFnsh.Enabled := (ListV.SelCount > 0);
   end;
 end;
 

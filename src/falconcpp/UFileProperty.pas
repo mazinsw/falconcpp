@@ -4,9 +4,9 @@ interface
 
 uses
   Windows, SysUtils, IniFiles, Forms, Graphics, Classes, Dialogs,
-  Menus, RzCommon, RzTabs, ComCtrls, Controls, Registry, ShellApi,
+  Menus, ComCtrls, Controls, Registry, ShellApi,
   SynMemo, SynEdit, XMLDoc, XMLIntf, SynEditHighlighter, SynEditKeyCmds,
-  Makefile, Breakpoint, UTemplates;
+  Makefile, Breakpoint, UTemplates, ModernTabs;
 
 const
   FILE_TYPE_PROJECT = 1;
@@ -99,7 +99,7 @@ type
     FBreakpoint: TBreakpointList;
     function GetCaption: String;
     function GetNode: TTreeNode;
-    function GetEditor: TRzPageControl;
+    function GetEditor: TModernPageControl;
     function GetProject: TProjectProperty;
     function GetModified: Boolean;
     procedure SetProject(Value: TProjectProperty);
@@ -108,7 +108,7 @@ type
   public
     function DeleteOfDisk: Boolean;
     function Delete: Boolean;
-    function Edit: TFilePropertySheet;
+    function Edit(SelectTab: Boolean = True): TFilePropertySheet;
     function Editing: Boolean;
     function ViewPage: Boolean;
     function Rename(new_name: String): Boolean;
@@ -136,7 +136,7 @@ type
     property SavedInto: Boolean read FSavedInto write FSavedInto;
     property Saved: Boolean read FSaved write FSaved;
     property Node: TTreeNode read GetNode;
-    property PageCtrl: TRzPageControl read GetEditor;
+    property PageCtrl: TModernPageControl read GetEditor;
     property Project: TProjectProperty read GetProject write SetProject;
     property Text: TStrings read FText;
     property Breakpoint: TBreakpointList read FBreakpoint;
@@ -166,11 +166,12 @@ type
     FIcon: TIcon;
     FAutoIncBuild: Boolean;
     FPropertyChanged: Boolean;
-    FCompPropChgd: Boolean;
+    FCompilerPropertyChanged: Boolean;
     FDebugging: Boolean;
     FVersion: TVersionInfo;
     FBreakpointChanged: Boolean;
     FBreakpointCursor: TBreakpoint;
+    FForceClean: Boolean;//for header changes
     procedure SetIcon(Value: TIcon);
   public
     property TemplateResources: TTemplateID read FTemplateResources
@@ -181,7 +182,10 @@ type
     destructor Destroy; override;
     function SaveAll(SavePrjFile: Boolean = False): Boolean;
     function CloseAll: Boolean;
+    function GetFileByPathName(const RelativeName: String): TFileProperty;
     function LoadFromFile(const AFileName: String): Boolean;
+    function LoadLayout: Boolean;
+    function SaveLayout: Boolean;
     function SaveToFile(const AFileName: String): Boolean;
     function GetResource(Res: TStrings): Boolean;
     function GetFiles(AllTypes: Boolean = False;
@@ -196,6 +200,7 @@ type
     function GetBreakpointLists(List: TStrings): Boolean;
     function HasBreakpoint: Boolean;
   published
+    property ForceClean: Boolean read FForceClean write FForceClean;
     property Debugging: Boolean read FDebugging write FDebugging;
     property Libs: String read FLibs write FLibs;
     property Flags: String read FFlags write FFlags;
@@ -208,7 +213,8 @@ type
     property AutoIncBuild: Boolean read FAutoIncBuild write FAutoIncBuild;
     property PropertyChanged: Boolean read FPropertyChanged write FPropertyChanged;
     property BreakpointChanged: Boolean read FBreakpointChanged write FBreakpointChanged;
-    property CompilePropertyChanged: Boolean read FCompPropChgd write FCompPropChgd;
+    property CompilePropertyChanged: Boolean read FCompilerPropertyChanged
+      write FCompilerPropertyChanged;
     property AppType: Integer read FAppType write FAppType;
     property CompilerType: Integer read FCompilerType write FCompilerType;
     property IncludeVersionInfo: Boolean read FIncludeInfo write FIncludeInfo;
@@ -223,7 +229,7 @@ type
   end;
 
 
-  TProjectsSheet = class(TRzTabSheet)
+  TProjectsSheet = class(TModernTabSheet)
   private
     FListView: TListView;
   public
@@ -232,7 +238,7 @@ type
     property ListView: TListView read FListView;
   end;
 
-  TPropertySheet = class(TRzTabSheet)
+  TPropertySheet = class(TModernTabSheet)
   private
     FSheetType: Integer;
   public
@@ -247,7 +253,8 @@ type
     procedure TextEditorMouseDown(Sender: TObject;
       Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
   public
-    constructor CreateEditor(Node: TTreeNode; PageCtrl: TRzPageControl);
+    constructor CreateEditor(Node: TTreeNode; PageCtrl: TModernPageControl;
+      SelectTab: Boolean = True);
     destructor Destroy; override;
     property Memo: TSynMemo read FSynMemo;
     property Node: TTreeNode read GetNode;
@@ -296,9 +303,9 @@ begin
   Result := TTreeNode(FNode);
 end;
 
-function TFileProperty.GetEditor: TRzPageControl;
+function TFileProperty.GetEditor: TModernPageControl;
 begin
-  Result := TRzPageControl(FEditor);
+  Result := TModernPageControl(FEditor);
 end;
 
 //partial
@@ -349,7 +356,9 @@ begin
   begin
     Text.LoadFromFile(GetCompleteFileName);
     if Editing and GetSheet(sheet) then
+    begin
       sheet.Memo.Text := Text.Text;
+    end;
     UpdateDate;
   end;
 end;
@@ -525,7 +534,7 @@ begin
   end;
 end;
 
-function TFileProperty.Edit: TFilePropertySheet;
+function TFileProperty.Edit(SelectTab: Boolean): TFilePropertySheet;
 var
   Sheet: TFilePropertySheet;
 begin
@@ -537,7 +546,7 @@ begin
       Sheet.Memo.SetFocus;
     Exit;
   end;
-  Sheet := TFilePropertySheet.CreateEditor(Node, PageCtrl);
+  Sheet := TFilePropertySheet.CreateEditor(Node, PageCtrl, SelectTab);
   Sheet.Caption := Caption;
   Sheet.ImageIndex := FILE_IMG_LIST[FileType];
   case FileType of
@@ -658,53 +667,41 @@ end;
 function TFileProperty.GetModified: Boolean;
 var
   FileDate: TDateTime;
-  TxtModified: Boolean;
   Sheet: TFilePropertySheet;
   ProjProp: TProjectProperty;
 begin
-  TxtModified := False;
-
   if (FileType = FILE_TYPE_FOLDER) then
   begin
     FModified := not DirectoryExists(GetCompleteFileName);
     Result := FModified;
     Exit;
   end;
-
   if (FileType = FILE_TYPE_PROJECT) then
   begin
     ProjProp := TProjectProperty(Self);
     FModified := ProjProp.PropertyChanged or ProjProp.FileChangedInDisk;
     Result := FModified;
     if ProjProp.PropertyChanged then
-    begin
       IsNew := False;
-    end;
     Exit;
   end;
-
   //modification in text
   if GetSheet(Sheet) then
-  begin
-    if (Copy(Text.Text, Length(Text.Text) - 1, 2) = NEW_LINE) then
-      TxtModified := (CompareStr(Text.Text, Sheet.Memo.Text + NEW_LINE) <> 0)
-    else
-      TxtModified := (CompareStr(Text.Text, Sheet.Memo.Text) <> 0);
-  end;
-
-  FModified := TxtModified;
-  //don't need more verify if TxtModified
-  if TxtModified then
+    FModified := Sheet.Memo.Modified
+  else
+    FModified := False;
+  //don't need more verify
+  if FModified then
   begin
     Result := True;
     IsNew := False;
     Exit;
   end;
-
+  //new or empty file
   if not IsNew and not Saved then
   begin
     if Self = Project then
-      IsNew := (Length(Text.Text) = 0)
+      IsNew := (Text.Text = '')
     else
       IsNew := not SavedInto;
   end;
@@ -719,8 +716,9 @@ begin
       FModified := (FileDate <> FFileDateTime);
     end;
   end;
-
-  if FModified then Project.Modified := True;
+  //set project modified?
+  if FModified then
+    Project.Modified := True;
   Result := FModified;
 end;
 
@@ -731,9 +729,9 @@ begin
   Result := False;
   if GetSheet(Sheet) then
   begin
-    if (Sheet.GetTabIndex = Pred(GetEditor.PageCount ))
-        and (Sheet.GetTabIndex > 0) then
-      GetEditor.ActivePageIndex := Sheet.GetTabIndex - 1;
+    if (Sheet.PageIndex = Pred(GetEditor.PageCount ))
+        and (Sheet.PageIndex > 0) then
+      GetEditor.ActivePageIndex := Sheet.PageIndex - 1;
     Sheet.Free;
     if not (GetEditor.PageCount > 0) then GetEditor.Hide;
     Result := True;
@@ -743,73 +741,70 @@ end;
 function TFileProperty.Save: Boolean;
 var
   Sheet: TFilePropertySheet;
+  CanSaveFile: Boolean;
 begin
-  if Project.Saved then FSaved := True;
+  if Project.Saved then
+    FSaved := True;
+  CanSaveFile := False;
   if FSaved then
   begin
     if (FileType <> FILE_TYPE_FOLDER) then
     begin
-      if Modified or not FileExists(GetCompleteFileName) or
-         FileChangedInDisk then
-      begin
-        Project.Compiled := False;
-        if FModified then SavedInto := True;
-        if GetSheet(Sheet) then
-          Text.Assign(Sheet.Memo.Lines);
-        if (FileType <> FILE_TYPE_PROJECT) then
-        begin
-          Project.Modified := False;
-          Text.SaveToFile(GetCompleteFileName);
-        end
-        else
-        begin
-          TProjectProperty(Self).PropertyChanged := False;
-          TProjectProperty(Self).SaveToFile(GetCompleteFileName);
-        end;
-        FFileDateTime := FileDateTime(GetCompleteFileName);
-      end;
+      if Modified or not FileExists(GetCompleteFileName) or FileChangedInDisk then
+        CanSaveFile := True;
     end
     else
       if not DirectoryExists(GetCompleteFileName) then
         CreateDir(GetCompleteFileName);
   end
   else
-  begin
+  begin//internal file
     if (FileType <> FILE_TYPE_FOLDER) then
     begin
       if Modified or not FileExists(GetCompleteFileName) or
          FileChangedInDisk or (IsNew and
           (DateOfFile <> FileDateTime(GetCompleteFileName))) then
       begin
-        Project.Compiled := False;
-        if FModified then
-        begin
-          SavedInto := True;
-        end;
-        if GetSheet(Sheet) then
-          Text.Assign(Sheet.Memo.Lines);
-        if (FileType <> FILE_TYPE_PROJECT) then
-          Text.SaveToFile(GetCompleteFileName)
-        else
-        begin
-          TProjectProperty(Self).PropertyChanged := False;
-          TProjectProperty(Self).SaveToFile(GetCompleteFileName);
-        end;
-        FFileDateTime := FileDateTime(GetCompleteFileName);
+        CanSaveFile := True;
       end;
     end
     else
       if not DirectoryExists(GetCompleteFileName) then
           CreateDir(GetCompleteFileName);
   end;
+  if CanSaveFile then
+  begin
+    Project.Compiled := False;
+    if FModified then
+        SavedInto := True;
+    if GetSheet(Sheet) then
+    begin
+      Text.Assign(Sheet.Memo.Lines);
+      sheet.Memo.Modified := False;
+    end;
+    if (FileType <> FILE_TYPE_PROJECT) then
+    begin
+      if FSaved then
+        Project.Modified := False;
+      if FileType = FILE_TYPE_H then
+        Project.ForceClean := True;
+      Text.SaveToFile(GetCompleteFileName);
+    end
+    else
+    begin
+      TProjectProperty(Self).PropertyChanged := False;
+      TProjectProperty(Self).SaveToFile(GetCompleteFileName);
+    end;
+    FFileDateTime := FileDateTime(GetCompleteFileName);
+  end;
   FModified := False;
-  //update form main
+  //update main form 
   with FrmFalconMain do
   begin
     if GetSheet(Sheet) then
     begin
-      if Config.Editor.HigtCurLine then
-        Sheet.Memo.ActiveLineColor := Config.Editor.CurLnColor
+      if Config.Editor.HighligthCurrentLine then
+        Sheet.Memo.ActiveLineColor := Config.Editor.CurrentLineColor
       else
         Sheet.Memo.ActiveLineColor := clNone;
       FileSave.Enabled := False;
@@ -817,7 +812,6 @@ begin
       Sheet.Caption := GetCaption;
     end;
   end;
-
   Result := True;
 end;
 
@@ -825,6 +819,7 @@ end;
 constructor TProjectProperty.Create(Editor, Node: Pointer);
 begin
   inherited Create(Editor, Node);
+  FForceClean := False;//first compilation do clean?
   FVersion := TVersionInfo.Create;
   FVersion.LanguageID := GetSystemDefaultLangID;
   FVersion.CharsetID := $04E4;
@@ -836,11 +831,10 @@ begin
   FDelMakAfter := True;
   FDelResAfter := True;
   FIcon := nil;
-  //FEnableTheme := True;
   FCompiled := False;
   FCompilerType := COMPILER_CPP;
   FPropertyChanged := False;
-  FCompPropChgd := False;
+  FCompilerPropertyChanged := False;
   FMinGW := '$(MINGW_PATH)';
 end;
 
@@ -938,17 +932,17 @@ function TProjectProperty.LoadFromFile(const AFileName: String): Boolean;
   procedure LoadFiles(XMLNode: IXMLNode; Parent: TFileProperty);
   var
     Temp: IXMLNode;
-    STemp, SHmn: String;
+    NodeFileName, S: String;
     FileProp: TFileProperty;
   begin
     Temp := XMLNode.ChildNodes.First;
     while (Temp <> nil) do
     begin
-      STemp := Temp.Attributes['Name'];
+      NodeFileName := Temp.Attributes['Name'];
       if (Temp.NodeName = 'Folder') then
       begin
-        FileProp := GetFileProperty(FILE_TYPE_FOLDER, NO_COMPILER, STemp, STemp,
-                    '', '', Parent);
+        FileProp := NewFileProperty(FILE_TYPE_FOLDER, NO_COMPILER, NodeFileName,
+          NodeFileName, '', '', Parent, True, False);
         FileProp.Modified := False;
         FileProp.Saved := True;
         FileProp.IsNew := False;
@@ -956,23 +950,27 @@ function TProjectProperty.LoadFromFile(const AFileName: String): Boolean;
       end
       else if (Temp.NodeName = 'File') then
       begin
-        SHmn := GetTagProperty(Temp, 'Opened', 'Value');
-        if(Length(SHmn) = 0) then
-          SHmn := Temp.Attributes['Open'];
-        FileProp := GetFileProperty(GetFileType(STemp),
-                    GetCompiler(GetFileType(STemp)), STemp,
-                    RemoveFileExt(STemp), ExtractFileExt(STemp), '', Parent);
-        STemp := FileProp.GetCompleteFileName;
-        if FileExists(STemp) then
+        FileProp := NewFileProperty(GetFileType(NodeFileName),
+                    GetCompiler(GetFileType(NodeFileName)), NodeFileName,
+                    RemoveFileExt(NodeFileName), ExtractFileExt(NodeFileName),
+                    '', Parent, True, False);
+        NodeFileName := FileProp.GetCompleteFileName;
+        if FileExists(NodeFileName) then
         begin
-          FileProp.Text.LoadFromFile(STemp);
-          FileProp.DateOfFile := FileDateTime(STemp);
+          FileProp.Text.LoadFromFile(NodeFileName);
+          FileProp.DateOfFile := FileDateTime(NodeFileName);
           FileProp.Saved := True;
           FileProp.IsNew := False;
           FileProp.Modified := False;
+        end
+        else
+        begin
+          //file not found
+          S := StringOfChar('*', Length(NodeFileName) div 2);
+          FileProp.Text.Add('/**' + S + ' WARNING file not found *' + S + '**/');
+          FileProp.Text.Add('/************** ' + NodeFileName + ' **************/');
+          FileProp.Text.Add('/**' + S + '*************************' + S + '**/');
         end;
-        if HumanToBool(SHmn) then
-          FileProp.Edit;
       end;
       Temp := Temp.NextSibling;
     end;
@@ -989,6 +987,7 @@ begin
   try
     XMLDoc.LoadFromFile(AFileName);
   except
+    XMLDoc.Free;
     Exit;
   end;
   XMLDoc.Options := XMLDoc.Options + [doNodeAutoIndent];
@@ -1041,7 +1040,7 @@ begin
   FLibs := GetTagProperty(ProjNode, 'Libs', 'Value');
   FFlags := GetTagProperty(ProjNode, 'Flags', 'Value');
   FTarget := GetTagProperty(ProjNode, 'Target', 'Value');
-  FCmdLine := GetTagProperty(ProjNode, 'ComandLine', 'Value');
+  FCmdLine := GetTagProperty(ProjNode, 'CommandLine', 'Value');
   FCompOpt := GetTagProperty(ProjNode, 'CompilerOptions', 'Value');
   Temp := UpperCase(GetTagProperty(ProjNode, 'DeleteObjectsBefore', 'Value'));
   FDelObjPrior := HumanToBool(Temp);
@@ -1093,6 +1092,349 @@ begin
   Result := True;
 end;
 
+
+function TProjectProperty.GetFileByPathName(const RelativeName: String): TFileProperty;
+var
+  Temp, S: String;
+  Parent: TFileProperty;
+  I: Integer;
+begin
+  Result := nil;
+  Parent := Self;
+  Temp := RelativeName;
+  while Temp <> '' do
+  begin
+    S := Temp;
+    I := Pos('\', Temp);
+    if I = 0 then
+      I := Pos('/', Temp);
+    if I > 0 then
+    begin
+      S := Copy(S, 1, I - 1);
+      System.Delete(Temp, 1, I);
+    end
+    else
+      Temp := '';
+    if not Parent.FindFile(S, Parent) then
+    begin
+      Result := nil;
+      Exit;
+    end;
+    Result := Parent;
+  end;
+end;
+
+function TProjectProperty.LoadLayout: Boolean;
+
+  function GetTagProperty(Node: IXMLNode; Tag, Attribute: String;
+    Default: String = ''): String;
+  var
+    Temp: IXMLNode;
+  begin
+    Temp := Node.ChildNodes.FindNode(Tag);
+    if (Temp <> nil) then
+      Result := Temp.Attributes[Attribute]
+    else
+      Result := Default;
+  end;
+
+  function GetPageCount: Integer;
+  begin
+    Result := FrmFalconMain.PageControlEditor.PageCount
+  end;
+  
+var
+  XMLDoc: TXMLDocument;
+  Node, FoldersNode, FilesNode, LytNode: IXMLNode;
+  Temp, S, LytFileName: String;
+  TopIndex, TopLine, Tabpos: Integer;
+  FileProp: TFileProperty;
+  sheet: TFilePropertySheet;
+  CaretXY, BlockS_or_E: TBufferCoord;
+  //List: TStrings; //for unascendent layout file
+begin
+  Result := False;
+  LytFileName := ChangeFileExt(GetCompleteFileName, '.layout');
+  if not FileExists(LytFileName) then
+    Exit;
+  XMLDoc := TXMLDocument.Create(FrmFalconMain);
+  try
+    XMLDoc.LoadFromFile(LytFileName);
+  except
+    XMLDoc.Free;
+    Exit;
+  end;
+  XMLDoc.Options := XMLDoc.Options + [doNodeAutoIndent];
+  XMLDoc.NodeIndentStr := '    ';
+
+  //tag project
+  LytNode := XMLDoc.ChildNodes.FindNode('Layout');
+  if (LytNode = nil) then
+  begin
+    XMLDoc.Free;
+    Exit;
+  end;
+  //tag files
+  FilesNode := LytNode.ChildNodes.FindNode('Files');
+  if (FilesNode <> nil) then
+  begin
+    FrmFalconMain.HandlingTabs := True;
+    TopIndex := 0;
+    Node := FilesNode.ChildNodes.First;
+    while Node <> nil do
+    begin
+      if CompareText(Node.NodeName, 'File') = 0 then
+      begin
+        if not Node.HasAttribute('Name') then
+        begin
+          Node := Node.NextSibling;
+          Continue;
+        end;
+        S := Node.Attributes['Name'];
+        FileProp := GetFileByPathName(S);
+        if not Assigned(FileProp) then
+        begin
+          Node := Node.NextSibling;
+          Continue;
+        end;
+        sheet := FileProp.Edit(False);
+        Temp := Node.Attributes['Tabpos'];
+        //start from last tab
+        Tabpos := StrToIntDef(Temp, 1);
+        if Tabpos < 1 then
+          Tabpos := 1;
+        //invalid tab position
+        if Tabpos > GetPageCount then
+        begin
+          //organize after
+          //List.addObject(IntToStr(Tabpos), FileProp ? sheet); comment line down
+          Tabpos := GetPageCount;
+        end;
+        sheet.PageIndex := Tabpos - 1;
+        Temp := Node.Attributes['Top'];
+        if HumanToBool(Temp) then
+        begin
+          TopIndex := Tabpos;
+        end;
+        Temp := GetTagProperty(Node, 'Cursor', 'Line', '1');
+        CaretXY.Line := StrToIntDef(Temp, 1);
+        if CaretXY.Line < 1 then
+          CaretXY.Line := 1;
+        Temp := GetTagProperty(Node, 'Cursor', 'Column', '1');
+        CaretXY.Char := StrToIntDef(Temp, 1);
+        if CaretXY.Char < 1 then
+          CaretXY.Char := 1;
+        sheet.Memo.CaretXY := CaretXY;
+        if Node.ChildNodes.FindNode('Selection') <> nil then
+        begin
+          Temp := GetTagProperty(Node, 'Selection', 'Line', '1');
+          BlockS_or_E.Line := StrToIntDef(Temp, 1);
+          if BlockS_or_E.Line < 1 then
+            BlockS_or_E.Line := 1;
+          Temp := GetTagProperty(Node, 'Selection', 'Column', '1');
+          BlockS_or_E.Char := StrToIntDef(Temp, 1);
+          if BlockS_or_E.Char < 1 then
+            BlockS_or_E.Char := 1;
+          if (BlockS_or_E.Line > CaretXY.Line) or ((BlockS_or_E.Line = CaretXY.Line)
+            and (BlockS_or_E.Char > CaretXY.Char)) then
+          begin
+            sheet.Memo.BlockBegin := CaretXY;
+            sheet.Memo.BlockEnd := BlockS_or_E;
+          end
+          else
+          begin
+            sheet.Memo.BlockBegin := BlockS_or_E;
+            sheet.Memo.BlockEnd := CaretXY;
+          end;
+        end;
+        Temp := Node.Attributes['TopLine'];
+        TopLine := StrToIntDef(Temp, 1);
+        if TopLine < 1 then
+          TopLine := 1;
+        sheet.Memo.TopLine := TopLine;
+      end;
+      Node := Node.NextSibling;
+    end;
+    if TopIndex > 0 then
+      FrmFalconMain.PageControlEditor.ActivePageIndex := TopIndex - 1
+    else if (FrmFalconMain.PageControlEditor.ActivePageIndex < 0) and
+      (GetPageCount > 0) then
+      FrmFalconMain.PageControlEditor.ActivePageIndex := 0;
+    //update grayed project and outline
+    FrmFalconMain.HandlingTabs := False;
+    FrmFalconMain.PageControlEditorPageChange(FrmFalconMain.PageControlEditor,
+      FrmFalconMain.PageControlEditor.ActivePageIndex);
+  end;
+  //load expanded folders
+  FoldersNode := LytNode.ChildNodes.FindNode('Folders');
+  if (FoldersNode <> nil) then
+  begin
+    Node := FoldersNode.ChildNodes.First;
+    while Node <> nil do
+    begin
+      S := Node.Attributes['Name'];
+      FileProp := GetFileByPathName(S);
+      if Assigned(FileProp) then
+      begin
+        Temp := Node.Attributes['Expanded'];
+        if FileProp.FileType = FILE_TYPE_FOLDER then
+        begin
+          if HumanToBool(Temp) then
+            FileProp.Node.Expanded := True;
+        end;
+      end;
+      Node := Node.NextSibling;
+    end;
+  end;
+  XMLDoc.Free;
+  Result := True;
+end;
+
+function TProjectProperty.SaveLayout: Boolean;
+
+var
+  pageIndex, FilesOpenCount, FoldersExpanded: Integer;
+  FileList, FolderList: TStrings;
+
+  procedure AddFile(const RelFileName: String; sheet: TFilePropertySheet);
+  var
+    I, Index, pi: Integer;
+  begin
+    Index := 0;
+    for I := 0 to FileList.Count - 1 do
+    begin
+      pi := TFilePropertySheet(FileList.Objects[I]).PageIndex;
+      if pi > sheet.PageIndex then
+      begin
+        Index := I;
+        Break;
+      end;
+      if I = FileList.Count - 1 then
+        Index := I + 1;
+    end;
+    FileList.InsertObject(Index, RelFileName, sheet)
+  end;
+
+  procedure SetTagProperty(Node: IXMLNode; Tag, Attribute, Value: String);
+  var
+    Temp: IXMLNode;
+  begin
+    Temp := Node.ChildNodes.FindNode(Tag);
+    if (Temp = nil) then
+      Temp := Node.AddChild(Tag);
+    Temp.Attributes[Attribute] := Value;
+  end;
+
+  procedure AddFiles(Parent: TFileProperty);
+  var
+    I: Integer;
+    FileProp: TFileProperty;
+    ProjPath, RelFileName: String;
+    sheet: TFilePropertySheet;
+  begin
+    ProjPath := ExtractFilePath(GetCompleteFileName);
+    for I:= 0 to Pred(Parent.Node.Count) do
+    begin
+      FileProp := TFileProperty(Parent.Node.Item[I].Data);
+      RelFileName := ExtractRelativePath(ProjPath, FileProp.GetCompleteFileName);
+      if (FileProp.FileType = FILE_TYPE_FOLDER) then
+      begin
+        RelFileName := ExcludeTrailingPathDelimiter(RelFileName);
+        if FileProp.Node.Expanded then
+        begin
+          Inc(FoldersExpanded);
+          FolderList.AddObject(RelFileName, FileProp.Node);
+        end;
+        AddFiles(FileProp);
+      end
+      else if FileProp.GetSheet(sheet) then
+      begin
+        Inc(FilesOpenCount);
+        AddFile(RelFileName, sheet);
+      end;
+    end;
+  end;
+
+var
+  XMLDoc: TXMLDocument;
+  Temp, Node, LytNode: IXMLNode;
+  I: Integer;
+  BoolStr: String;
+  sheet: TFilePropertySheet;
+begin
+  XMLDoc := TXMLDocument.Create(FrmFalconMain);
+  XMLDoc.Active := True;
+  XMLDoc.Version := '1.0';
+  XMLDoc.Options := XMLDoc.Options + [doNodeAutoIndent];
+  XMLDoc.Encoding := 'ISO-8859-1';
+  XMLDoc.NodeIndentStr := '    ';
+
+  LytNode := XMLDoc.AddChild('Layout');
+  pageIndex := FrmFalconMain.PageControlEditor.ActivePageIndex;
+  FilesOpenCount := 0;
+  FileList := TStringList.Create;
+  FoldersExpanded := 0;
+  FolderList := TStringList.Create;
+  //get files
+  AddFiles(Self);
+  //end get files
+  if FileList.Count > 0 then
+  begin
+    Node := LytNode.AddChild('Files');
+    for I := 0 to FileList.Count - 1 do
+    begin
+      sheet := TFilePropertySheet(FileList.Objects[I]);
+      Temp := Node.AddChild('File');
+      Temp.Attributes['Name'] := FileList.Strings[I];
+      BoolStr := BoolToHuman(pageIndex = sheet.PageIndex);
+      Temp.Attributes['Top'] := BoolStr;
+      Temp.Attributes['Tabpos'] := IntToStr(sheet.PageIndex + 1);
+      Temp.Attributes['TopLine'] := IntToStr(sheet.Memo.TopLine);
+      SetTagProperty(Temp, 'Cursor', 'Line', IntToStr(sheet.Memo.CaretY));
+      SetTagProperty(Temp, 'Cursor', 'Column', IntToStr(sheet.Memo.CaretX));
+      if sheet.Memo.SelAvail then
+      begin
+        if (sheet.Memo.BlockBegin.Line = sheet.Memo.CaretXY.Line) and
+           (sheet.Memo.BlockBegin.Char = sheet.Memo.CaretXY.Char) then
+        begin
+          SetTagProperty(Temp, 'Selection', 'Line', IntToStr(sheet.Memo.BlockEnd.Line));
+          SetTagProperty(Temp, 'Selection', 'Column', IntToStr(sheet.Memo.BlockEnd.Char));
+        end
+        else
+        begin
+          SetTagProperty(Temp, 'Selection', 'Line', IntToStr(sheet.Memo.BlockBegin.Line));
+          SetTagProperty(Temp, 'Selection', 'Column', IntToStr(sheet.Memo.BlockBegin.Char));
+        end;
+      end;
+    end;
+  end;
+  FileList.Free;
+  if FolderList.Count > 0 then
+  begin
+    Node := LytNode.AddChild('Folders');
+    for I := 0 to FolderList.Count - 1 do
+    begin
+      Temp := Node.AddChild('Folder');
+      Temp.Attributes['Name'] := FolderList.Strings[I];
+      BoolStr := BoolToHuman(True);
+      Temp.Attributes['Expanded'] := BoolStr;
+    end;
+  end;
+  FolderList.Free;
+  try
+    if (FilesOpenCount > 0) or (FoldersExpanded > 0) then
+      XMLDoc.SaveToFile(ChangeFileExt(GetCompleteFileName, '.layout'))
+    else
+      DeleteFile(ChangeFileExt(GetCompleteFileName, '.layout'));
+  except
+    XMLDoc.Free;
+    Result := False;
+    Exit;
+  end;
+  XMLDoc.Free;
+  Result := True;
+end;
+
 function TProjectProperty.SaveToFile(const AFileName: String): Boolean;
 
   procedure SetTagProperty(Node: IXMLNode; Tag, Attribute, Value: String);
@@ -1124,8 +1466,6 @@ function TProjectProperty.SaveToFile(const AFileName: String): Boolean;
       begin
         Temp := XMLNode.AddChild('File');
         Temp.Attributes['Name'] := FileProp.Caption;
-        Temp.Attributes['Open'] := BoolToHuman(FileProp.Editing);
-        //SetTagProperty(Temp, 'Opened', 'Value', BoolToHuman(FileProp.Editing));
       end;
     end;
   end;
@@ -1171,8 +1511,8 @@ begin
   SetTagProperty(ProjNode, 'Libs', 'Value', Libs);
   SetTagProperty(ProjNode, 'Flags', 'Value', Flags);
   SetTagProperty(ProjNode, 'Target', 'Value', Target);
-  SetTagProperty(ProjNode, 'ComandLine', 'Value',
-    StringReplace(CmdLine, '"', #39, [rfReplaceAll]));
+  SetTagProperty(ProjNode, 'CommandLine', 'Value',
+    StringReplace(CmdLine, '"', '''', [rfReplaceAll]));
   SetTagProperty(ProjNode, 'CompilerOptions', 'Value', CompilerOptions);
   Temp := BoolToHuman(DeleteObjsBefore);
   SetTagProperty(ProjNode, 'DeleteObjectsBefore', 'Value', Temp);
@@ -1212,6 +1552,7 @@ begin
     Result := False;
     Exit;
   end;
+  XMLDoc.Free;
   Result := True;
 end;
 
@@ -1262,7 +1603,8 @@ var
   List: TStrings;
 begin
   Result := IsNew;
-  if not IsNew then Exit;
+  if not IsNew then
+    Exit;
   List := GetFiles;
   for I:= 0 to Pred(List.Count) do
     if not TFileProperty(List.Objects[I]).IsNew then
@@ -1373,7 +1715,8 @@ begin
         Res.Add('BEGIN');
         Res.Add('    BLOCK "StringFileInfo"');
         Res.Add('    BEGIN');
-        Res.Add('        BLOCK "041604E4"');
+        Res.Add('        BLOCK "' + IntToHex(FVersion.LanguageID, 4) +
+          IntToHex(FVersion.CharsetID, 4) + '"');
         Res.Add('        BEGIN');
         Res.Add('            VALUE "CompanyName", "' + FVersion.CompanyName + '"');
         Res.Add('            VALUE "FileDescription", "' + FVersion.FileDescription + '"');
@@ -1387,7 +1730,8 @@ begin
         Res.Add('    END');
         Res.Add('    BLOCK "VarFileInfo"');
         Res.Add('    BEGIN');
-        Res.Add('        VALUE "Translation", 0x0416, 0x04E4');
+        Res.Add('        VALUE "Translation", 0x' +
+          IntToHex(FVersion.LanguageID, 4)+', 0x' + IntToHex(FVersion.CharsetID, 4));
         Res.Add('    END');
         Res.Add('END');
       end;
@@ -1416,6 +1760,7 @@ var
   MkRes: Integer;
   Manf: Byte;
   mk: TMakefile;
+  OldDebuggingState: Boolean;
 begin
   Result := False;
   with FrmFalconMain do
@@ -1470,7 +1815,11 @@ begin
     mk.CreateLibrary := (AppType = APPTYPE_LIB);
     mk.CompilerPath := MinGWPath;
     mk.CompilerOptions := CompilerOptions;
+    OldDebuggingState := Debugging;
     Debugging := HasBreakpoint  or BreakpointCursor.Valid;
+    if not OldDebuggingState and Debugging then
+      ForceClean := True;
+    mk.ForceClean := ForceClean;
     BreakpointChanged := False;
     mk.DebugMode := Debugging;
     if Debugging then
@@ -1483,14 +1832,11 @@ begin
     mk.CleanAfter := DeleteObjsAfter;
     MkRes := mk.BuildMakefile;
     mk.Free;
-
-    {MkRes := BuildMakefile(ExtractFilePath(FileName), Flags, Libs, Target,
-               MinGWPath, CompilerOptions, Makefile, DeleteObjsBefore,
-               DeleteObjsAfter, Files, FileContSpc,
-               (CompilerType = COMPILER_CPP), (AppType = APPTYPE_LIB));}
     Files.Free;
     if MkRes = 0 then
     begin
+      ForceClean := False;//WARNING if mingw32-make.exe not complete clean rule
+                          //directives aren't updated
       FrmFalconMain.CompilerCmd.FileName := 'mingw32-make.exe';
       FrmFalconMain.CompilerCmd.Directory := ExtractFilePath(Makefile);
       FrmFalconMain.CompilerCmd.Params := '-f Makefile.mak';
@@ -1569,6 +1915,7 @@ begin
   FListView :=  TListView.Create(Self);
   FListView.Parent := Self;
   FListView.Align := alClient;
+  FListView.BorderStyle := bsNone;
   FListView.DoubleBuffered := True;
   FListView.HideSelection := False;
   FListView.ReadOnly := True;
@@ -1583,14 +1930,16 @@ end;
 
 {TFilePropertySheet}
 constructor TFilePropertySheet.CreateEditor(Node: TTreeNode;
-  PageCtrl: TRzPageControl);
+  PageCtrl: TModernPageControl; SelectTab: Boolean);
 var
   Options: TSynEditorOptions;
 begin
   inherited Create(PageCtrl);
+  ParentBackground := False;
   FNode := Node;
   FSheetType := SHEET_TYPE_FILE;
   FSynMemo :=  TSynMemo.Create(Self);
+  FSynMemo.BorderStyle := bsNone;
   with FrmFalconMain.Config.Editor do
   begin
     Options := FSynMemo.Options;
@@ -1598,8 +1947,8 @@ begin
     if AutoIndent then Include(Options, eoAutoIndent)
     else Exclude(Options, eoAutoIndent);
     //find text at cursor
-    FSynMemo.InsertMode := InsMode;
-    if GrpUndo then Include(Options, eoGroupUndo)
+    FSynMemo.InsertMode := InsertMode;
+    if GroupUndo then Include(Options, eoGroupUndo)
     else Exclude(Options, eoGroupUndo);
     //remove file on close
     if KeepTrailingSpaces then Exclude(Options, eoTabIndent)
@@ -1607,7 +1956,7 @@ begin
 
     if ScrollHint then Exclude(Options, eoShowScrollHint)
     else Include(Options, eoShowScrollHint);
-    if TabIndtUnind then Include(Options, eoTabIndent)
+    if TabIndentUnindent then Include(Options, eoTabIndent)
     else Exclude(Options, eoTabIndent);
     if SmartTabs then Include(Options, eoSmartTabs)
     else Exclude(Options, eoSmartTabs);
@@ -1623,15 +1972,15 @@ begin
     FSynMemo.MaxUndo := MaxUndo;
     FSynMemo.TabWidth := TabWidth;
 
-    FSynMemo.BracketHighlighting := HigtMatch;
-    FSynMemo.BracketHighlight.Foreground := NColor;
-    FSynMemo.BracketHighlight.AloneForeground := EColor;
+    FSynMemo.BracketHighlighting := HighligthMatchBraceParentheses;
+    FSynMemo.BracketHighlight.Foreground := NormalColor;
+    FSynMemo.BracketHighlight.AloneForeground := ErrorColor;
     FSynMemo.BracketHighlight.Style := [fsBold];
     FSynMemo.BracketHighlight.AloneStyle := [fsBold];
-    FSynMemo.BracketHighlight.Background := BColor;
+    FSynMemo.BracketHighlight.Background := BgColor;
 
-    if HigtCurLine then
-      FSynMemo.ActiveLineColor := CurLnColor
+    if HighligthCurrentLine then
+      FSynMemo.ActiveLineColor := CurrentLineColor
     else
       FSynMemo.ActiveLineColor := clNone;
 
@@ -1641,16 +1990,16 @@ begin
     //---------------- Display ---------------------//
     FSynMemo.Font.Name := FontName;
     FSynMemo.Font.Size := FontSize;
-    FSynMemo.Gutter.Width := GutterWdth;
-    if ShowRMargin then
-      FSynMemo.RightEdge := Rmargin
+    FSynMemo.Gutter.Width := GutterWidth;
+    if ShowRightMargin then
+      FSynMemo.RightEdge := RightMargin
     else
       FSynMemo.RightEdge := 0;
     FSynMemo.Gutter.Visible := ShowGutter;
-    FSynMemo.Gutter.ShowLineNumbers := ShowLnNumb;
-    FSynMemo.Gutter.Gradient := GrdGutter;
+    FSynMemo.Gutter.ShowLineNumbers := ShowLineNumber;
+    FSynMemo.Gutter.Gradient := GradientGutter;
     //-------------- Colors -------------------------//
-    
+
     FrmFalconMain.SintaxList.Selected.UpdateEditor(FSynMemo);
     //-------------- Code Resources -----------------//
     FSynMemo.Options := Options;
@@ -1679,8 +2028,10 @@ begin
   FSynMemo.OnGutterClick := FrmFalconMain.TextEditorGutterClick;
   FSynMemo.OnGutterPaint := FrmFalconMain.TextEditorGutterPaint;
   FSynMemo.OnSpecialLineColors := FrmFalconMain.TextEditorSpecialLineColors;
+  //TODO
   PageCtrl.OnPageChange := nil;
-  PageCtrl.ActivePageIndex := PageIndex;
+  if SelectTab then
+    PageCtrl.ActivePageIndex := PageIndex;
   PageCtrl.OnPageChange := FrmFalconMain.PageControlEditorPageChange;
 end;
 

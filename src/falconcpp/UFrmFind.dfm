@@ -278,5 +278,13 @@ object FrmFind: TFrmFind
         TabStop = True
       end
     end
+    object ProgressBarFindFiles: TProgressBar
+      Left = 8
+      Top = 105
+      Width = 516
+      Height = 17
+      TabOrder = 13
+      Visible = False
+    end
   end
 end

@@ -37,7 +37,7 @@ var
 
 implementation
 
-uses UFraProjs, UFraNewOpt, UFrmMain, UUtils, ULanguages, RzTabs,
+uses UFraProjs, UFraNewOpt, UFrmMain, UUtils, ULanguages,
   TokenUtils;
 
 {$R *.dfm}
@@ -403,7 +403,7 @@ begin
         SrcDir := ExtractFilePath(SrcDir);
       end;
       //add file
-      NewFile := GetFileProperty(
+      NewFile := NewFileProperty(
                                  FileType,
                                  GetCompiler(FileType),
                                  SrcFileName,

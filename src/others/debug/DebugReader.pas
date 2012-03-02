@@ -82,20 +82,19 @@ type
     procedure DoOutputWriter;
     procedure DoFinish;
     //***********
-    function IsNumber(const S: String): Boolean;
     function GetLine: String;
     //***********
     procedure ProcessPrint;
     procedure ProcessLocalize;
     procedure ProcessNextLine;
     procedure ProcessNewThread;
-    procedure ProcessWatch;
+//    procedure ProcessWatch;
     procedure ProcessOnBreak;
     procedure ProcessNoSymbol;
     procedure ProcessBreakpoint;
     procedure ProcessTerminate;
     procedure ProcessTerminateCode;
-    procedure ProcessSegmentationFault;
+//    procedure ProcessSegmentationFault;
     procedure ProcessIdle;
     procedure ProcessLanguage;
     procedure ProcessExternalStep;
@@ -386,23 +385,6 @@ begin
     FOnStart(Self);
 end;
 
-function TDebugReader.IsNumber(const S: String): Boolean;
-var
-  ptr: PChar;
-begin
-  ptr := PChar(S);
-  Result := False;
-  if not (ptr^ in  dbgDigitChars + ['b']) then Exit;
-  Inc(ptr);
-  if ptr^ in ['x', 'X'] then Inc(ptr);
-  while (ptr^ <> #0) and (ptr^ in dbgDigitChars + dbgHexChars + ['L']) do
-  begin
-    Result := True;
-    Inc(ptr);
-  end;
-  if ptr^ <> #0 then Result := False;
-end;
-
 function TDebugReader.GetLine: String;
 begin
   Result := '';
@@ -471,11 +453,11 @@ begin
     FOnCommandEvent(Self, dcNewThread, '', regexp.Match[1], 0);
 end;
 
-procedure TDebugReader.ProcessWatch;
+{procedure TDebugReader.ProcessWatch;
 begin
   if Assigned(FOnCommandEvent) then
     FOnCommandEvent(Self, dcWatch, '', regexp.Match[0], 0);
-end;
+end;}
 
 procedure TDebugReader.ProcessOnBreak;
 var
@@ -524,11 +506,11 @@ begin
     FOnCommandEvent(Self, dcTerminate, '', regexp.Match[1], 0);
 end;
 
-procedure TDebugReader.ProcessSegmentationFault;
+{procedure TDebugReader.ProcessSegmentationFault;
 begin
   if Assigned(FOnCommandEvent) then
     FOnCommandEvent(Self, dcSegmentationFault, '', regexp.Match[0], 0);
-end;
+end;}
 
 procedure TDebugReader.ProcessIdle;
 begin

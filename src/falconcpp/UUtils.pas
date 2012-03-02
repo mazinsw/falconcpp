@@ -53,11 +53,11 @@ type
   );
   TExecuteFileOptions = set of TExecuteFileOption;
 
+function GetTickTime(ticks: Cardinal; fmt: String): String;
 function ExecuteFile(Handle: HWND; const Filename, Paramaters,
   Directory: String; Options: TExecuteFileOptions): Integer;
 procedure LoadFontNames(List: TStrings);
 procedure LoadFontSize(FontName: String; List: TStrings);
-procedure ShowLineError(Project: TProjectProperty; Msg: TMinGWMsg);
 procedure BitmapToAlpha(bmp: TBitmap; Color: TColor = clFuchsia);
 function IconToBitmap(const Icon: TIcon):TBitmap;
 Function GetFileVersionA(FileName: String): TVersion;
@@ -79,9 +79,9 @@ function StringToStream(Text: String; Value: TStream): Integer;
 function FileDateTime(const FileName: string): TDateTime;
 function CreateSourceFolder(const Name: String;
   Parent: TFileProperty): TFileProperty;
-function GetFileProperty(FileType, Compiler: Integer; FirstName, BaseName,
-  Ext, FileName: String; OwnerFile: TFileProperty;
-  IsFileProp: Boolean = True): TFileProperty;
+function NewFileProperty(FileType, Compiler: Integer; FirstName, BaseName,
+  Ext, FileName: String; OwnerFile: TFileProperty; IsFileProp: Boolean = True;
+  AutoExpand: Boolean = True): TFileProperty;
 function BrowseDialog(Handle: HWND; const Title: string;
   var Directory: String): Boolean;
 function HumanToBool(Resp: String): Boolean;
@@ -90,9 +90,7 @@ function GetFullFileName(Name: String): String;
 function DoubleQuotedStr(const S: string): string;
 
 function EditorGotoXY(Memo: TSynMemo; X, Y: Integer): Boolean;
-function EditorRangeSelect(Memo: TSynMemo; Row, StartCol,
-  EndCol: Integer; FocusEnd: Boolean = False): Boolean;
-function GetFilePropertyByFileName(FileName: String;
+function SearchFileProperty(FileName: String;
   var FileProp: TFileProperty): Boolean;
 function OpenFile(FileName: String):TProjectProperty;
 function RemoveOption(const S, Options: String): String;
@@ -111,18 +109,15 @@ function IsSubMenu(Value: String): Boolean;
 function GetSubMenu(Value: String): String;
 function FindFiles(Search: String; Finded:TStrings): Boolean; overload;
 function FindFiles(const PathName, FileName : String; List: TStrings): Boolean; overload;
+procedure GetRowColFromCharIndex(SelStart: Integer; Lines: TStrings;
+  var Line, Column: Integer);
 function DOSFileName(FileName: String): String;
 function NextFileName(FirstName, Ext: String; Node: TTreeNode): String;
 function NextProjectName(FirstName, Ext: String; Nodes: TTreeNodes): String;
-//function ResolveSpace(const FileName: String): String;
 function RemoveFileExt(const FileName: String):String;
 function ExtractName(const FileName: String):String;
 function GetFilesByExt(Extension: String; List: TStrings): String;
 procedure SelectFilesByExt(Extensions: array of String; List, OutList: TStrings);
-function BuildMakefile(BaseDir, Flags, Libs, Target, MinGWPath, CompilerOpts,
-  OutFileName: String; DelObjPrior, DelObjAfter: Boolean; Files: TStrings;
-  var FileContSpc: String; TypeIsCPP: Boolean = True;
-  CreateLib: Boolean = False): Integer;
 function IsNumber(Str: String): Boolean;
 
 implementation
@@ -187,72 +182,22 @@ begin
   ReleaseDC(0, DC);
 end;
 
-procedure ShowLineError(Project: TProjectProperty; Msg: TMinGWMsg);
+function GetTickTime(ticks: Cardinal; fmt: String): String;
 var
-  FileProp: TFileProperty;
-  Sheet: TFilePropertySheet;
-  SLine, Temp, MMsg: String;
-  Line, ColS, ColE, Col: Integer;
+  milli, sec{, min, hou^}: Cardinal;
+  S: String;
 begin
-  Line := 0;
-  Col := 0;
-  MMsg := '';
-  if not Assigned(Project) then Exit;
-
-  Temp := ExtractFilePath(Project.FileName);
-  if Assigned(Msg) then
-  begin
-    Line := Msg.Line;
-    Col := Msg.Col;
-    MMsg := Msg.Msg;
-    if Pos('${COMPILER_PATH}', Msg.FileName) > 0 then
-      Temp := StringReplace(Msg.FileName, '${COMPILER_PATH}',
-        FrmFalconMain.Compiler_Path, [])
-    else
-      Temp := Temp + Msg.FileName;
-    Temp := ExpandFileName(Temp);
-  end;
-  if GetFilePropertyByFileName(Temp, FileProp) then
-  begin
-  end
-  else if FileExists(Temp) then
-  begin
-      FileProp := OpenFile(Temp);
-  end
-  else
-    Exit;
-
-  if (Pos(MAKEFILE_MSG[2], MMsg) > 0) then
-    begin
-      FileProp.Node.Owner.Owner.SetFocus;
-      FileProp.Node.Selected := True;
-      FileProp.Node.Focused := True;
-      Exit;
-    end;
-    FileProp.Edit;
-    if FileProp.GetSheet(Sheet) then
-    begin
-      if Line > 0 then
-      begin
-        Sheet.Memo.GotoLineAndCenter(Line);
-        SLine := Sheet.Memo.Lines.Strings[Pred(Line)];
-        SLine := StringReplace(SLine, #9, GetIdent(Sheet.Memo.TabWidth),
-          [rfReplaceAll]);
-        Temp := StringBetween(MMsg, #39, #39, False);
-        if (Length(Temp) > 0) then
-        begin
-          ColS := Pos(Temp, SLine);
-          if (ColS > 0) then
-          begin
-            ColE := ColS + Length(Temp);
-            EditorRangeSelect(Sheet.Memo, Line, ColS, ColE, True);
-          end;
-        end;
-        if Col > 0 then
-          EditorGotoXY(Sheet.Memo, Col, Line);
-        Sheet.Memo.ActiveLineColor := clRed;
-      end;
-    end;
+  milli := ticks mod 1000;
+  ticks := ticks div 1000;
+  sec := ticks mod 60;
+//  ticks := ticks div 60;
+//  min := ticks mod 60;
+//  ticks := ticks div 60;
+//  hour := ticks mod 60;
+  S := Format('%.3f', [milli/1000]);
+  S := Copy(S, Pos(',', S) + 1, MaxInt);
+  Result := Format('%d.%s', [sec, S]);
+  //Result := Format(fmt, [hour, min, sec, milli]);
 end;
 
 procedure BitmapToAlpha(bmp: TBitmap; Color: TColor = clFuchsia);
@@ -1024,9 +969,9 @@ begin
   Parent.Node.Expanded := True;
 end;
 
-function GetFileProperty(FileType, Compiler: Integer; FirstName, BaseName,
-  Ext, FileName: String; OwnerFile: TFileProperty;
-  IsFileProp: Boolean = True): TFileProperty;
+function NewFileProperty(FileType, Compiler: Integer; FirstName, BaseName,
+  Ext, FileName: String; OwnerFile: TFileProperty; IsFileProp: Boolean;
+  AutoExpand: Boolean): TFileProperty;
 var
   Node: TTreeNode;
   NewPrj, Proj: TProjectProperty;
@@ -1106,7 +1051,8 @@ begin
       NewFile.FileName := AName;
       NewFile.FileType := FileType;
       Node.Data := NewFile;
-      OwnerFile.Node.Expanded := True;
+      if AutoExpand or (OwnerFile.FileType = FILE_TYPE_PROJECT) then
+        OwnerFile.Node.Expanded := True;
       Result := NewFile;
     end
     else
@@ -1155,7 +1101,7 @@ end;
 
 function HumanToBool(Resp: String): Boolean;
 begin
-  if (UpperCase(Resp) = 'YES') or (Resp = '1') then
+  if (CompareText(Resp, 'YES') = 0) or (Resp = '1') then
     Result := True
   else
     Result := False;
@@ -1189,33 +1135,18 @@ begin
   Result := (Memo.DisplayX = X) and (Memo.DisplayY = Y);
 end;
 
-function EditorRangeSelect(Memo: TSynMemo; Row, StartCol,
-  EndCol: Integer; FocusEnd: Boolean = False): Boolean;
-var
-  DisplayCoord: TDisplayCoord;
-  CoordS, CoordE: TBufferCoord;
-begin
-  DisplayCoord.Row := Row;
-  DisplayCoord.Column := StartCol;
-  CoordS := Memo.DisplayToBufferPos(DisplayCoord);
-  DisplayCoord.Column := EndCol;
-  CoordE := Memo.DisplayToBufferPos(DisplayCoord);
-  if FocusEnd then
-    EditorGotoXY(Memo, EndCol, Row);
-  Memo.SetCaretAndSelection(Memo.CaretXY, CoordS, CoordE);
-  Result := (Memo.SelLength = (EndCol - StartCol));
-end;
-
-function GetFilePropertyByFileName(FileName: String;
+function SearchFileProperty(FileName: String;
   var FileProp: TFileProperty): Boolean;
 var
   ActFile: TFileProperty;
   I: Integer;
+  Node: TTreeNode;
 begin
   Result := False;
   for I:= 0 to Pred(FrmFalconMain.TreeViewProjects.Items.Count) do
   begin
-    ActFile := TFileProperty(FrmFalconMain.TreeViewProjects.Items.Item[I].Data);
+    Node := FrmFalconMain.TreeViewProjects.Items.Item[I];
+    ActFile := TFileProperty(Node.Data);
     if CompareText(ActFile.GetCompleteFileName, FileName) = 0 then
     begin
       Result := True;
@@ -1231,27 +1162,32 @@ var
   FileType: Integer;
 begin
   FileType := GetFileType(FileName);
-  ProjProp := TProjectProperty(GetFileProperty(FileType,
+  ProjProp := TProjectProperty(NewFileProperty(FileType,
     GetCompiler(FileType),'','','',FileName, nil, False));
-  if (FileType = FILE_TYPE_RC) then
-    ProjProp.Target := RemoveFileExt(ProjProp.Caption) + '.res'
-  else
-  begin
-    if (ProjProp.FileType <> FILE_TYPE_PROJECT) then
-    begin
-      ProjProp.Target := RemoveFileExt(ProjProp.Caption) + '.exe';
-      ProjProp.AppType := APPTYPE_CONSOLE;
-      ProjProp.CompilerOptions := '-Wall -s -O2';
-    end;
-  end;
   ProjProp.Saved := True;
   ProjProp.DateOfFile :=  FileDateTime(ProjProp.FileName);
+
   if (ProjProp.FileType <> FILE_TYPE_PROJECT) then
-    ProjProp.Text.LoadFromFile(ProjProp.FileName)
+  begin
+    if (FileType = FILE_TYPE_RC) then
+      ProjProp.Target := RemoveFileExt(ProjProp.Caption) + '.res'
+    else
+    begin
+      if (ProjProp.FileType <> FILE_TYPE_PROJECT) then
+      begin
+        ProjProp.Target := RemoveFileExt(ProjProp.Caption) + '.exe';
+        ProjProp.AppType := APPTYPE_CONSOLE;
+        ProjProp.CompilerOptions := '-Wall -s -O2';
+      end;
+    end;
+    ProjProp.Text.LoadFromFile(ProjProp.FileName);
+  end
   else
     ProjProp.LoadFromFile(ProjProp.GetCompleteFileName);
   ProjProp.Modified := False;
   ProjProp.IsNew := False;
+  if ProjProp.FileType = FILE_TYPE_PROJECT then
+    ProjProp.LoadLayout;
   Result := ProjProp;
 end;
 
@@ -1269,7 +1205,7 @@ begin
   for I:= Pred(List.Count) downto 0 do
   begin
     Ext := ExtractFileExt(List.Strings[I]);
-    if (UpperCase(Ext) = '.RC') then
+    if CompareText(Ext, '.RC') = 0 then
     begin
       Result := True;
       List.Delete(I);
@@ -1281,18 +1217,20 @@ function NextProjectName(FirstName, Ext: String; Nodes: TTreeNodes): String;
 
   function ExistName(FileName: String): Boolean;
   var
-    I: Integer;
     Caption: String;
+    Node: TTreeNode;
   begin
     Result := False;
-    for I:= 0 to Pred(Nodes.Count) do
+    Node := Nodes.GetFirstNode;
+    while Node <> nil do
     begin
-      Caption := TFileProperty(Nodes.Item[I].Data).Caption;
-      if (Caption = FileName) then
+      Caption := ExtractFileName(TFileProperty(Node.Data).FileName);
+      if CompareText(Caption, FileName) = 0 then
       begin
         Result := True;
         Exit;
       end;
+      Node := Node.getNextSibling;
     end;
   end;
 
@@ -1353,44 +1291,41 @@ begin
   Result := FileName;
 end;
 
+procedure GetRowColFromCharIndex(SelStart: Integer; Lines: TStrings;
+  var Line, Column: Integer);
+var
+  x, y, Chars: integer;
+begin
+  x := 0;
+  y := 0;
+  Chars := 0;
+  while y < Lines.Count do
+  begin
+    x := Length(Lines[y]);
+    if Chars + x + 2 > SelStart then
+    begin
+      x := SelStart - Chars;
+      break;
+    end;
+    Inc(Chars, x + 2);
+    x := 0;
+    Inc(y);
+  end;
+  Column := x + 1;
+  Line := y + 1;
+end;
+
 function DOSFileName(FileName: String): String;
 begin
-  if (Pos(' ', FileName) > 0) then
-  begin
-    Result := ExtractShortPathName(FileName);
-    //if (Length(Result) = 0) then
-      //
-  end
+  if Pos(' ', FileName) > 0 then
+    Result := ExtractShortPathName(FileName)
   else
     Result := FileName;
 end;
 
-{function ResolveSpace(const FileName: String): String;
-begin
-  if (Pos(' ', FileName) > 0) then
-  begin
-    FileName := Trim(FileName);
-    if not (FileName[Length(FileName)] = '"') then
-      FileName := FileName + '"';
-    if not (FileName[1] = '"') then
-      FileName := '"' + FileName;
-    Result := FileName;
-  end
-  else
-    Result := FileName;
-end;}
-
 function RemoveFileExt(const FileName: String):String;
-var
-  I: Integer;
-  S: String;
 begin
-  S := FileName;
-  I := LastDelimiter('.', S);
-  if (I > 0) and (S[I] = '.') then
-    Result := Copy(S, 1, I - 1)
-  else
-    Result := FileName;
+  Result := ChangeFileExt(FileName, '');
 end;
 
 function ExtractName(const FileName: String):String;
@@ -1453,150 +1388,6 @@ begin
       end;
     end;
   end;
-end;
-
-function BuildMakefile(BaseDir, Flags, Libs, Target, MinGWPath, CompilerOpts,
-  OutFileName: String; DelObjPrior, DelObjAfter: Boolean; Files: TStrings;
-  var FileContSpc: String; TypeIsCPP: Boolean = True;
-  CreateLib: Boolean = False): Integer;
-var
-  Makefile, SrcList, ObjList: TStrings;
-  ASources, Sources, Objs, Resource, Temp: String;
-  I: Integer;
-  UsingAFiles: Boolean;
-begin
-  Result := 1;
-  UsingAFiles := False;
-  SrcList := TStringList.Create;
-  ObjList := TStringList.Create;
-  TransformToRelativePath(BaseDir, Files);
-  SelectFilesByExt(['.c', '.cpp', '.cc', '.cxx', '.c++', '.cp'], Files, SrcList);
-  SelectFilesByExt(['.o', '.obj', '.res'], Files, ObjList);
-  Resource := GetFilesByExt('.rc', Files);
-  //process sources files
-  for I:= 0 to Pred(SrcList.Count) do
-  begin
-    Temp := SrcList.Strings[I];
-    Objs := Objs + ' ' + DoubleQuotedStr(ExtractName(Temp) + '.o');
-    Sources := Sources + ' ' + DoubleQuotedStr(ConvertAnsiToOem(Temp));
-    ASources := ASources + ' ' + LinuxSpace(Temp);
-  end;
-  //process resource file
-  if (Length(Trim(Resource)) > 0) then
-    Objs := Objs + ' ' + DoubleQuotedStr(ExtractName(Resource)) + '.res';
-  //process objects files
-  for I:= 0 to Pred(ObjList.Count) do
-  begin
-    Temp := ObjList.Strings[I];
-    if (Pos(ExtractFileName(Temp), Objs) = 0) then
-      Objs := Objs + ' ' + DoubleQuotedStr(Temp);
-  end;
-  SrcList.Free;
-  ObjList.Free;
-  //trim and resolve oem
-  Sources := Trim(Sources);
-  ASources := Trim(ASources);
-  Objs := ConvertAnsiToOem(Trim(Objs));
-  Makefile := TStringList.Create;
-  //if objects only
-
-  if (Length(Sources) > 0) then
-  begin
-    Makefile.Add('FILES =' + Sources);
-    if CompareStr(ASources, Sources) <> 0 then
-    begin
-      Makefile.Add('AFILES=' + ASources);
-      UsingAFiles := True;
-    end;
-  end;
-  Temp := DoubleQuotedStr(ConvertAnsiToOem(Trim(Target)));
-  Makefile.Add('TARGET=' + Temp);
-  Makefile.Add('OBJS  =' + Objs);
-  if (Length(Trim(Resource)) > 0) then
-    Makefile.Add('RES   =' + DoubleQuotedStr(Trim(Resource)));
-  Makefile.Add('');
-  Makefile.Add('MINGW =' + MinGWPath);
-  Makefile.Add('LIBS  = -L"$(MINGW)\lib" ' + Trim(Libs));
-  Makefile.Add('CFLAGS= -I"$(MINGW)\include" ' + Trim(Flags));
-  //if aplication is compiled with c or c++
-  if TypeIsCPP then
-    Makefile.Add('CPP   =g++.exe')
-  else
-    Makefile.Add('CC    =gcc.exe');
-  if (Length(Trim(Resource)) > 0) then
-    Makefile.Add('WNRES =windres.exe');
-  if CreateLib then
-  begin
-    Makefile.Add('AR    =ar.exe');
-    Makefile.Add('RANLIB=ranlib.exe');
-  end;
-  Makefile.Add('');
-  Temp := 'build';
-  if DelObjPrior then Temp := 'clean-before ' + Temp;
-  if DelObjAfter then Temp := Temp + ' clean-after';
-  Makefile.Add('all: ' + Temp);
-  Makefile.Add('');
-  if DelObjPrior then
-  begin
-    Makefile.Add('clean-before:');
-    Makefile.Add(#9 + '@for %%i in ($(OBJS)) do if exist %%i del /f %%i');
-    Makefile.Add('');
-  end;
-  if DelObjAfter then
-  begin
-    Makefile.Add('clean-after:');
-    Makefile.Add(#9 + '@for %%i in ($(OBJS)) do if exist %%i del /f %%i');
-    Makefile.Add('');
-  end;
-  if (Length(Trim(Sources)) > 0) or (Length(Trim(Resource)) > 0) then
-    Makefile.Add('build: compile')
-  else
-    Makefile.Add('build:');
-  if CreateLib then
-  begin
-    Makefile.Add(#9 + '@$(AR) rc $(TARGET) $(OBJS)');
-    Makefile.Add(#9 + '@$(RANLIB) $(TARGET)');
-  end
-  else
-  begin
-    if TypeIsCPP then
-      Makefile.Add(#9 + '@$(CPP) ' + Trim(CompilerOpts) +
-        ' -o $(TARGET) $(OBJS) $(LIBS)')
-    else
-      Makefile.Add(#9 + '@$(CC) ' + Trim(CompilerOpts) +
-        ' -o $(TARGET) $(OBJS) $(LIBS)');
-  end;
-  if (Length(Trim(Sources)) > 0) then
-  begin
-    Makefile.Add('');
-    if UsingAFiles then
-      Makefile.Add('compile: $(AFILES)')
-    else
-      Makefile.Add('compile: $(FILES)');
-    if TypeIsCPP then
-      Makefile.Add(#9 + '@$(CPP) ' + Trim(CompilerOpts) +
-        ' -c $(FILES) $(CFLAGS)')
-    else
-      Makefile.Add(#9 + '@$(CC) ' + Trim(CompilerOpts) +
-        ' -c $(FILES) $(CFLAGS)');
-    if (Length(Trim(Resource)) > 0) then
-      Makefile.Add(#9 + '@$(WNRES) -i $(RES) -J rc -o ' +
-           DoubleQuotedStr(ExtractName(Resource) + '.res') + ' -O coff');
-  end
-  else if (Length(Trim(Resource)) > 0) then
-  begin
-    Makefile.Add('');
-    Makefile.Add('compile: $(RES)');
-    if (Length(Trim(Resource)) > 0) then
-      Makefile.Add(#9 + '@$(WNRES) -i $(RES) -J rc -o ' +
-           DoubleQuotedStr(ExtractName(Resource) + '.res') + ' -O coff');
-  end;
-  try
-    Makefile.SaveToFile(OutFileName);
-  except
-    Result := 3;
-  end;
-  Makefile.Free;
 end;
 
 end.

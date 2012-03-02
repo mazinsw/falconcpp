@@ -7,7 +7,7 @@ uses
   SendData,
   UFrmMain in 'UFrmMain.pas' {FrmFalconMain},
   UConfig in 'UConfig.pas',
-  UFrmSobre in 'UFrmSobre.pas' {frmSobre},
+  UFrmAbout in 'UFrmAbout.pas' {FormAbout},
   UFrmNew in 'UFrmNew.pas' {FrmNewProj},
   UFrmProperty in 'UFrmProperty.pas' {FrmProperty},
   UFrmCompOptions in 'UFrmCompOptions.pas' {FrmCompOptions},
@@ -50,7 +50,9 @@ uses
   TokenUtils in '..\others\cppparser\TokenUtils.pas',
   regexp_tregexpr in '..\others\regexp\regexp_tregexpr.pas',
   UFrmGotoFunction in 'UFrmGotoFunction.pas' {FormGotoFunction},
-  UFrmGotoLine in 'UFrmGotoLine.pas' {FormGotoLine};
+  UFrmGotoLine in 'UFrmGotoLine.pas' {FormGotoLine},
+  HintTree in '..\others\hinttree\HintTree.pas',
+  DebugWatch in '..\others\debug\DebugWatch.pas';
 
 {$R *.res}
 
@@ -94,6 +96,5 @@ begin
   Application.Initialize;
   Application.Title := 'Falcon C++';
   Application.CreateForm(TFrmFalconMain, FrmFalconMain);
-  Application.CreateForm(TfrmSobre, frmSobre);
   Application.Run;
 end.

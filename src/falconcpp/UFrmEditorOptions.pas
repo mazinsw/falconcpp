@@ -89,7 +89,7 @@ type
     TSGeneral: TTabSheet;
     TSDisplay: TTabSheet;
     TSSintax: TTabSheet;
-    TabSheet4: TTabSheet;
+    TSCodeResources: TTabSheet;
     GroupBox1: TGroupBox;
     ChbAutoIndt: TCheckBox;
     ChbUseTabChar: TCheckBox;
@@ -208,17 +208,26 @@ type
     CheckBoxIndentMultLinePreprocessor: TCheckBox;
     LabelBracketsStyle: TLabel;
     ComboBoxBracketStyle: TComboBox;
-    CheckBoxBreakClosingHeaders: TCheckBox;
-    CheckBoxPadEmptyLines: TCheckBox;
+    CheckBoxBreakClosingHeadersBrackets: TCheckBox;
     CheckBoxBreakElseIf: TCheckBox;
+    CheckBoxDontBreakComplex: TCheckBox;
+    CheckBoxDontBreakOneLineBlocks: TCheckBox;
+    CheckBoxConvToSpaces: TCheckBox;
+    CheckBoxIndentSingleLineComments: TCheckBox;
+    CheckBoxAddBrackets: TCheckBox;
+    CheckBoxAddOneLineBrackets: TCheckBox;
+    TSFormatterPadding: TTabSheet;
+    CheckBoxPadEmptyLines: TCheckBox;
     CheckBoxInsertSpacePaddingOperators: TCheckBox;
     CheckBoxInsertSpacePaddingParenthesisOutside: TCheckBox;
     CheckBoxInsertSpacePaddingParenthesisInside: TCheckBox;
     CheckBoxRemoveExtraSpace: TCheckBox;
-    CheckBoxDontBreakComplex: TCheckBox;
-    CheckBoxDontBreakOneLineBlocks: TCheckBox;
-    CheckBoxConvToSpaces: TCheckBox;
-    CheckBoxFillEmpyLines: TCheckBox;
+    CheckBoxFillEmptyLines: TCheckBox;
+    CheckBoxDeleteEmptyLines: TCheckBox;
+    CheckBoxParenthesisHeaderPadding: TCheckBox;
+    CheckBoxBreakClosingHeaderBlocks: TCheckBox;
+    Label26: TLabel;
+    ComboBoxPointerAlign: TComboBox;
     procedure FormKeyPress(Sender: TObject; var Key: Char);
     procedure SynPrevMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -251,6 +260,8 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure RadioGroupFormatterStylesClick(Sender: TObject);
     procedure ComboBoxBracketStyleChange(Sender: TObject);
+    procedure BtnPrevStyleClick(Sender: TObject);
+    procedure ComboBoxPointerAlignChange(Sender: TObject);
   private
     { Private declarations }
     ActiveSintax: TSintax;
@@ -628,7 +639,7 @@ begin
   Stx.AddSintaxType('Selection', clWindowText, clGray);
   FItemIndex := Add(Stx);
 
-  //Visual Studio
+  //Borland
   Stx := TSintax.Create;
   Stx.Name := 'Borland';
   Stx.ReadOnly := True;
@@ -783,12 +794,12 @@ begin
     //--------------Gemneral---------------------//
     ChbAutoIndt.Checked := AutoIndent;
     ChbFindTextAtCursor.Checked := FindTextAtCursor;
-    ChbInsMode.Checked := InsMode;
-    ChbGrpUnd.Checked := GrpUndo;
+    ChbInsMode.Checked := InsertMode;
+    ChbGrpUnd.Checked := GroupUndo;
     ChbKeepTraiSpa.Checked := KeepTrailingSpaces;
 
     ChbScrollHint.Checked := ScrollHint;
-    ChbTabUnOrIndt.Checked := TabIndtUnind;
+    ChbTabUnOrIndt.Checked := TabIndentUnindent;
     ChbSmartTabs.Checked := SmartTabs;
     ChbUseTabChar.Checked := UseTabChar;
     ChbEnhHomeKey.Checked := EnhancedHomeKey;
@@ -797,13 +808,13 @@ begin
     CboMaxUnd.Text := IntToStr(MaxUndo);
     CboTabWdt.Text := IntToStr(TabWidth);
 
-    ChbHighMatch.Checked := HigtMatch;
-    ClbN.Selected := NColor;
-    ClbE.Selected := EColor;
-    ClbB.Selected := BColor;
+    ChbHighMatch.Checked := HighligthMatchBraceParentheses;
+    ClbN.Selected := NormalColor;
+    ClbE.Selected := ErrorColor;
+    ClbB.Selected := BgColor;
 
-    ChbHighCurLn.Checked := HigtCurLine;
-    ClbCurLn.Selected := CurLnColor;
+    ChbHighCurLn.Checked := HighligthCurrentLine;
+    ClbCurLn.Selected := CurrentLineColor;
 
     ChbLinkClick.Checked := LinkClick;
     ClbLinkColor.Selected := LinkColor;
@@ -812,12 +823,12 @@ begin
     CboEditFontSelect(Self);
     CboSize.Text := IntToStr(FontSize);
     CboSizeChange(Self);
-    ChbShowRMrgn.Checked := ShowRMargin;
-    CboRMrg.Text := IntToStr(Rmargin);
-    CboGutterWdt.Text := IntToStr(GutterWdth);
+    ChbShowRMrgn.Checked := ShowRightMargin;
+    CboRMrg.Text := IntToStr(RightMargin);
+    CboGutterWdt.Text := IntToStr(GutterWidth);
     ChbShowgtt.Checked := ShowGutter;
-    ChbShowLnNumb.Checked := ShowLnNumb;
-    ChbGrdGutt.Checked := GrdGutter;
+    ChbShowLnNumb.Checked := ShowLineNumber;
+    ChbGrdGutt.Checked := GradientGutter;
     //---------------- Colors ------------------//
 
     //Formatter
@@ -842,22 +853,30 @@ begin
     CheckBoxIndentNamespaces.Checked := IndentNamespaces;
     CheckBoxIndentLabels.Checked := IndentLabels;
     CheckBoxIndentMultLinePreprocessor.Checked := IndentMultLine;
-      //Formatting
-    ComboBoxBracketStyle.ItemIndex := BracketStyle;
-    ComboBoxBracketStyleChange(ComboBoxBracketStyle);
-    CheckBoxBreakClosingHeaders.Checked := BreakClosingHeaders;
+    CheckBoxIndentSingleLineComments.Checked := IndentSingleLineComments;
+      //Padding
     CheckBoxPadEmptyLines.Checked := PadEmptyLines;
-    CheckBoxBreakElseIf.Checked := BreakIfElse;
+    CheckBoxBreakClosingHeaderBlocks.Checked := BreakClosingHeaderBlocks;
     CheckBoxInsertSpacePaddingOperators.Checked := InsertSpacePaddingOperators;
     CheckBoxInsertSpacePaddingParenthesisOutside.Checked :=
       InsertSpacePaddingParenthesisOutside;
     CheckBoxInsertSpacePaddingParenthesisInside.Checked :=
       InsertSpacePaddingParenthesisInside;
+    CheckBoxParenthesisHeaderPadding.Checked := ParenthesisHeaderPadding;
     CheckBoxRemoveExtraSpace.Checked := RemoveExtraSpace;
-    CheckBoxDontBreakComplex.Checked := DontBreakComplex;
+    CheckBoxDeleteEmptyLines.Checked := DeleteEmptyLines;
+    CheckBoxFillEmptyLines.Checked := FillEmptyLines;
+      //Formatting
+    ComboBoxBracketStyle.ItemIndex := BracketStyle;
+    ComboBoxBracketStyleChange(ComboBoxBracketStyle);
+    CheckBoxBreakClosingHeadersBrackets.Checked := BreakClosingHeadersBrackets;
+    CheckBoxBreakElseIf.Checked := BreakIfElse;
+    CheckBoxAddBrackets.Checked := AddBrackets;
+    CheckBoxAddOneLineBrackets.Checked := AddOneLineBrackets;
     CheckBoxDontBreakOneLineBlocks.Checked := DontBreakOnelineBlocks;
+    CheckBoxDontBreakComplex.Checked := DontBreakComplex;
     CheckBoxConvToSpaces.Checked := ConvertTabToSpaces;
-    CheckBoxFillEmpyLines.Checked := FillEmptyLines;
+    ComboBoxPointerAlign.ItemIndex := PointerAlign;
     //---------------- Code Resources ------------------//
     ChbCodeCompletion.Checked := CodeCompletion;
     ChbCodeParameters.Checked := CodeParameters;
@@ -889,39 +908,39 @@ begin
     //------------- General ----------------------//
     AutoIndent := ChbAutoIndt.Checked;
     FindTextAtCursor := ChbFindTextAtCursor.Checked;
-    InsMode := ChbInsMode.Checked;
-    GrpUndo := ChbGrpUnd.Checked;
+    InsertMode := ChbInsMode.Checked;
+    GroupUndo := ChbGrpUnd.Checked;
     KeepTrailingSpaces := ChbKeepTraiSpa.Checked;
 
     ScrollHint := ChbScrollHint.Checked;
-    TabIndtUnind := ChbTabUnOrIndt.Checked;
+    TabIndentUnindent := ChbTabUnOrIndt.Checked;
     SmartTabs := ChbSmartTabs.Checked;
     UseTabChar := ChbUseTabChar.Checked;
     EnhancedHomeKey := ChbEnhHomeKey.Checked;
     ShowLineChars := ChbShowLineChars.Checked;
-    
+
     MaxUndo := StrToIntDef(CboMaxUnd.Text, 1024);
     TabWidth := StrToIntDef(CboTabWdt.Text, 4);
 
-    HigtMatch := ChbHighMatch.Checked;
-    NColor := ClbN.Selected;
-    EColor := ClbE.Selected;
-    BColor := ClbB.Selected;
+    HighligthMatchBraceParentheses := ChbHighMatch.Checked;
+    NormalColor := ClbN.Selected;
+    ErrorColor := ClbE.Selected;
+    BgColor := ClbB.Selected;
 
-    HigtCurLine := ChbHighCurLn.Checked;
-    CurLnColor := ClbCurLn.Selected;
+    HighligthCurrentLine := ChbHighCurLn.Checked;
+    CurrentLineColor := ClbCurLn.Selected;
 
     LinkClick := ChbLinkClick.Checked;
     LinkColor := ClbLinkColor.Selected;
     //---------------- Display -----------------//
     FontName := CboEditFont.Text;
     FontSize := StrToIntDef(CboSize.Text, 10);
-    ShowRMargin := ChbShowRMrgn.Checked;
-    Rmargin := StrToIntDef(CboRMrg.Text, 80);
-    GutterWdth := StrToIntDef(CboGutterWdt.Text, 80);
+    ShowRightMargin := ChbShowRMrgn.Checked;
+    RightMargin := StrToIntDef(CboRMrg.Text, 80);
+    GutterWidth := StrToIntDef(CboGutterWdt.Text, 30);
     ShowGutter := ChbShowgtt.Checked;
-    ShowLnNumb := ChbShowLnNumb.Checked;
-    GrdGutter := ChbGrdGutt.Checked;
+    ShowLineNumber := ChbShowLnNumb.Checked;
+    GradientGutter := ChbGrdGutt.Checked;
     //---------------- Colors ------------------//
     if CbDefSin.Items.IndexOf(CbDefSin.Text) < 0 then
       BtnSave.Click;
@@ -929,7 +948,7 @@ begin
     ActiveSintax := CbDefSin.Text;
     //--------------  formatter  ---------------//
     StyleIndex := RadioGroupFormatterStyles.ItemIndex;
-      //Indentation
+    //Indentation
     ForceUsingTabs := CheckBoxForceUsingTabs.Checked;
     IndentClasses := CheckBoxIndentClasses.Checked;
     IndentSwitches := CheckBoxIndentSwitches.Checked;
@@ -939,21 +958,29 @@ begin
     IndentNamespaces := CheckBoxIndentNamespaces.Checked;
     IndentLabels := CheckBoxIndentLabels.Checked;
     IndentMultLine := CheckBoxIndentMultLinePreprocessor.Checked;
-      //Formatting
-    BracketStyle := ComboBoxBracketStyle.ItemIndex;
-    BreakClosingHeaders := CheckBoxBreakClosingHeaders.Checked;
+    IndentSingleLineComments := CheckBoxIndentSingleLineComments.Checked;
+    //Padding
     PadEmptyLines := CheckBoxPadEmptyLines.Checked;
-    BreakIfElse := CheckBoxBreakElseIf.Checked;
+    BreakClosingHeaderBlocks := CheckBoxBreakClosingHeaderBlocks.Checked;
     InsertSpacePaddingOperators := CheckBoxInsertSpacePaddingOperators.Checked;
     InsertSpacePaddingParenthesisOutside :=
       CheckBoxInsertSpacePaddingParenthesisOutside.Checked;
     InsertSpacePaddingParenthesisInside :=
       CheckBoxInsertSpacePaddingParenthesisInside.Checked;
+    ParenthesisHeaderPadding := CheckBoxParenthesisHeaderPadding.Checked;
     RemoveExtraSpace := CheckBoxRemoveExtraSpace.Checked;
-    DontBreakComplex := CheckBoxDontBreakComplex.Checked;
+    DeleteEmptyLines := CheckBoxDeleteEmptyLines.Checked;
+    FillEmptyLines := CheckBoxFillEmptyLines.Checked;
+    //Formatting
+    BracketStyle := ComboBoxBracketStyle.ItemIndex;
+    BreakClosingHeadersBrackets := CheckBoxBreakClosingHeadersBrackets.Checked;
+    BreakIfElse := CheckBoxBreakElseIf.Checked;
+    AddBrackets := CheckBoxAddBrackets.Checked;
+    AddOneLineBrackets := CheckBoxAddOneLineBrackets.Checked;
     DontBreakOnelineBlocks := CheckBoxDontBreakOneLineBlocks.Checked;
+    DontBreakComplex := CheckBoxDontBreakComplex.Checked;
     ConvertTabToSpaces := CheckBoxConvToSpaces.Checked;
-    FillEmptyLines := CheckBoxFillEmpyLines.Checked;
+    PointerAlign := ComboBoxPointerAlign.ItemIndex;
     //--------------  Code Resources  ----------//
     CodeCompletion := ChbCodeCompletion.Checked;
     CodeParameters := ChbCodeParameters.Checked;
@@ -1333,8 +1360,18 @@ begin
     CboGutterWdt.Enabled := ChbShowgtt.Checked;
     ChbShowLnNumb.Enabled := ChbShowgtt.Checked;
     ChbGrdGutt.Enabled := ChbShowgtt.Checked;
+  end
+  else if Sender = CheckBoxAddOneLineBrackets then
+  begin
+    CheckBoxDontBreakOneLineBlocks.Enabled :=
+      not CheckBoxAddOneLineBrackets.Checked;
+  end
+  else if Sender = CheckBoxForceUsingTabs then
+  begin
+    CheckBoxConvToSpaces.Enabled := not CheckBoxForceUsingTabs.Checked;
+    if not CheckBoxConvToSpaces.Enabled then
+      CheckBoxConvToSpaces.Checked := False;
   end;
-
   OptionsChange;
 end;
 
@@ -1440,18 +1477,22 @@ begin
   Action := caFree;
 end;
 
-procedure TFrmEditorOptions.RadioGroupFormatterStylesClick(Sender: TObject);
+procedure TFrmEditorOptions.BtnPrevStyleClick(Sender: TObject);
 var
   formatter: TAStyle;
   caret: TBufferCoord;
   topLine, I: Integer;
 begin
-  OptionsChange;
   formatter := TAStyle.Create;
+  formatter.MaxInstatementIndent := StrToIntDef(CboRMrg.Text, 80);
   BtnPrevStyle.Visible := RadioGroupFormatterStyles.ItemIndex = 5;
   for I := 0 to TSFormatterIndentation.ControlCount - 1 do
   begin
     TSFormatterIndentation.Controls[I].Enabled := BtnPrevStyle.Visible;
+  end;
+  for I := 0 to TSFormatterPadding.ControlCount - 1 do
+  begin
+    TSFormatterPadding.Controls[I].Enabled := BtnPrevStyle.Visible;
   end;
   for I := 0 to TSFormatterFormatting.ControlCount - 1 do
   begin
@@ -1462,7 +1503,7 @@ begin
     begin
       formatter.Style := fsALLMAN;
       formatter.BracketFormat := bfBreakMode;
-      formatter.Properties[aspNamespaceIndent] := True;
+      formatter.Properties[aspIndentNamespace] := True;
       formatter.Properties[aspSingleStatements] := True;
       formatter.Properties[aspBreakOneLineBlocks] := True;
     end;
@@ -1470,7 +1511,7 @@ begin
     begin
       formatter.Style := fsKR;
       formatter.BracketFormat := bfAtatch;
-      formatter.Properties[aspNamespaceIndent] := True;
+      formatter.Properties[aspIndentNamespace] := True;
       formatter.Properties[aspSingleStatements] := True;
       formatter.Properties[aspBreakOneLineBlocks] := True;
     end;
@@ -1480,7 +1521,7 @@ begin
       formatter.TabWidth := 8;
       formatter.SpaceWidth := 8;
       formatter.BracketFormat := bfBDAC;
-      formatter.Properties[aspNamespaceIndent] := True;
+      formatter.Properties[aspIndentNamespace] := True;
       formatter.Properties[aspSingleStatements] := True;
       formatter.Properties[aspBreakOneLineBlocks] := True;
     end;
@@ -1490,8 +1531,8 @@ begin
       formatter.TabWidth := 2;
       formatter.SpaceWidth := 2;
       formatter.BracketFormat := bfBreakMode;
-      formatter.Properties[aspBlockIndent] := True;
-      formatter.Properties[aspNamespaceIndent] := True;
+      formatter.Properties[aspIndentBlock] := True;
+      formatter.Properties[aspIndentNamespace] := True;
       formatter.Properties[aspSingleStatements] := True;
       formatter.Properties[aspBreakOneLineBlocks] := True;
     end;
@@ -1504,6 +1545,60 @@ begin
     end;
     5: //custom
     begin
+      formatter.Style := fsNONE;
+      formatter.TabWidth := StrToIntDef(CboTabWdt.Text, 4);
+      formatter.SpaceWidth := StrToIntDef(CboTabWdt.Text, 4);
+      
+      //Indentation
+      formatter.ForceUsingTabs := CheckBoxForceUsingTabs.Checked;
+      formatter.Properties[aspIndentClass] := CheckBoxIndentClasses.Checked;
+      formatter.Properties[aspIndentSwitch] := CheckBoxIndentSwitches.Checked;
+      formatter.Properties[aspIndentCase] := CheckBoxIndentCase.Checked;
+      formatter.Properties[aspIndentBracket] := CheckBoxIndentBrackets.Checked;
+      formatter.Properties[aspIndentBlock] := CheckBoxIndentBlocks.Checked;
+      formatter.Properties[aspIndentNamespace] := CheckBoxIndentNamespaces.Checked;
+      formatter.Properties[aspIndentLabels] := CheckBoxIndentLabels.Checked;
+      formatter.Properties[aspIndentMultLinePreprocessor] := CheckBoxIndentMultLinePreprocessor.Checked;
+      formatter.Properties[aspIndentCol1Comments] :=
+        CheckBoxIndentSingleLineComments.Checked;
+
+      //Padding
+      formatter.Properties[aspBreakBlocks] := CheckBoxPadEmptyLines.Checked;
+      formatter.Properties[aspBreakClosingHeaderBlocks] := CheckBoxBreakClosingHeaderBlocks.Checked;
+      formatter.Properties[aspOperatorPadding] := CheckBoxInsertSpacePaddingOperators.Checked;
+      formatter.Properties[aspParensOutsidePadding] := CheckBoxInsertSpacePaddingParenthesisOutside.Checked;
+      formatter.Properties[aspParensInsidePadding] := CheckBoxInsertSpacePaddingParenthesisInside.Checked;
+      formatter.Properties[aspParensHeaderPadding] := CheckBoxParenthesisHeaderPadding.Checked;
+      formatter.Properties[aspParensUnPadding] := CheckBoxRemoveExtraSpace.Checked;
+      formatter.Properties[aspDeleteEmptyLines] := CheckBoxDeleteEmptyLines.Checked;
+      formatter.Properties[aspFillEmptyLines] := CheckBoxFillEmptyLines.Checked;
+
+      //Formatting
+      case ComboBoxBracketStyle.ItemIndex of
+        1: formatter.BracketFormat := bfBreakMode;//Break
+        2: formatter.BracketFormat := bfAtatch;//Attach
+        3: formatter.BracketFormat := bfBDAC;//Linux
+        //TODO 4: formatter.BracketFormat := bfRunIn;//?
+        //TODO 5: formatter.BracketFormat := bfStroustrup;//?
+      else
+        //None
+        formatter.BracketFormat := bfNone;
+      end;
+      if (ComboBoxBracketStyle.ItemIndex < 2) then//Does not work
+        formatter.Properties[aspBreakClosingHeaderBrackets] := CheckBoxBreakClosingHeadersBrackets.Checked;
+      formatter.Properties[aspBreakElseIfs] := CheckBoxBreakElseIf.Checked;
+      formatter.Properties[aspAddBrackets] := CheckBoxAddBrackets.Checked;
+      formatter.Properties[aspAddOneLineBrackets] := CheckBoxAddOneLineBrackets.Checked;
+      formatter.Properties[aspBreakOneLineBlocks] := not CheckBoxDontBreakOneLineBlocks.Checked;
+      formatter.Properties[aspSingleStatements] := CheckBoxDontBreakComplex.Checked;
+      formatter.Properties[aspTabSpaceConversion] := CheckBoxConvToSpaces.Checked;
+      case ComboBoxPointerAlign.ItemIndex of
+        1: formatter.PointerAlign := paType;
+        2: formatter.PointerAlign := paMiddle;
+        3: formatter.PointerAlign := paName;
+      else
+        formatter.PointerAlign := paNone;
+      end;
     end;
   end;
   caret := SynMemoSample.CaretXY;
@@ -1515,10 +1610,21 @@ begin
   formatter.Free;
 end;
 
+procedure TFrmEditorOptions.RadioGroupFormatterStylesClick(Sender: TObject);
+begin
+  OptionsChange;
+  BtnPrevStyleClick(Sender);
+end;
+
 procedure TFrmEditorOptions.ComboBoxBracketStyleChange(Sender: TObject);
 begin
-  CheckBoxBreakClosingHeaders.Enabled := (ComboBoxBracketStyle.ItemIndex < 2)
+  CheckBoxBreakClosingHeadersBrackets.Enabled := (ComboBoxBracketStyle.ItemIndex < 2)
     and (RadioGroupFormatterStyles.ItemIndex = 5);
+  OptionsChange;
+end;
+
+procedure TFrmEditorOptions.ComboBoxPointerAlignChange(Sender: TObject);
+begin
   OptionsChange;
 end;
 

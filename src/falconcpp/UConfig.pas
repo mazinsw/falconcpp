@@ -4,8 +4,8 @@ interface
 
 uses
   Windows, SysUtils, IniFiles, Forms, Graphics, Classes, Dialogs,
-  Menus, RzCommon, RzTabs, ComCtrls, Controls, Registry, ShellApi,
-  SynMemo, SynEdit, XMLDoc, XMLIntf, TBX, ULanguages;
+  Menus, ComCtrls, Controls, Registry, ShellApi,
+  SynMemo, SynEdit, XMLDoc, XMLIntf, TBX, ULanguages, ModernTabs;
 
 type
 
@@ -13,12 +13,12 @@ type
     //General
     AutoIndent: Boolean;
     FindTextAtCursor: Boolean;
-    InsMode: Boolean;
-    GrpUndo: Boolean;
+    InsertMode: Boolean;
+    GroupUndo: Boolean;
     KeepTrailingSpaces: Boolean;
 
     ScrollHint: Boolean;
-    TabIndtUnind: Boolean;
+    TabIndentUnindent: Boolean;
     SmartTabs: Boolean;
     UseTabChar: Boolean;
     EnhancedHomeKey: Boolean;
@@ -27,13 +27,13 @@ type
     MaxUndo: Integer;
     TabWidth: Integer;
     //------------------------------//
-    HigtMatch: Boolean;
-    NColor: TColor;
-    EColor: TColor;
-    BColor: TColor;
+    HighligthMatchBraceParentheses: Boolean;
+    NormalColor: TColor;
+    ErrorColor: TColor;
+    BgColor: TColor;
 
-    HigtCurLine: Boolean;
-    CurLnColor: TColor;
+    HighligthCurrentLine: Boolean;
+    CurrentLineColor: TColor;
 
     LinkClick: Boolean;
     LinkColor: TColor;
@@ -41,12 +41,12 @@ type
     //display
     FontName: String;
     FontSize: Integer;
-    ShowRMargin: Boolean;
-    Rmargin: Integer;
+    ShowRightMargin: Boolean;
+    RightMargin: Integer;
     ShowGutter: Boolean;
-    GutterWdth: Integer;
-    ShowLnNumb: Boolean;
-    GrdGutter: Boolean;
+    GutterWidth: Integer;
+    ShowLineNumber: Boolean;
+    GradientGutter: Boolean;
     //sintax
     ActiveSintax: String;
 
@@ -63,19 +63,27 @@ type
     IndentNamespaces: Boolean;
     IndentLabels: Boolean;
     IndentMultLine: Boolean;
-      //Formatting
-    BracketStyle: Integer;
-    BreakClosingHeaders: Boolean;
+    IndentSingleLineComments: Boolean;
+      //Padding
     PadEmptyLines: Boolean;
-    BreakIfElse: Boolean;
+    BreakClosingHeaderBlocks: Boolean;
     InsertSpacePaddingOperators: Boolean;
     InsertSpacePaddingParenthesisOutside: Boolean;
     InsertSpacePaddingParenthesisInside: Boolean;
+    ParenthesisHeaderPadding: Boolean;
     RemoveExtraSpace: Boolean;
-    DontBreakComplex: Boolean;
-    DontBreakOnelineBlocks: Boolean;
-    ConvertTabToSpaces: Boolean;
+    DeleteEmptyLines: Boolean;
     FillEmptyLines: Boolean;
+      //Formatting
+    BracketStyle: Integer;
+    BreakClosingHeadersBrackets: Boolean;
+    BreakIfElse: Boolean;
+    AddBrackets: Boolean;
+    AddOneLineBrackets: Boolean;
+    DontBreakOnelineBlocks: Boolean;
+    DontBreakComplex: Boolean;
+    ConvertTabToSpaces: Boolean;
+    PointerAlign: Integer;
     //Code Resources
     CodeCompletion: Boolean;
     CodeParameters: Boolean;
@@ -108,8 +116,9 @@ type
     CreateBackupFiles: Boolean;
     BackupFilesExt: String;
     AutoOpen: Integer;
-    AutoReloadExternalModFiles: Boolean;
-    AutoReloadDelay: Integer;
+    CreateLayoutFiles: Boolean;
+    AskForDeleteFile: Boolean;
+    RunConsoleRunner: Boolean;
     //Interface
     MaxFileInReopen: Integer;
     Langs: TFalconLanguages;
@@ -259,10 +268,12 @@ begin
     CreateBackupFiles := ini.ReadBool('EnvironmentOptions', 'CreateBackupFiles', False);
     BackupFilesExt := ini.ReadString('EnvironmentOptions', 'BackupFilesExt', '.bkp');
     AutoOpen := ini.ReadInteger('EnvironmentOptions', 'AutoOpen', 4);
-    AutoReloadExternalModFiles := ini.ReadBool('EnvironmentOptions',
-      'AutoReloadExternalModFiles', False);
-    AutoReloadDelay := ini.ReadInteger('EnvironmentOptions', 'AutoReloadDelay',
-      1);
+    CreateLayoutFiles := ini.ReadBool('EnvironmentOptions',
+      'CreateLayoutFiles', True);
+    AskForDeleteFile := ini.ReadBool('EnvironmentOptions',
+      'AskForDeleteFile', True);
+    RunConsoleRunner := ini.ReadBool('EnvironmentOptions',
+      'RunConsoleRunner', True);
     //Interface
     MaxFileInReopen := ini.ReadInteger('EnvironmentOptions', 'MaxFileInReopen',
       10);
@@ -288,13 +299,13 @@ begin
     //General
     AutoIndent := ini.ReadBool('EditorOptions', 'AutoIndent', True);
     FindTextAtCursor := ini.ReadBool('EditorOptions', 'FindTextAtCursor', True);
-    InsMode := ini.ReadBool('EditorOptions', 'InsMode', True);
-    GrpUndo := ini.ReadBool('EditorOptions', 'GrpUndo', True);
+    InsertMode := ini.ReadBool('EditorOptions', 'InsertMode', True);
+    GroupUndo := ini.ReadBool('EditorOptions', 'GroupUndo', True);
     KeepTrailingSpaces := ini.ReadBool('EditorOptions', 'KeepTrailingSpaces', True);
 
     ScrollHint := ini.ReadBool('EditorOptions', 'ScrollHint', True);
     SmartTabs := ini.ReadBool('EditorOptions', 'SmartTabs', False);
-    TabIndtUnind := ini.ReadBool('EditorOptions', 'TabIndtUnind', True);
+    TabIndentUnindent := ini.ReadBool('EditorOptions', 'TabIndentUnindent', True);
     UseTabChar := ini.ReadBool('EditorOptions', 'UseTabChar', False);
     EnhancedHomeKey := ini.ReadBool('EditorOptions', 'EnhancedHomeKey', False);
     ShowLineChars := ini.ReadBool('EditorOptions', 'ShowLineChars', False);
@@ -303,25 +314,25 @@ begin
     MaxUndo := ini.ReadInteger('EditorOptions', 'MaxUndo', 1024);
     TabWidth := ini.ReadInteger('EditorOptions', 'TabWidth', 4);
     //------------------------------//
-    HigtMatch := ini.ReadBool('EditorOptions', 'HigtMatch', True);
-    NColor := StringToColor(ini.ReadString('EditorOptions', 'NColor', 'clBlue'));
-    EColor := StringToColor(ini.ReadString('EditorOptions', 'EColor', 'clRed'));
-    BColor := StringToColor(ini.ReadString('EditorOptions', 'BColor', 'clSkyBlue'));
+    HighligthMatchBraceParentheses := ini.ReadBool('EditorOptions', 'HighligthMatchBraceParentheses', True);
+    NormalColor := StringToColor(ini.ReadString('EditorOptions', 'NormalColor', 'clBlue'));
+    ErrorColor := StringToColor(ini.ReadString('EditorOptions', 'ErrorColor', 'clRed'));
+    BgColor := StringToColor(ini.ReadString('EditorOptions', 'BgColor', 'clSkyBlue'));
 
-    HigtCurLine := ini.ReadBool('EditorOptions', 'HigtCurLine', True);
-    CurLnColor := StringToColor(ini.ReadString('EditorOptions', 'CurLnColor', '$AAD5D5'));
+    HighligthCurrentLine := ini.ReadBool('EditorOptions', 'HighligthCurrentLine', True);
+    CurrentLineColor := StringToColor(ini.ReadString('EditorOptions', 'CurrentLineColor', '$AAD5D5'));
 
     LinkClick := ini.ReadBool('EditorOptions', 'LinkClick', True);
     LinkColor := StringToColor(ini.ReadString('EditorOptions', 'LinkColor', 'clBlue'));
     //display
     FontName := ini.ReadString('EditorOptions', 'FontName', 'Courier New');
     FontSize := ini.ReadInteger('EditorOptions', 'FontSize', 12);
-    ShowRMargin := ini.ReadBool('EditorOptions', 'ShowRMargin', True);
-    Rmargin := ini.ReadInteger('EditorOptions', 'Rmargin', 80);
+    ShowRightMargin := ini.ReadBool('EditorOptions', 'ShowRightMargin', True);
+    RightMargin := ini.ReadInteger('EditorOptions', 'RightMargin', 80);
     ShowGutter := ini.ReadBool('EditorOptions', 'ShowGutter', True);
-    GutterWdth := ini.ReadInteger('EditorOptions', 'GutterWdth', 30);
-    ShowLnNumb := ini.ReadBool('EditorOptions', 'ShowLnNumb', True);
-    GrdGutter := ini.ReadBool('EditorOptions', 'GrdGutter', False);
+    GutterWidth := ini.ReadInteger('EditorOptions', 'GutterWidth', 30);
+    ShowLineNumber := ini.ReadBool('EditorOptions', 'ShowLineNumber', True);
+    GradientGutter := ini.ReadBool('EditorOptions', 'GradientGutter', False);
     //sintax
     ActiveSintax := ini.ReadString('EditorOptions', 'ActiveSyntax', 'Default');
     //Formatter
@@ -337,25 +348,37 @@ begin
     IndentNamespaces := ini.ReadBool('EditorOptions', 'IndentNamespaces', False);
     IndentLabels := ini.ReadBool('EditorOptions', 'IndentLabels', False);
     IndentMultLine := ini.ReadBool('EditorOptions', 'IndentMultLine', False);
-      //Formatting
-    BracketStyle := ini.ReadInteger('EditorOptions', 'BracketStyle', 0);
-    BreakClosingHeaders := ini.ReadBool('EditorOptions', 'BreakClosingHeaders',
-      False);
+    IndentSingleLineComments := ini.ReadBool('EditorOptions',
+      'IndentSingleLineComments', False);
+      //Padding
     PadEmptyLines := ini.ReadBool('EditorOptions', 'PadEmptyLines', False);
-    BreakIfElse := ini.ReadBool('EditorOptions', 'BreakIfElse', False);
+    BreakClosingHeaderBlocks := ini.ReadBool('EditorOptions',
+      'BreakClosingHeaderBlocks', False);
     InsertSpacePaddingOperators := ini.ReadBool('EditorOptions',
       'InsertSpacePaddingOperators', False);
     InsertSpacePaddingParenthesisOutside := ini.ReadBool('EditorOptions',
       'InsertSpacePaddingParenthesisOutside', False);
     InsertSpacePaddingParenthesisInside := ini.ReadBool('EditorOptions',
       'InsertSpacePaddingParenthesisInside', False);
+    ParenthesisHeaderPadding := ini.ReadBool('EditorOptions',
+      'ParenthesisHeaderPadding', False);
     RemoveExtraSpace := ini.ReadBool('EditorOptions', 'RemoveExtraSpace', False);
-    DontBreakComplex := ini.ReadBool('EditorOptions', 'DontBreakComplex', False);
+    DeleteEmptyLines := ini.ReadBool('EditorOptions', 'DeleteEmptyLines', False);
+    FillEmptyLines := ini.ReadBool('EditorOptions', 'FillEmptyLines', False);
+      //Formatting
+    BracketStyle := ini.ReadInteger('EditorOptions', 'BracketStyle', 0);
+    BreakClosingHeadersBrackets := ini.ReadBool('EditorOptions', 'BreakClosingHeadersBrackets',
+      False);
+    BreakIfElse := ini.ReadBool('EditorOptions', 'BreakIfElse', False);
+    AddBrackets := ini.ReadBool('EditorOptions', 'AddBrackets', False);
+    AddOneLineBrackets := ini.ReadBool('EditorOptions',
+      'AddOneLineBrackets', False);
     DontBreakOnelineBlocks := ini.ReadBool('EditorOptions',
       'DontBreakOnelineBlocks', False);
+    DontBreakComplex := ini.ReadBool('EditorOptions', 'DontBreakComplex', False);
     ConvertTabToSpaces := ini.ReadBool('EditorOptions', 'ConvertTabToSpaces',
       False);
-    FillEmptyLines := ini.ReadBool('EditorOptions', 'FillEmptyLines', False);
+    PointerAlign := ini.ReadInteger('EditorOptions', 'PointerAlign', 0);
     //Code Resources
     CodeCompletion := ini.ReadBool('EditorOptions', 'CodeCompletion', True);
     CodeParameters := ini.ReadBool('EditorOptions', 'CodeParameters', True);
@@ -381,9 +404,9 @@ begin
 
   with TFrmFalconMain(Form) do
   begin
-    RSPExplorer.Width := ini.ReadInteger('CONFIG','SizePanelPW',260);
-    RSPOLine.Width := ini.ReadInteger('CONFIG','SizePanelOLW',160);
-    RSPCmd.Height := ini.ReadInteger('CONFIG','SizePanelCH',160);
+    ProjectPanel.Width := ini.ReadInteger('CONFIG','SizePanelPW',260);
+    PanelOutline.Width := ini.ReadInteger('CONFIG','SizePanelOLW',160);
+    PageControlMessages.Height := ini.ReadInteger('CONFIG','SizePanelCH',160);
     //** toolbars
     DefaultBar.Visible := ini.ReadBool('TOOLBAR_DEFAULT','Visible', True);
     ToolbarCheck(0, DefaultBar.Visible);
@@ -453,13 +476,13 @@ begin
     TabOri := ini.ReadString('TABS','Orientation', 'Top');
     if CompareText(TabOri, 'bottom') = 0 then
     begin
-      PageControlEditor.TabOrientation := toBottom;
+      PageControlEditor.TabPosition := mtpBottom;
       PopTabsTabsAtTop.Enabled := True;
       PopTabsTabsAtBottom.Enabled := False;
     end
     else
     begin
-      PageControlEditor.TabOrientation := toTop;
+      PageControlEditor.TabPosition := mtpTop;
       PopTabsTabsAtTop.Enabled := False;
       PopTabsTabsAtBottom.Enabled := True;
     end;
@@ -500,9 +523,9 @@ begin
   ini := TIniFile.Create(FileName);
   with TFrmFalconMain(Form) do
   begin
-    ini.WriteInteger('CONFIG','SizePanelPW', RSPExplorer.Width);
-    ini.WriteInteger('CONFIG','SizePanelOLW', RSPOLine.Width);
-    ini.WriteInteger('CONFIG','SizePanelCH', RSPCmd.Height);
+    ini.WriteInteger('CONFIG','SizePanelPW', ProjectPanel.Width);
+    ini.WriteInteger('CONFIG','SizePanelOLW', PanelOutline.Width);
+    ini.WriteInteger('CONFIG','SizePanelCH', PageControlMessages.Height);
 
     //** toolbars
     ini.WriteBool('TOOLBAR_DEFAULT','Visible', DefaultBar.Visible);
@@ -562,7 +585,7 @@ begin
     ini.WriteInteger('TOOLBAR_DEBUG','Row', DebugBar.DockRow);
 
     //Tab Orientation
-    if PageControlEditor.TabOrientation = toTop then
+    if PageControlEditor.TabPosition = mtpTop then
       ini.WriteString('TABS','Orientation', 'Top')
     else
       ini.WriteString('TABS','Orientation', 'Bottom');
@@ -572,12 +595,12 @@ begin
     //General
     ini.WriteBool('EditorOptions', 'AutoIndent', AutoIndent);
     ini.WriteBool('EditorOptions', 'FindTextAtCursor', FindTextAtCursor);
-    ini.WriteBool('EditorOptions', 'InsMode', InsMode);
-    ini.WriteBool('EditorOptions', 'GrpUndo', GrpUndo);
+    ini.WriteBool('EditorOptions', 'InsertMode', InsertMode);
+    ini.WriteBool('EditorOptions', 'GroupUndo', GroupUndo);
     ini.WriteBool('EditorOptions', 'KeepTrailingSpaces', KeepTrailingSpaces);
 
     ini.WriteBool('EditorOptions', 'ScrollHint', ScrollHint);
-    ini.WriteBool('EditorOptions', 'TabIndtUnind', TabIndtUnind);
+    ini.WriteBool('EditorOptions', 'TabIndentUnindent', TabIndentUnindent);
     ini.WriteBool('EditorOptions', 'SmartTabs', SmartTabs);
     ini.WriteBool('EditorOptions', 'UseTabChar', UseTabChar);
     ini.WriteBool('EditorOptions', 'EnhancedHomeKey', EnhancedHomeKey);
@@ -586,25 +609,25 @@ begin
     ini.WriteInteger('EditorOptions', 'MaxUndo', MaxUndo);
     ini.WriteInteger('EditorOptions', 'TabWidth', TabWidth);
     //------------------------------//
-    ini.WriteBool('EditorOptions', 'HigtMatch', HigtMatch);
-    ini.WriteString('EditorOptions', 'NColor', ColorToString(NColor));
-    ini.WriteString('EditorOptions', 'EColor', ColorToString(EColor));
-    ini.WriteString('EditorOptions', 'BColor', ColorToString(BColor));
+    ini.WriteBool('EditorOptions', 'HighligthMatchBraceParentheses', HighligthMatchBraceParentheses);
+    ini.WriteString('EditorOptions', 'NormalColor', ColorToString(NormalColor));
+    ini.WriteString('EditorOptions', 'ErrorColor', ColorToString(ErrorColor));
+    ini.WriteString('EditorOptions', 'BgColor', ColorToString(BgColor));
 
-    ini.WriteBool('EditorOptions', 'HigtCurLine', HigtCurLine);
-    ini.WriteString('EditorOptions', 'CurLnColor', ColorToString(CurLnColor));
+    ini.WriteBool('EditorOptions', 'HighligthCurrentLine', HighligthCurrentLine);
+    ini.WriteString('EditorOptions', 'CurrentLineColor', ColorToString(CurrentLineColor));
 
     ini.WriteBool('EditorOptions', 'LinkClick', LinkClick);
     ini.WriteString('EditorOptions', 'LinkColor', ColorToString(LinkColor));
     //display
     ini.WriteString('EditorOptions', 'FontName', FontName);
     ini.WriteInteger('EditorOptions', 'FontSize', FontSize);
-    ini.WriteBool('EditorOptions', 'ShowRMargin', ShowRMargin);
-    ini.WriteInteger('EditorOptions', 'Rmargin', Rmargin);
+    ini.WriteBool('EditorOptions', 'ShowRightMargin', ShowRightMargin);
+    ini.WriteInteger('EditorOptions', 'RightMargin', RightMargin);
     ini.WriteBool('EditorOptions', 'ShowGutter', ShowGutter);
-    ini.WriteInteger('EditorOptions', 'GutterWdth', GutterWdth);
-    ini.WriteBool('EditorOptions', 'ShowLnNumb', ShowLnNumb);
-    ini.WriteBool('EditorOptions', 'GrdGutter', GrdGutter);
+    ini.WriteInteger('EditorOptions', 'GutterWidth', GutterWidth);
+    ini.WriteBool('EditorOptions', 'ShowLineNumber', ShowLineNumber);
+    ini.WriteBool('EditorOptions', 'GradientGutter', GradientGutter);
     //sintax
     ini.WriteString('EditorOptions', 'ActiveSyntax', ActiveSintax);
     //Formatter
@@ -620,23 +643,33 @@ begin
     ini.WriteBool('EditorOptions', 'IndentNamespaces', IndentNamespaces);
     ini.WriteBool('EditorOptions', 'IndentLabels', IndentLabels);
     ini.WriteBool('EditorOptions', 'IndentMultLine', IndentMultLine);
-      //Formatting
-    ini.WriteInteger('EditorOptions', 'BracketStyle', BracketStyle);
-    ini.WriteBool('EditorOptions', 'BreakClosingHeaders', BreakClosingHeaders);
+    ini.WriteBool('EditorOptions', 'IndentSingleLineComments',
+      IndentSingleLineComments);
+      //Padding
     ini.WriteBool('EditorOptions', 'PadEmptyLines', PadEmptyLines);
-    ini.WriteBool('EditorOptions', 'BreakIfElse', BreakIfElse);
+    ini.WriteBool('EditorOptions', 'BreakClosingHeaderBlocks', BreakClosingHeaderBlocks);
     ini.WriteBool('EditorOptions', 'InsertSpacePaddingOperators',
       InsertSpacePaddingOperators);
     ini.WriteBool('EditorOptions', 'InsertSpacePaddingParenthesisOutside',
       InsertSpacePaddingParenthesisOutside);
     ini.WriteBool('EditorOptions', 'InsertSpacePaddingParenthesisInside',
       InsertSpacePaddingParenthesisInside);
+    ini.WriteBool('EditorOptions', 'ParenthesisHeaderPadding', ParenthesisHeaderPadding);
     ini.WriteBool('EditorOptions', 'RemoveExtraSpace', RemoveExtraSpace);
-    ini.WriteBool('EditorOptions', 'DontBreakComplex', DontBreakComplex);
+    ini.WriteBool('EditorOptions', 'DeleteEmptyLines', DeleteEmptyLines);
+    ini.WriteBool('EditorOptions', 'FillEmptyLines', FillEmptyLines);
+      //Formatting
+    ini.WriteInteger('EditorOptions', 'BracketStyle', BracketStyle);
+    ini.WriteBool('EditorOptions', 'BreakClosingHeadersBrackets',
+      BreakClosingHeadersBrackets);
+    ini.WriteBool('EditorOptions', 'BreakIfElse', BreakIfElse);
+    ini.WriteBool('EditorOptions', 'AddBrackets', AddBrackets);
+    ini.WriteBool('EditorOptions', 'AddOneLineBrackets', AddOneLineBrackets);
     ini.WriteBool('EditorOptions', 'DontBreakOnelineBlocks',
       DontBreakOnelineBlocks);
+    ini.WriteBool('EditorOptions', 'DontBreakComplex', DontBreakComplex);
     ini.WriteBool('EditorOptions', 'ConvertTabToSpaces', ConvertTabToSpaces);
-    ini.WriteBool('EditorOptions', 'FillEmptyLines', FillEmptyLines);
+    ini.WriteInteger('EditorOptions', 'PointerAlign', PointerAlign);
     //Code Resources
     ini.WriteBool('EditorOptions', 'CodeCompletion', CodeCompletion);
     ini.WriteBool('EditorOptions', 'CodeParameters', CodeParameters);
@@ -670,9 +703,9 @@ begin
     ini.WriteBool('EnvironmentOptions', 'CreateBackupFiles', CreateBackupFiles);
     ini.WriteString('EnvironmentOptions', 'BackupFilesExt', BackupFilesExt);
     ini.WriteInteger('EnvironmentOptions', 'AutoOpen', AutoOpen);
-    ini.WriteBool('EnvironmentOptions', 'AutoReloadExternalModFiles',
-      AutoReloadExternalModFiles);
-    ini.WriteInteger('EnvironmentOptions', 'AutoReloadDelay', AutoReloadDelay);
+    ini.WriteBool('EnvironmentOptions', 'CreateLayoutFiles', CreateLayoutFiles);
+    ini.WriteBool('EnvironmentOptions', 'AskForDeleteFile', AskForDeleteFile);
+    ini.WriteBool('EnvironmentOptions', 'RunConsoleRunner', RunConsoleRunner);
     //Interface
     ini.WriteInteger('EnvironmentOptions', 'MaxFileInReopen', MaxFileInReopen);
     ini.WriteBool('EnvironmentOptions', 'ShowSplashScreen', ShowSplashScreen);

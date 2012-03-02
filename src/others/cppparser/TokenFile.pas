@@ -188,6 +188,10 @@ type
     //search token
     function GetAllTokensOfScope(SelStart: Integer; TokenFile: TTokenFile;
       List: TStrings; var thisToken: TTokenClass): Boolean;
+    function SearchClassSource(const S: String; Token: TTokenClass;
+      TokenFile: TTokenFile; var TokenFileItem: TTokenFile; var Item: TTokenClass;
+      ListAll: TStrings = nil; AllFunctions: Boolean = False;
+      AllowScope: TScopeClassState = []): Boolean;
     function SearchSource(const S: String; TokenFile: TTokenFile;
       var TokenFileItem: TTokenFile; var Item: TTokenClass;
       SelStart: Integer = 0; ListAll: TStrings = nil;
@@ -1122,9 +1126,100 @@ begin
   end;
 end;
 
+function TTokenFiles.SearchClassSource(const S: String; Token: TTokenClass;
+  TokenFile: TTokenFile; var TokenFileItem: TTokenFile; var Item: TTokenClass;
+  ListAll: TStrings; AllFunctions: Boolean;
+  AllowScope: TScopeClassState): Boolean;
+
+  function SearchClassSourceRecursive(TokenItem: TTokenFile;
+    aToken: TTokenClass; aAllowScope, DenyScope: TScopeClassState): Boolean;
+  var
+    SearchClass: String;
+    scopeToken: TTokenClass;
+    fromScope: TScopeClass;
+    List: TStrings;
+    I: Integer;
+  begin
+    Result := aToken.SearchSource(S, Item, 0, True, ListAll, AllFunctions);
+    if Result then
+    begin
+      scopeToken := Item.Parent;
+      if Assigned(scopeToken) and (scopeToken.Token = tkScopeClass) then
+      begin
+        fromScope := StringToScopeClass(scopeToken.Name);
+        if not (aAllowScope = []) and not (fromScope in aAllowScope) then
+        begin
+          Result := False;
+          Exit;
+        end;
+      end;
+      TokenFileItem := TokenItem;
+      Exit;
+    end;
+    List := TStringList.Create;
+    GetDescendants(aToken.Flag, List, scPublic);
+    for I := 0 to List.Count - 1 do
+    begin
+      SearchClass := List.Strings[I];
+      aAllowScope := [scProtected, scPublic] - DenyScope;
+      if SearchToken(SearchClass, TokenItem,
+        TokenItem, aToken, [tkClass, tkStruct, tkUnion], Token.SelStart) then
+      begin
+        //fill all decendent class
+        Result := SearchClassSourceRecursive(TokenItem, aToken, aAllowScope, DenyScope);
+        if Result then
+          Exit;
+      end;
+    end;
+    if not (aAllowScope = []) then
+    begin
+      List.Free;
+      Exit;
+    end;
+    GetDescendants(aToken.Flag, List, scPrivate);
+    for I := 0 to List.Count - 1 do
+    begin
+      SearchClass := List.Strings[I];
+      aAllowScope := [scProtected, scPublic] - DenyScope;
+      if SearchToken(SearchClass, TokenItem,
+        TokenItem, aToken, [tkClass, tkStruct, tkUnion], Token.SelStart) then
+      begin
+        //fill all decendent class
+        Result := SearchClassSourceRecursive(TokenItem, aToken, aAllowScope, DenyScope);
+        if Result then
+          Exit;
+      end;
+    end;
+    GetDescendants(aToken.Flag, List, scProtected);
+    for I := 0 to List.Count - 1 do
+    begin
+      SearchClass := List.Strings[I];
+      aAllowScope := [scProtected, scPublic] - DenyScope;
+      if SearchToken(SearchClass, TokenItem,
+        TokenItem, aToken, [tkClass, tkStruct, tkUnion], Token.SelStart) then
+      begin
+        //fill all decendent class
+        Result := SearchClassSourceRecursive(TokenItem, aToken, aAllowScope, DenyScope);
+        if Result then
+          Exit;
+      end;
+    end;
+    List.Free;
+  end;
+
+var
+  DenyScope: TScopeClassState;
+begin
+  DenyScope := [];
+  if not (AllowScope = []) then
+    DenyScope := [scPrivate, scProtected];
+  Result := SearchClassSourceRecursive(TokenFile, Token, []{AllowScope},
+    DenyScope);
+end;
+
 function TTokenFiles.SearchSource(const S: String; TokenFile: TTokenFile;
-  var TokenFileItem: TTokenFile; var Item: TTokenClass;
-  SelStart: Integer; ListAll: TStrings; AllFunctions: Boolean): Boolean;
+  var TokenFileItem: TTokenFile; var Item: TTokenClass; SelStart: Integer;
+  ListAll: TStrings; AllFunctions: Boolean): Boolean;
 var
   FindedList: TStrings;
   AllScope: Boolean;
@@ -1172,13 +1267,27 @@ begin
     //search on class, struct
     if AllScope then
     begin
-      if (S = 'this') or Token.SearchSource(S, Item, 0, True, ListAll,
-        AllFunctions) then
+      if (S = 'this') then
       begin
-        if S = 'this' then
-          Item := Token;
+        Item := Token;
         Result := True;
         Exit;
+      end
+      else if Token.SearchSource(S, Item, 0, True, ListAll, AllFunctions) then
+      begin
+        Result := True;
+        Exit;
+      end
+      else if SearchClassSource(S, Token, TokenFileItem,
+        TokenFileItem, Item, ListAll, AllFunctions) then
+      begin
+        Result := True;
+        Exit;
+      end
+      else
+      begin
+        //Result := False;
+        //Exit;
       end;
     end;
   end;
@@ -1379,7 +1488,7 @@ begin
     begin
       Result := True;
       TokenFileItem := TokenFile;
-      if (Token.Token in [tkClass, tkStruct]) then
+      if (Token.Token in [tkClass, tkStruct, tkUnion]) then
         Exit;
       LastWord := GetVarType(Token.Flag);
       if (Token.Token = tkDefine) then
@@ -1395,7 +1504,7 @@ begin
 
   //Skip token haven't a Ancestor type
   if not (Token.Token in [tkDefine, tkVariable, tkTypeStruct, tkTypeUnion,
-      tkTypedef]) then Exit;
+      tkTypedef, tkPrototype, tkFunction]) then Exit;
 
   //searched filepath
   FilePath := ExtractFilePath(TokenFile.FileName);
@@ -1411,7 +1520,7 @@ begin
     begin
       Result := True;
       if not (Token.Token in [tkDefine, tkVariable, tkTypeStruct, tkTypeUnion,
-        tkTypedef]) then Break;
+        tkTypedef, tkPrototype, tkFunction]) then Break;
     end;
   end;
 end;
@@ -1431,41 +1540,75 @@ end;
 procedure TTokenFiles.FillCompletionClass(InsertList, ShowList: TStrings;
   CompletionColors: TCompletionColors; TokenFile: TTokenFile; Item: TTokenClass;
   AllowScope: TScopeClassState);
+
+  procedure FillCompletionClassRecursive(TokenItem: TTokenFile;
+    Token: TTokenClass; aAllowScope, DenyScope: TScopeClassState;
+    TokenList: TTokenList);
+  var
+    SearchClass: String;
+    List: TStrings;
+    I: Integer;
+  begin
+    //show all objects from class, struct or scope
+    FillCompletionTreeNoRepeat(InsertList, ShowList, Token, -1,
+      CompletionColors, TokenList, aAllowScope, False, True);
+    List := TStringList.Create;
+    GetDescendants(Token.Flag, List, scPublic);
+    for I := 0 to List.Count - 1 do
+    begin
+      SearchClass := List.Strings[I];
+      aAllowScope := [scProtected, scPublic] - DenyScope;
+      if SearchToken(SearchClass, TokenItem,
+        TokenItem, Token, [tkClass, tkStruct, tkUnion], Token.SelStart) then
+      begin
+        //fill all decendent class
+        FillCompletionClassRecursive(TokenItem, Token, aAllowScope, DenyScope,
+          TokenList);
+      end;
+    end;
+    if not (aAllowScope = []) then
+    begin
+      List.Free;
+      Exit;
+    end;
+    GetDescendants(Token.Flag, List, scPrivate);
+    for I := 0 to List.Count - 1 do
+    begin
+      SearchClass := List.Strings[I];
+      aAllowScope := [scProtected, scPublic] - DenyScope;
+      if SearchToken(SearchClass, TokenItem,
+        TokenItem, Token, [tkClass, tkStruct, tkUnion], Token.SelStart) then
+      begin
+        //fill all decendent class
+        FillCompletionClassRecursive(TokenItem, Token, aAllowScope, DenyScope,
+          TokenList);
+      end;
+    end;
+    GetDescendants(Token.Flag, List, scProtected);
+    for I := 0 to List.Count - 1 do
+    begin
+      SearchClass := List.Strings[I];
+      aAllowScope := [scProtected, scPublic] - DenyScope;
+      if SearchToken(SearchClass, TokenItem,
+        TokenItem, Token, [tkClass, tkStruct, tkUnion], Token.SelStart) then
+      begin
+        //fill all decendent class
+        FillCompletionClassRecursive(TokenItem, Token, aAllowScope, DenyScope,
+          TokenList);
+      end;
+    end;
+    List.Free;
+  end;
+
 var
   TokenList: TTokenList;
-  SearchClass, S: String;
-  Token: TTokenClass;
-  TokenItem: TTokenFile;
   DenyScope: TScopeClassState;
 begin
-  //fill all decendent class
-  Token := Item;
   TokenList := TTokenList.Create;
   DenyScope := [];
   if not (AllowScope = []) then
     DenyScope := [scPrivate, scProtected];
-  repeat
-    //show all objects from class, struct or scope
-    FillCompletionTreeNoRepeat(InsertList, ShowList, Token, -1,
-      CompletionColors, TokenList, AllowScope, False, True);
-    SearchClass := GetLastWord(Token.Flag);
-    if (SearchClass = '') then
-      Break;
-    S := GetFirstWord(Token.Flag);
-    if not StringIn(S, ScopeNames) then
-      Exit;
-    if not (AllowScope = []) and StringIn(S, ['protected', 'private']) then
-      Break;
-    if S = 'public' then
-      AllowScope := [scProtected, scPublic] - DenyScope
-    else if S = 'protected' then
-      AllowScope := [scProtected, scPublic] - DenyScope
-    else if S = 'private' then
-      AllowScope := [scProtected, scPublic] - DenyScope;
-    if not SearchToken(SearchClass, TokenFile,
-      TokenItem, Token, [tkClass], Token.SelStart) then
-      Break;
-  until SearchClass = '';
+  FillCompletionClassRecursive(TokenFile, Item, AllowScope, DenyScope, TokenList);
   TokenList.Free;
 end;
 
@@ -1474,10 +1617,9 @@ function TTokenFiles.GetFieldsBaseType(const S, Fields: String;
   var Token: TTokenClass; CodeCompletion: Boolean): Boolean;
 var
   List: TStrings;
-  I, J: Integer;
-  AllowScope: TScopeClassState;
-  SearchClass, Scope, CurrentField: String;
+  I: Integer;
 begin
+  //search var->
   Result := SearchSource(S, TokenFile, TokenFileItem, Token, SelStart);
   if not Result then
     Exit;
@@ -1485,7 +1627,7 @@ begin
   GetStringsFields(Fields, List);
   if (S <> 'this') then
   begin                //var.bla             //func()->bla
-    if (Token.Token in [tkVariable, tkFunction, tkDefine]) then
+    if (Token.Token in [tkVariable, tkFunction, tkPrototype, tkDefine]) then
     begin
       if not GetBaseType(GetVarType(Token.Flag), Token.SelStart,
             TokenFileItem, TokenFileItem, Token) then
@@ -1498,7 +1640,7 @@ begin
   end;
   for I := 0 to List.Count - 1 do
   begin
-    if Token.SearchSource(List.Strings[I], Token) then
+    {if Token.SearchSource(List.Strings[I], Token) then
     begin
       if (Token.Token = tkVariable) and ((I < List.Count - 1) or
         CodeCompletion) then
@@ -1518,43 +1660,72 @@ begin
       end;
     end
     else
-    begin
-      if Token.Token in [tkClass] then
+    begin}
+      if Token.Token in [tkClass, tkStruct, tkUnion] then
       begin
-        SearchClass := GetLastWord(Token.Flag);
-        if (SearchClass = '') then
+        //get var.field    note: field can be an function
+        Result := SearchClassSource(List.Strings[I], Token, TokenFileItem,
+          TokenFileItem, Token, nil, False, [scPublic]);
+        if not Result then
         begin
           Result := False;
           List.Free;
           Exit;
         end;
-        Scope := GetFirstWord(Token.Flag);
-        if not StringIn(Scope, ScopeNames) then
+        //last parameter and get tree for completion
+        // var.field()->
+        if (I = List.Count - 1) and CodeCompletion and
+          (not StringIn(GetVarType(Token.Flag), ReservedTypes) and
+          not GetBaseType(GetVarType(Token.Flag), 0, TokenFileItem,
+          TokenFileItem, Token)) then
         begin
           Result := False;
           List.Free;
           Exit;
         end;
-        AllowScope := [];
-        if Scope = 'public' then
-          AllowScope := [scProtected, scPublic]
-        else if Scope = 'protected' then
-          AllowScope := [scProtected]
-        else if Scope = 'private' then
-          AllowScope := [scPrivate];
-        CurrentField := Token.Name + '.' + List.Strings[I];
-        for J := I + 1 to List.Count - 1 do
+      end
+      else if Token.Token in [tkFunction, tkPrototype, tkVariable] then
+      begin
+        //get var.field    note: field can be an function
+        if StringIn(GetVarType(Token.Flag), ReservedTypes) or
+          not GetBaseType(GetVarType(Token.Flag), 0, TokenFileItem,
+          TokenFileItem, Token) then
         begin
-          CurrentField := CurrentField + '.' + List.Strings[J];
+          Result := False;
+          List.Free;
+          Exit;
         end;
-        Result := GetFieldsBaseType(SearchClass, CurrentField, Token.SelStart,
-          TokenFileItem, TokenFileItem, Token, CodeCompletion);
+        //get var.field    field is an tree object variable
+        if Token.Token in [tkClass, tkStruct, tkUnion] then
+          Result := SearchClassSource(List.Strings[I], Token, TokenFileItem,
+            TokenFileItem, Token)
+        else
+          Result := False;
+        if not Result then
+        begin
+          Result := False;
+          List.Free;
+          Exit;
+        end;
+        //last parameter and get tree for completion
+        // var.field()->
+        if (I = List.Count - 1) and CodeCompletion and
+          (not StringIn(GetVarType(Token.Flag), ReservedTypes) and
+          not GetBaseType(GetVarType(Token.Flag), 0, TokenFileItem,
+          TokenFileItem, Token)) then
+        begin
+          Result := False;
+          List.Free;
+          Exit;
+        end;
       end
       else
+      begin
         Result := False;
-      List.Free;
-      Exit;
-    end;
+        List.Free;
+        Exit;
+      end;
+    {end;}
   end;
   List.Free;
   //for Structured Data Types
@@ -1569,12 +1740,10 @@ function TTokenFiles.GetFieldsBaseParams(const S, Fields: String;
   SelStart: Integer; TokenFile: TTokenFile; ParamsList: TStrings): Boolean;
 var
   List: TStrings;
-  I, J: Integer;
-  AllowScope: TScopeClassState;
-  SearchClass, Scope, CurrentField: String;
+  I: Integer;
   TokenFileItem: TTokenFile;
-  Token, Item: TTokenClass;
-  tss: Boolean;
+  Token{, Item^}: TTokenClass;
+//  tss: Boolean;
 begin
   List := TStringList.Create;
   GetStringsFields(Fields, List);
@@ -1612,52 +1781,62 @@ begin
   end;
   for I := 0 to List.Count - 1 do
   begin
-    tss := Token.SearchSource(List.Strings[I], Item, 0, False, ParamsList,
-      (I = List.Count - 1));
-    if (Token.Token in [tkClass]) and (I = List.Count - 1) and
-      (GetLastWord(Token.Flag) <> '') then
+    {tss := Token.SearchSource(List.Strings[I], Item, 0, False, ParamsList,
+      (I = List.Count - 1));}
+    if (Token.Token in [tkClass, tkStruct, tkUnion]) {and
+      ((I = List.Count - 1) or not tss) and (GetLastWord(Token.Flag) <> '')} then
     begin
-      SearchClass := GetLastWord(Token.Flag);
-      if (SearchClass = '') then
+      if (I = List.Count - 1) then
+        SearchClassSource(List.Strings[I], Token, TokenFileItem,
+          TokenFileItem, Token, ParamsList, True)
+      else
+        SearchClassSource(List.Strings[I], Token, TokenFileItem,
+          TokenFileItem, Token);
+      //CurrentField := Token.Name + '.' + List.Strings[I];
+      //for J := I + 1 to List.Count - 1 do
+      //begin
+      //  CurrentField := CurrentField + '.' + List.Strings[J];
+      //end;
+      //Result := GetFieldsBaseParams(SearchClass, CurrentField, Token.SelStart,
+      //  TokenFileItem, ParamsList);
+    end
+    else if Token.Token in [tkFunction, tkPrototype, tkVariable] then
+    begin
+      if StringIn(GetVarType(Token.Flag), ReservedTypes) or
+        not GetBaseType(GetVarType(Token.Flag), 0, TokenFileItem,
+        TokenFileItem, Token) then
       begin
         Result := False;
         List.Free;
         Exit;
       end;
-      Scope := GetFirstWord(Token.Flag);
-      if not StringIn(Scope, ScopeNames) then
+      if Token.Token in [tkClass, tkStruct, tkUnion] then
+        Result := SearchClassSource(List.Strings[I], Token, TokenFileItem,
+          TokenFileItem, Token)
+      else
+        Result := False;
+      if not Result then
       begin
         Result := False;
         List.Free;
         Exit;
       end;
-      AllowScope := [];
-      if Scope = 'public' then
-        AllowScope := [scProtected, scPublic]
-      else if Scope = 'protected' then
-        AllowScope := [scProtected]
-      else if Scope = 'private' then
-        AllowScope := [scPrivate];
-      //if I = List.Count - 1 then
-      //  Result := SearchSource(S, TokenFile, TokenFileItem, Token, SelStart,
-      //              ParamsList, True);
-      CurrentField := Token.Name + '.' + List.Strings[I];
-      for J := I + 1 to List.Count - 1 do
-      begin
-        CurrentField := CurrentField + '.' + List.Strings[J];
-      end;
-      Result := GetFieldsBaseParams(SearchClass, CurrentField, Token.SelStart,
-        TokenFileItem, ParamsList);
     end
     else
+    begin
       Result := False;
+      List.Free;
+      Exit;
+    end;
+
+    {  Result := False;
     if not tss then
     begin
       List.Free;
       Exit;
     end;
     Token := Item;
-    if (Token.Token = tkVariable) then
+    if (Token.Token in [tkVariable, tkFunction, tkPrototype]) then
     begin
       if not StringIn(GetVarType(Token.Flag), ReservedTypes) and
         not GetBaseType(GetVarType(Token.Flag), Token.SelStart,
@@ -1677,7 +1856,7 @@ begin
       else if (Token.Token in [tkConstructor, tkFunction, tkPrototype,
         tkTypedefProto]) and (I = List.Count - 1) then
         ParamsList.AddObject('', Token);
-    end;
+    end;}
   end;
   List.Free;
   Result := True;

@@ -4,9 +4,9 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, RzCommon, Menus, ExtCtrls, StdCtrls, ComCtrls, Mask, RzEdit,
-  RzSpnEdt, ImgList, Grids, ListGridView, ExtDlgs, UFileProperty, CheckLst,
-  Buttons, IconDialog, FormEffect;
+  Dialogs, Menus, ExtCtrls, StdCtrls, ComCtrls, Mask, ImgList, Grids,
+  ListGridView, ExtDlgs, UFileProperty, CheckLst, Buttons, IconDialog,
+  FormEffect, EditAlign;
 
 type
 
@@ -30,15 +30,10 @@ type
     PUMIcon: TPopupMenu;
     ChangeIcon1: TMenuItem;
     RemoveIcon1: TMenuItem;
-    RzMenuController1: TRzMenuController;
     GrbIncVer: TGroupBox;
     ChbIncVer: TCheckBox;
     GrpVersion: TGroupBox;
     ChbIncBuild: TCheckBox;
-    EditMajor: TRzSpinEdit;
-    EditMinor: TRzSpinEdit;
-    EditRelease: TRzSpinEdit;
-    EditBuild: TRzSpinEdit;
     LblMajor: TLabel;
     LblMinor: TLabel;
     LblRelease: TLabel;
@@ -83,6 +78,14 @@ type
     ChbCreateLL: TCheckBox;
     SBtnEditInc: TSpeedButton;
     SBtnEdit: TSpeedButton;
+    EditMajor: TEditAlign;
+    UpDownMajor: TUpDown;
+    EditMinor: TEditAlign;
+    UpDownMinor: TUpDown;
+    EditRelease: TEditAlign;
+    UpDownRelease: TUpDown;
+    EditBuild: TEditAlign;
+    UpDownBuild: TUpDown;
     procedure ListValuesEditColumn(Sender: TObject; ACol, ARow: Integer;
       var CanEdit: Boolean; var EditType: TEditType);
     procedure FormCreate(Sender: TObject);
@@ -126,6 +129,10 @@ type
     procedure ListIncsDblClick(Sender: TObject);
     procedure ChbCreateLLClick(Sender: TObject);
     procedure CBIncsKeyPress(Sender: TObject; var Key: Char);
+    procedure VersionNumbersChange(Sender: TObject);
+    procedure VersionNumbersKeyPress(Sender: TObject; var Key: Char);
+    procedure UpDownVersionChanging(Sender: TObject;
+      var AllowChange: Boolean);
   private
     { Private declarations }
   public
@@ -146,7 +153,7 @@ uses UUtils, UFrmMain, ULanguages;
 
 procedure TFrmProperty.Save;
 var
-  Temp: String;
+  Temp, OldFlags: String;
   I: Integer;
 begin
   if (Project.FileType = FILE_TYPE_PROJECT) then
@@ -187,6 +194,7 @@ begin
     else
       Temp := Temp + ' ' + ListIncs.Items.Strings[I];
   end;
+  OldFlags := Project.Flags;
   Project.Flags := Trim(Temp);
   Project.DeleteObjsBefore := CLBClean.Checked[0];
   Project.DeleteObjsAfter := CLBClean.Checked[1];
@@ -196,10 +204,10 @@ begin
   Project.AppType := RGAppTp.ItemIndex;
   Project.EnableTheme := ChbEnbThm.Checked;
   Project.RequiresAdmin := ChbReqAdmin.Checked;
-  Project.Version.Major := EditMajor.IntValue;
-  Project.Version.Minor := EditMinor.IntValue;
-  Project.Version.Release := EditRelease.IntValue;
-  Project.Version.Build := EditBuild.IntValue;
+  Project.Version.Major := UpDownMajor.Position;
+  Project.Version.Minor := UpDownMinor.Position;
+  Project.Version.Release := UpDownRelease.Position;
+  Project.Version.Build := UpDownBuild.Position;
   Project.AutoIncBuild := ChbIncBuild.Checked;
   Project.Version.LanguageID := TLanguageItem(
     CbbLang.ItemsEx.Items[CbbLang.ItemIndex].Data).ID;
@@ -214,6 +222,8 @@ begin
   Project.Version.OriginalFilename := ListValues.Cells[1, 9];
   Project.PropertyChanged := True;
   Project.CompilePropertyChanged := True;
+  if OldFlags <> Project.Flags then
+    Project.ForceClean := True;
   Project.IsNew := False;
   FrmFalconMain.TreeViewProjectsChange(Self, Project.Node);
 end;
@@ -257,10 +267,10 @@ begin
     List.Free;
     ChbIncVer.Checked := Project.IncludeVersionInfo;
     ChbIncVerClick(ChbIncVer);
-    EditMajor.IntValue := Project.Version.Major;
-    EditMinor.IntValue := Project.Version.Minor;
-    EditRelease.IntValue := Project.Version.Release;
-    EditBuild.IntValue := Project.Version.Build;
+    UpDownMajor.Position := Project.Version.Major;
+    UpDownMinor.Position := Project.Version.Minor;
+    UpDownRelease.Position := Project.Version.Release;
+    UpDownBuild.Position := Project.Version.Build;
     ChbIncBuild.Checked := Project.AutoIncBuild;
     ListValues.Cells[1, 1] := Project.Version.CompanyName;
     ListValues.Cells[1, 2] := Project.Version.FileDescription;
@@ -494,8 +504,8 @@ end;
 
 procedure TFrmProperty.VersionChange(Sender: TObject);
 begin
-  ListValues.Cells[1, 3] := Format('%d.%d.%d.%d', [EditMajor.IntValue,
-    EditMinor.IntValue, EditRelease.IntValue, EditBuild.IntValue]);
+  ListValues.Cells[1, 3] := Format('%d.%d.%d.%d', [UpDownMajor.Position,
+    UpDownMinor.Position, UpDownRelease.Position, UpDownBuild.Position]);
   ProjectChange(Sender);
 end;
 
@@ -904,6 +914,32 @@ begin
     Key := #0;
     SBtnAddInc.Click;
   end;
+end;
+
+procedure TFrmProperty.VersionNumbersChange(Sender: TObject);
+begin
+  if Length(TEditAlign(Sender).Text) > 0 then
+  begin
+    case TEditAlign(Sender).Tag of
+      0: UpDownMajor.Position := StrToInt(TEditAlign(Sender).Text);
+      1: UpDownMinor.Position := StrToInt(TEditAlign(Sender).Text);
+      2: UpDownRelease.Position := StrToInt(TEditAlign(Sender).Text);
+      3: UpDownBuild.Position := StrToInt(TEditAlign(Sender).Text);
+    end;
+  end;
+  VersionChange(Sender);
+end;
+
+procedure TFrmProperty.VersionNumbersKeyPress(Sender: TObject; var Key: Char);
+begin
+  if not (Key in ['0'..'9', #8, #27]) then
+    Key := #0;
+end;
+
+procedure TFrmProperty.UpDownVersionChanging(Sender: TObject;
+  var AllowChange: Boolean);
+begin
+  VersionChange(Sender);
 end;
 
 end.

@@ -203,15 +203,6 @@ object FraPrjOpt: TFraPrjOpt
           Height = 13
           Caption = 'Description'
         end
-        object RzSeparator1: TRzSeparator
-          Left = 148
-          Top = 4
-          Width = 2
-          Height = 81
-          Orientation = orVertical
-          ShowGradient = True
-          Color = clBtnFace
-        end
         object LblVers: TLabel
           Left = 168
           Top = 5
@@ -226,29 +217,36 @@ object FraPrjOpt: TFraPrjOpt
           Height = 13
           Caption = 'Product Name'
         end
-        object EditComp: TRzEdit
+        object Bevel2: TBevel
+          Left = 148
+          Top = 6
+          Width = 1
+          Height = 78
+          Shape = bsLeftLine
+        end
+        object EditComp: TEdit
           Left = 8
           Top = 20
           Width = 121
           Height = 21
           TabOrder = 0
         end
-        object EditVer: TRzEdit
-          Left = 168
-          Top = 20
-          Width = 121
-          Height = 21
-          Text = '1.0.0.0'
-          TabOrder = 1
-        end
-        object EditDesc: TRzEdit
+        object EditDesc: TEdit
           Left = 8
           Top = 60
           Width = 121
           Height = 21
-          TabOrder = 2
+          TabOrder = 1
         end
-        object EditProdName: TRzEdit
+        object EditVer: TEdit
+          Left = 168
+          Top = 20
+          Width = 121
+          Height = 21
+          TabOrder = 2
+          Text = '1.0.0.0'
+        end
+        object EditProdName: TEdit
           Left = 168
           Top = 60
           Width = 121

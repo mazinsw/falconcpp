@@ -52,15 +52,25 @@ object FormGotoLine: TFormGotoLine
     TabOrder = 2
     OnClick = BtnCancelClick
   end
-  object EditLine: TRzSpinEdit
+  object EditLine: TEditAlign
     Left = 8
     Top = 24
-    Width = 313
+    Width = 295
     Height = 21
-    AllowKeyEdit = True
-    Max = 1.000000000000000000
-    Min = 1.000000000000000000
     TabOrder = 0
+    Text = '0'
+    OnChange = EditLineChange
     OnKeyPress = EditLineKeyPress
+    Alignment = taRightJustify
+  end
+  object UpDown: TUpDown
+    Left = 303
+    Top = 24
+    Width = 17
+    Height = 21
+    Associate = EditLine
+    ArrowKeys = False
+    TabOrder = 3
+    Thousands = False
   end
 end

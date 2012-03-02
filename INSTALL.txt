@@ -13,6 +13,7 @@ compile projects
     'src\pkgmanager\PkgManager.dpr'
     'src\updater\Updater.dpr'
     'src\others\astyle\astyle_dll.fpj'
+    'src\others\console\ConsoleRunner.fpj'
 
 run 'bin/make_installer.bat'
 run 'bin/Fancon C++-Version-[No-MinGW-]Setup.exe'

@@ -1,6 +1,6 @@
 object FrmProperty: TFrmProperty
-  Left = 516
-  Top = 392
+  Left = 463
+  Top = 240
   BorderStyle = bsDialog
   Caption = 'Properties'
   ClientHeight = 428
@@ -217,53 +217,100 @@ object FrmProperty: TFrmProperty
             TabOrder = 0
             OnClick = ProjectChange
           end
-          object EditMajor: TRzSpinEdit
+          object EditMajor: TEditAlign
             Left = 8
             Top = 40
-            Width = 73
+            Width = 55
             Height = 21
-            AllowKeyEdit = True
-            Max = 9999.000000000000000000
             Enabled = False
-            TabOnEnter = True
             TabOrder = 1
-            OnChange = VersionChange
+            Text = '0'
+            OnChange = VersionNumbersChange
+            OnKeyPress = VersionNumbersKeyPress
+            Alignment = taRightJustify
           end
-          object EditMinor: TRzSpinEdit
+          object UpDownMajor: TUpDown
+            Left = 63
+            Top = 40
+            Width = 17
+            Height = 21
+            Associate = EditMajor
+            Enabled = False
+            Max = 9999
+            TabOrder = 2
+            OnChanging = UpDownVersionChanging
+          end
+          object EditMinor: TEditAlign
+            Tag = 1
             Left = 116
             Top = 40
-            Width = 73
+            Width = 55
             Height = 21
-            AllowKeyEdit = True
-            Max = 9999.000000000000000000
             Enabled = False
-            TabOnEnter = True
-            TabOrder = 2
-            OnChange = VersionChange
+            TabOrder = 3
+            Text = '0'
+            OnChange = VersionNumbersChange
+            OnKeyPress = VersionNumbersKeyPress
+            Alignment = taRightJustify
           end
-          object EditRelease: TRzSpinEdit
+          object UpDownMinor: TUpDown
+            Left = 171
+            Top = 40
+            Width = 16
+            Height = 21
+            Associate = EditMinor
+            Enabled = False
+            Max = 9999
+            TabOrder = 4
+            OnChanging = UpDownVersionChanging
+          end
+          object EditRelease: TEditAlign
+            Tag = 2
             Left = 222
             Top = 40
-            Width = 73
+            Width = 55
             Height = 21
-            AllowKeyEdit = True
-            Max = 9999.000000000000000000
             Enabled = False
-            TabOnEnter = True
-            TabOrder = 3
-            OnChange = VersionChange
+            TabOrder = 5
+            Text = '0'
+            OnChange = VersionNumbersChange
+            OnKeyPress = VersionNumbersKeyPress
+            Alignment = taRightJustify
           end
-          object EditBuild: TRzSpinEdit
+          object UpDownRelease: TUpDown
+            Left = 277
+            Top = 40
+            Width = 16
+            Height = 21
+            Associate = EditRelease
+            Enabled = False
+            Max = 9999
+            TabOrder = 6
+            OnChanging = UpDownVersionChanging
+          end
+          object EditBuild: TEditAlign
+            Tag = 3
             Left = 328
             Top = 40
-            Width = 73
+            Width = 55
             Height = 21
-            AllowKeyEdit = True
-            Max = 9999.000000000000000000
             Enabled = False
-            TabOnEnter = True
-            TabOrder = 4
-            OnChange = VersionChange
+            TabOrder = 7
+            Text = '0'
+            OnChange = VersionNumbersChange
+            OnKeyPress = VersionNumbersKeyPress
+            Alignment = taRightJustify
+          end
+          object UpDownBuild: TUpDown
+            Left = 383
+            Top = 40
+            Width = 16
+            Height = 21
+            Associate = EditBuild
+            Enabled = False
+            Max = 9999
+            TabOrder = 8
+            OnChanging = UpDownVersionChanging
           end
         end
         object GrpLang: TGroupBox
@@ -691,7 +738,6 @@ object FrmProperty: TFrmProperty
             Width = 369
             Height = 21
             AutoDropDown = True
-            AutoCloseUp = True
             ItemHeight = 13
             TabOrder = 0
             OnKeyPress = CBLibsKeyPress
@@ -1227,10 +1273,6 @@ object FrmProperty: TFrmProperty
       Caption = 'Remove Icon'
       OnClick = RemoveIcon1Click
     end
-  end
-  object RzMenuController1: TRzMenuController
-    Left = 102
-    Top = 394
   end
   object OpenIcon: TIconDialog
     IconIndex = 0

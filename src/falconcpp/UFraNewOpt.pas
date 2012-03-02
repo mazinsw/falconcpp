@@ -4,8 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
-  Dialogs, RzTabs, StdCtrls, ExtCtrls, ImgList, ComCtrls, RzBckgnd, ExtDlgs,
-  Menus, Mask, RzEdit, IconDialog;
+  Dialogs, StdCtrls, ExtCtrls, ImgList, ComCtrls, ExtDlgs,
+  Menus, Mask, IconDialog;
 
 type
   TFraPrjOpt = class(TFrame)
@@ -21,14 +21,12 @@ type
     GrBInfo: TGroupBox;
     LblCompa: TLabel;
     LblDesc: TLabel;
-    RzSeparator1: TRzSeparator;
     LblVers: TLabel;
     LblProdName: TLabel;
     PUMIcon: TPopupMenu;
     ChangeIcon1: TMenuItem;
     RemoveIcon1: TMenuItem;
     ImgIcon: TImage;
-    EditComp: TRzEdit;
     RGrpType: TRadioGroup;
     EditProjName: TEdit;
     LblName: TLabel;
@@ -36,12 +34,14 @@ type
     CHBMinSize: TCheckBox;
     CHBShowWar: TCheckBox;
     CHBOptSpd: TCheckBox;
-    EditVer: TRzEdit;
-    EditDesc: TRzEdit;
-    EditProdName: TRzEdit;
     Panel1: TPanel;
     Panel2: TPanel;
     OpenIcon: TIconDialog;
+    EditComp: TEdit;
+    Bevel2: TBevel;
+    EditDesc: TEdit;
+    EditVer: TEdit;
+    EditProdName: TEdit;
     procedure BtnChgIconClick(Sender: TObject);
     procedure RemoveIcon1Click(Sender: TObject);
     procedure CHBIncClick(Sender: TObject);

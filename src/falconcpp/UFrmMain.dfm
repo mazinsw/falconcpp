@@ -1226,16 +1226,16 @@ object FrmFalconMain: TFrmFalconMain
     Images = ImgListMenus
     Panels = <
       item
-        Size = 120
+        Size = 140
         Tag = 0
         TextTruncation = twEndEllipsis
       end
       item
-        Size = 150
+        Size = 170
         Tag = 0
       end
       item
-        Size = 150
+        Size = 170
         Tag = 0
       end
       item
@@ -1247,7 +1247,7 @@ object FrmFalconMain: TFrmFalconMain
     ShowHint = True
     UseSystemFont = False
     object ProgressBarParser: TProgressBar
-      Left = 420
+      Left = 480
       Top = 4
       Width = 148
       Height = 16

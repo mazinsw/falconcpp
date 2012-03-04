@@ -1344,7 +1344,7 @@ object FrmFalconMain: TFrmFalconMain
       TabStop = True
       object TSOutline: TModernTabSheet
         Caption = 'Outline'
-        ImageIndex = 0
+        ImageIndex = 56
         PageControl = PageControlOutline
         object TreeViewOutline: TTreeView
           Left = 0

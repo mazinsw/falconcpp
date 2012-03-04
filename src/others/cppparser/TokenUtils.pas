@@ -1246,7 +1246,8 @@ function SkipStringInv(const init: PChar; var ptr: PChar): Boolean;
 begin
   if ptr^ = '"' then
     Dec(ptr);
-  while (ptr >= init) and (ptr^ <> #10) and (ptr^ <> '"') do
+  while (ptr >= init) and (ptr^ <> #10) and ((ptr^ <> '"') or
+    (((ptr - 1)^ = '\') and (ptr^ = '"'))) do
     Dec(ptr);
   Result := (ptr^  = '"');
 end;
@@ -1255,7 +1256,8 @@ function SkipSingleQuotesInv(const init: PChar; var ptr: PChar): Boolean;
 begin
   if ptr^ = '''' then
     Dec(ptr);
-  while (ptr >= init) and (ptr^ <> '''') do
+  while (ptr >= init) and ((ptr^ <> '''') or (((ptr - 1)^ = '\') and
+    (ptr^ = ''''))) do
     Dec(ptr);
   Result := (ptr^  = '''');
 end;
@@ -1474,7 +1476,7 @@ end;
 function GetFirstOpenBrace(const S: String; QuoteChar: Char;
   var SelStart: Integer): Boolean;
 var
-  init, ptr: PChar;
+  init, ptr, skip: PChar;
 begin
   Result := False;
   init := PChar(S);
@@ -1491,20 +1493,38 @@ begin
     if SkipSingleQuotesInv(init, ptr) then
       Dec(ptr);
   end;
-  while (ptr^ <> '(') and (ptr >= init) do
-  begin
-    case ptr^ of
-      ')': SkipInvPair(init, ptr, '(', ')');
-      '/':
-        if (ptr > init) and ((ptr - 1)^ = '*') then
-          SkipMultlineCommentInv(init, ptr);
-      '"': SkipStringInv(init, ptr);
-      '''': SkipSingleQuotesInv(init, ptr);
-      ';', '{', '}': Exit;
-    else ;
+  repeat
+    while (ptr^ <> '(') and (ptr >= init) do
+    begin
+      case ptr^ of
+        ')': SkipInvPair(init, ptr, '(', ')');
+        '/':
+          if (ptr > init) and ((ptr - 1)^ = '*') then
+            SkipMultlineCommentInv(init, ptr);
+        '"': SkipStringInv(init, ptr);
+        '''': SkipSingleQuotesInv(init, ptr);
+        ';', '{', '}': Exit;
+      else ;
+      end;
+      Dec(ptr);
     end;
-    Dec(ptr);
-  end;
+    skip := ptr;
+    if ptr^ <> '(' then
+      Exit;
+    Dec(skip);
+    while (skip >= init) and (skip^ in LineChars+SpaceChars) do
+    begin
+      Dec(skip);
+      case skip^ of
+        '/':
+          if (ptr > init) and ((ptr - 1)^ = '*') then
+            SkipMultlineCommentInv(init, skip);
+      end;
+    end;
+    if skip^ in LetterChars+DigitChars then
+      Break;
+    ptr := skip;
+  until ptr <= init;
   if ptr^ <> '(' then
     Exit;
   SelStart := ptr - init;

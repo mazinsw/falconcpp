@@ -1626,7 +1626,7 @@ begin
   List := TStringList.Create;
   GetStringsFields(Fields, List);
   if (S <> 'this') then
-  begin                //var.bla             //func()->bla
+  begin //'prototype var()->' or var.bla or func()->bla
     if (Token.Token in [tkVariable, tkFunction, tkPrototype, tkDefine]) then
     begin
       if not GetBaseType(GetVarType(Token.Flag), Token.SelStart,
@@ -1640,99 +1640,74 @@ begin
   end;
   for I := 0 to List.Count - 1 do
   begin
-    {if Token.SearchSource(List.Strings[I], Token) then
+    if Token.Token in [tkClass, tkTypeStruct, tkStruct, tkUnion,
+      tkTypeUnion] then
     begin
-      if (Token.Token = tkVariable) and ((I < List.Count - 1) or
-        CodeCompletion) then
-      begin
-        if not StringIn(GetVarType(Token.Flag), ReservedTypes) and
-          not GetBaseType(GetVarType(Token.Flag), Token.SelStart,
-          TokenFileItem, TokenFileItem, Token) then
-        begin
-          if not GetBaseType(GetVarType(Token.Flag), 0,
-            TokenFile, TokenFileItem, Token) then
-          begin
-            Result := False;
-            List.Free;
-            Exit;
-          end;
-        end;
-      end;
-    end
-    else
-    begin}
-      if Token.Token in [tkClass, tkStruct, tkUnion] then
-      begin
-        //get var.field    note: field can be an function
-        Result := SearchClassSource(List.Strings[I], Token, TokenFileItem,
-          TokenFileItem, Token, nil, False, [scPublic]);
-        if not Result then
-        begin
-          Result := False;
-          List.Free;
-          Exit;
-        end;
-        //last parameter and get tree for completion
-        // var.field()->
-        if (I = List.Count - 1) and CodeCompletion and
-          (not StringIn(GetVarType(Token.Flag), ReservedTypes) and
-          not GetBaseType(GetVarType(Token.Flag), 0, TokenFileItem,
-          TokenFileItem, Token)) then
-        begin
-          Result := False;
-          List.Free;
-          Exit;
-        end;
-      end
-      else if Token.Token in [tkFunction, tkPrototype, tkVariable] then
-      begin
-        //get var.field    note: field can be an function
-        if StringIn(GetVarType(Token.Flag), ReservedTypes) or
-          not GetBaseType(GetVarType(Token.Flag), 0, TokenFileItem,
-          TokenFileItem, Token) then
-        begin
-          Result := False;
-          List.Free;
-          Exit;
-        end;
-        //get var.field    field is an tree object variable
-        if Token.Token in [tkClass, tkStruct, tkUnion] then
-          Result := SearchClassSource(List.Strings[I], Token, TokenFileItem,
-            TokenFileItem, Token)
-        else
-          Result := False;
-        if not Result then
-        begin
-          Result := False;
-          List.Free;
-          Exit;
-        end;
-        //last parameter and get tree for completion
-        // var.field()->
-        if (I = List.Count - 1) and CodeCompletion and
-          (not StringIn(GetVarType(Token.Flag), ReservedTypes) and
-          not GetBaseType(GetVarType(Token.Flag), 0, TokenFileItem,
-          TokenFileItem, Token)) then
-        begin
-          Result := False;
-          List.Free;
-          Exit;
-        end;
-      end
-      else
+      //get var.field    note: field can be an function
+      Result := SearchClassSource(List.Strings[I], Token, TokenFileItem,
+        TokenFileItem, Token, nil, False, [scPublic]);
+      if not Result then
       begin
         Result := False;
         List.Free;
         Exit;
       end;
-    {end;}
+      //last parameter and get tree for completion
+      // var.field()->
+      if (I = List.Count - 1) and CodeCompletion and
+        (not StringIn(GetVarType(Token.Flag), ReservedTypes) and
+        not GetBaseType(GetVarType(Token.Flag), 0, TokenFileItem,
+        TokenFileItem, Token)) then
+      begin
+        Result := False;
+        List.Free;
+        Exit;
+      end;
+    end
+    else if Token.Token in [tkFunction, tkPrototype, tkVariable] then
+    begin
+      //get var.field    note: field can be an function
+      if StringIn(GetVarType(Token.Flag), ReservedTypes) or
+        not GetBaseType(GetVarType(Token.Flag), 0, TokenFileItem,
+        TokenFileItem, Token) then
+      begin
+        Result := False;
+        List.Free;
+        Exit;
+      end;
+      //get var.field    field is an tree object variable
+      if Token.Token in [tkClass, tkTypeStruct, tkStruct, tkUnion,
+        tkTypeUnion] then
+        Result := SearchClassSource(List.Strings[I], Token, TokenFileItem,
+          TokenFileItem, Token)
+      else
+        Result := False;
+      if not Result then
+      begin
+        Result := False;
+        List.Free;
+        Exit;
+      end;
+      //last parameter and get tree for completion
+      // var.field()->
+      if (I = List.Count - 1) and CodeCompletion and
+        (not StringIn(GetVarType(Token.Flag), ReservedTypes) and
+        not GetBaseType(GetVarType(Token.Flag), 0, TokenFileItem,
+        TokenFileItem, Token)) then
+      begin
+        Result := False;
+        List.Free;
+        Exit;
+      end;
+    end
+    else
+    begin
+      Result := False;
+      List.Free;
+      Exit;
+    end;
   end;
   List.Free;
-  //for Structured Data Types
-  //if (Token.Token = tkTypedef) and not FindOnly then
-  //begin
-  //  TokenFile.SearchSource(GetVarType(Token.Flag), Token, SelStart);
-  //end;
   Result := True;
 end;
 
@@ -1742,13 +1717,13 @@ var
   List: TStrings;
   I: Integer;
   TokenFileItem: TTokenFile;
-  Token{, Item^}: TTokenClass;
-//  tss: Boolean;
+  Token: TTokenClass;
 begin
   List := TStringList.Create;
   GetStringsFields(Fields, List);
   if List.Count = 0 then
   begin
+    //search function() or class()
     Result := SearchSource(S, TokenFile, TokenFileItem, Token, SelStart,
       ParamsList, True);
     if ParamsList.Count > 0 then
@@ -1756,9 +1731,21 @@ begin
       List.Free;
       Exit;
     end;
+    //Search for constructor
+    if Result and (Token.Token in [tkClass, tkTypeStruct, tkStruct, tkUnion,
+        tkTypeUnion]) then
+    begin
+      if not SearchClassSource(S, Token, TokenFileItem,
+        TokenFileItem, Token, ParamsList, True) then
+      begin
+        //add void contructor to paramlist
+        Exit;
+      end;
+    end;
   end
   else
   begin
+    //search var->
     Result := SearchSource(S, TokenFile, TokenFileItem, Token, SelStart);
   end;
   if not Result then
@@ -1767,10 +1754,11 @@ begin
     Exit;
   end;
   if (S <> 'this') then
-  begin                //var.bla             //func()->bla
+  begin    //prototype var(); or var.bla or func()->bla
     if ((Token.Token in [tkVariable, tkFunction, tkDefine]) and (List.Count > 0))
      or ((Token.Token in [tkVariable, tkDefine]) and (List.Count = 0)) then
     begin
+      //search for variable or return type
       if not GetBaseType(GetVarType(Token.Flag), Token.SelStart,
             TokenFileItem, TokenFileItem, Token, ParamsList, List.Count = 0) then
       begin
@@ -1781,40 +1769,92 @@ begin
   end;
   for I := 0 to List.Count - 1 do
   begin
-    {tss := Token.SearchSource(List.Strings[I], Item, 0, False, ParamsList,
-      (I = List.Count - 1));}
-    if (Token.Token in [tkClass, tkStruct, tkUnion]) {and
-      ((I = List.Count - 1) or not tss) and (GetLastWord(Token.Flag) <> '')} then
+    if (Token.Token in [tkClass, tkTypeStruct, tkStruct, tkUnion,
+        tkTypeUnion]) then
     begin
       if (I = List.Count - 1) then
-        SearchClassSource(List.Strings[I], Token, TokenFileItem,
-          TokenFileItem, Token, ParamsList, True)
+      begin
+        //class->var_of_ancestor or class->function_of_ancestor
+        if not SearchClassSource(List.Strings[I], Token, TokenFileItem,
+          TokenFileItem, Token, ParamsList, True) then
+        begin
+          Result := False;
+          List.Free;
+          Exit;
+        end;
+      end
       else
-        SearchClassSource(List.Strings[I], Token, TokenFileItem,
-          TokenFileItem, Token);
-      //CurrentField := Token.Name + '.' + List.Strings[I];
-      //for J := I + 1 to List.Count - 1 do
-      //begin
-      //  CurrentField := CurrentField + '.' + List.Strings[J];
-      //end;
-      //Result := GetFieldsBaseParams(SearchClass, CurrentField, Token.SelStart,
-      //  TokenFileItem, ParamsList);
+      begin
+        //class->var_of_ancestor-> or class->function_of_ancestor->
+        //don't add
+        if not SearchClassSource(List.Strings[I], Token, TokenFileItem,
+          TokenFileItem, Token) then
+        begin
+          Result := False;
+          List.Free;
+          Exit;
+        end;
+      end;
+      //variable is an prototype?
+      if (Token.Token in [tkVariable]) then
+      begin
+        // int a, char b, ...
+        if StringIn(GetVarType(Token.Flag), ReservedTypes) then
+        begin
+          Result := False;
+          List.Free;
+          Exit;
+        end
+        //class var, prototype var;
+        else if not GetBaseType(GetVarType(Token.Flag), 0, TokenFileItem,
+          TokenFileItem, Token) then
+        begin
+          Result := False;
+          List.Free;
+          Exit;
+        end
+        //base of type of var is an prototype and last fild
+        else if (Token.Token in [tkTypedefProto]) and (I = List.Count - 1) then
+            ParamsList.AddObject('', Token)
+        else
+          Result := False;
+        if not Result then
+        begin
+          Result := False;
+          List.Free;
+          Exit;
+        end;
+      end;
     end
-    else if Token.Token in [tkFunction, tkPrototype, tkVariable] then
+    //'type var->' or function()->
+    else if (Token.Token in [tkFunction, tkPrototype, tkVariable]) then
     begin
-      if StringIn(GetVarType(Token.Flag), ReservedTypes) or
-        not GetBaseType(GetVarType(Token.Flag), 0, TokenFileItem,
+      //int a, char b, ...
+      if StringIn(GetVarType(Token.Flag), ReservedTypes) then
+      begin
+        Result := False;
+        List.Free;
+        Exit;
+      end
+      //class var, struct var, class function, struct function
+      else if not GetBaseType(GetVarType(Token.Flag), 0, TokenFileItem,
         TokenFileItem, Token) then
       begin
         Result := False;
         List.Free;
         Exit;
-      end;
-      if Token.Token in [tkClass, tkStruct, tkUnion] then
+      end
+      //base of type of var or function is an prototype and last fild
+      else if (Token.Token in [tkTypedefProto]) and (I = List.Count - 1) then
+          ParamsList.AddObject('', Token)
+      //base of type of var is class, struct or union
+      else if Token.Token in [tkClass, tkTypeStruct, tkStruct, tkUnion,
+        tkTypeUnion] then
         Result := SearchClassSource(List.Strings[I], Token, TokenFileItem,
           TokenFileItem, Token)
       else
         Result := False;
+      //int var, char function
       if not Result then
       begin
         Result := False;
@@ -1828,35 +1868,6 @@ begin
       List.Free;
       Exit;
     end;
-
-    {  Result := False;
-    if not tss then
-    begin
-      List.Free;
-      Exit;
-    end;
-    Token := Item;
-    if (Token.Token in [tkVariable, tkFunction, tkPrototype]) then
-    begin
-      if not StringIn(GetVarType(Token.Flag), ReservedTypes) and
-        not GetBaseType(GetVarType(Token.Flag), Token.SelStart,
-        TokenFileItem, TokenFileItem, Token) then
-      begin
-        if not GetBaseType(GetVarType(Token.Flag), 0,
-          TokenFile, TokenFileItem, Token) then
-        begin
-          Result := False;
-          List.Free;
-          Exit;
-        end
-        else if (Token.Token in [tkConstructor, tkFunction, tkPrototype,
-          tkTypedefProto]) and (I = List.Count - 1) then
-          ParamsList.AddObject('', Token);
-      end
-      else if (Token.Token in [tkConstructor, tkFunction, tkPrototype,
-        tkTypedefProto]) and (I = List.Count - 1) then
-        ParamsList.AddObject('', Token);
-    end;}
   end;
   List.Free;
   Result := True;

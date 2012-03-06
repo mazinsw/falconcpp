@@ -1336,6 +1336,7 @@ begin
   //file environment #include <stdio.h>
   if IncludeToken.Flag = 'S' then
   begin
+    //TODO for
     FindName := ExpandFileName(PathList.Strings[0] +
       ConvertSlashes(IncludeToken.Name));
     Index := IndexOfByFileName(FindName);
@@ -1349,6 +1350,7 @@ begin
     //if not found try file environment #include <stdio.h>
     if Index < 0 then
     begin
+      //TODO for
       FindName := ExpandFileName(PathList.Strings[0] +
         ConvertSlashes(IncludeToken.Name));
       Index := IndexOfByFileName(FindName);
@@ -1457,7 +1459,7 @@ begin
       Exit;
     end;
     ShowMessage('Valid Declaration: ' + Item.Name + ' : ' + Item.Flag);
-    //process here
+    //TODO process here
     FindedList.Free;
     Result :=  True;
     Exit;
@@ -1515,7 +1517,7 @@ begin
       FindedList) then
       Continue;
     LastWord := GetVarType(Token.Flag);
-    if GetBaseTypeRecursive(LastWord, Token.SelStart,
+    if GetBaseTypeRecursive(LastWord, 0,
       Items[Index], TokenFileItem, Token, FindedList, ListAll, AllFunctions) then
     begin
       Result := True;

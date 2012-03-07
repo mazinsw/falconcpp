@@ -598,10 +598,10 @@ type
     RunNow                  : Boolean;//?
     ActDropDownBtn          : Boolean;//?
     XMLOpened               : Boolean;
-    CompilationStopped              : Boolean;
+    CompilationStopped      : Boolean;
     FullScreenMode          : Boolean;
     CanShowHintTip          : Boolean;
-    HandlingTabs             : Boolean;
+    HandlingTabs            : Boolean;
     LastKeyPressed          : Char;
     CanFillCompletion       : Boolean;
     CurrentFileIsParsed     : Boolean;
@@ -6038,7 +6038,7 @@ var
   sheet: TFilePropertySheet;
   TokenItem: TTokenFile;
   SelStart, I, LineLen: integer;
-  Token, Scope: TTokenClass;
+  Token, Scope, SaveScope: TTokenClass;
   AllScope: Boolean;
   AllowScope: TScopeClassState;
   Buffer: TBufferCoord;
@@ -6123,15 +6123,21 @@ begin
     if FilesParsed.GetFieldsBaseType(Input, Fields,
       SelStart, ActiveEditingFile, TokenItem, Token, True) then
     begin
-      //show private fields only on implementation file
+      //show private fields only on implementation scope
       AllowScope := [];
-      AllScope := (CompareText(ChangeFileExt(ActiveEditingFile.FileName, ''),
-        ChangeFileExt(TokenItem.FileName, '')) = 0);
       if ActiveEditingFile.GetScopeAt(Scope, sheet.memo.SelStart) then
       begin
+        SaveScope := Scope;
         Scope := GetTokenByName(Scope, 'Scope', tkScope);
-        if not Assigned(Scope) or (Scope.Flag <> Token.Name) then
-          AllScope := False;
+        AllScope := Assigned(Scope) and (Scope.Flag = Token.Name);
+        if not AllScope then
+        begin
+          SaveScope := SaveScope.Parent;
+          if Assigned(SaveScope) and (SaveScope.Token = tkScopeClass) then
+            SaveScope := SaveScope.Parent;
+          if Assigned(SaveScope) and (SaveScope.Name = Token.Name) then
+            AllScope := True;
+        end;
       end
       else
         AllScope := Pos('::', Fields) > 0;

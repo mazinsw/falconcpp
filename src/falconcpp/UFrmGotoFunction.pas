@@ -36,6 +36,7 @@ type
     { Public declarations }
     procedure Fill(List: TStrings);
     procedure Match(const S: String);
+    procedure UpdateLangNow;
   end;
 
 var
@@ -43,9 +44,21 @@ var
 
 implementation
 
-uses UFrmMain, TokenList, TokenFile, TokenUtils, UFileProperty;
+uses UFrmMain, TokenList, TokenFile, TokenUtils, UFileProperty, ULanguages;
 
 {$R *.dfm}
+
+procedure TFormGotoFunction.UpdateLangNow;
+begin
+  Caption := STR_FRM_GOTOFUNC[1];
+  EditFuncName.OnChange := nil;
+  EditFuncName.Text := STR_FRM_GOTOFUNC[2];
+  EditFuncName.OnChange := EditFuncNameChange;
+  ListViewFunctions.Columns.Items[0].Caption := STR_FRM_GOTOFUNC[3];
+  ListViewFunctions.Columns.Items[1].Caption := STR_FRM_GOTOFUNC[4];
+  ListViewFunctions.Columns.Items[2].Caption := STR_FRM_GOTOFUNC[5];
+  ListViewFunctions.Columns.Items[3].Caption := STR_FRM_GOTOFUNC[6];
+end;
 
 procedure TFormGotoFunction.ClearTokenList;
 var
@@ -125,7 +138,7 @@ begin
   if Trim(EditFuncName.Text) = '' then
   begin
     EditFuncName.Font.Color := clSilver;
-    EditFuncName.Text := 'Function name';
+    EditFuncName.Text := STR_FRM_GOTOFUNC[2];
     EditFuncName.SelStart := 0;
     EditFuncName.SelLength := 0;
     showTextHint := True;
@@ -161,7 +174,7 @@ begin
   begin
     EditFuncName.Font.Color := clSilver;
     EditFuncName.OnChange := nil;
-    EditFuncName.Text := 'Function name';
+    EditFuncName.Text := STR_FRM_GOTOFUNC[2];
     EditFuncName.OnChange := EditFuncNameChange;
     EditFuncName.SelStart := 0;
     EditFuncName.SelLength := 0;
@@ -189,6 +202,7 @@ procedure TFormGotoFunction.FormCreate(Sender: TObject);
 begin
   tokenList := TStringList.Create;
   showTextHint := True;
+  UpdateLangNow;
   EditFuncName.SelStart := 0;
   EditFuncName.SelLength := 0;
 end;

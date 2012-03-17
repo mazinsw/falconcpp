@@ -66,8 +66,25 @@ type
     property Running: boolean read fIsRunning;
   end;
 
+  TExecWaitGetStdOut = class
+  private
+    FFileName: String;
+    FParams: String;
+    FDirectory: String;
+    FOutput: String;
+    hOutputRead, hInputWrite: THandle;
+    FProcessInfo: TProcessInformation;
+    function Launch(hInputRead, hOutputWrite,
+      hErrorWrite : THandle): Boolean;
+    procedure GetStdOut;
+  public
+    function ExecWait(sFileName, sParams, sPath: string;
+      var StdOut: String): Integer;
+  end;
+
 
 function Executor: TExecWait;
+function ExecutorGetStdOut: TExecWaitGetStdOut;
 
 implementation
 
@@ -160,6 +177,143 @@ begin
   fIsRunning := False;
   if Assigned(fOnTermEvent) then
     fOnTermEvent(Self);
+end;
+
+{TExecWaitGetStdOut}
+
+var
+  fExecWaitGetStdOut: TExecWaitGetStdOut;
+
+function ExecutorGetStdOut: TExecWaitGetStdOut;
+begin
+  if not Assigned(fExecWaitGetStdOut) then
+  begin
+    try
+      fExecWaitGetStdOut := TExecWaitGetStdOut.Create;
+    finally
+    end;
+  end;
+  Result := fExecWaitGetStdOut;
+end;
+
+function TExecWaitGetStdOut.ExecWait(sFileName, sParams, sPath: string;
+  var StdOut: String): Integer;
+var
+  SecAttrib: TSecurityAttributes;
+  hOutputReadTmp, hInputWriteTmp: THandle;
+  hInputRead, hOutputWrite, hErrorWrite: THandle;
+  fRunning: Boolean;
+  eCode: Cardinal;
+begin
+  Result := -1;
+  FFileName := sFileName;
+  FParams := sParams;
+  FDirectory := sPath;
+  StdOut := '';
+  SecAttrib.nLength := SizeOf(TSecurityAttributes);
+  SecAttrib.lpSecurityDescriptor := nil;
+  SecAttrib.bInheritHandle := True;
+
+  // Create a pipe for the child process's STDOUT.
+  if not CreatePipe(hOutputReadTmp, hOutputWrite, @SecAttrib, 0) then
+  begin
+    Exit;
+  end;
+
+  if not DuplicateHandle(GetCurrentProcess(), hOutputWrite,
+    GetCurrentProcess(), @hErrorWrite, 0, true, DUPLICATE_SAME_ACCESS) then
+  begin
+    Exit;
+  end;
+
+  // Create a pipe for the child process's STDIN.
+  if not CreatePipe(hInputRead, hInputWriteTmp, @SecAttrib, 0) then
+  begin
+    Exit;
+  end;
+
+  if not DuplicateHandle(GetCurrentProcess(), hOutputReadTmp,
+    GetCurrentProcess(), @hOutputRead,  0, False, DUPLICATE_SAME_ACCESS) then
+  begin
+    Exit;
+  end;
+
+  if not DuplicateHandle(GetCurrentProcess(), hInputWriteTmp,
+    GetCurrentProcess(), @hInputWrite, 0, False, DUPLICATE_SAME_ACCESS) then
+  begin
+    Exit;
+  end;
+
+  if not CloseHandle(hOutputReadTmp) or
+     not CloseHandle(hInputWriteTmp) then
+  begin
+    Exit;
+  end;
+
+  FRunning := Launch(hInputRead, hOutputWrite, hErrorWrite);
+  if not FRunning then
+  begin
+    Result := GetLastError;
+    CloseHandle(hOutputWrite);
+    CloseHandle(hInputRead);
+    CloseHandle(hErrorWrite);
+    Exit;
+  end;
+
+  if not CloseHandle(hInputRead) or
+     not CloseHandle(hOutputWrite) or
+     not CloseHandle(hErrorWrite) then
+  begin
+    Result := GetLastError;
+    TerminateProcess(FProcessInfo.hProcess, Result);
+    CloseHandle(FProcessInfo.hProcess);
+    Exit;
+  end;
+  GetStdOut;
+  GetExitCodeProcess(FProcessInfo.hProcess, eCode);
+  Result := eCode;
+  CloseHandle(hOutputRead);
+  CloseHandle(hInputWrite);
+  CloseHandle(FProcessInfo.hProcess);
+  StdOut := FOutput;
+end;
+
+function TExecWaitGetStdOut.Launch(hInputRead, hOutputWrite,
+  hErrorWrite : THandle): Boolean;
+var
+  StartInfo: TStartupInfo;
+begin
+  Result := True;
+
+  FillChar(StartInfo, SizeOf(TStartupInfo), 0);
+  StartInfo.cb := SizeOf(TStartupInfo);
+  StartInfo.dwFlags := STARTF_USESTDHANDLES or STARTF_USESHOWWINDOW;
+  StartInfo.hStdInput := hInputRead;
+  StartInfo.hStdOutput := hOutputWrite;
+  StartInfo.hStdError := hErrorWrite;
+  if not CreateProcess(nil, PChar(FFileName + ' ' + FParams), nil,
+    nil, True, CREATE_NEW_CONSOLE, nil, PChar(FDirectory), StartInfo,
+    FProcessInfo) then
+  begin
+    Result := False;
+    Exit;
+  end;
+end;
+
+procedure TExecWaitGetStdOut.GetStdOut;
+var
+  nRead: DWORD;
+  bSucess: Boolean;
+  Buffer: array[0..2048] of Char;
+begin
+  FOutput := '';
+  repeat
+    bSucess := ReadFile(hOutputRead, Buffer, SizeOf(Buffer) - 1, nRead, nil);
+    if not bSucess or (nRead = 0) or (GetLastError() = ERROR_BROKEN_PIPE)  then
+      Break;
+    Buffer[nRead] := #0;
+    FOutput := FOutput + StrPas(Buffer);
+  until False;
 end;
 
 end.

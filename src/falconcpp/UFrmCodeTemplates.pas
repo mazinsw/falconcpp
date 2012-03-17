@@ -40,6 +40,7 @@ type
   public
     { Public declarations }
     AutoComplete: TSynAutoComplete;
+    procedure UpdateLangNow;
   end;
 
   TCodeTemplateItem = class
@@ -55,9 +56,23 @@ var
 
 implementation
 
-uses UFrmEditorOptions, UFrmMain, UFrmPromptCodeTemplate;
+uses UFrmEditorOptions, UFrmMain, UFrmPromptCodeTemplate, ULanguages;
 
 {$R *.dfm}
+
+procedure TFrmCodeTemplates.UpdateLangNow;
+begin
+  Caption := STR_FRM_EDITOR_OPT[134];
+  GroupBox1.Caption := STR_FRM_EDITOR_OPT[134];
+  Label1.Caption := STR_FRM_CODE_TEMPL[1];
+  ListViewTemplates.Columns.Items[0].Caption := STR_FRM_PROMPT_CODE[1];
+  ListViewTemplates.Columns.Items[1].Caption := STR_FRM_PROMPT_CODE[2];
+  BtnAdd.Hint := STR_FRM_PROP[34];
+  BtnRem.Hint := STR_FRM_PROP[35];
+  BtnEdit.Hint := STR_FRM_PROP[70];
+  Label2.Caption := STR_FRM_CODE_TEMPL[2];
+  BtnOk.Caption := STR_FRM_PROP[14];
+end;
 
 procedure TFrmCodeTemplates.FormCreate(Sender: TObject);
 var
@@ -103,6 +118,7 @@ begin
   end;
   if ListViewTemplates.Items.Count > 0  then
     ListViewTemplates.Items[0].Selected := True;
+  UpdateLangNow;
 end;
 
 procedure TFrmCodeTemplates.ListViewTemplatesSelectItem(Sender: TObject;
@@ -179,8 +195,8 @@ begin
   if Length(Name) = 0 then
   begin
     Abort := True;
-    MessageBox(TWinControl(Sender).Handle, 'Invalid Name!', 'Code Templates',
-        MB_ICONEXCLAMATION);
+    MessageBox(TWinControl(Sender).Handle, PChar(STR_FRM_CODE_TEMPL[3]),
+      PChar(STR_FRM_EDITOR_OPT[134]), MB_ICONEXCLAMATION);
     Exit;
   end;
   if Assigned(Data) then
@@ -188,8 +204,8 @@ begin
     if IndexOf(Name, IndexOf(TCodeTemplateItem(Data).Name)) > -1 then
     begin
       Abort := True;
-      MessageBox(TWinControl(Sender).Handle, 'Name already exist', 'Code Templates',
-        MB_ICONEXCLAMATION);
+      MessageBox(TWinControl(Sender).Handle, PChar(STR_FRM_CODE_TEMPL[4]),
+        PChar(STR_FRM_EDITOR_OPT[134]), MB_ICONEXCLAMATION);
     end;
   end
   else
@@ -197,8 +213,8 @@ begin
     if IndexOf(Name) > -1 then
     begin
       Abort := True;
-      MessageBox(TWinControl(Sender).Handle, 'Name already exist', 'Code Templates',
-        MB_ICONEXCLAMATION);
+      MessageBox(TWinControl(Sender).Handle, PChar(STR_FRM_CODE_TEMPL[4]),
+        PChar(STR_FRM_EDITOR_OPT[134]), MB_ICONEXCLAMATION);
     end;
   end;
 end;
@@ -222,7 +238,7 @@ var
   ctiName, ctiDesc: String;
   List: TStrings;
 begin
-  if PromptDialog('Add Code Template', ctiName, ctiDesc, nil, OkButtonEvent) then
+  if PromptDialog(STR_FRM_CODE_TEMPL[5], ctiName, ctiDesc, nil, OkButtonEvent) then
   begin
     CTI := TCodeTemplateItem.Create;
     CTI.Name := ctiName;
@@ -256,7 +272,7 @@ begin
   CTI := TCodeTemplateItem(Item.Data);
   ctiName := CTI.Name;
   ctiDesc := CTI.Comment;
-  if PromptDialog('Edit Code Template', ctiName, ctiDesc, CTI, OkButtonEvent) then
+  if PromptDialog(STR_FRM_CODE_TEMPL[6], ctiName, ctiDesc, CTI, OkButtonEvent) then
   begin
     I := AutoComplete.Completions.IndexOf(CTI.Name);
     AutoComplete.Completions.Strings[I] := ctiName;

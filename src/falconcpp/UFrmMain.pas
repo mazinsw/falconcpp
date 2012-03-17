@@ -226,7 +226,6 @@ type
     TBXItem90: TTBXItem;
     TBXSeparatorItem11: TTBXSeparatorItem;
     TBXItem40: TTBXItem;
-    TBXItem5: TTBXItem;
     TBXSeparatorItem13: TTBXSeparatorItem;
     TBXItem39: TTBXItem;
     PopupEditor: TTBXPopupMenu;
@@ -470,7 +469,6 @@ type
     procedure CompilerOptions2Click(Sender: TObject);
     procedure EditorOptions1Click(Sender: TObject);
     procedure FullScreen1Click(Sender: TObject);
-    procedure ReportaBugorComment1Click(Sender: TObject);
     procedure Packages1Click(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure ViewMenuClick(Sender: TObject);
@@ -590,7 +588,6 @@ type
     CompilerActiveMsg       : String;//Caption compiler info
     ConfigRoot              : String;//directory configuration
     IniConfigFile           : String;//file configuration
-    Compiler_Path           : String;//path of compiler
     LastOpenFileName        : String;
     //flags
     IsLoading               : Boolean;
@@ -601,6 +598,7 @@ type
     CompilationStopped      : Boolean;
     FullScreenMode          : Boolean;
     CanShowHintTip          : Boolean;
+    UsingCtrlSpace          : Boolean;
     HandlingTabs            : Boolean;
     LastKeyPressed          : Char;
     CanFillCompletion       : Boolean;
@@ -750,8 +748,8 @@ implementation
 
 uses
   UFrmAbout, UFrmNew, UFrmProperty, ExecWait, Math, UTools, UFrmRemove,
-  UFrmUpdate, ULanguages, UFrmEnvOptions, UFrmCompOptions,
-  UFrmReport, UFrmFind, AStyle, UFrmGotoFunction, UFrmGotoLine, TBXThemes;
+  UFrmUpdate, ULanguages, UFrmEnvOptions, UFrmCompOptions, UFrmFind, AStyle,
+  UFrmGotoFunction, UFrmGotoLine, TBXThemes;
 
 {$R *.dfm}
 {$R resources.res}
@@ -928,12 +926,48 @@ end;
 
 {TFrmFalconMain}
 
+procedure SetActiveCompiler(OldPath, Actpath: String;
+  SplashScreen: TSplashScreen = nil);
+var
+  path, temp: String;
+begin
+  Actpath := ExcludeTrailingPathDelimiter(Actpath);
+  path := GetEnvironmentVariable('PATH');
+  if (CompareText(OldPath, Actpath) = 0) and
+    (Pos(UpperCase(Actpath + '\bin'), UpperCase(path)) > 0) then
+  begin
+    Exit;
+  end;
+  //remove old from path
+  if (Oldpath <> '') and
+    (Pos(UpperCase(Oldpath + '\bin'), UpperCase(path)) > 0) then
+  begin
+    temp := StringReplace(path, Oldpath + '\bin', '', [rfIgnoreCase]);
+    temp := StringReplace(temp, ';;', ';', [rfReplaceAll]);
+    if (Length(temp) > 0) and (temp[Length(temp)] = ';') then
+      Delete(temp, Length(temp), 1);
+    if (Length(temp) > 0) and (temp[1] = ';') then
+      Delete(temp, 1, 1);
+    SetEnvironmentVariable('PATH', PChar(temp));
+  end;
+  //add active to path
+  if CompareText(GetEnvironmentVariable('MINGW_PATH'), Actpath) <> 0 then
+    SetEnvironmentVariable('MINGW_PATH', PChar(Actpath));
+  if Pos(UpperCase(Actpath + '\bin'), UpperCase(path)) = 0 then
+  begin
+    temp := path + ';' + Actpath + '\bin';
+    if Assigned(SplashScreen) then
+      SplashScreen.TextOut(55, 300, STR_FRM_MAIN[29]);
+    SetEnvironmentVariable('PATH', PChar(temp));
+  end;
+end;
+
 procedure TFrmFalconMain.FormCreate(Sender: TObject);
 var
   List: TStrings;
   I: Integer;
   Template: TTemplate;
-  Temp, ProgFiles, path: String;
+  Temp, path: String;
   ini: TIniFile;
   Rs: TResourceStream;
   Prop: TFileProperty;
@@ -1027,11 +1061,7 @@ begin
   if not DirectoryExists(Config.Environment.ProjectsDir) then
     CreateDir(Config.Environment.ProjectsDir);
   ZoomEditor := Config.Editor.FontSize;
-  if Config.Environment.AlternativeConfFile and
-    FileExists(Config.Environment.ConfigurationFile) then
-    FrmPos.FileName := Config.Environment.ConfigurationFile
-  else
-    FrmPos.FileName := IniConfigFile;
+  FrmPos.FileName := IniConfigFile;
   FrmPos.Load;
   MenuBar.Visible := not FrmPos.FullScreen;
   MenuDock.Top := 0;
@@ -1196,60 +1226,68 @@ begin
   CreateStdTools;
   
   //detect compiler
-  Temp := GetEnvironmentVariable('MINGW_PATH');
-  path := GetEnvironmentVariable('PATH');
-  if not DirectoryExists(Temp) then
+  List := TStringList.Create;
+  SearchCompilers(List, temp);
+  if (Config.Compiler.Path = '') or
+    not FileExists(Config.Compiler.Path + '\bin\gcc.exe') then
   begin
-    ProgFiles := GetEnvironmentVariable('PROGRAMFILES');
-    Temp := ProgFiles + '\Falcon\MinGW';
-    if not DirectoryExists(Temp) then Temp := AppRoot + 'MinGW';
-    if not DirectoryExists(Temp) then
-      Temp := ExtractFileDrive(ProgFiles) + '\MinGW';
-    if not DirectoryExists(Temp) then
-      Temp := ExtractFileDrive(ProgFiles) + '\Dev-Cpp';
-    if not DirectoryExists(Temp) then Temp := ProgFiles + '\Dev-Cpp';
-    if not DirectoryExists(Temp) then Temp := ProgFiles + '\CodeBlocks\MinGW';
-    //if not DirectoryExists(Temp) then
-    //  Temp := ExtractFileDrive(ProgFiles) + '\Borland\BCC55';
-    if not DirectoryExists(Temp) then
+    path := '';
+    Config.Compiler.Version := '';
+  end
+  else
+  begin
+    path := Temp;
+    Temp := Config.Compiler.Path;
+  end;
+  if not DirectoryExists(temp) then
+  begin
+    if List.Count = 0 then
     begin
-      MessageBox(0, 'Compiler was not detected!', 'Falcon C++',
+      MessageBox(0, PChar(STR_FRM_MAIN[46]), 'Falcon C++',
         MB_ICONEXCLAMATION);
     end
     else
     begin
-      SplashScreen.TextOut(55, 300, STR_FRM_MAIN[29]);
-      Compiler_Path := Temp;
-      SetEnvironmentVariable('MINGW_PATH', PChar(Temp));
-      Temp := path + ';' + Temp + '\bin';
-      SetEnvironmentVariable('PATH', PChar(Temp));
+      Config.Compiler.Path := List.Strings[0];
+      SetActiveCompiler(path, Config.Compiler.Path, SplashScreen);
+      if (Config.Compiler.Version = '') and
+        (ExecutorGetStdOut.ExecWait(Config.Compiler.Path +
+        '\bin\gcc.exe', '--version', Config.Compiler.Path + '\bin\',
+        temp) = 0) then
+      begin
+        GetNameAndVersion(temp, temp, Config.Compiler.Version);
+      end;
     end;
   end
   else
   begin
-    Compiler_Path := Temp;
-    if (Pos(Temp + '\bin', path) = 0) then
+    Config.Compiler.Path := temp;
+    SetActiveCompiler(path, Config.Compiler.Path, SplashScreen);
+    if (Config.Compiler.Version = '') and
+      (ExecutorGetStdOut.ExecWait(Config.Compiler.Path +
+      '\bin\gcc.exe', '--version', Config.Compiler.Path + '\bin\',
+      temp) = 0) then
     begin
-      SplashScreen.TextOut(55, 300, STR_FRM_MAIN[29]);
-      Temp := path + ';' + Temp + '\bin';
-      SetEnvironmentVariable('PATH', PChar(Temp));
-    end
+      GetNameAndVersion(temp, temp, Config.Compiler.Version);
+    end;
   end;
-  FilesParsed.PathList.Add(Compiler_Path + '\include\');
+  List.Free;
+
+  FilesParsed.PathList.Add(Config.Compiler.Path + '\include\');
   SplashScreen.TextOut(55, 300, STR_FRM_MAIN[30]);
   IsLoadingSrcFiles := False;
-  if (LoadTokenMode < 0) or (LoadTokenMode > 0) then
+  if (LoadTokenMode <> 0) then
   begin
     SourceFileList := TStringList.Create;
     if LoadTokenMode < 0 then
       SplashScreen.TextOut(55, 300, Format(STR_FRM_MAIN[36], [0]))
     else
       SplashScreen.TextOut(55, 300, Format(STR_FRM_MAIN[37], [0]));
-    if FindFiles(Compiler_Path + '\include\', '*.h', SourceFileList) then
+    if FindFiles(Config.Compiler.Path + '\include\', '*.h', SourceFileList) then
     begin
       IsLoadingSrcFiles := True;
       ThreadTokenFiles.Start(ParseAllFiles, SourceFileList,
-        Compiler_Path + '\include\', ConfigRoot + 'include\', '.h.prs');
+        Config.Compiler.Path + '\include\', ConfigRoot + 'include\', '.h.prs');
       if Config.Environment.ShowSplashScreen then
         Sleep(3000);
     end;
@@ -1309,6 +1347,7 @@ begin
     Node := Node.getNextSibling;
   end;
   try
+    //close when parsing
     if ParseAllFiles.Busy then
     begin
       ThreadTokenFiles.Cancel;
@@ -2126,9 +2165,6 @@ begin
 
     BtnPrevPage.Enabled := PageControlEditor.PageCount > 1;
     BtnNextPage.Enabled := PageControlEditor.PageCount > 1;
-    //BtnPrevPage.Enabled := PageControlEditor.ActivePageIndex > 0;
-    //BtnNextPage.Enabled := (PageControlEditor.ActivePageIndex <
-    //  PageControlEditor.PageCount - 1) and (PageControlEditor.PageCount > 1);
     Exit;
   end;
 
@@ -2141,7 +2177,8 @@ begin
   RunToggleBreakpoint.Enabled := PageControlEditor.Visible;
   RunRuntoCursor.Enabled := PageControlEditor.Visible;
   PopTabsClose.Enabled := PageControlEditor.Visible;
-  if not DebugReader.Running then
+  if not DebugReader.Running and
+    (TabIndex  = PageControlEditor.ActivePageIndex) then
     TreeViewOutline.Items.Clear;
   if not PageControlEditor.Visible then
   begin
@@ -2183,6 +2220,7 @@ begin
     SearchReplace.Enabled := False;
     SearchGotoFunction.Enabled := TreeViewProjects.Items.Count > 0;
     SearchGotoLine.Enabled := False;
+    BtnGotoLN.Enabled := False;
     SearchGotoPrevFunc.Enabled := False;
     SearchGotoNextFunc.Enabled := False;
     BtnFind.Enabled := False;
@@ -2667,16 +2705,34 @@ end;
 
 //on execution finished
 procedure TFrmFalconMain.LauncherFinished(Sender: TObject);
+var
+  ProjProp: TProjectProperty;
 begin
-  BtnStop.Enabled := False;
-  RunStop.Enabled := False;
+  if GetActiveProject(ProjProp) then
+  begin
+    if FileExists(ProjProp.GetTarget) and ProjProp.Compiled then
+    begin
+      RunExecute.Enabled := True;
+      BtnExecute.Enabled := True;
+    end
+    else
+    begin
+      RunExecute.Enabled := False;
+      BtnExecute.Enabled := False;
+    end;
+  end
+  else
+  begin
+    RunExecute.Enabled := False;
+    BtnExecute.Enabled := False;
+  end;
   RunRun.Enabled := TreeViewProjects.Items.Count > 0;
   BtnRun.Enabled := RunRun.Enabled;
+  BtnStop.Enabled := False;
+  RunStop.Enabled := False;
   ProjectBuild.Enabled := TreeViewProjects.Items.Count > 0;
   RunCompile.Enabled := TreeViewProjects.Items.Count > 0;
   BtnCompile.Enabled := RunCompile.Enabled;
-  RunExecute.Enabled := TreeViewProjects.Items.Count > 0;
-  BtnExecute.Enabled := RunExecute.Enabled;
   //debug
   RunStepInto.Enabled := False;
   BtnStepInto.Enabled := False;
@@ -3254,14 +3310,6 @@ begin
     PanelEditorMessagesOldProc(Msg);
 end;
 
-//procedure TFrmFalconMain.PanelEditorProc(var Msg: TMessage);
-//begin
-//  if Msg.Msg = WM_DROPFILES then
-//    GetDropredFiles(PanelEditorMessages, Msg)
-//  else
-//    PanelEditorOldProc(Msg);
-//end;
-
 procedure TFrmFalconMain.GetDropredFiles(Sender: TObject; var Msg: TMessage);
 var
    FileCount : longInt;
@@ -3483,7 +3531,7 @@ begin
     MMsg := Msg.Msg;
     if Pos('${COMPILER_PATH}', Msg.FileName) > 0 then
       Temp := StringReplace(Msg.FileName, '${COMPILER_PATH}',
-        FrmFalconMain.Compiler_Path, [])
+        FrmFalconMain.Config.Compiler.Path, [])
     else
       Temp := Temp + Msg.FileName;
     Temp := ExpandFileName(Temp);
@@ -3665,6 +3713,11 @@ begin
   for I:= 0 to Pred(Item.Count) do
     Item[I].Caption := STR_NEW_MENU[I + 1];
 
+  //Import From File Menu
+  Item := FileImport;
+  for I:= 0 to Pred(Item.Count) do
+    Item[I].Caption := STR_IMPORT_MENU[I + 1];
+
   //Toolbars From View Menu
   Item := ViewToolbar;
   for I:= 0 to Pred(Item.Count) do
@@ -3690,6 +3743,11 @@ begin
   //Item := PopupTabs.Items;
   for I:= 0 to Pred(PopupTabs.Items.Count) do
     PopupTabs.Items.Items[I].Caption := STR_POPUP_TABS[I + 1];
+
+  //PopupMenu from Messages
+  //Item := PopupMsg.Items;
+  for I:= 0 to Pred(PopupMsg.Items.Count) do
+    PopupMsg.Items.Items[I].Caption := STR_POPUP_MSGS[I + 1];
 
   //tabs left
   TSProjects.Caption := STR_FRM_MAIN[1];
@@ -3832,7 +3890,7 @@ begin
       tmp := msg.OriMsg;
       if Pos('${COMPILER_PATH}', Msg.OriMsg) > 0 then
         tmp := StringReplace(msg.OriMsg, '${COMPILER_PATH}',
-                  FrmFalconMain.Compiler_Path, []);
+                  FrmFalconMain.Config.Compiler.Path, []);
       if C = 0 then
         S := tmp
       else
@@ -3871,7 +3929,7 @@ begin
       tmp := msg.OriMsg;
       if Pos('${COMPILER_PATH}', Msg.OriMsg) > 0 then
         tmp := StringReplace(msg.OriMsg, '${COMPILER_PATH}',
-                  FrmFalconMain.Compiler_Path, []);
+                  FrmFalconMain.Config.Compiler.Path, []);
       if C = 0 then
         S := tmp
       else
@@ -4110,14 +4168,14 @@ var
 begin
   for I := 0 to TokenFile.Includes.Count - 1 do
   begin
-    FullIncludeName := Compiler_Path + '\include\' +
+    FullIncludeName := Config.Compiler.Path + '\include\' +
       ConvertSlashes(TokenFile.Includes.Items[I].Name);
     if not ThreadLoadTkFiles.Busy then
     begin
       ThreadLoadTkFiles.Free;
       ThreadLoadTkFiles := TThreadLoadTokenFiles.Create;
     end;
-    ThreadLoadTkFiles.Start(FilesParsed, FullIncludeName, Compiler_Path +
+    ThreadLoadTkFiles.Start(FilesParsed, FullIncludeName, Config.Compiler.Path +
       '\include\', ConfigRoot + 'include\', '.h.prs');
   end;
 end;
@@ -4244,6 +4302,7 @@ begin
       SearchFind.Enabled := True;
       SearchGotoFunction.Enabled := True;
       SearchGotoLine.Enabled := True;
+      BtnGotoLN.Enabled := True;
       SearchGotoPrevFunc.Enabled := True;
       SearchGotoNextFunc.Enabled := True;
       SearchFindNext.Enabled := True;
@@ -4323,6 +4382,7 @@ begin
   SearchGotoFunction.Enabled := (PageControlEditor.PageCount > 0) or
     (TreeViewProjects.Items.Count > 0);
   SearchGotoLine.Enabled := PageControlEditor.PageCount > 0;
+  BtnGotoLN.Enabled := PageControlEditor.PageCount > 0;
   SearchGotoPrevFunc.Enabled := PageControlEditor.PageCount > 0;
   SearchGotoNextFunc.Enabled := PageControlEditor.PageCount > 0;
   SearchFindNext.Enabled := PageControlEditor.PageCount > 0;
@@ -4440,9 +4500,13 @@ begin
       end;
     end;
     //search in compiler folder
-    FileName := ExpandFileName(Compiler_Path + '\include\' + S);
+    FileName := ExpandFileName(Config.Compiler.Path + '\include\' + S);
     if not FileExists(FileName) then
-      FileName := ExpandFileName(Compiler_Path + '\lib\gcc\mingw32\4.4.1\include\c++\' + S);
+      FileName := ExpandFileName(Config.Compiler.Path + '\include\c++\' +
+        Config.Compiler.Version + '\' + S);
+    if not FileExists(FileName) then
+      FileName := ExpandFileName(Config.Compiler.Path + '\lib\gcc\mingw32\' +
+        Config.Compiler.Version + '\include\c++\' + S);
     if SearchFileProperty(FileName, Prop) then
     begin
       Prop.Edit;
@@ -4525,15 +4589,83 @@ begin
   else if ([ssCtrl] = Shift) and (Key = VK_SPACE) then
   begin
     Key := 49;
+    UsingCtrlSpace := True;
     CodeCompletion.ActivateCompletion;
+    UsingCtrlSpace := False;
   end;
 
 end;
 
 procedure TFrmFalconMain.TextEditorKeyPress(Sender: TObject;
   var Key: Char);
+var
+  sheet: TFilePropertySheet;
+  emptyLine: Boolean;
+  str, LineStr: String;
+  bStart, caret: TBufferCoord;
 begin
   LastKeyPressed := Key;
+  if GetActiveSheet(sheet) then
+  begin
+    if Key = '(' then
+    begin
+      sheet.Memo.SelText := ')';
+      sheet.Memo.CaretX := sheet.Memo.CaretX - 1;
+    end
+    else if Key = '[' then
+    begin
+      sheet.Memo.SelText := ']';
+      sheet.Memo.CaretX := sheet.Memo.CaretX - 1;
+    end
+    else if Key = '{' then
+    begin
+      emptyLine := False;
+      LineStr := '';
+      if sheet.Memo.SelAvail then
+      begin
+        bStart.Line := sheet.Memo.BlockBegin.Line;
+        bStart.Char := sheet.Memo.BlockBegin.Char;
+      end
+      else
+      begin
+        bStart.Line := sheet.Memo.CaretY;
+        bStart.Char := sheet.Memo.CaretX;
+      end;
+      if sheet.Memo.Lines.Count >= bStart.Line then
+      begin
+        LineStr := sheet.Memo.Lines.Strings[bStart.Line - 1];
+        LineStr := Copy(LineStr, 1, bStart.Char - 1);
+        if Trim(LineStr) = '' then
+          emptyLine := True;
+      end;
+      if emptyLine then
+      begin
+        Key := #0;
+        caret := sheet.Memo.CaretXY;
+        str := '}';
+        if Config.Editor.UseTabChar then
+        begin
+          str := #13 + StringOfChar(#9, bStart.Char - 1) + str;
+          str := #13 + StringOfChar(#9, bStart.Char) + str;
+        end
+        else
+        begin
+          str := #13 + StringOfChar(' ', bStart.Char - 1) + str;
+          str := #13 + StringOfChar(' ', bStart.Char - 1 +
+            Config.Editor.TabWidth) + str;
+        end;
+        sheet.Memo.SelText := '{' + str;
+        Inc(bStart.Line);
+        Inc(bStart.Char, Config.Editor.TabWidth);
+        sheet.Memo.CaretXY := bStart;
+      end
+      else
+      begin
+        sheet.Memo.SelText := '}';
+        sheet.Memo.CaretX := sheet.Memo.CaretX - 1;
+      end;
+    end;
+  end;
 end;
 
 procedure TFrmFalconMain.TextEditorKeyUp(Sender: TObject; var Key: Word;
@@ -4704,17 +4836,6 @@ begin
     ViewFullScreen.Caption := STR_MENU_VIEW[9]
   else
     ViewFullScreen.Caption := STR_MENU_VIEW[9];
-end;
-
-procedure TFrmFalconMain.ReportaBugorComment1Click(Sender: TObject);
-begin
-  if not Assigned(FrmReport) then
-  begin
-    FrmReport := TFrmReport.Create(Self);
-    FrmReport.Show;
-  end
-  else
-    FrmReport.BringToFront;
 end;
 
 procedure TFrmFalconMain.Packages1Click(Sender: TObject);
@@ -5249,13 +5370,13 @@ procedure TFrmFalconMain.ImportFromDevCpp(Sender: TObject);
 begin
   with TOpenDialog.Create(Self) do
   begin
-    Filter := 'Dev-C++ Project(*.dev)|*.dev';
+    Filter := Format(STR_FRM_MAIN[48], ['Dev-C++']) + '(*.dev)|*.dev';
     Options := Options + [ofFileMustExist];
     if Execute then
     begin
       if not ImportDevCppProject(FileName) then
-        MessageBox(Self.Handle, 'Can'#39't import Dev-C++ project!', 'Falcon C++',
-          MB_ICONEXCLAMATION);
+        MessageBox(Self.Handle, PChar(Format(STR_FRM_MAIN[47], ['Dev-C++'])),
+          'Falcon C++', MB_ICONEXCLAMATION);
     end;
     Free;
   end;
@@ -5265,12 +5386,13 @@ procedure TFrmFalconMain.ImportFromCodeBlocks(Sender: TObject);
 begin
   with TOpenDialog.Create(Self) do
   begin
-    Filter := 'Code::Blocks Project(*.cbp)|*.cbp';
+    Filter := Format(STR_FRM_MAIN[48], ['Code::Blocks']) + '(*.cbp)|*.cbp';
     Options := Options + [ofFileMustExist];
     if Execute then
     begin
       if not ImportCodeBlocksProject(FileName) then
-        MessageBox(Self.Handle, 'Can'#39't import Code::Blocks project!', 'Falcon C++',
+        MessageBox(Self.Handle,
+          PChar(Format(STR_FRM_MAIN[47], ['Code::Blocks'])), 'Falcon C++',
           MB_ICONEXCLAMATION);
     end;
     Free;
@@ -5281,12 +5403,13 @@ procedure TFrmFalconMain.ImportFromMSVC(Sender: TObject);
 begin
   with TOpenDialog.Create(Self) do
   begin
-    Filter := 'MS Visual C++ Project(*.vcproj)|*.vcproj';
+    Filter := Format(STR_FRM_MAIN[48], ['MS Visual C++']) + '(*.vcproj)|*.vcproj';
     Options := Options + [ofFileMustExist];
     if Execute then
     begin
       if not ImportMSVCProject(FileName) then
-        MessageBox(Self.Handle, 'Can'#39't import MS Visual C++ project!', 'Falcon C++',
+        MessageBox(Self.Handle,
+          PChar(Format(STR_FRM_MAIN[47], ['MS Visual C++'])), 'Falcon C++',
           MB_ICONEXCLAMATION);
     end;
     Free;
@@ -5625,11 +5748,6 @@ var
   Index: Integer;
   TokenFileItem: TTokenFile;
   sheet: TFilePropertySheet;
-  {FIncludeList: TTokenClass;
-  FDefineList: TTokenClass;
-  FVarConstList: TTokenClass;
-  FTreeObjList: TTokenClass;
-  FFuncObjList: TTokenClass;}
 begin
   Index := FilesParsed.IndexOfByFileName(NewToken.FileName, NewToken.Data);
   if Index < 0 then //not parsed
@@ -6054,6 +6172,10 @@ begin
     Input := GetFirstWord(Fields);
   if InputError then
     Exit;
+  if not UsingCtrlSpace and (LastKeyPressed = '>') and ((Length(Fields) < 2) or
+    ((Length(Fields) > 1) and (Fields[Length(Fields) - 1] <> '-'))) then
+    Exit;
+
   for I := 0 to CodeCompletion.InsertList.Count - 1 do
     TTokenClass(CodeCompletion.InsertList.Objects[I]).Free;
   CodeCompletion.ItemList.Clear;
@@ -6224,8 +6346,11 @@ begin
     NextChar := GetNextValidChar(sheet.Memo.Text, sheet.Memo.SelStart);
     if EndToken <> '(' then
     begin
-      if not (NextChar in [';', '(', ')']) and (EndToken <> ';') then
+      if not (NextChar in ['"', '''', ',', ';', '(', ')'])
+        and (EndToken <> ';') then
         Value := Value + '();'
+      else if NextChar in ['"', ''''] then
+        Value := Value + '('
       else
         Value := Value + '()';
       LastKeyPressed := '(';
@@ -6264,7 +6389,7 @@ begin
   begin
     Inc(I);
     sheet.Memo.CommandProcessor(ecChar, ')', nil);
-    if not (NextChar in [';', '(', ')']) then
+    if not (NextChar in ['"', '''', ',', ';', '(', ')']) then
     begin
       sheet.Memo.CommandProcessor(ecChar, ';', nil);
       Inc(I);
@@ -6272,8 +6397,9 @@ begin
   end
   else if Token.Token in [tkFunction, tkPrototype] then
   begin
-    Inc(I);
-    if not (NextChar in [';', '(', ')']) then
+    if not (NextChar in ['"', '''']) then
+      Inc(I);
+    if not (NextChar in ['"', '''', ',', ';', '(', ')']) then
       Inc(I);
   end;
   if EndToken <> ';' then
@@ -7000,8 +7126,7 @@ begin
       begin
         FileName := FileProp.GetCompleteFileName;
         if MessageBox(Handle, PChar(FileName +
-          #13#13'This file has been modified by another program.'#13 +
-          'Do you want to reload it?'), 'Falcon C++',
+          #13#13 + STR_FRM_MAIN[49]), 'Falcon C++',
           MB_ICONQUESTION or MB_YESNO) = IDYES then
         begin
           FileProp.Reload;
@@ -7410,7 +7535,8 @@ var
   token: TTokenClass;
   dbgc: TDebugCommand;
 begin
-  AddMessage(DebugCmdNames[Command], Name, Value, Line, 0, 0, mitGoto);
+  //AddMessage(Value, DebugCmdNames[Command] + ' - ' + Name, Value, Line,
+  //  0, 0, mitGoto);
   case Command of
     dcBreakpoint:
     begin
@@ -7595,8 +7721,9 @@ begin
   RunStepReturn.Enabled := True;
   BtnStepReturn.Enabled := True;
   TreeViewOutline.Items.Clear;
-  TSOutline.Caption := 'Variables';
+  TSOutline.Caption := STR_FRM_MAIN[50];
   TreeViewOutline.Images := ImageListDebug;
+  TreeViewOutline.Indent := ImageListDebug.Width + 3;
   //ShowDebugActiveVariables;
 end;
 
@@ -7624,37 +7751,31 @@ end;
 procedure TFrmFalconMain.SelectTheme(Theme: String);
 begin
   TBXSwitcher.Theme := Theme;
-  Config.Environment.Theme := TBXSwitcher.Theme;
+  Config.Environment.Theme := Theme;
   Color := CurrentTheme.GetViewColor(TVT_MENUBAR);
   if Theme = 'Default' then
   begin
     ViewThemeDef.Checked := True;
-    //StatusBar.VisualStyle := vsWinXP;
   end
   else if Theme = 'Office2003' then
   begin
     ViewThemeOffice2003.Checked := True;
-    //StatusBar.VisualStyle := vsClassic;
   end
   else if Theme = 'OfficeXP' then
   begin
     ViewThemeOffXP.Checked := True;
-    //StatusBar.VisualStyle := vsClassic;
   end
   else if Theme = 'Stripes' then
   begin
     ViewThemeStripes.Checked := True;
-    //StatusBar.VisualStyle := vsClassic;
   end
   else if Theme = 'Professional' then
   begin
     ViewThemeProfessional.Checked := True;
-    //StatusBar.VisualStyle := vsClassic;
   end
   else if Theme = 'Aluminum' then
   begin
     ViewThemeAluminum.Checked := True;
-    //StatusBar.VisualStyle := vsClassic;
   end;
   DockLeft.Color := Color;
   DockTop.Color := Color;
@@ -7662,15 +7783,14 @@ begin
   DockBottom.Color := Color;
   ProjectPanel.Color := Color;
   PanelOutline.Color := Color;
-  //PageControlMessages.Color := Color;
   ProjectPanel.Color := Color;
   PanelEditorMessages.Color := Color;
   PanelOutline.Color := Color;
-  //PageControlMessages.Color := Color;
   PanelEditorMessages.Color := Color;
-  //PageControlEditor.BackgroundColor := Color;
-  //PageControlMsg.BackgroundColor := Color;
-  //PageControlOutline.BackgroundColor := Color;
+  PageControlProjects.Color := Color;
+  PageControlMessages.Color := Color;
+  PageControlEditor.Color := Color;
+  PageControlOutline.Color := Color;
 end;
 
 procedure TFrmFalconMain.SelectThemeClick(Sender: TObject);

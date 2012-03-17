@@ -1286,6 +1286,9 @@ begin
       Node := Node.NextSibling;
     end;
   end;
+  if FrmFalconMain.Visible then
+    if FrmFalconMain.GetActiveSheet(sheet) then
+      sheet.Memo.SetFocus;
   XMLDoc.Free;
   Result := True;
 end;
@@ -1830,6 +1833,7 @@ begin
     end;
     mk.CleanBefore := DeleteObjsBefore;
     mk.CleanAfter := DeleteObjsAfter;
+    mk.Echo := True;
     MkRes := mk.BuildMakefile;
     mk.Free;
     Files.Free;
@@ -1839,7 +1843,7 @@ begin
                           //directives aren't updated
       FrmFalconMain.CompilerCmd.FileName := 'mingw32-make.exe';
       FrmFalconMain.CompilerCmd.Directory := ExtractFilePath(Makefile);
-      FrmFalconMain.CompilerCmd.Params := '-f Makefile.mak';
+      FrmFalconMain.CompilerCmd.Params := '-s -f Makefile.mak';
       FrmFalconMain.CompilerCmd.Start;
     end
     else

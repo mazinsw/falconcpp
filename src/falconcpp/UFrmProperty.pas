@@ -147,7 +147,7 @@ var
 
 implementation
 
-uses UUtils, UFrmMain, ULanguages;
+uses UUtils, UFrmMain, ULanguages, UConfig;
 
 {$R *.dfm}
 
@@ -328,7 +328,7 @@ begin
   ActIdx := SetLangImg(GetSystemDefaultLangID);
   CbbLang.ItemIndex := ActIdx;
 
-  LibPath := FrmFalconMain.Compiler_Path + '\lib\';
+  LibPath := FrmFalconMain.Config.Compiler.Path + '\lib\';
   if DirectoryExists(LibPath) then
   begin
     List.Clear;
@@ -411,11 +411,13 @@ begin
   SBtnAdd.Hint := STR_FRM_PROP[34];
   SBtnAddInc.Hint := STR_FRM_PROP[34];
   SBtnRem.Hint := STR_FRM_PROP[35];
+  SBtnEdit.Hint := STR_FRM_PROP[70];
   SBtnDelInc.Hint := STR_FRM_PROP[35];
   SBtnUp.Hint := STR_FRM_PROP[36];
   SBtnUpInc.Hint := STR_FRM_PROP[36];
   SBtnDown.Hint := STR_FRM_PROP[37];
   SBtnDownInc.Hint := STR_FRM_PROP[37];
+  SBtnEditInc.Hint := STR_FRM_PROP[70];
   GrbIncs.Caption := STR_FRM_PROP[38];
   GrbClean.Caption := STR_FRM_PROP[39];
   CLBClean.Items.Strings[0] := STR_FRM_PROP[40];
@@ -536,7 +538,7 @@ begin
       Options := Options + [ofFileMustExist];
       Filter := 'Library File (*.a, *.lib)|*.a;*.lib';
       FilterIndex := 0;
-      InitialDir := FrmFalconMain.Compiler_Path + '\lib\';
+      InitialDir := FrmFalconMain.Config.Compiler.Path + '\lib\';
       if Execute then
       begin
         if CompareText(ExtractFileExt(FileName), '.a') = 0 then

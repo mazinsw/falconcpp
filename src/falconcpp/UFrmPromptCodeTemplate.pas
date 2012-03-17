@@ -23,12 +23,14 @@ type
     procedure BtnCancelClick(Sender: TObject);
     procedure EditNameKeyPress(Sender: TObject; var Key: Char);
     procedure EditDescKeyPress(Sender: TObject; var Key: Char);
+    procedure FormCreate(Sender: TObject);
   private
     { Private declarations }
     fOnOkButtonClick: TOkButtonEvent;
     fData: Pointer; 
   public
     { Public declarations }
+    procedure UpdateLangNow;
   end;
 
 var
@@ -38,6 +40,8 @@ function PromptDialog(const Caption: String; var Name, Description: String;
   Data: Pointer; OkButtonEvent: TOkButtonEvent = nil): Boolean;
 
 implementation
+
+uses ULanguages;
 
 {$R *.dfm}
 
@@ -64,6 +68,12 @@ begin
   end;
   FrmPromptCodeTemplate.Free;
   Result := True;
+end;
+
+procedure TFrmPromptCodeTemplate.UpdateLangNow;
+begin
+  Label1.Caption := STR_FRM_PROMPT_CODE[1];
+  Label2.Caption := STR_FRM_PROMPT_CODE[2];
 end;
 
 procedure TFrmPromptCodeTemplate.FormKeyPress(Sender: TObject;
@@ -121,6 +131,11 @@ begin
     Key := #0;
     BtnOkClick(Sender);
   end;
+end;
+
+procedure TFrmPromptCodeTemplate.FormCreate(Sender: TObject);
+begin
+  UpdateLangNow;
 end;
 
 end.

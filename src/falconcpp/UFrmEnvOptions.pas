@@ -66,6 +66,8 @@ type
     procedure BtnOkClick(Sender: TObject);
     procedure EditmaxFilesInReopenKeyPress(Sender: TObject; var Key: Char);
     procedure EditmaxFilesInReopenChange(Sender: TObject);
+    procedure BtnChooseConfFileClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
   private
     { Private declarations }
     Loading: Boolean;
@@ -146,10 +148,16 @@ begin
     CheckBoxShowSplashScreen.Checked := ShowSplashScreen;
     if Theme = 'Default' then
       RadioGroupTheme.ItemIndex := 0
-    else if Theme = 'Office11Adaptive' then
+    else if Theme = 'Office2003' then
       RadioGroupTheme.ItemIndex := 1
     else if Theme = 'OfficeXP' then
       RadioGroupTheme.ItemIndex := 2
+    else if Theme = 'Stripes' then
+      RadioGroupTheme.ItemIndex := 3
+    else if Theme = 'Professional' then
+      RadioGroupTheme.ItemIndex := 4
+    else if Theme = 'Aluminum' then
+      RadioGroupTheme.ItemIndex := 5
     else
       RadioGroupTheme.ItemIndex := 2;
     //Files and Directories
@@ -168,7 +176,49 @@ end;
 
 procedure TFrmEnvOptions.UpdateLangNow;
 begin
-//
+  Caption := STR_FRM_ENV_OPT[1];
+  BtnOk.Caption := STR_FRM_PROP[14];
+  BtnCancel.Caption := STR_FRM_PROP[15];
+  BtnApply.Caption := STR_FRM_PROP[16];
+  //General
+  TSGeneral.Caption := STR_FRM_ENV_OPT[2];
+  CheckBoxDefCpp.Caption := STR_FRM_ENV_OPT[3];
+  CheckBoxShowToolbars.Caption := STR_FRM_ENV_OPT[4];
+  CheckBoxRemoveFileOnClose.Caption := STR_FRM_ENV_OPT[5];
+  CheckBoxOneClickFile.Caption := STR_FRM_ENV_OPT[6];
+  CheckBoxCheckForUpdate.Caption := STR_FRM_ENV_OPT[7];
+  CheckBoxCreateLayoutFiles.Caption := STR_FRM_ENV_OPT[8];
+  CheckBoxAskDeleteFile.Caption := STR_FRM_ENV_OPT[9];
+  CheckBoxRunConsoleRunner.Caption := STR_FRM_ENV_OPT[10];
+  RadioGroupAutoOpen.Caption := STR_FRM_ENV_OPT[11];
+  RadioGroupAutoOpen.Items.Strings[0] := STR_FRM_ENV_OPT[12];
+  RadioGroupAutoOpen.Items.Strings[1] := STR_FRM_ENV_OPT[13];
+  RadioGroupAutoOpen.Items.Strings[2] := STR_FRM_ENV_OPT[14];
+  RadioGroupAutoOpen.Items.Strings[3] := STR_FRM_ENV_OPT[15];
+  RadioGroupAutoOpen.Items.Strings[4] := STR_FRM_ENV_OPT[16];
+  //Interface
+  TSInterface.Caption := STR_FRM_ENV_OPT[17];
+  LabelMaxFileReopenMenu.Caption := STR_FRM_ENV_OPT[18];
+  LabelLang.Caption := STR_FRM_ENV_OPT[19];
+  CheckBoxShowSplashScreen.Caption := STR_FRM_ENV_OPT[20];
+  RadioGroupTheme.Caption := STR_FRM_ENV_OPT[21];
+  //Files and Directories
+  TSFilesandDir.Caption := STR_FRM_ENV_OPT[22];
+  GroupBoxUseAltConfFile.Caption := '      ' + STR_FRM_ENV_OPT[23];
+  LabelConfFile.Caption := STR_FRM_ENV_OPT[24];
+  LabelUserDefDir.Caption := STR_FRM_ENV_OPT[25];
+  LabelTemplatesDir.Caption := STR_FRM_ENV_OPT[26];
+  LabelLangDir.Caption := STR_FRM_ENV_OPT[27];
+  LabelProjDir.Caption := STR_FRM_ENV_OPT[28];
+  LabelHelpDocDir.Caption := STR_FRM_ENV_OPT[29];
+  LabelExamplesDir.Caption := STR_FRM_ENV_OPT[30];
+  BtnChooseConfFile.Hint := STR_FRM_ENV_OPT[31];
+  BtnChooseUsersDefDir.Hint := STR_FRM_ENV_OPT[31];
+  BtnChooseTemplatesDir.Hint := STR_FRM_ENV_OPT[31];
+  BtnChooseLangDir.Hint := STR_FRM_ENV_OPT[31];
+  BtnChooseProjDir.Hint := STR_FRM_ENV_OPT[31];
+  BtnViewHelpDir.Hint := STR_FRM_ENV_OPT[32];
+  BtnViewExamplesDir.Hint := STR_FRM_ENV_OPT[32];
 end;
 
 procedure TFrmEnvOptions.FormClose(Sender: TObject;
@@ -188,12 +238,12 @@ var
 begin
   Base := EditUsersDefDir.Text;
   case TComponent(Sender).Tag of
-    0: Title := 'Select ' + LowerCase(LabelUserDefDir.Caption);
-    1: Title := 'Select ' + LowerCase(LabelTemplatesDir.Caption);
-    2: Title := 'Select ' + LowerCase(LabelLangDir.Caption);
-    3: Title := 'Select ' + LowerCase(LabelProjDir.Caption);
+    0: Title := STR_FRM_ENV_OPT[33] + ' ' + LowerCase(LabelUserDefDir.Caption);
+    1: Title := STR_FRM_ENV_OPT[33] + ' ' + LowerCase(LabelTemplatesDir.Caption);
+    2: Title := STR_FRM_ENV_OPT[33] + ' ' + LowerCase(LabelLangDir.Caption);
+    3: Title := STR_FRM_ENV_OPT[33] + ' ' + LowerCase(LabelProjDir.Caption);
   else
-    Title := 'Select directory';
+    Title := STR_FRM_ENV_OPT[34];
   end;
   case TComponent(Sender).Tag of
     0: Dir := Base;//EditUsersDefDir.Text;
@@ -213,7 +263,8 @@ begin
     begin
       EditUsersDefDir.Text := Dir;
       BtnViewHelpDir.Enabled := DirectoryExists(EditUsersDefDir.Text + 'Help\');
-      BtnViewExamplesDir.Enabled := DirectoryExists(EditUsersDefDir.Text + 'Examples\');
+      BtnViewExamplesDir.Enabled := DirectoryExists(EditUsersDefDir.Text +
+        'Examples\');
     end;
     1: EditTemplatesDir.Text := ExtractRelativePath(Base, Dir);
     2: EditLangDir.Text := ExtractRelativePath(Base, Dir);
@@ -297,6 +348,15 @@ begin
     if OldTheme <> Theme then
       FrmFalconMain.SelectTheme(Theme);
     //Files and Directories
+    //Alternative configuration file
+    if (AlternativeConfFile <> CheckBoxUseAltConfFile.Checked) or
+      ((AlternativeConfFile = CheckBoxUseAltConfFile.Checked) and
+      FileExists(EditAltConfFile.Text) and AlternativeConfFile and
+      (CompareText(ConfigurationFile, EditAltConfFile.Text) <> 0)) then
+    begin
+      MessageBox(Handle, PChar(STR_FRM_ENV_OPT[35]), 'Falcon C++',
+        MB_ICONINFORMATION);
+    end;
     AlternativeConfFile := CheckBoxUseAltConfFile.Checked;
     if FileExists(EditAltConfFile.Text) then
       ConfigurationFile := EditAltConfFile.Text;
@@ -391,6 +451,26 @@ procedure TFrmEnvOptions.EditmaxFilesInReopenChange(Sender: TObject);
 begin
   if Length(EditmaxFilesInReopen.Text) > 0 then
     UpDownMaxFiles.Position := StrToInt(EditmaxFilesInReopen.Text);
+end;
+
+procedure TFrmEnvOptions.BtnChooseConfFileClick(Sender: TObject);
+begin
+  with TOpenDialog.Create(Self) do
+  begin
+    Options := Options + [ofFileMustExist];
+    Filter := STR_FRM_ENV_OPT[36] + '(*.ini, *.conf, *.cfg)|' +
+      '*.ini; *.conf; *.cfg';
+    if Execute then
+    begin
+      EditAltConfFile.Text := FileName;
+    end;
+    Free;
+  end;
+end;
+
+procedure TFrmEnvOptions.FormCreate(Sender: TObject);
+begin
+  UpdateLangNow;
 end;
 
 end.

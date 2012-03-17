@@ -15,6 +15,7 @@ object FormGotoLine: TFormGotoLine
   OldCreateOrder = False
   Position = poScreenCenter
   OnClose = FormClose
+  OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
   OnResize = FormResize

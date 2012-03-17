@@ -1,6 +1,6 @@
 object FrmFalconMain: TFrmFalconMain
-  Left = 278
-  Top = 187
+  Left = 256
+  Top = 230
   Width = 922
   Height = 655
   Caption = 'Falcon C++'
@@ -1048,9 +1048,11 @@ object FrmFalconMain: TFrmFalconMain
         end
         object TBXItem86: TTBXItem
           Caption = 'Template Creator...'
+          Enabled = False
         end
         object TBXItem72: TTBXItem
           Caption = 'Package Creator...'
+          Enabled = False
         end
         object TBXSeparatorItem19: TTBXSeparatorItem
         end
@@ -1072,6 +1074,7 @@ object FrmFalconMain: TFrmFalconMain
         end
         object TBXItem90: TTBXItem
           Caption = 'Tip of the Day...'
+          Enabled = False
         end
         object TBXSeparatorItem11: TTBXSeparatorItem
         end
@@ -1079,11 +1082,6 @@ object FrmFalconMain: TFrmFalconMain
           Caption = 'Update...'
           ImageIndex = 47
           OnClick = SubMUpdateClick
-        end
-        object TBXItem5: TTBXItem
-          Caption = 'Report a Bug/Comment...'
-          ImageIndex = 40
-          OnClick = ReportaBugorComment1Click
         end
         object TBXSeparatorItem13: TTBXSeparatorItem
         end
@@ -1125,7 +1123,7 @@ object FrmFalconMain: TFrmFalconMain
     Height = 539
     Align = alClient
     BevelOuter = bvNone
-    TabOrder = 5
+    TabOrder = 0
     object PanelEditor: TXPPanel
       Left = 0
       Top = 0
@@ -1133,7 +1131,7 @@ object FrmFalconMain: TFrmFalconMain
       Height = 392
       Align = alClient
       BorderStyle = bsNone
-      TabOrder = 1
+      TabOrder = 0
       object PageControlEditor: TModernPageControl
         Left = 0
         Top = 0
@@ -1164,7 +1162,7 @@ object FrmFalconMain: TFrmFalconMain
       Align = alBottom
       BorderStyle = bsNone
       Size = 4
-      TabOrder = 0
+      TabOrder = 1
       Visible = False
       object PageControlMessages: TModernPageControl
         Left = 0
@@ -1263,7 +1261,7 @@ object FrmFalconMain: TFrmFalconMain
     Align = alLeft
     BorderStyle = bsNone
     Size = 4
-    TabOrder = 7
+    TabOrder = 1
     Visible = False
     object PageControlProjects: TModernPageControl
       Left = 0
@@ -1326,7 +1324,7 @@ object FrmFalconMain: TFrmFalconMain
     Align = alRight
     BorderStyle = bsNone
     Size = 4
-    TabOrder = 8
+    TabOrder = 2
     Visible = False
     object PageControlOutline: TModernPageControl
       Left = 4

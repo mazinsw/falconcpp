@@ -1,6 +1,6 @@
 object FrmCodeTemplates: TFrmCodeTemplates
-  Left = 601
-  Top = 444
+  Left = 217
+  Top = 184
   BorderStyle = bsDialog
   Caption = 'Code Templates'
   ClientHeight = 428

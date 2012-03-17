@@ -14,6 +14,7 @@ object FrmPromptCodeTemplate: TFrmPromptCodeTemplate
   KeyPreview = True
   OldCreateOrder = False
   Position = poOwnerFormCenter
+  OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnKeyPress = FormKeyPress
   PixelsPerInch = 96

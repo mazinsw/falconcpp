@@ -737,7 +737,6 @@ object FrmProperty: TFrmProperty
             Top = 8
             Width = 369
             Height = 21
-            AutoDropDown = True
             ItemHeight = 13
             TabOrder = 0
             OnKeyPress = CBLibsKeyPress

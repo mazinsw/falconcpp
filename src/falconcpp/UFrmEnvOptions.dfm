@@ -1,6 +1,6 @@
 object FrmEnvOptions: TFrmEnvOptions
-  Left = 572
-  Top = 304
+  Left = 423
+  Top = 350
   BorderStyle = bsDialog
   Caption = 'Environment Options'
   ClientHeight = 428
@@ -15,6 +15,7 @@ object FrmEnvOptions: TFrmEnvOptions
   OldCreateOrder = False
   Position = poScreenCenter
   OnClose = FormClose
+  OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnKeyPress = FormKeyPress
   PixelsPerInch = 96
@@ -31,7 +32,7 @@ object FrmEnvOptions: TFrmEnvOptions
       object RadioGroupAutoOpen: TRadioGroup
         Left = 4
         Top = 229
-        Width = 221
+        Width = 237
         Height = 122
         Caption = 'Auto open'
         ItemIndex = 4
@@ -56,7 +57,7 @@ object FrmEnvOptions: TFrmEnvOptions
       object CheckBoxShowToolbars: TCheckBox
         Left = 4
         Top = 40
-        Width = 201
+        Width = 293
         Height = 17
         Caption = 'Show toolbars in full screen'
         TabOrder = 2
@@ -74,7 +75,7 @@ object FrmEnvOptions: TFrmEnvOptions
       object CheckBoxCheckForUpdate: TCheckBox
         Left = 4
         Top = 112
-        Width = 201
+        Width = 253
         Height = 17
         Caption = 'Check for updates automatically'
         TabOrder = 4
@@ -101,7 +102,7 @@ object FrmEnvOptions: TFrmEnvOptions
       object CheckBoxAskDeleteFile: TCheckBox
         Left = 4
         Top = 160
-        Width = 277
+        Width = 309
         Height = 17
         Caption = 'Ask if you want to delete the project file'
         TabOrder = 7
@@ -128,16 +129,16 @@ object FrmEnvOptions: TFrmEnvOptions
         Caption = 'Max files in reopen menu'
       end
       object LabelLang: TLabel
-        Left = 188
+        Left = 247
         Top = 16
         Width = 51
         Height = 13
         Caption = 'Language:'
       end
       object ComboBoxLanguage: TComboBoxEx
-        Left = 189
+        Left = 248
         Top = 32
-        Width = 244
+        Width = 185
         Height = 22
         ItemsEx = <>
         Style = csExDropDownList
@@ -731,6 +732,7 @@ object FrmEnvOptions: TFrmEnvOptions
           NumGlyphs = 2
           ParentShowHint = False
           ShowHint = True
+          OnClick = BtnChooseConfFileClick
         end
         object CheckBoxUseAltConfFile: TCheckBox
           Left = 9

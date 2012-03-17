@@ -361,9 +361,6 @@ begin
   RdbtDown.Caption := STR_FRM_FIND[24];
   GBoxTransp.Caption := '      ' + STR_FRM_FIND[25];
   LblOpcty.Caption := STR_FRM_FIND[26];
-  //GBoxDirection.Caption := STR_FRM_FIND[27];
-  //RdbtUp.Caption := STR_FRM_FIND[28];
-  //RdbtDown.Caption := STR_FRM_FIND[29];
 end;
 
 procedure TFrmFind.FormKeyDown(Sender: TObject; var Key: Word;
@@ -557,7 +554,7 @@ begin
       PChar(StringReplace(STR_FRM_FIND[2], '&', '', [])), MB_OK);
     Exit;
   end;
-  FrmFalconMain.PageControlMessages.Show;
+  FrmFalconMain.PanelMessages.Show;
   Close;
 end;
 
@@ -620,7 +617,7 @@ begin
       if Column > 1 then
         Dec(Column);
       EndColumn := Column + Length(aText);
-      ProgressFindFile(FileName, Format('Found ''%s'' in line %d, column %d',
+      ProgressFindFile(FileName, Format(STR_FRM_FIND[34],
         [OriFindText, Line, Column]), Line, Column, EndColumn);
       Application.ProcessMessages;
       CheckIfCanceled;

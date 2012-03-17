@@ -11,19 +11,19 @@ type
     Image1: TImage;
     Label1: TLabel;
     Panel1: TPanel;
-    Button1: TButton;
+    BtnOk: TButton;
     Label6: TLabel;
     XPPanel1: TXPPanel;
     PageControl1: TPageControl;
-    TabSheet1: TTabSheet;
-    TabSheet2: TTabSheet;
-    TabSheet3: TTabSheet;
+    TSLicence: TTabSheet;
+    TSDevelopers: TTabSheet;
+    TSTranslator: TTabSheet;
     Memo1: TMemo;
-    TabSheet4: TTabSheet;
+    TSTesters: TTabSheet;
     RichEditViewer1: TRichEditViewer;
     RichEditViewer2: TRichEditViewer;
     EditTranslators: TRichEditViewer;
-    procedure Button1Click(Sender: TObject);
+    procedure BtnOkClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormCreate(Sender: TObject);
@@ -36,6 +36,7 @@ type
   public
     { Public declarations }
     procedure LoadTranslators(Languages: TFalconLanguages);
+    procedure UpdateLangNow;
   end;
 
 var
@@ -45,7 +46,19 @@ implementation
 
 {$R *.dfm}
 
-procedure TFormAbout.Button1Click(Sender: TObject);
+procedure TFormAbout.UpdateLangNow;
+begin
+  Caption := STR_FRM_ABOUT[1];
+  Label6.Caption := Format(STR_FRM_ABOUT[2],
+    ['Windows XP, Windows Vista and Windows 7']);
+  TSLicence.Caption := STR_FRM_ABOUT[3];
+  TSDevelopers.Caption := STR_FRM_ABOUT[4];
+  TSTranslator.Caption := STR_FRM_ABOUT[5];
+  TSTesters.Caption := STR_FRM_ABOUT[6];
+  BtnOk.Caption := STR_FRM_PROP[14];
+end;
+
+procedure TFormAbout.BtnOkClick(Sender: TObject);
 begin
   Close;
 end;
@@ -85,6 +98,7 @@ begin
   rs.Position := 0;
   Image1.Picture.Icon.LoadFromStream(rs);
   rs.Free;
+  UpdateLangNow;
 end;
 
 procedure TFormAbout.CreateParams(var Params: TCreateParams);

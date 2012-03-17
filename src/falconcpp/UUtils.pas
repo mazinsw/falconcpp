@@ -54,6 +54,8 @@ type
   TExecuteFileOptions = set of TExecuteFileOption;
 
 function GetTickTime(ticks: Cardinal; fmt: String): String;
+procedure GetNameAndVersion(const S: String; var aName, aVersion: String);
+procedure SearchCompilers(List: TStrings; var PathCompiler: String);
 function ExecuteFile(Handle: HWND; const Filename, Paramaters,
   Directory: String; Options: TExecuteFileOptions): Integer;
 procedure LoadFontNames(List: TStrings);
@@ -198,6 +200,108 @@ begin
   S := Copy(S, Pos(',', S) + 1, MaxInt);
   Result := Format('%d.%s', [sec, S]);
   //Result := Format(fmt, [hour, min, sec, milli]);
+end;
+
+procedure GetNameAndVersion(const S: String; var aName, aVersion: String);
+var
+  ptr, init: PChar;
+  line: String;
+begin
+  ptr := PChar(S);
+  aName := '';
+  aVersion := '';
+  line:= '';
+  while not (ptr^ in [#0, #10]) do
+  begin
+    line := line + ptr^;
+    Inc(ptr);
+  end;
+  if line = '' then
+    Exit;
+  init := PChar(line);
+  ptr := PChar(line) + Length(line);
+  if (ptr >= init) and (ptr^ = ')') then
+  begin
+    while (ptr >= init) and (ptr^ <> '(') do
+      Dec(ptr);
+  end;
+  while (ptr >= init) and not (ptr^ in ['0'..'9']) do
+    Dec(ptr);
+  while (ptr >= init) and (ptr^ <> ' ') do
+  begin
+    aVersion := ptr^ + aVersion;
+    Dec(ptr);
+  end;
+  while (ptr >= init) and (ptr^ = ' ') do
+    Dec(ptr);
+  while (ptr >= init) do
+  begin
+    aName := ptr^ + aName;
+    Dec(ptr);
+  end;
+end;
+
+procedure SearchCompilers(List: TStrings; var PathCompiler: String);
+var
+  path, ProgFiles: String;
+begin
+  List.Clear;
+  //find compilers
+  path := ExcludeTrailingPathDelimiter(GetEnvironmentVariable('MINGW_PATH'));
+  if FileExists(IncludeTrailingPathDelimiter(path) + 'bin\gcc.exe') then
+  begin
+    List.Add(path);
+    PathCompiler := path;
+  end
+  else
+    PathCompiler := '';
+  //Falcon C++
+  path := ExtractFilePath(Application.ExeName) + 'MinGW';
+  if FileExists(IncludeTrailingPathDelimiter(path) + 'bin\gcc.exe') and
+    (List.IndexOf(path) < 0) then
+    List.Add(path);
+
+  ProgFiles := GetEnvironmentVariable('PROGRAMFILES');
+  path := IncludeTrailingPathDelimiter(ProgFiles) + 'Falcon\MinGW';
+  if FileExists(IncludeTrailingPathDelimiter(path) + 'bin\gcc.exe') and
+    (List.IndexOf(path) < 0) then
+    List.Add(path);
+
+  //Code::Blocks
+  path := ProgFiles + '\CodeBlocks\MinGW';
+  if FileExists(IncludeTrailingPathDelimiter(path) + 'bin\gcc.exe') and
+    (List.IndexOf(path) < 0) then
+    List.Add(path);
+
+  path := ProgFiles + '\CodeBlocks 8.02\MinGW';
+  if FileExists(IncludeTrailingPathDelimiter(path) + 'bin\gcc.exe') and
+    (List.IndexOf(path) < 0) then
+    List.Add(path);
+
+  //MinGW
+  path := ExtractFileDrive(ProgFiles) + '\MinGW';
+  if FileExists(IncludeTrailingPathDelimiter(path) + 'bin\gcc.exe') and
+    (List.IndexOf(path) < 0) then
+    List.Add(path);
+
+  //Dev-C++
+  path := ExtractFileDrive(ProgFiles) + '\Dev-Cpp';
+  if FileExists(IncludeTrailingPathDelimiter(path) + 'bin\gcc.exe') and
+    (List.IndexOf(path) < 0) then
+    List.Add(path);
+
+  path := ProgFiles + '\Dev-Cpp\MinGW';
+  if FileExists(IncludeTrailingPathDelimiter(path) + 'bin\gcc.exe') and
+    (List.IndexOf(path) < 0) then
+    List.Add(path);
+  path := ProgFiles + '\Dev-Cpp\MinGW32';
+  if FileExists(IncludeTrailingPathDelimiter(path) + 'bin\gcc.exe') and
+    (List.IndexOf(path) < 0) then
+    List.Add(path);
+  path := ProgFiles + '\Dev-Cpp\MinGW64';
+  if FileExists(IncludeTrailingPathDelimiter(path) + 'bin\gcc.exe') and
+    (List.IndexOf(path) < 0) then
+    List.Add(path);
 end;
 
 procedure BitmapToAlpha(bmp: TBitmap; Color: TColor = clFuchsia);

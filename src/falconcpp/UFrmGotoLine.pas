@@ -23,12 +23,14 @@ type
     procedure BtnOkClick(Sender: TObject);
     procedure EditLineKeyPress(Sender: TObject; var Key: Char);
     procedure EditLineChange(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
   private
     { Private declarations }
   public
     { Public declarations }
     procedure ShowWithRange(MinLin, LineStart, LineEnd: Integer);
     procedure SelectLine(Line: Integer);
+    procedure UpdateLangNow;
   end;
 
 var
@@ -36,9 +38,16 @@ var
 
 implementation
 
-uses UFrmMain, UFileProperty;
+uses UFrmMain, UFileProperty, ULanguages;
 
 {$R *.dfm}
+
+procedure TFormGotoLine.UpdateLangNow;
+begin
+  Caption := STR_FRM_GOTOLINE[1];
+  BtnOk.Caption := STR_FRM_PROP[14];
+  BtnCancel.Caption := STR_FRM_PROP[15];
+end;
 
 procedure TFormGotoLine.FormClose(Sender: TObject;
   var Action: TCloseAction);
@@ -57,7 +66,7 @@ begin
   UpDown.Max := LineEnd;
   UpDown.Position := LineStart;
   EditLine.SelectAll;
-  LblLine.Caption := Format('Line (%d - %d):', [MinLin, LineEnd]);
+  LblLine.Caption := Format(STR_FRM_GOTOLINE[2], [MinLin, LineEnd]);
   ShowModal;
 end;
 
@@ -110,6 +119,11 @@ procedure TFormGotoLine.EditLineChange(Sender: TObject);
 begin
   if Length(EditLine.Text) > 0 then
     UpDown.Position := StrToInt(EditLine.Text);
+end;
+
+procedure TFormGotoLine.FormCreate(Sender: TObject);
+begin
+  UpdateLangNow;
 end;
 
 end.

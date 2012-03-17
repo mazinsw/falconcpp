@@ -619,24 +619,38 @@ end;
 
 function TTokenFile.GetNextFunction(var Token: TTokenClass;
   SelStart: Integer): Boolean;
+var
+  temp: TTokenClass;
 begin
   Result := FuncObjs.GetNextFunction(Token, SelStart);
-  if Result then
-    Exit;
-  Result := TreeObjs.GetNextFunction(Token, SelStart);
-  if Result then
-    Exit;
+  if not Result then
+    Result := TreeObjs.GetNextFunction(Token, SelStart)
+  else
+  begin
+    if TreeObjs.GetNextFunction(temp, SelStart) then
+    begin
+      if Token.SelStart > temp.SelStart then
+        Token := temp;
+    end;
+  end;
 end;
 
 function TTokenFile.GetPreviousFunction(var Token: TTokenClass;
   SelStart: Integer): Boolean;
+var
+  temp: TTokenClass;
 begin
   Result := FuncObjs.GetPreviousFunction(Token, SelStart);
-  if Result then
-    Exit;
-  Result := TreeObjs.GetPreviousFunction(Token, SelStart);
-  if Result then
-    Exit;
+  if not Result then
+    Result := TreeObjs.GetPreviousFunction(Token, SelStart)
+  else
+  begin
+    if TreeObjs.GetPreviousFunction(temp, SelStart) then
+    begin
+      if Token.SelStart < temp.SelStart then
+        Token := temp;
+    end;
+  end;
 end;
 
 {TTokenFiles}

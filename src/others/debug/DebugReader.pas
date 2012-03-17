@@ -155,7 +155,7 @@ type
 
 implementation
 
-uses DebugConsts, DebugWatch;
+uses DebugConsts, DebugWatch, StrUtils;
 
 {TReaderConsole}
 constructor TReaderConsole.Create(DebugReader: TDebugReader);
@@ -170,6 +170,7 @@ var
   bSucess: Boolean;
   Buffer: array[0..2048] of Char;
   Output: String;
+  I, Offset: Integer;
 begin
   Synchronize(FDebugReader.DoStart);
   Output := '';
@@ -180,8 +181,11 @@ begin
 
     Buffer[nRead] := #0;
     Output := Output + StrPas(Buffer);
-    if (Pos(GDB_PROMPT, Output) > 0) or
-       (Pos('No symbol "', Output) > 0) then
+    Offset := Length(Output) - Length(GDB_PROMPT + ' ') + 1;
+    if Offset < 1 then
+      Offset := 1;
+    I := PosEx(GDB_PROMPT + ' ', Output, Offset);
+    if ((I > 0) and (I = Offset)) or (Pos('No symbol "', Output) > 0) then
     begin
       //OemToAnsi(Buffer, Buffer);
       FDebugReader.FOutput := Output;
@@ -583,13 +587,14 @@ begin
     S := GetLine;
     if Pos('Single stepping until exit from function', S) > 0 then
       S := S + GetLine;
-    I := Pos(GDB_PROMPT, S);
+    I := Pos(GDB_PROMPT + ' ', S);
     while I = 1 do
     begin
-      S := Copy(S, I + Length(GDB_PROMPT), Length(S) - Length(GDB_PROMPT));
+      S := Copy(S, I + Length(GDB_PROMPT + ' '), Length(S) -
+        Length(GDB_PROMPT+ ' '));
       S := Trim(S);
       ProcessIdle;
-      I := Pos(GDB_PROMPT, S);
+      I := Pos(GDB_PROMPT + ' ', S);
     end;
     if S = '' then
       Continue;

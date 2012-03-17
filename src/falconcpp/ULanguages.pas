@@ -139,14 +139,13 @@ const
     'Packages'
   );
 
-  MAX_MENU_HELP = 7;
+  MAX_MENU_HELP = 6;
   CONST_STR_MENU_HELP: array[1..MAX_MENU_HELP] of String = (
   //Help Menu
     'Falcon Help',
     'Tip of the Day...',
     '',
     'Update',
-    'Report a Bug/Comment',
     '',
     'About...'
   );
@@ -162,6 +161,14 @@ const
     'Empty File',
     '',
     'Folder'
+  );
+
+  MAX_IMPORT_MENU = 3;
+  CONST_STR_IMPORT_MENU: array[1..MAX_IMPORT_MENU] of String  = (
+  //Import From Menu File
+    'Dev-C++ Project',
+    'Code::Blocks Project',
+    'MS Visual C++ Project'
   );
 
   MAX_VIEWTOOLBAR_MENU = 8;
@@ -303,8 +310,20 @@ const
     '',
     'Properties...'
   );
+
+  MAX_POPUP_MSGS = 7;
+  CONST_STR_POPUP_MSGS: array[1..MAX_POPUP_MSGS] of String  = (
+  //PopupMenu from Messages
+    'Copy',
+    'Copy original message',
+    '',
+    'Original message',
+    '',
+    'Goto line',
+    'Clear'
+  );
   
-  MAX_FRM_MAIN = 45;
+  MAX_FRM_MAIN = 50;
   CONST_STR_FRM_MAIN: array[1..MAX_FRM_MAIN] of String  = (
     //Tabs Left
     'Projects',
@@ -355,10 +374,16 @@ const
     'Parsing results %d/%d',
     'Do you want to create it?',
     'Debugging',
-    'Loading configurations...'
+    'Loading configurations...',
+    'Compiler was not detected!',
+    'Can''t import %s project!',
+    '%s Project',
+    'This file has been modified by another program.'#13 +
+      'Do you want to reload it?',
+    'Variables'
   );
 
-  MAX_FRM_PROP = 69;
+  MAX_FRM_PROP = 70;
   CONST_STR_FRM_PROP: array[1..MAX_FRM_PROP] of String  = (
     //Properties Form
     'Application',
@@ -436,7 +461,8 @@ const
     'Server options',
     'Disconnect',
     'Connect',
-    'Select folder to include'
+    'Select folder to include',
+    'Edit selected'
   );
 
   MAX_FRM_NEW_PROJ = 12;
@@ -458,7 +484,7 @@ const
     'Name'
   );
 
-  MAX_FRM_FIND = 33;
+  MAX_FRM_FIND = 34;
   CONST_STR_FRM_FIND: array[1..MAX_FRM_FIND] of String  = (
     //New Project Form
     'Find and replace',
@@ -493,7 +519,296 @@ const
     'Can''t find the text:'#13'"%s"',
     '%d occurrences were replaced.',
     'Stop',
-    'Find ''%s'' in file ''%s'''
+    'Find ''%s'' in file ''%s''',
+    'Found ''%s'' in line %d, column %d'
+  );
+
+  MAX_FRM_EDITOR_OPT = 137;
+  CONST_STR_FRM_EDITOR_OPT: array[1..MAX_FRM_EDITOR_OPT] of String  = (
+    'Editor Options',
+  //General Sheet
+    'General',
+    'Editor Options',
+    'Auto Indent',
+    '',
+    'Insert Mode',
+    'Group Undo',
+    'Keep Trailing Spaces',
+    'Show Line Characters',
+    'Scroll Hint',
+    'Tab Indent/Unindent',
+    'Smart Tabs',
+    'Use Tab Character',
+    'Enhanced Home Key',
+    'Max Undo:',
+    'Tab Width:',
+    'Highligth matching braces/parentheses',
+    'Normal Color',
+    'Error Color',
+    'Background Color',
+    'Highligth current line',
+    'Color',
+    'Link click',
+    'Restore Default',
+  //Display Sheet
+    'Display',
+    'Editor font:',
+    'Size:',
+    'Sample:',
+    'Margin and gutter',
+    'Show right margin',
+    'Show gutter',
+    'Show line gutter',
+    'Gradient gutter',
+    'Right margin:',
+    'Gutter width:',
+  //Colors Sheet
+    'Colors',
+    'Type:',
+    'Defined sintax:',
+    'Save sintax',
+    'Delete sintax',
+    'Foreground:',
+    'Background:',
+    'Styles',
+    'Bold',
+    'Italic',
+    'Underlined',
+    'New Sintax',
+  //Formatter
+    'Formatter',
+    //Style
+    'Style',
+    'Custom',
+    'Preview',
+    'Sample',
+    //Indentation
+    'Indentation',
+    'Force using TABs',
+    'Indent classes (keywords public:, protected: and private:)',
+    'Indent switches (keyword case:)',
+    'Indent case: statements in switches (commands case:)',
+    'Indent brackets',
+    'Indent blocks',
+    'Indent namespaces',
+    'Indent labels',
+    'Indent mult-line preprocessor definitions',
+    'Indent single line comments',
+    //hints
+    'Indent using tab characters.',
+    'Indent ''class'' and ''struct'' blocks so that the blocks ''public:''' +
+      ', ''protected:'' and ''private:'' are indented. The struct blocks' +
+      ' are'#13'indented only if an access modifier is declared somewhere ' +
+      'in the struct. The entire block is indented. This option is '#13 +
+      'effective for C++ files only.',
+    'Indent ''switch'' blocks so that the ''case X:'' statements are ' +
+      'indented in the switch block. The entire case block is indented.',
+    'Indent ''case X:'' blocks from the ''case X:'' headers. Case statements' +
+      ' not enclosed in blocks are NOT indented.',
+    'Add extra indentation to namespace blocks.',
+    'Add extra indentation to labels so they appear 1 indent less than the ' +
+      'current indentation, '#13'rather than being flushed to the left (the' +
+      ' default).',
+    'Indent multi-line preprocessor definitions ending with a backslash. ' +
+      'Should be used with --convert-tabs for proper results. '#13'Does a' +
+      ' pretty good job, but cannot perform miracles in obfuscated ' +
+      'preprocessor definitions. Without this option the '#13'preprocessor ' +
+      'statements remain unchanged.',
+    'Indent C++ comments beginning in column one. By default C++ comments ' +
+      'beginning in column one are not indented. '#13'This option will ' +
+      'allow the comments to be indented with the code.',
+    //Padding sheet
+    'Padding',
+    'Pad empty lines around header blocks (''if'', ''while'', ..)',
+    'Break closing header blocks',
+    'Insert space padding around operators',
+    'Insert space padding around parenthesis on the outside',
+    'Insert space padding around parenthesis on the inside',
+    'Parenthesis header padding',
+    'Remove extra space padding around parenthesis',
+    'Delete empty lines',
+    'Fill empty lines with the whitespace of their previous lines',
+    //hints
+    'Pad empty lines around header blocks (e.g. ''if'', ''for'', ''while''...).',
+    'Pad empty lines around header blocks (e.g. ''if'', ''for'', ''while''...).'+
+      ' Treat closing header blocks (e.g. ''else'', ''catch'') as '#13 +
+      'stand-alone blocks.',
+    'Insert space padding around operators. Any end of line comments will ' +
+      'remain in the original column, if possible. '#13'Note that there is' +
+      ' no option to unpad. Once padded, they stay padded.',
+    'Insert space padding around parenthesis on the outside only. Any end ' +
+      'of line comments will remain in the original column, '#13'if possible.',
+    'Insert space padding around parenthesis on the inside only. Any end of ' +
+      'line comments will remain in the original column, '#13'if possible.',
+    'Insert space padding after paren headers only (e.g. ''if'', ''for'', ' +
+      '''while''...). Any end of line comments will remain in the '#13 +
+      'original column, if possible.',
+    'Remove extra space padding around parenthesis on the inside and outside.' +
+      ' Any end of line comments will remain in the '#13'original column, ' +
+      'if possible.',
+    'Delete empty lines within a function or method. Empty lines outside of ' +
+      'functions or methods are NOT deleted.',
+    'Fill empty lines with the white space of the previous line.',
+    //Formatting
+    'Formatting',
+    'Brackets style:',
+    'None',
+    'Break',
+    'Attach',
+    'Linux',
+    'Break closing headers brackets',
+    'Break ''else if()'' header combinations into separate lines',
+    'Add brackets',
+    'Add one line brackets',
+    'Don''t break one-line blocks',
+    'Don''t break complex statements and multiple statements residing in a ' +
+      'single line',
+    'Convert TABs to spaces',
+    //hints
+    'When used with brackets=attach, brackets=linux, this breaks closing ' +
+      'headers (e.g. ''else'', ''catch'', ...) from their'#13'immediately ' +
+      'preceding closing brackets. Closing header brackets are always broken' +
+      ' with broken brackets, horstmann '#13'brackets, indented blocks, and ' +
+      'indented brackets.',
+    'Break "else if" header combinations into separate lines. This option has' +
+      ' no effect if keep one line statements is used, the'#13'"else if" ' +
+      'statements will remain as they are.'#13'If this option is NOT used, ' +
+      '"else if" header combinations will be placed on a single line.',
+    'Add brackets to unbracketed one line conditional statements (e.g. ''if''' +
+      ''', ''for'', ''while''...). The statement must be on a single '#13 +
+      'line. The brackets will be added according to the currently requested ' +
+      'predefined style or bracket type. If no style or '#13'bracket type is ' +
+      'requested the brackets will be attached. If add one line brackets is ' +
+      'also used the result will be one line '#13'brackets.',
+    'Add one line brackets to unbracketed one line conditional statements  ' +
+      '(e.g. ''if'', ''for'', ''while''...). The statement must be on'#13'a ' +
+      'single line. The option implies keep one line blocks and will not ' +
+      'break the one line blocks.',
+    'Don''t break one-line blocks.',
+    'Don''t break complex statements and multiple statements residing on a ' +
+      'single line.',
+    'Converts tabs into spaces in the non-indentation part of the line. The ' +
+      'number of spaces inserted will maintain the spacing '#13'of the tab. ' +
+      'The current setting for spaces per tab is used. It may not produce ' +
+      'the expected results if convert-tabs is used'#13'when changing spaces' +
+      ' per tab. Tabs are not replaced in quotes.',
+    'Pointer align:',
+    'None',
+    'Type',
+    'Middle',
+    'Name',
+    'Attach a pointer or reference operator (* or &) to either the variable' +
+      ' type (left) or variable name (right), or place it'#13'between the ' +
+      'type and name (middle). The spacing between the type and name will ' +
+      'be preserved, if possible. To format'#13'references separately use ' +
+      'the following align-reference option.',
+  //Code Resources
+    'Code Resources',
+    'Automatic features',
+    'Code completion',
+    'Code parameters',
+    'Tooltip expression evaluation',
+    'Tooltip symbol',
+    '&Delay:',
+    '%.1f sec',
+    'Completion List Colors',
+    'Constant Symbol:',
+    'Function Symbol:',
+    '&Variable Symbol:',
+    'Type Symbol:',
+    'Typedef Symbol:',
+    'Preprocessor:',
+    'Selected:',
+    'Background:',
+    'Code Templates',
+    'Custom Code Template File:',
+    'Open',
+    'Edit'
+  );
+
+  MAX_FRM_ENV_OPT = 36;
+  CONST_STR_FRM_ENV_OPT: array[1..MAX_FRM_ENV_OPT] of String  = (
+    'Environment Options',
+    //General
+    'General',
+    'Default to C++ on new file',
+    'Show toolbars in full screen',
+    'Remove file on close',
+    'One click to open file',
+    'Check for updates automatically',
+    'Create layout files',
+    'Ask if you want to delete the project file',
+    'Run console applications in console runner',
+    'Auto open',
+    'All projects files',
+    'All files of last section',
+    'Only last open file',
+    'Only first project',
+    'None',
+    //Interface
+    'Interface',
+    'Max files in reopen menu',
+    'Language:',
+    'Show splash screen',
+    'Theme',
+    //Files and Directories
+    'Files and Directories',
+    'Alternative configuration file',
+    'Configuration file',
+    'User''s default directory',
+    'Templates directory',
+    'Language files directory',
+    'Projects directory',
+    'Help/Documentation directory',
+    'Examples directory',
+    'Open',
+    'View',
+    'Select',
+    'Select directory',
+    'Restart application to apply changes',
+    'Configuration files'
+  );
+
+  MAX_FRM_CODE_TEMPL = 6;
+  CONST_STR_FRM_CODE_TEMPL: array[1..MAX_FRM_CODE_TEMPL] of String  = (
+    'Templates',
+    'Code',
+    'Invalid Name!',
+    'Name already exist',
+    'Add Code Template',
+    'Edit Code Template'
+  );
+
+  MAX_FRM_PROMPT_CODE = 2;
+  CONST_STR_FRM_PROMPT_CODE: array[1..MAX_FRM_PROMPT_CODE] of String  = (
+    'Name',
+    'Description'
+  );
+
+  MAX_FRM_ABOUT = 6;
+  CONST_STR_FRM_ABOUT: array[1..MAX_FRM_ABOUT] of String  = (
+    'About',
+    'Compatibility: %s',
+    'Licence',
+    'Developers',
+    'Translators',
+    'Testers'
+  );
+
+  MAX_FRM_GOTOLINE = 2;
+  CONST_STR_FRM_GOTOLINE: array[1..MAX_FRM_GOTOLINE] of String  = (
+    'Goto Line',
+    'Line (%d - %d):'
+  );
+
+  MAX_FRM_GOTOFUNC = 6;
+  CONST_STR_FRM_GOTOFUNC: array[1..MAX_FRM_GOTOFUNC] of String  = (
+    'Goto Function',
+    'Function name',
+    'Name',
+    'Return type',
+    'Line',
+    'File'
   );
 
   //Translate mingw messages  ' = 
@@ -719,6 +1034,7 @@ var
   STR_MENU_TOOL: array[1..MAX_MENU_TOOL] of String;
   STR_MENU_HELP: array[1..MAX_MENU_HELP] of String;
   STR_NEW_MENU: array[1..MAX_NEW_MENU] of String;
+  STR_IMPORT_MENU: array[1..MAX_IMPORT_MENU] of String;
   STR_VIEWTOOLBAR_MENU: array[1..MAX_VIEWTOOLBAR_MENU] of String;
 
   STR_DEFAULTBAR: array[1..MAX_DEFAULTBAR] of String;
@@ -733,6 +1049,7 @@ var
   STR_POPUP_PROJ: array[1..MAX_POPUP_PROJ] of String;
   STR_POPUP_EDITOR: array[1..MAX_POPUP_EDITOR] of String;
   STR_POPUP_TABS: array[1..MAX_POPUP_TABS] of String;
+  STR_POPUP_MSGS: array[1..MAX_POPUP_MSGS] of String;
 
   STR_FRM_MAIN: array[1..MAX_FRM_MAIN] of String;
   STR_FRM_PROP: array[1..MAX_FRM_PROP] of String;
@@ -740,6 +1057,13 @@ var
   STR_CMPMSG: array[1..MAX_CMPMSG] of String;
   STR_FRM_UPD: array[1..MAX_FRM_UPD] of String;
   STR_FRM_FIND: array[1..MAX_FRM_FIND] of String;
+  STR_FRM_EDITOR_OPT: array[1..MAX_FRM_EDITOR_OPT] of String;
+  STR_FRM_ENV_OPT: array[1..MAX_FRM_ENV_OPT] of String;
+  STR_FRM_CODE_TEMPL: array[1..MAX_FRM_CODE_TEMPL] of String;
+  STR_FRM_PROMPT_CODE: array[1..MAX_FRM_PROMPT_CODE] of String;
+  STR_FRM_ABOUT: array[1..MAX_FRM_ABOUT] of String;
+  STR_FRM_GOTOLINE: array[1..MAX_FRM_GOTOLINE] of String;
+  STR_FRM_GOTOFUNC: array[1..MAX_FRM_GOTOFUNC] of String;
 
 implementation
 
@@ -823,6 +1147,9 @@ begin
     //sub menu new
     for I := 1 to MAX_NEW_MENU do
       STR_NEW_MENU[I] := CONST_STR_NEW_MENU[I];
+    //sub menu import
+    for I := 1 to MAX_IMPORT_MENU do
+      STR_IMPORT_MENU[I] := CONST_STR_IMPORT_MENU[I];
     //sub menu toolars
     for I := 1 to MAX_VIEWTOOLBAR_MENU do
       STR_VIEWTOOLBAR_MENU[I] := CONST_STR_VIEWTOOLBAR_MENU[I];
@@ -853,6 +1180,8 @@ begin
       STR_POPUP_EDITOR[I] := CONST_STR_POPUP_EDITOR[I];
     for I := 1 to MAX_POPUP_TABS do
       STR_POPUP_TABS[I] := CONST_STR_POPUP_TABS[I];
+    for I := 1 to MAX_POPUP_MSGS do
+      STR_POPUP_MSGS[I] := CONST_STR_POPUP_MSGS[I];
 
     for I := 1 to MAX_FRM_MAIN do
       STR_FRM_MAIN[I] := CONST_STR_FRM_MAIN[I];
@@ -866,6 +1195,20 @@ begin
       STR_FRM_UPD[I] := CONST_STR_FRM_UPD[I];
     for I := 1 to MAX_FRM_FIND do
       STR_FRM_FIND[I] := CONST_STR_FRM_FIND[I];
+    for I := 1 to MAX_FRM_EDITOR_OPT do
+      STR_FRM_EDITOR_OPT[I] := CONST_STR_FRM_EDITOR_OPT[I];
+    for I := 1 to MAX_FRM_ENV_OPT do
+      STR_FRM_ENV_OPT[I] := CONST_STR_FRM_ENV_OPT[I];
+    for I := 1 to MAX_FRM_CODE_TEMPL do
+      STR_FRM_CODE_TEMPL[I] := CONST_STR_FRM_CODE_TEMPL[I];
+    for I := 1 to MAX_FRM_PROMPT_CODE do
+      STR_FRM_PROMPT_CODE[I] := CONST_STR_FRM_PROMPT_CODE[I];
+    for I := 1 to MAX_FRM_ABOUT do
+      STR_FRM_ABOUT[I] := CONST_STR_FRM_ABOUT[I];
+    for I := 1 to MAX_FRM_GOTOLINE do
+      STR_FRM_GOTOLINE[I] := CONST_STR_FRM_GOTOLINE[I];
+    for I := 1 to MAX_FRM_GOTOFUNC do
+      STR_FRM_GOTOFUNC[I] := CONST_STR_FRM_GOTOFUNC[I];
   end;
   FDefault := Value;
 end;
@@ -939,7 +1282,7 @@ end;
 
 procedure TFalconLanguages.UpdateForms;
 begin
-    if Assigned(FrmOptions) then
+  if Assigned(FrmOptions) then
     FrmOptions.UpdateLangNow;
   if Assigned(FrmEnvOptions) then
     FrmEnvOptions.UpdateLangNow;
@@ -1012,6 +1355,8 @@ begin
 
   for I := 1 to MAX_NEW_MENU do//959
     STR_NEW_MENU[I] := ReadStr(I + 958, CONST_STR_NEW_MENU[I]);
+  for I := 1 to MAX_IMPORT_MENU do//970
+    STR_IMPORT_MENU[I] := ReadStr(I + 969, CONST_STR_IMPORT_MENU[I]);
 
   //sub menu toolars
   for I := 1 to MAX_VIEWTOOLBAR_MENU do//978
@@ -1040,9 +1385,13 @@ begin
     STR_POPUP_EDITOR[I] := ReadStr(I + 1290, CONST_STR_POPUP_EDITOR[I]);
   for I := 1 to MAX_POPUP_TABS do//1351
     STR_POPUP_TABS[I] := ReadStr(I + 1350, CONST_STR_POPUP_TABS[I]);
+  for I := 1 to MAX_POPUP_MSGS do//1375
+    STR_POPUP_MSGS[I] := ReadStr(I + 1374, CONST_STR_POPUP_MSGS[I]);
 
   for I := 1 to MAX_FRM_MAIN do//1405
     STR_FRM_MAIN[I] := ReadStr(I + 1404, CONST_STR_FRM_MAIN[I]);
+  STR_FRM_MAIN[49] := StringReplace(STR_FRM_MAIN[49], '\n', #13, [rfReplaceAll]);
+
   for I := 1 to MAX_FRM_PROP do//1528
     STR_FRM_PROP[I] := ReadStr(I + 1527, CONST_STR_FRM_PROP[I]);
   for I := 1 to MAX_FRM_NEW_PROJ do//1673
@@ -1054,6 +1403,24 @@ begin
   for I := 1 to MAX_FRM_FIND do//4201
     STR_FRM_FIND[I] := ReadStr(I + 4200, CONST_STR_FRM_FIND[I]);
   STR_FRM_FIND[30] := StringReplace(STR_FRM_FIND[30], '\n', #13, [rfReplaceAll]);
+  for I := 1 to MAX_FRM_EDITOR_OPT do//4333
+  begin
+    STR_FRM_EDITOR_OPT[I] := ReadStr(I + 4332, CONST_STR_FRM_EDITOR_OPT[I]);
+    STR_FRM_EDITOR_OPT[I] := StringReplace(STR_FRM_EDITOR_OPT[I], '\n', #13,
+      [rfReplaceAll]);
+  end;
+  for I := 1 to MAX_FRM_ENV_OPT do//4569
+    STR_FRM_ENV_OPT[I] := ReadStr(I + 4568, CONST_STR_FRM_ENV_OPT[I]);
+  for I := 1 to MAX_FRM_CODE_TEMPL do//4704
+    STR_FRM_CODE_TEMPL[I] := ReadStr(I + 4703, CONST_STR_FRM_CODE_TEMPL[I]);
+  for I := 1 to MAX_FRM_PROMPT_CODE do//4808
+    STR_FRM_PROMPT_CODE[I] := ReadStr(I + 4807, CONST_STR_FRM_PROMPT_CODE[I]);
+  for I := 1 to MAX_FRM_ABOUT do//4909
+    STR_FRM_ABOUT[I] := ReadStr(I + 4908, CONST_STR_FRM_ABOUT[I]);
+  for I := 1 to MAX_FRM_GOTOLINE do//5015
+    STR_FRM_GOTOLINE[I] := ReadStr(I + 5014, CONST_STR_FRM_GOTOLINE[I]);
+  for I := 1 to MAX_FRM_GOTOFUNC do//5117
+    STR_FRM_GOTOFUNC[I] := ReadStr(I + 5116, CONST_STR_FRM_GOTOFUNC[I]);
   //end
   ini.Free;
   UpdateForms;

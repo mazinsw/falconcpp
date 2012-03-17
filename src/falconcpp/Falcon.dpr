@@ -24,7 +24,6 @@ uses
   UFileProperty in 'UFileProperty.pas',
   UFrmEnvOptions in 'UFrmEnvOptions.pas' {FrmEnvOptions},
   UFrmEditorOptions in 'UFrmEditorOptions.pas' {FrmEditorOptions},
-  UFrmReport in 'UFrmReport.pas' {FrmReport},
   UFrmFind in 'UFrmFind.pas' {FrmFind},
   FalconConst in 'FalconConst.pas',
   UFrmPromptCodeTemplate in 'UFrmPromptCodeTemplate.pas' {FrmPromptCodeTemplate},

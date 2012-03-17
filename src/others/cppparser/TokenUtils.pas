@@ -776,12 +776,15 @@ begin
   begin
     if (ptr^ in ['.', '~', '-']) or (ptr^ = ':') and ((ptr + 1)^ = ':') then
     begin
-      if Length(Field) > 0 then List.Add(Field);
+      if Length(Field) > 0 then
+        List.Add(Field);
       if ptr^ in ['.', '~'] then
         Inc(ptr)
       else if ((ptr^ = '-') and ((ptr + 1)^ = '>')) or
         ((ptr^ = ':') and ((ptr + 1)^ = ':')) then
-        Inc(ptr, 2);
+        Inc(ptr, 2)
+      else
+        Break;
       Field := '';
       Continue;
     end
@@ -1363,6 +1366,8 @@ begin
   end;
   ptr := init + SelStart - 1;
   //get string before selstart
+  while (ptr >= init) and (ptr^ in LineChars+SpaceChars) do
+      Dec(ptr);                                  //comment
   if (ptr^ in LetterChars+DigitChars) then
   begin
     repeat

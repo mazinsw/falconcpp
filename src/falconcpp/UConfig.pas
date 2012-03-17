@@ -12,7 +12,6 @@ type
   TEditorOptions = class
     //General
     AutoIndent: Boolean;
-    FindTextAtCursor: Boolean;
     InsertMode: Boolean;
     GroupUndo: Boolean;
     KeepTrailingSpaces: Boolean;
@@ -126,6 +125,8 @@ type
     LanguageID: Cardinal;
     Theme: String;
     //Files and Directories
+    AlternativeConfFileLoaded: Boolean;
+    //**********************
     AlternativeConfFile: Boolean;
     ConfigurationFile: String;
     UsersDefDir: String;
@@ -136,10 +137,18 @@ type
     destructor Destroy; override;
   end;
 
+  TCompilerOptions = class
+  public
+    Path: String;//path of compiler
+    Version: String;//version of used compiler
+    ActiveConfiguration: String;
+  end;
+
   TConfig = class
   public
     Editor: TEditorOptions;
     Environment: TEnvironmentOptions;
+    Compiler: TCompilerOptions;
     constructor Create;
     destructor Destroy; override;
     function LoadTemplates(TemplateDir: String): TStrings;
@@ -158,7 +167,7 @@ procedure WriteIniFile(Const Section, Ident, Value: String);
 var
   ini:TIniFile;
 begin
-  ini := TIniFile.Create(FrmFalconMain.ConfigRoot + 'Config.ini');
+  ini := TIniFile.Create(FrmFalconMain.IniConfigFile);
   ini.WriteString(Section, Ident, Value);
   ini.Free;
 end;
@@ -167,22 +176,9 @@ function ReadIniFile(Section, Ident, Default: String): String;
 var
   ini:TIniFile;
 begin
-  ini := TIniFile.Create(FrmFalconMain.ConfigRoot + 'Config.ini');
+  ini := TIniFile.Create(FrmFalconMain.IniConfigFile);
   Result := ini.ReadString(Section, Ident, Default);
   ini.Free;
-end;
-
-function ExecuteBatch(Command: String): Boolean;
-var
-  batchfile: TStrings;
-begin
-  batchfile := TStringList.Create;
-  batchfile.Text := Command;
-  batchfile.Add('del "' + GetTempDirectory + 'ExecBatch.bat"');
-  batchfile.SaveToFile(GetTempDirectory + 'ExecBatch.bat');
-  batchfile.Free;
-  WinExec(Pchar(GetTempDirectory + 'ExecBatch.bat'), SW_HIDE);
-  Result := True;
 end;
 
 constructor TEnvironmentOptions.Create;
@@ -202,10 +198,12 @@ begin
   inherited Create;
   Editor := TEditorOptions.Create;
   Environment := TEnvironmentOptions.Create;
+  Compiler := TCompilerOptions.Create;
 end;
 
 destructor TConfig.Destroy;
 begin
+  Compiler.Free;
   Environment.Free;
   Editor.Free;
   inherited Destroy;
@@ -253,9 +251,11 @@ begin
       'AlternativeConfFile', False);
     ConfigurationFile := ini.ReadString('EnvironmentOptions',
       'ConfigurationFile', '');
-    if AlternativeConfFile and FileExists(ConfigurationFile) then
+    if not AlternativeConfFileLoaded and AlternativeConfFile and
+      FileExists(ConfigurationFile) then
     begin
       ini.Free;
+      AlternativeConfFileLoaded := True;
       ini := TIniFile.Create(ConfigurationFile);
     end;
     //general
@@ -298,7 +298,6 @@ begin
   begin
     //General
     AutoIndent := ini.ReadBool('EditorOptions', 'AutoIndent', True);
-    FindTextAtCursor := ini.ReadBool('EditorOptions', 'FindTextAtCursor', True);
     InsertMode := ini.ReadBool('EditorOptions', 'InsertMode', True);
     GroupUndo := ini.ReadBool('EditorOptions', 'GroupUndo', True);
     KeepTrailingSpaces := ini.ReadBool('EditorOptions', 'KeepTrailingSpaces', True);
@@ -402,6 +401,12 @@ begin
       TFrmFalconMain(Form).ConfigRoot + 'CustomAutoComplete.txt');
   end;
 
+  with Compiler do
+  begin
+    Path := ini.ReadString('CompilerOptions', 'Path', '');
+    Version := ini.ReadString('CompilerOptions', 'Version', '');
+  end;
+
   with TFrmFalconMain(Form) do
   begin
     ProjectPanel.Width := ini.ReadInteger('CONFIG','SizePanelPW',260);
@@ -501,7 +506,7 @@ end;
 
 procedure TConfig.Save(const FileName:string; Form: TForm);
 var
-  ini:TIniFile;
+  ini, oriini:TIniFile;
 
   function GetDock(Toolbar: TTBXToolbar): Integer;
   begin
@@ -594,7 +599,6 @@ begin
   begin
     //General
     ini.WriteBool('EditorOptions', 'AutoIndent', AutoIndent);
-    ini.WriteBool('EditorOptions', 'FindTextAtCursor', FindTextAtCursor);
     ini.WriteBool('EditorOptions', 'InsertMode', InsertMode);
     ini.WriteBool('EditorOptions', 'GroupUndo', GroupUndo);
     ini.WriteBool('EditorOptions', 'KeepTrailingSpaces', KeepTrailingSpaces);
@@ -712,12 +716,31 @@ begin
     ini.WriteInteger('EnvironmentOptions', 'LanguageID', LanguageID);
     ini.WriteString('EnvironmentOptions', 'Theme', Theme);
     //Files and Directories
-    ini.WriteBool('EnvironmentOptions', 'AlternativeConfFile', AlternativeConfFile);
-    ini.WriteString('EnvironmentOptions', 'ConfigurationFile', ConfigurationFile);
+    if not AlternativeConfFileLoaded then
+    begin
+      ini.WriteBool('EnvironmentOptions', 'AlternativeConfFile', AlternativeConfFile);
+      ini.WriteString('EnvironmentOptions', 'ConfigurationFile', ConfigurationFile);
+    end
+    else
+    begin
+      ini.WriteBool('EnvironmentOptions', 'AlternativeConfFile', False);
+      ini.WriteString('EnvironmentOptions', 'ConfigurationFile', '');
+      if not AlternativeConfFile then
+      begin
+        oriini := TIniFile.Create(TFrmFalconMain(Form).ConfigRoot + 'Config.ini');
+        oriini.WriteBool('EnvironmentOptions', 'AlternativeConfFile', False);
+        oriini.Free;
+      end;
+    end;
     ini.WriteString('EnvironmentOptions', 'UsersDefDir', UsersDefDir);
     ini.WriteString('EnvironmentOptions', 'ProjectsDir', ProjectsDir);
     ini.WriteString('EnvironmentOptions', 'TemplatesDir', TemplatesDir);
     ini.WriteString('EnvironmentOptions', 'LanguageDir', LanguageDir);
+  end;
+  with Compiler do
+  begin
+    ini.WriteString('CompilerOptions', 'Path', Path);
+    ini.WriteString('CompilerOptions', 'Version', Version);
   end;
   ini.Free;
 end;

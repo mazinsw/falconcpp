@@ -64,14 +64,14 @@ object FormAbout: TFormAbout
     Height = 27
     BevelOuter = bvLowered
     TabOrder = 0
-    object Button1: TButton
+    object BtnOk: TButton
       Left = 1
       Top = 1
       Width = 75
       Height = 25
       Caption = 'Ok'
       TabOrder = 0
-      OnClick = Button1Click
+      OnClick = BtnOkClick
     end
   end
   object XPPanel1: TXPPanel
@@ -86,11 +86,11 @@ object FormAbout: TFormAbout
       Top = 3
       Width = 443
       Height = 267
-      ActivePage = TabSheet1
+      ActivePage = TSLicence
       Align = alClient
       Style = tsFlatButtons
       TabOrder = 0
-      object TabSheet1: TTabSheet
+      object TSLicence: TTabSheet
         Caption = 'Licence'
         object Memo1: TMemo
           Left = 0
@@ -1549,7 +1549,7 @@ object FormAbout: TFormAbout
           TabOrder = 0
         end
       end
-      object TabSheet2: TTabSheet
+      object TSDevelopers: TTabSheet
         Caption = 'Developers'
         ImageIndex = 1
         object EditTranslators: TRichEditViewer
@@ -1559,13 +1559,13 @@ object FormAbout: TFormAbout
           Height = 236
           Align = alClient
           Lines.Strings = (
-            'Mazinsw: mailto:mazin.z@hotmail.com  '#13)
+            'Mazinsw: mailto:mazin.z@hotmail.com   '#13)
           ReadOnly = True
           ScrollBars = ssVertical
           TabOrder = 0
         end
       end
-      object TabSheet3: TTabSheet
+      object TSTranslator: TTabSheet
         Caption = 'Translators'
         ImageIndex = 2
         object RichEditViewer2: TRichEditViewer
@@ -1575,13 +1575,13 @@ object FormAbout: TFormAbout
           Height = 236
           Align = alClient
           Lines.Strings = (
-            'Mazinsw: mailto:mazin.z@hotmail.com    '#13)
+            'Mazinsw: mailto:mazin.z@hotmail.com     '#13)
           ReadOnly = True
           ScrollBars = ssVertical
           TabOrder = 0
         end
       end
-      object TabSheet4: TTabSheet
+      object TSTesters: TTabSheet
         Caption = 'Testers'
         ImageIndex = 3
         object RichEditViewer1: TRichEditViewer
@@ -1591,7 +1591,7 @@ object FormAbout: TFormAbout
           Height = 236
           Align = alClient
           Lines.Strings = (
-            'Marcos Castro: mailto:marcoscastro87@hotmail.com  '#13
+            'Marcos Castro: mailto:marcoscastro87@hotmail.com   '#13
             'Gilvan Veras: mailto:gilvanokra@hotmail.com '#13)
           ReadOnly = True
           ScrollBars = ssVertical

@@ -143,7 +143,6 @@ type
     CboTabWdt: TComboBox;
     ChbShowLnNumb: TCheckBox;
     ChbGrdGutt: TCheckBox;
-    ChbFindTextAtCursor: TCheckBox;
     ChbSmartTabs: TCheckBox;
     ChbScrollHint: TCheckBox;
     GroupBox8: TGroupBox;
@@ -279,7 +278,8 @@ var
 
 implementation
 
-uses UFrmMain, UUtils, UConfig, TokenUtils, UFrmCodeTemplates, AStyle;
+uses UFrmMain, UUtils, UConfig, TokenUtils, UFrmCodeTemplates, AStyle,
+  ULanguages;
 
 {$R *.dfm}
 
@@ -768,6 +768,7 @@ begin
   Loading := True;
   CboEditFont.Items.AddStrings(Screen.Fonts);
   ActiveSintax := TSintax.Create;
+  UpdateLangNow;
   Loading := False;
 end;
 
@@ -793,7 +794,6 @@ begin
   begin
     //--------------Gemneral---------------------//
     ChbAutoIndt.Checked := AutoIndent;
-    ChbFindTextAtCursor.Checked := FindTextAtCursor;
     ChbInsMode.Checked := InsertMode;
     ChbGrpUnd.Checked := GroupUndo;
     ChbKeepTraiSpa.Checked := KeepTrailingSpaces;
@@ -907,7 +907,6 @@ begin
   begin
     //------------- General ----------------------//
     AutoIndent := ChbAutoIndt.Checked;
-    FindTextAtCursor := ChbFindTextAtCursor.Checked;
     InsertMode := ChbInsMode.Checked;
     GroupUndo := ChbGrpUnd.Checked;
     KeepTrailingSpaces := ChbKeepTraiSpa.Checked;
@@ -1024,7 +1023,154 @@ end;
 
 procedure TFrmEditorOptions.UpdateLangNow;
 begin
-//
+  Caption := STR_FRM_EDITOR_OPT[1];
+  BtnOk.Caption := STR_FRM_PROP[14];
+  BtnCancel.Caption := STR_FRM_PROP[15];
+  BtnApply.Caption := STR_FRM_PROP[16];
+  //General
+  TSGeneral.Caption := STR_FRM_EDITOR_OPT[2];
+  GroupBox1.Caption := STR_FRM_EDITOR_OPT[3];
+  ChbAutoIndt.Caption := STR_FRM_EDITOR_OPT[4];
+  ChbInsMode.Caption := STR_FRM_EDITOR_OPT[6];
+  ChbGrpUnd.Caption := STR_FRM_EDITOR_OPT[7];
+  ChbKeepTraiSpa.Caption := STR_FRM_EDITOR_OPT[8];
+  ChbShowLineChars.Caption := STR_FRM_EDITOR_OPT[9];
+  ChbScrollHint.Caption := STR_FRM_EDITOR_OPT[10];
+  ChbTabUnOrIndt.Caption := STR_FRM_EDITOR_OPT[11];
+  ChbSmartTabs.Caption := STR_FRM_EDITOR_OPT[12];
+  ChbUseTabChar.Caption := STR_FRM_EDITOR_OPT[13];
+  ChbEnhHomeKey.Caption := STR_FRM_EDITOR_OPT[14];
+  Label6.Caption := STR_FRM_EDITOR_OPT[15];
+  Label16.Caption := STR_FRM_EDITOR_OPT[16];
+  GroupBoxHlMatchBP.Caption := '      ' + STR_FRM_EDITOR_OPT[17];
+  Label1.Caption := STR_FRM_EDITOR_OPT[18];
+  Label2.Caption := STR_FRM_EDITOR_OPT[19];
+  Label3.Caption := STR_FRM_EDITOR_OPT[20];
+  GroupBox3.Caption := '      ' + STR_FRM_EDITOR_OPT[21];
+  Label4.Caption := STR_FRM_EDITOR_OPT[22];
+  GroupBox4.Caption := '      ' + STR_FRM_EDITOR_OPT[23];
+  Label5.Caption := STR_FRM_EDITOR_OPT[22];
+  BtnRestDef.Caption := STR_FRM_EDITOR_OPT[24];
+  //Display
+  TSDisplay.Caption := STR_FRM_EDITOR_OPT[25];
+  Label11.Caption := STR_FRM_EDITOR_OPT[26];
+  Label9.Caption := STR_FRM_EDITOR_OPT[27];
+  Label10.Caption := STR_FRM_EDITOR_OPT[28];
+  GroupBox5.Caption := STR_FRM_EDITOR_OPT[29];
+  ChbShowRMrgn.Caption := STR_FRM_EDITOR_OPT[30];
+  ChbShowgtt.Caption := STR_FRM_EDITOR_OPT[31];
+  ChbShowLnNumb.Caption := STR_FRM_EDITOR_OPT[32];
+  ChbGrdGutt.Caption := STR_FRM_EDITOR_OPT[33];
+  Button1.Caption := STR_FRM_EDITOR_OPT[24];
+  Label7.Caption := STR_FRM_EDITOR_OPT[34];
+  Label8.Caption := STR_FRM_EDITOR_OPT[35];
+  TSSintax.Caption := STR_FRM_EDITOR_OPT[36];
+  Label13.Caption := STR_FRM_EDITOR_OPT[37];
+  Label12.Caption := STR_FRM_EDITOR_OPT[38];
+  BtnSave.Hint := STR_FRM_EDITOR_OPT[39];
+  BtnDel.Hint := STR_FRM_EDITOR_OPT[40];
+  Label14.Caption := STR_FRM_EDITOR_OPT[41];
+  Label15.Caption := STR_FRM_EDITOR_OPT[42];
+  GroupBox6.Caption := STR_FRM_EDITOR_OPT[43];
+  ChbBold.Caption := STR_FRM_EDITOR_OPT[44];
+  ChbItalic.Caption := STR_FRM_EDITOR_OPT[45];
+  ChbUnderl.Caption := STR_FRM_EDITOR_OPT[46];
+  //Formatter
+  TSFormatter.Caption := STR_FRM_EDITOR_OPT[48];
+  //Style
+  TSFormatterStyle.Caption := STR_FRM_EDITOR_OPT[49];
+  RadioGroupFormatterStyles.Caption := STR_FRM_EDITOR_OPT[43];
+  RadioGroupFormatterStyles.Items.Strings[5] := STR_FRM_EDITOR_OPT[50];
+  BtnPrevStyle.Caption := STR_FRM_EDITOR_OPT[51];
+  GroupBoxFormatterSample.Caption := STR_FRM_EDITOR_OPT[52];
+  //Indentation
+  TSFormatterIndentation.Caption := STR_FRM_EDITOR_OPT[53];
+  CheckBoxForceUsingTabs.Caption := STR_FRM_EDITOR_OPT[54];
+  CheckBoxIndentClasses.Caption := STR_FRM_EDITOR_OPT[55];
+  CheckBoxIndentSwitches.Caption := STR_FRM_EDITOR_OPT[56];
+  CheckBoxIndentCase.Caption := STR_FRM_EDITOR_OPT[57];
+  CheckBoxIndentBrackets.Caption := STR_FRM_EDITOR_OPT[58];
+  CheckBoxIndentBlocks.Caption := STR_FRM_EDITOR_OPT[59];
+  CheckBoxIndentNamespaces.Caption := STR_FRM_EDITOR_OPT[60];
+  CheckBoxIndentLabels.Caption := STR_FRM_EDITOR_OPT[61];
+  CheckBoxIndentMultLinePreprocessor.Caption := STR_FRM_EDITOR_OPT[62];
+  CheckBoxIndentSingleLineComments.Caption := STR_FRM_EDITOR_OPT[63];
+  CheckBoxForceUsingTabs.Hint := STR_FRM_EDITOR_OPT[64];
+  CheckBoxIndentClasses.Hint := STR_FRM_EDITOR_OPT[65];
+  CheckBoxIndentSwitches.Hint := STR_FRM_EDITOR_OPT[66];
+  CheckBoxIndentCase.Hint := STR_FRM_EDITOR_OPT[67];
+  CheckBoxIndentNamespaces.Hint := STR_FRM_EDITOR_OPT[68];
+  CheckBoxIndentLabels.Hint := STR_FRM_EDITOR_OPT[69];
+  CheckBoxIndentMultLinePreprocessor.Hint := STR_FRM_EDITOR_OPT[70];
+  CheckBoxIndentSingleLineComments.Hint := STR_FRM_EDITOR_OPT[71];
+  //Padding
+  TSFormatterPadding.Caption := STR_FRM_EDITOR_OPT[72];
+  CheckBoxPadEmptyLines.Caption := STR_FRM_EDITOR_OPT[73];
+  CheckBoxBreakClosingHeaderBlocks.Caption := STR_FRM_EDITOR_OPT[74];
+  CheckBoxInsertSpacePaddingOperators.Caption := STR_FRM_EDITOR_OPT[75];
+  CheckBoxInsertSpacePaddingParenthesisOutside.Caption := STR_FRM_EDITOR_OPT[76];
+  CheckBoxInsertSpacePaddingParenthesisInside.Caption := STR_FRM_EDITOR_OPT[77];
+  CheckBoxParenthesisHeaderPadding.Caption := STR_FRM_EDITOR_OPT[78];
+  CheckBoxRemoveExtraSpace.Caption := STR_FRM_EDITOR_OPT[79];
+  CheckBoxDeleteEmptyLines.Caption := STR_FRM_EDITOR_OPT[80];
+  CheckBoxFillEmptyLines.Caption := STR_FRM_EDITOR_OPT[81];
+  CheckBoxPadEmptyLines.Hint := STR_FRM_EDITOR_OPT[82];
+  CheckBoxBreakClosingHeaderBlocks.Hint := STR_FRM_EDITOR_OPT[83];
+  CheckBoxInsertSpacePaddingOperators.Hint := STR_FRM_EDITOR_OPT[84];
+  CheckBoxInsertSpacePaddingParenthesisOutside.Hint := STR_FRM_EDITOR_OPT[85];
+  CheckBoxInsertSpacePaddingParenthesisInside.Hint := STR_FRM_EDITOR_OPT[86];
+  CheckBoxParenthesisHeaderPadding.Hint := STR_FRM_EDITOR_OPT[87];
+  CheckBoxRemoveExtraSpace.Hint := STR_FRM_EDITOR_OPT[88];
+  CheckBoxDeleteEmptyLines.Hint := STR_FRM_EDITOR_OPT[89];
+  CheckBoxFillEmptyLines.Hint := STR_FRM_EDITOR_OPT[90];
+  //formatting
+  TSFormatterFormatting.Caption := STR_FRM_EDITOR_OPT[91];
+  LabelBracketsStyle.Caption := STR_FRM_EDITOR_OPT[92];
+  ComboBoxBracketStyle.Items.Strings[0] := STR_FRM_EDITOR_OPT[93];
+  ComboBoxBracketStyle.Items.Strings[1] := STR_FRM_EDITOR_OPT[94];
+  ComboBoxBracketStyle.Items.Strings[2] := STR_FRM_EDITOR_OPT[95];
+  ComboBoxBracketStyle.Items.Strings[3] := STR_FRM_EDITOR_OPT[96];
+  CheckBoxBreakClosingHeadersBrackets.Caption := STR_FRM_EDITOR_OPT[97];
+  CheckBoxBreakElseIf.Caption := STR_FRM_EDITOR_OPT[98];
+  CheckBoxAddBrackets.Caption := STR_FRM_EDITOR_OPT[99];
+  CheckBoxAddOneLineBrackets.Caption := STR_FRM_EDITOR_OPT[100];
+  CheckBoxDontBreakOneLineBlocks.Caption := STR_FRM_EDITOR_OPT[101];
+  CheckBoxDontBreakComplex.Caption := STR_FRM_EDITOR_OPT[102];
+  CheckBoxConvToSpaces.Caption := STR_FRM_EDITOR_OPT[103];
+  CheckBoxBreakClosingHeadersBrackets.Hint := STR_FRM_EDITOR_OPT[104];
+  CheckBoxBreakElseIf.Hint := STR_FRM_EDITOR_OPT[105];
+  CheckBoxAddBrackets.Hint := STR_FRM_EDITOR_OPT[106];
+  CheckBoxAddOneLineBrackets.Hint := STR_FRM_EDITOR_OPT[107];
+  CheckBoxDontBreakOneLineBlocks.Hint := STR_FRM_EDITOR_OPT[108];
+  CheckBoxDontBreakComplex.Hint := STR_FRM_EDITOR_OPT[109];
+  CheckBoxConvToSpaces.Hint := STR_FRM_EDITOR_OPT[110];
+  Label26.Caption := STR_FRM_EDITOR_OPT[111];
+  ComboBoxPointerAlign.Items.Strings[0] := STR_FRM_EDITOR_OPT[112];
+  ComboBoxPointerAlign.Items.Strings[1] := STR_FRM_EDITOR_OPT[113];
+  ComboBoxPointerAlign.Items.Strings[2] := STR_FRM_EDITOR_OPT[114];
+  ComboBoxPointerAlign.Items.Strings[3] := STR_FRM_EDITOR_OPT[115];
+  ComboBoxPointerAlign.Hint := STR_FRM_EDITOR_OPT[116];
+  //Code Resources
+  TSCodeResources.Caption := STR_FRM_EDITOR_OPT[117];
+  GroupBox8.Caption := STR_FRM_EDITOR_OPT[118];
+  ChbCodeCompletion.Caption := STR_FRM_EDITOR_OPT[119];
+  ChbCodeParameters.Caption := STR_FRM_EDITOR_OPT[120];
+  ChbTooltopexev.Caption := STR_FRM_EDITOR_OPT[121];
+  ChbTooltipSymbol.Caption := STR_FRM_EDITOR_OPT[122];
+  LblDelay.Caption := STR_FRM_EDITOR_OPT[123];
+  GroupBox9.Caption := STR_FRM_EDITOR_OPT[125];
+  Label17.Caption := STR_FRM_EDITOR_OPT[126];
+  Label18.Caption := STR_FRM_EDITOR_OPT[127];
+  Label19.Caption := STR_FRM_EDITOR_OPT[128];
+  Label20.Caption := STR_FRM_EDITOR_OPT[129];
+  Label24.Caption := STR_FRM_EDITOR_OPT[130];
+  Label21.Caption := STR_FRM_EDITOR_OPT[131];
+  Label23.Caption := STR_FRM_EDITOR_OPT[132];
+  Label22.Caption := STR_FRM_EDITOR_OPT[133];
+  GroupBox7.Caption := STR_FRM_EDITOR_OPT[134];
+  Label25.Caption := STR_FRM_EDITOR_OPT[135];
+  BtnChooseCodeTemplate.Hint := STR_FRM_EDITOR_OPT[136];
+  BtnEditCodeTemplate.Hint := STR_FRM_EDITOR_OPT[137];
 end;
 
 procedure TFrmEditorOptions.SynPrevGutterClick(Sender: TObject;
@@ -1178,12 +1324,12 @@ begin
     begin
       ActiveSintax.Changed := True;
       CbDefSin.ItemIndex := -1;
-      NewName := 'New Sintax';
+      NewName := STR_FRM_EDITOR_OPT[47];
       I := 0;
       while CbDefSin.Items.IndexOf(NewName) >= 0 do
       begin
         Inc(I);
-        NewName := 'New Sintax' + IntToStr(I);
+        NewName := STR_FRM_EDITOR_OPT[47] + IntToStr(I);
       end;
       CbDefSin.Text := NewName;
     end;
@@ -1225,12 +1371,12 @@ begin
     begin
       ActiveSintax.Changed := True;
       CbDefSin.ItemIndex := -1;
-      NewName := 'New Sintax';
+      NewName := STR_FRM_EDITOR_OPT[47];
       I := 0;
       while CbDefSin.Items.IndexOf(NewName) >= 0 do
       begin
         Inc(I);
-        NewName := 'New Sintax' + IntToStr(I);
+        NewName := STR_FRM_EDITOR_OPT[47] + IntToStr(I);
       end;
       CbDefSin.Text := NewName;
     end;
@@ -1379,17 +1525,18 @@ procedure TFrmEditorOptions.TrackBarCodeResChange(Sender: TObject);
 var
  S: String;
 begin
-  S := Format('%.1f', [(TrackBarCodeRes.Position + 1)/10]);
+  S := Format(STR_FRM_EDITOR_OPT[123] + ' ' +
+    STR_FRM_EDITOR_OPT[124], [(TrackBarCodeRes.Position + 1)/10]);
   S := StringReplace(S, ',', '.', [rfReplaceAll]);
   TimerNormalDelay.Enabled := False;
   TimerNormalDelay.Enabled := True;
-  LblDelay.Caption := Format('&Delay: %s sec',[S]);
+  LblDelay.Caption := S;
   OptionsChange;
 end;
 
 procedure TFrmEditorOptions.TimerNormalDelayTimer(Sender: TObject);
 begin
-  LblDelay.Caption := '&Delay:';
+  LblDelay.Caption := STR_FRM_EDITOR_OPT[123];
   TimerNormalDelay.Enabled := False;
 end;
 
@@ -1444,7 +1591,6 @@ procedure TFrmEditorOptions.BtnRestDefClick(Sender: TObject);
 begin
 //
   ChbAutoIndt.Checked := True;
-  ChbFindTextAtCursor.Checked := True;
   ChbInsMode.Checked := True;
   ChbGrpUnd.Checked := True;
   ChbKeepTraiSpa.Checked := True;

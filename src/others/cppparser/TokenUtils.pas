@@ -1349,6 +1349,7 @@ function ParseFields(const Text: String; SelStart: Integer;
   var S, Fields: String; var InputError: Boolean): Boolean;
 var
   ptr, init: PChar;
+  skipSpace: Boolean;
   str, field, sep, _fields: String;
 begin
   Result := False;
@@ -1356,8 +1357,10 @@ begin
   init := PChar(Text);
   ptr := init + SelStart;
   str := '';
+  skipSpace := False;
   if (ptr^ in LetterChars+DigitChars) then
   begin
+    skipSpace := True;
     //get string after selstart
     repeat
       str := str + ptr^;
@@ -1366,7 +1369,7 @@ begin
   end;
   ptr := init + SelStart - 1;
   //get string before selstart
-  while (ptr >= init) and (ptr^ in LineChars+SpaceChars) do
+  while not skipSpace and (ptr >= init) and (ptr^ in LineChars+SpaceChars) do
       Dec(ptr);                                  //comment
   if (ptr^ in LetterChars+DigitChars) then
   begin

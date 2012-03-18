@@ -36,7 +36,7 @@ function GetParamsAfter(const S: String; Index: Integer): String;
 function GetFirstWord(const S: String): String;
 function GetAfterWord(const S: String): String;
 procedure GetDescendants(const S: String; List: TStrings; scope: TScopeClass);
-function GetLastWord(const S: String): String;
+function GetLastWord(const S: String; AllowScope: Boolean = False): String;
 function GetPriorWord(const S: String): String;
 function GetVarType(const S: String): String;
 function Trim(Left: Char; const S: String; Rigth: Char): String; overload;
@@ -1090,18 +1090,22 @@ begin
 end;
 
 //strings
-function GetLastWord(const S: String): String;
+function GetLastWord(const S: String; AllowScope: Boolean): String;
 var
   Len, RLen: Integer;
+  Chars: set of Char;
 begin
   Result := '';
   RLen := 0;
   Len := Length(S);
+  Chars := LetterChars+DigitChars;
+  if AllowScope then
+    Chars := Chars + [':'];
   while(Len > 0) do
   begin
-    if(RLen > 0) and not (S[Len] in LetterChars+DigitChars) then
+    if(RLen > 0) and not (S[Len] in Chars) then
        Break
-    else if (S[Len] in LetterChars+DigitChars) then
+    else if (S[Len] in Chars) then
     begin
        Result := S[Len] + Result;
        Inc(RLen);
@@ -1152,7 +1156,7 @@ begin
   Result := S;
   I := Pos('[', Result);
   if I > 0 then Result := Copy(Result, 1, I - 1);
-  Result := GetLastWord(Result); 
+  Result := GetLastWord(Result, True); 
 end;
 
 function StringToScopeClass(const S: String): TScopeClass;

@@ -40,8 +40,11 @@ namespace MyExternalNamespace
     }
 }
 
-int main()
+int main(int argc, char *argv[])
 {
+    MyExternalNamespace::MyInternalNamespace::TestNamespace a;
+    
+    a->public_function2();
     return 0;
 }
 

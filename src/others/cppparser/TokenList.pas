@@ -6,7 +6,7 @@ uses
   Classes, Dialogs;
 
 const
-  Sign = 'FCP 2.2';
+  Sign = 'FCP 2.3';
 
 type
   TTkType = (

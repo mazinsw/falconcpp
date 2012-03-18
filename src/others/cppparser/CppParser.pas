@@ -422,6 +422,7 @@ procedure TCppParser.ProcessPreprocessor;
 var
   TokenName, TempWord, DefStr: String;
   Len, I, Line: Integer;
+  IncludeChar: Char;
 begin
   TokenName := '';
   if fptr^ = '#' then
@@ -447,17 +448,34 @@ begin
   if TokenName = 'include' then
   begin
     SkipSpaces;
+    IncludeChar  := fptr^;
+    if not (fptr^ in ['"', '<']) then
+    begin
+      SkipEOL;
+      Exit;
+    end;
+    Inc(fptr);
+    Inc(fCurrPos);
+    SkipSpaces;
     Line :=  fCurrLine;
-    I := fCurrPos;
-    TempWord := GetWord(True);
+    I := fCurrPos - 1;
+    TempWord := GetWordUntilFind([#10, #13, ' ', '"', '>']);
+    SkipSpaces;
+    if not (fptr^ in ['"', '>']) or
+      ((IncludeChar = '<') and (fptr^ <> '>')) or
+      ((IncludeChar = '"') and (fptr^ <> '"')) then
+    begin
+      SkipEOL;
+      Exit;
+    end;
     Len := Length(TempWord);
-    if Len > 2 then
+    if Len > 0 then
     begin
       Inc(I);
-      if (TempWord[1] = '"') and (TempWord[Len] = '"') then
-        AddToken(Trim('"', TempWord, '"'), 'L', tkInclude, Line, I, Len - 2, fLevel)
-      else if (TempWord[1] = '<') and (TempWord[Len] = '>') then
-        AddToken(Trim('<', TempWord, '>'), 'S', tkInclude, Line, I, Len - 2, fLevel)
+      if IncludeChar = '"' then
+        AddToken(TempWord, 'L', tkInclude, Line, I, Len, fLevel)
+      else if IncludeChar = '<' then
+        AddToken(TempWord, 'S', tkInclude, Line, I, Len, fLevel)
     end;
   end
   else if TokenName = 'define' then
@@ -731,7 +749,15 @@ begin
         Asterisk := '';
         VarName := '';
         Vector := '';
-        if fptr^ in [';', '}', ')'] then Break;
+        if fptr^ in [';', '}', ')'] then
+        begin
+          if fptr^ in ['}'] then
+          begin
+            Dec(fptr);
+            Dec(fCurrPos);
+          end;
+          Break;
+        end;
       end;
     else
       if not HasEqual and not HasVector then
@@ -1649,12 +1675,14 @@ begin
           Inc(fptr);
           Inc(fCurrPos);
           SkipMultLineComment;
-        end;
+        end
+        else
+          Result := Result + fptr^;
       '(': SkipPair('(', ')');
       '{': SkipPair('{', '}');
       '[': SkipPair('[', ']');
     else
-      if fptr^ in LetterChars+DigitChars+['*', ','] then
+      if fptr^ in LetterChars+DigitChars+['*', ',', '.', '-', ':', '\'] then
         Result := Result + fptr^
       else if fptr^ in LineChars+SpaceChars then
         Result := Result + ' ';
@@ -1694,7 +1722,7 @@ procedure TCppParser.ProcessFunction(StartPos, StartLine: Integer;
   const S: String; IsDestructor: Boolean);
 var
   RetType, FuncName, TreeName, ScopeName: String;
-  Len: Integer;
+  Len, I: Integer;
   FuncToken, Params: TTokenClass;
   TokenType: TTkType;
 begin
@@ -1703,8 +1731,14 @@ begin
   FuncName := GetLastWord(S);
   RetType := GetPriorWord(S);
   ScopeName := GetLastWord(RetType);
-  if Pos('::', RetType) > 0 then
-    RetType := GetPriorWord(RetType)
+  I := Pos('::', RetType);
+  if I > 0 then
+  begin
+    if '::' = Copy(RetType, Length(RetType) - 1, 2) then
+      RetType := GetPriorWord(RetType)
+    else
+      ScopeName := '';
+  end
   else
     ScopeName := '';
   // and not HasEqual (PairCount = 0) and

@@ -238,7 +238,7 @@ object FrmProperty: TFrmProperty
             Enabled = False
             Max = 9999
             TabOrder = 2
-            OnChanging = UpDownVersionChanging
+            OnClick = UpDownVersionClick
           end
           object EditMinor: TEditAlign
             Tag = 1
@@ -262,7 +262,7 @@ object FrmProperty: TFrmProperty
             Enabled = False
             Max = 9999
             TabOrder = 4
-            OnChanging = UpDownVersionChanging
+            OnClick = UpDownVersionClick
           end
           object EditRelease: TEditAlign
             Tag = 2
@@ -286,7 +286,7 @@ object FrmProperty: TFrmProperty
             Enabled = False
             Max = 9999
             TabOrder = 6
-            OnChanging = UpDownVersionChanging
+            OnClick = UpDownVersionClick
           end
           object EditBuild: TEditAlign
             Tag = 3
@@ -310,7 +310,7 @@ object FrmProperty: TFrmProperty
             Enabled = False
             Max = 9999
             TabOrder = 8
-            OnChanging = UpDownVersionChanging
+            OnClick = UpDownVersionClick
           end
         end
         object GrpLang: TGroupBox
@@ -737,7 +737,7 @@ object FrmProperty: TFrmProperty
             Top = 8
             Width = 369
             Height = 21
-            ItemHeight = 13
+            ItemHeight = 0
             TabOrder = 0
             OnKeyPress = CBLibsKeyPress
           end
@@ -1092,7 +1092,7 @@ object FrmProperty: TFrmProperty
             Top = 8
             Width = 369
             Height = 21
-            ItemHeight = 13
+            ItemHeight = 0
             TabOrder = 0
             OnKeyPress = CBIncsKeyPress
           end

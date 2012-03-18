@@ -1547,6 +1547,15 @@ function TTokenFiles.GetBaseType(const S: String; SelStart: Integer;
 var
   FindedList: TStrings;
 begin
+  if SearchTreeToken(S, TokenFile, TokenFileItem, Token,
+    [tkClass, tkNamespace], SelStart) then
+  begin
+    if Token.Name = GetLastWord(S) then
+    begin
+      Result := True;
+      Exit;
+    end;
+  end;
   FindedList := TStringList.Create;
   Result := GetBaseTypeRecursive(S, SelStart, TokenFile, TokenFileItem,
     Token, FindedList, ListAll, AllFunctions);

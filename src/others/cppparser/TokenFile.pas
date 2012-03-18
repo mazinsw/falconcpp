@@ -1654,6 +1654,11 @@ begin
       end;
     end;
   end;
+  if (Token.Token in [tkTypedef]) and (Pos('struct', Token.Flag) > 0) then
+  begin
+    GetBaseType(GetVarType(Token.Flag), 0,
+            TokenFile, TokenFileItem, Token);
+  end;
   for I := 0 to List.Count - 1 do
   begin
     if Token.Token in [tkClass, tkTypeStruct, tkStruct, tkUnion,
@@ -1710,6 +1715,17 @@ begin
         (not StringIn(GetVarType(Token.Flag), ReservedTypes) and
         not GetBaseType(GetVarType(Token.Flag), 0, TokenFileItem,
         TokenFileItem, Token)) then
+      begin
+        Result := False;
+        List.Free;
+        Exit;
+      end;
+    end
+    else if Token.Token in [tkNamespace] then
+    begin
+      //get var.field    note: field can be an function
+      Result := Token.SearchSource(List.Strings[I], Token);
+      if not Result then
       begin
         Result := False;
         List.Free;

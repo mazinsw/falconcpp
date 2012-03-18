@@ -272,7 +272,7 @@ begin
   FBreakpoint := TBreakpointList.Create;
   FEditor := Editor;
   FBreakpoint.ImageList := FrmFalconMain.ImageListGutter;
-  FBreakpoint.ImageIndex := 0;
+  FBreakpoint.ImageIndex := 2;
   FBreakpoint.InvalidIndex := 3;
 
   FIsNew := True;

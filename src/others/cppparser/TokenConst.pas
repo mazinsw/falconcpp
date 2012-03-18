@@ -103,7 +103,9 @@ const
   SpaceChars:  set of Char = [' ', #9];
   LineChars:   set of Char = [#13, #10];
   ArithmChars:   set of Char = ['.', '+', '-', '*', '/', '%'];
-  BraceChars:   set of Char = ['(', ')', '{', '}', '<', '>', '[', ']'];
+  OpenBraceChars:   set of Char = ['(', '{', '<', '['];
+  CloseBraceChars:   set of Char = [')', '}', '>', ']'];
+  BraceChars:   set of Char = ['(', '{', '<', '[', ')', '}', '>', ']'];
   ReservedBraceWords: array[0..15] of String = (
       'while', 'for', 'switch', 'sizeof', 'if', 'catch', 'return',
       //extern

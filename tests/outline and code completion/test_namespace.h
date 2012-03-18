@@ -14,7 +14,7 @@ namespace MyNamespace
         void protected_function();
     public:
         int public_field;
-        void public_function();
+        void public_function(int bla, char bla);
     };
 
 }

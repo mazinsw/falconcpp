@@ -131,8 +131,7 @@ type
     procedure CBIncsKeyPress(Sender: TObject; var Key: Char);
     procedure VersionNumbersChange(Sender: TObject);
     procedure VersionNumbersKeyPress(Sender: TObject; var Key: Char);
-    procedure UpDownVersionChanging(Sender: TObject;
-      var AllowChange: Boolean);
+    procedure UpDownVersionClick(Sender: TObject; Button: TUDBtnType);
   private
     { Private declarations }
   public
@@ -938,8 +937,8 @@ begin
     Key := #0;
 end;
 
-procedure TFrmProperty.UpDownVersionChanging(Sender: TObject;
-  var AllowChange: Boolean);
+procedure TFrmProperty.UpDownVersionClick(Sender: TObject;
+  Button: TUDBtnType);
 begin
   VersionChange(Sender);
 end;

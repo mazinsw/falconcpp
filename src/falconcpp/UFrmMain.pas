@@ -4526,6 +4526,39 @@ begin
     SelStart := sheet.Memo.RowColToCharIndex(sheet.Memo.WordStart);
     if ParseFields(sheet.Memo.Text, SelStart, Input, Fields, InputError) then
     begin
+      if ActiveEditingFile.GetScopeAt(Token, SelStart) then
+      begin
+        if (Token.Token in [tkNamespace]) then
+        begin
+          Fields := Token.Name + '::' + Fields;
+          while Assigned(Token.Parent) and (Token.Parent.Token in [tkNamespace]) do
+          begin
+            Token := Token.Parent;
+            Fields := Token.Name + '::' + Fields;
+          end;
+        end;
+        if (Fields <> '') and FilesParsed.SearchTreeToken(Fields, ActiveEditingFile,
+            TokenFileItem, Token, [tkClass, tkNamespace], Token.SelStart) then
+        begin
+          if (Input <> '') and Token.SearchSource(Input, Token) then
+          begin
+            if TokenFileItem = ActiveEditingFile then //current file
+            begin
+                SelectToken(Token);
+                Exit;
+            end;
+            //other file
+            //is in project list
+            if SearchFileProperty(TokenFileItem.FileName, Prop) then
+              Prop.Edit
+            else//non opened. open
+              TFileProperty(OpenFile(TokenFileItem.FileName)).Edit;
+            SelectToken(Token);
+            Exit;
+          end;
+        end;
+      end;
+
       SaveFields := Fields;
       Fields := Fields + Input;
       Input := GetFirstWord(Fields);
@@ -4611,6 +4644,8 @@ begin
     begin
       sheet.Memo.SelText := ')';
       sheet.Memo.CaretX := sheet.Memo.CaretX - 1;
+      TimerHintParams.Enabled := False;
+      TimerHintParams.Enabled := True;
     end
     else if Key = '[' then
     begin
@@ -5800,8 +5835,8 @@ end;
 //hint functions
 procedure TFrmFalconMain.ShowHintParams(Memo: TSynMemo);
 var
-  S, Params, Fields, Input: String;
-  Token, tokenParams: TTokenClass;
+  S, Params, Fields, Input, SaveInput, SaveFields: String;
+  Token, tokenParams, scope: TTokenClass;
   InputError, InQuote: Boolean;
   QuoteChar: Char;
   Attri: TSynHighlighterAttributes;
@@ -5809,6 +5844,7 @@ var
   I, SelStart, BracketEnd, ParamIndex, LineLen, BracketStart: Integer;
   P: TPoint;
   ParamsList: TStringList;
+  TokenFileItem: TTokenFile;
 begin
   if not Config.Editor.CodeParameters then
     Exit;
@@ -5872,16 +5908,54 @@ begin
     HintParams.Cancel;
     Exit;
   end;
+  SaveFields := Fields;
+  SaveInput := Input;
   Fields := Fields + Input;
   Input := GetFirstWord(Fields);
   ParamsList := TStringList.Create;
+  TokenFileItem := ActiveEditingFile;
   //show function params
    if not FilesParsed.GetFieldsBaseParams(Input, Fields, BracketStart,
-    ActiveEditingFile, ParamsList) then
+    TokenFileItem, ParamsList) then
   begin
-    ParamsList.Free;
-    HintParams.Cancel;
-    Exit;
+    if ActiveEditingFile.GetScopeAt(Token, BracketStart) then
+    begin
+      if (Token.Token in [tkNamespace]) then
+      begin
+        SaveFields := Token.Name + '::' + SaveFields;
+        while Assigned(Token.Parent) and (Token.Parent.Token in [tkNamespace]) do
+        begin
+          Token := Token.Parent;
+          SaveFields := Token.Name + '::' + SaveFields;
+        end;
+      end;
+      if (SaveInput <> '') and (SaveFields <> '') and
+        FilesParsed.SearchTreeToken(SaveFields, TokenFileItem, TokenFileItem,
+        Token, [tkClass, tkNamespace], Token.SelStart) then
+      begin
+        scope := GetTokenByName(Token, 'Scope', tkScope);
+        if Assigned(scope) and not FilesParsed.SearchSource(SaveInput,
+          TokenFileItem, TokenFileItem, Token, scope.SelStart, ParamsList,
+          True) then
+        begin
+          ParamsList.Free;
+          HintParams.Cancel;
+          Exit;
+        end;
+      end
+      else
+      begin
+        ParamsList.Free;
+        HintParams.Cancel;
+        Exit;
+      end;
+    end
+    else
+    begin
+      ParamsList.Free;
+      HintParams.Cancel;
+      Exit;
+    end;
   end;
   ParamIndex := SelStart - BracketStart - 1;
   ParamIndex := CommaCountAt(Params, ParamIndex);
@@ -6106,6 +6180,28 @@ begin
       end;
       Exit;
     end;
+    if ActiveEditingFile.GetScopeAt(Token, I) then
+    begin
+      if (Token.Token in [tkNamespace]) then
+      begin
+        Fields := Token.Name + '::' + Fields;
+        while Assigned(Token.Parent) and (Token.Parent.Token in [tkNamespace]) do
+        begin
+          Token := Token.Parent;
+          Fields := Token.Name + '::' + Fields;
+        end;
+      end;
+      if (Fields <> '') and FilesParsed.SearchTreeToken(Fields, ActiveEditingFile,
+          TokenFileItem, Token, [tkClass, tkNamespace], Token.SelStart) then
+      begin
+        if (Input <> '') and Token.SearchSource(Input, Token) then
+        begin
+          S := MakeTokenHint(Token, TokenFileItem.FileName);
+          HintTip.UpdateHint(S, P.X, P.Y + Memo.Canvas.TextHeight(S) + 4);
+          Exit;
+        end;
+      end;
+    end;
     S := Fields;
     Fields := Fields + Input;
     Input := GetFirstWord(Fields);    //enum fields and functions class
@@ -6241,6 +6337,29 @@ begin
   //End temp
   if Input <> '' then
   begin
+    if ActiveEditingFile.GetScopeAt(Token, SelStart) then
+    begin
+      if (Token.Token in [tkNamespace]) then
+      begin
+        Fields := Token.Name + '::' + Fields;
+        while Assigned(Token.Parent) and (Token.Parent.Token in [tkNamespace]) do
+        begin
+          Token := Token.Parent;
+          Fields := Token.Name + '::' + Fields;
+        end;
+      end;
+      if (Fields <> '') and FilesParsed.SearchTreeToken(Fields, ActiveEditingFile,
+          TokenItem, Token, [tkClass, tkNamespace], Token.SelStart) then
+      begin
+        AllowScope := [];
+        FilesParsed.FillCompletionClass(CodeCompletion.InsertList,
+          CodeCompletion.ItemList, CompletionColors, TokenItem, Token, AllowScope);
+        DebugHint.Cancel;
+        HintTip.Cancel;
+        CanExecute := True;
+        Exit;//?
+      end;
+    end;
     //search base type and list fields and functions of struct, union or class
     if FilesParsed.GetFieldsBaseType(Input, Fields,
       SelStart, ActiveEditingFile, TokenItem, Token, True) then
@@ -6310,6 +6429,17 @@ begin
       end;
       AllScope := FilesParsed.SearchTreeToken(Fields, ActiveEditingFile,
           TokenItem, Token, [tkClass, tkNamespace], Token.SelStart);
+    end
+    else if (Token.Token in [tkNamespace]) then
+    begin
+      Fields := Token.Name;
+      while Assigned(Token.Parent) and (Token.Parent.Token in [tkNamespace]) do
+      begin
+        Token := Token.Parent;
+        Fields := Token.Name + '::' + Fields;
+      end;
+      AllScope := FilesParsed.SearchTreeToken(Fields, ActiveEditingFile,
+          TokenItem, Token, [tkClass, tkNamespace], Token.SelStart);
     end;
     //show all objects from class, struct or scope
     if AllScope then
@@ -6346,13 +6476,12 @@ begin
     NextChar := GetNextValidChar(sheet.Memo.Text, sheet.Memo.SelStart);
     if EndToken <> '(' then
     begin
-      if not (NextChar in ['"', '''', ',', ';', '(', ')'])
-        and (EndToken <> ';') then
+      if (NextChar in LetterChars+['{', '}']) and (EndToken <> ';') then
         Value := Value + '();'
-      else if NextChar in ['"', ''''] then
-        Value := Value + '('
+      else if NextChar in DigitChars+ArithmChars+CloseBraceChars then
+        Value := Value + '()'
       else
-        Value := Value + '()';
+        Value := Value + '(';
       LastKeyPressed := '(';
     end
     else
@@ -6389,7 +6518,7 @@ begin
   begin
     Inc(I);
     sheet.Memo.CommandProcessor(ecChar, ')', nil);
-    if not (NextChar in ['"', '''', ',', ';', '(', ')']) then
+    if (NextChar in LetterChars) and (EndToken <> ';') then
     begin
       sheet.Memo.CommandProcessor(ecChar, ';', nil);
       Inc(I);
@@ -6397,9 +6526,9 @@ begin
   end
   else if Token.Token in [tkFunction, tkPrototype] then
   begin
-    if not (NextChar in ['"', '''']) then
-      Inc(I);
-    if not (NextChar in ['"', '''', ',', ';', '(', ')']) then
+    if (NextChar in LetterChars + ['{', '}']) and (EndToken <> ';') then
+      Inc(I, 2);
+    if NextChar in DigitChars+ArithmChars+(CloseBraceChars - ['{', '}']) then
       Inc(I);
   end;
   if EndToken <> ';' then

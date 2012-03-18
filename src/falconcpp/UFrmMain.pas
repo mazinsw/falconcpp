@@ -6478,7 +6478,7 @@ begin
     begin
       if (NextChar in LetterChars+['{', '}']) and (EndToken <> ';') then
         Value := Value + '();'
-      else if NextChar in DigitChars+ArithmChars+CloseBraceChars then
+      else if NextChar in DigitChars+ArithmChars+CloseBraceChars+[';'] then
         Value := Value + '()'
       else
         Value := Value + '(';
@@ -6528,7 +6528,7 @@ begin
   begin
     if (NextChar in LetterChars + ['{', '}']) and (EndToken <> ';') then
       Inc(I, 2);
-    if NextChar in DigitChars+ArithmChars+(CloseBraceChars - ['{', '}']) then
+    if NextChar in DigitChars+ArithmChars+[';']+(CloseBraceChars - ['{', '}']) then
       Inc(I);
   end;
   if EndToken <> ';' then

@@ -1,7 +1,8 @@
 @echo OFF 
-For /f "tokens=2-4 delims=/ " %%a in ('date /t') do (set mydate=%%c-%%a-%%b)
+For /f "tokens=1-6 delims=/ " %%a in ('date /t') do (set mydate=%%c-%%b-%%a)
 For /f "tokens=1-2 delims=/:" %%a in ('time /t') do (set mytime=%%a-%%b)
-SET filename="%~d0%~p0backup\Falcon C++ %mydate%_%mytime%.7z"
+for %%A in ("%~dp0\..\.") do (set currdir=%%~nA)
+SET filename="%~dp0backup\%currdir% %mydate%_%mytime%.7z"
 call src/clean
 call res/clean
 "%programfiles%\7-zip\7z" a -r %filename% src

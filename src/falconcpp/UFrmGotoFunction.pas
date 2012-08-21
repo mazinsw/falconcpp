@@ -32,6 +32,8 @@ type
     procedure ClearTokenList;
     procedure SelectItem(Index: Integer);
     procedure SelectFunction(Index: Integer);
+  protected
+    procedure CreateParams(var Params: TCreateParams); override;
   public
     { Public declarations }
     procedure Fill(List: TStrings);
@@ -47,6 +49,18 @@ implementation
 uses UFrmMain, TokenList, TokenFile, TokenUtils, UFileProperty, ULanguages;
 
 {$R *.dfm}
+
+
+procedure TFormGotoFunction.CreateParams(var Params: TCreateParams);
+begin
+  inherited;
+  if ParentWindow <> 0 then
+  begin
+    Params.Style := Params.Style and not WS_CHILD;
+    if BorderStyle = bsNone then
+      Params.Style := Params.Style or WS_POPUP;
+  end;
+end;
 
 procedure TFormGotoFunction.UpdateLangNow;
 begin
@@ -203,8 +217,7 @@ begin
   tokenList := TStringList.Create;
   showTextHint := True;
   UpdateLangNow;
-  EditFuncName.SelStart := 0;
-  EditFuncName.SelLength := 0;
+  EditFuncName.SelectAll;
 end;
 
 procedure TFormGotoFunction.FormKeyDown(Sender: TObject; var Key: Word;

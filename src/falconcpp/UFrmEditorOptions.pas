@@ -267,6 +267,8 @@ type
     Last: Integer;
     Loading: Boolean;
     procedure OptionsChange;
+  protected
+    procedure CreateParams(var Params: TCreateParams); override;
   public
     { Public declarations }
     procedure UpdateLangNow;
@@ -762,6 +764,17 @@ begin
 end;
 
 {TFrmEditorOptions}
+
+procedure TFrmEditorOptions.CreateParams(var Params: TCreateParams);
+begin
+  inherited;
+  if ParentWindow <> 0 then
+  begin
+    Params.Style := Params.Style and not WS_CHILD;
+    if BorderStyle = bsNone then
+      Params.Style := Params.Style or WS_POPUP;
+  end;
+end;
 
 procedure TFrmEditorOptions.FormCreate(Sender: TObject);
 begin
@@ -1551,7 +1564,7 @@ end;
 procedure TFrmEditorOptions.BtnEditCodeTemplateClick(Sender: TObject);
 begin
   if not Assigned(FrmCodeTemplates) then
-    FrmCodeTemplates := TFrmCodeTemplates.Create(Self);
+    FrmCodeTemplates := TFrmCodeTemplates.CreateParented(Handle);
   FrmCodeTemplates.ShowModal;
 end;
 

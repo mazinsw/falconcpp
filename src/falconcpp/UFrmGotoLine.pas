@@ -24,8 +24,11 @@ type
     procedure EditLineKeyPress(Sender: TObject; var Key: Char);
     procedure EditLineChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure FormShow(Sender: TObject);
   private
     { Private declarations }
+  protected
+    procedure CreateParams(var Params: TCreateParams); override;
   public
     { Public declarations }
     procedure ShowWithRange(MinLin, LineStart, LineEnd: Integer);
@@ -41,6 +44,17 @@ implementation
 uses UFrmMain, UFileProperty, ULanguages;
 
 {$R *.dfm}
+
+procedure TFormGotoLine.CreateParams(var Params: TCreateParams);
+begin
+  inherited;
+  if ParentWindow <> 0 then
+  begin
+    Params.Style := Params.Style and not WS_CHILD;
+    if BorderStyle = bsNone then
+      Params.Style := Params.Style or WS_POPUP;
+  end;
+end;
 
 procedure TFormGotoLine.UpdateLangNow;
 begin
@@ -65,7 +79,6 @@ begin
   UpDown.Min := MinLin;
   UpDown.Max := LineEnd;
   UpDown.Position := LineStart;
-  EditLine.SelectAll;
   LblLine.Caption := Format(STR_FRM_GOTOLINE[2], [MinLin, LineEnd]);
   ShowModal;
 end;
@@ -124,6 +137,11 @@ end;
 procedure TFormGotoLine.FormCreate(Sender: TObject);
 begin
   UpdateLangNow;
+end;
+
+procedure TFormGotoLine.FormShow(Sender: TObject);
+begin
+  EditLine.SelectAll;
 end;
 
 end.

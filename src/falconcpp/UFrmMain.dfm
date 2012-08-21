@@ -22,8 +22,8 @@ object FrmFalconMain: TFrmFalconMain
   object DockTop: TTBXDock
     Tag = 1
     Left = 0
-    Top = 24
-    Width = 914
+    Top = 26
+    Width = 906
     Height = 27
     BoundLines = [blTop]
     Color = clBtnFace
@@ -78,7 +78,7 @@ object FrmFalconMain: TFrmFalconMain
     end
     object EditBar: TTBXToolbar
       Tag = 1
-      Left = 144
+      Left = 138
       Top = 0
       Caption = 'Edit Bar'
       DefaultDock = DockTop
@@ -106,7 +106,7 @@ object FrmFalconMain: TFrmFalconMain
     end
     object NavigatorBar: TTBXToolbar
       Tag = 4
-      Left = 393
+      Left = 387
       Top = 0
       Caption = 'Navigator Bar'
       DefaultDock = DockTop
@@ -147,7 +147,7 @@ object FrmFalconMain: TFrmFalconMain
     end
     object CompilerBar: TTBXToolbar
       Tag = 3
-      Left = 285
+      Left = 279
       Top = 0
       Caption = 'Compiler Bar'
       DefaultDock = DockTop
@@ -191,7 +191,7 @@ object FrmFalconMain: TFrmFalconMain
     end
     object ProjectBar: TTBXToolbar
       Tag = 5
-      Left = 501
+      Left = 495
       Top = 0
       Caption = 'Project Bar'
       DefaultDock = DockTop
@@ -218,7 +218,7 @@ object FrmFalconMain: TFrmFalconMain
     end
     object HelpBar: TTBXToolbar
       Tag = 6
-      Left = 557
+      Left = 551
       Top = 0
       Caption = 'Help Bar'
       DefaultDock = DockTop
@@ -243,7 +243,7 @@ object FrmFalconMain: TFrmFalconMain
     end
     object DebugBar: TTBXToolbar
       Tag = 7
-      Left = 613
+      Left = 607
       Top = 0
       Caption = 'Debug Bar'
       DefaultDock = DockTop
@@ -278,7 +278,7 @@ object FrmFalconMain: TFrmFalconMain
     end
     object SearchBar: TTBXToolbar
       Tag = 2
-      Left = 200
+      Left = 194
       Top = 0
       Caption = 'Search Bar'
       DefaultDock = DockTop
@@ -316,8 +316,8 @@ object FrmFalconMain: TFrmFalconMain
   object MenuDock: TTBXDock
     Left = 0
     Top = 0
-    Width = 914
-    Height = 24
+    Width = 906
+    Height = 26
     AllowDrag = False
     BoundLines = [blBottom]
     Color = clBtnFace
@@ -1095,48 +1095,48 @@ object FrmFalconMain: TFrmFalconMain
   object DockBottom: TTBXDock
     Tag = 2
     Left = 0
-    Top = 590
-    Width = 914
+    Top = 586
+    Width = 906
     Height = 9
     Position = dpBottom
   end
   object DockLeft: TTBXDock
     Tag = 3
     Left = 185
-    Top = 51
+    Top = 53
     Width = 9
-    Height = 539
+    Height = 533
     Position = dpLeft
   end
   object DockRight: TTBXDock
     Tag = 4
-    Left = 720
-    Top = 51
+    Left = 712
+    Top = 53
     Width = 9
-    Height = 539
+    Height = 533
     Position = dpRight
   end
   object PanelEditorMessages: TPanel
     Left = 194
-    Top = 51
-    Width = 526
-    Height = 539
+    Top = 53
+    Width = 518
+    Height = 533
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
     object PanelEditor: TXPPanel
       Left = 0
       Top = 0
-      Width = 526
-      Height = 392
+      Width = 518
+      Height = 386
       Align = alClient
       BorderStyle = bsNone
       TabOrder = 0
       object PageControlEditor: TModernPageControl
         Left = 0
         Top = 0
-        Width = 526
-        Height = 392
+        Width = 518
+        Height = 386
         Align = alClient
         NormalColor = clWhite
         FocusedColor = 15973017
@@ -1156,8 +1156,8 @@ object FrmFalconMain: TFrmFalconMain
     end
     object PanelMessages: TSplitterPanel
       Left = 0
-      Top = 392
-      Width = 526
+      Top = 386
+      Width = 518
       Height = 147
       Align = alBottom
       BorderStyle = bsNone
@@ -1167,7 +1167,7 @@ object FrmFalconMain: TFrmFalconMain
       object PageControlMessages: TModernPageControl
         Left = 0
         Top = 4
-        Width = 526
+        Width = 518
         Height = 143
         ActivePage = TSMessages
         Align = alClient
@@ -1184,7 +1184,7 @@ object FrmFalconMain: TFrmFalconMain
           object ListViewMsg: TListView
             Left = 0
             Top = 0
-            Width = 520
+            Width = 512
             Height = 112
             Align = alClient
             BevelInner = bvNone
@@ -1219,8 +1219,8 @@ object FrmFalconMain: TFrmFalconMain
   end
   object StatusBar: TTBXStatusBar
     Left = 0
-    Top = 599
-    Width = 914
+    Top = 595
+    Width = 906
     Images = ImgListMenus
     Panels = <
       item
@@ -1246,18 +1246,18 @@ object FrmFalconMain: TFrmFalconMain
     UseSystemFont = False
     object ProgressBarParser: TProgressBar
       Left = 480
-      Top = 4
-      Width = 148
-      Height = 16
+      Top = 2
+      Width = 149
+      Height = 19
       TabOrder = 0
       Visible = False
     end
   end
   object ProjectPanel: TSplitterPanel
     Left = 0
-    Top = 51
+    Top = 53
     Width = 185
-    Height = 539
+    Height = 533
     Align = alLeft
     BorderStyle = bsNone
     Size = 4
@@ -1267,7 +1267,7 @@ object FrmFalconMain: TFrmFalconMain
       Left = 0
       Top = 0
       Width = 181
-      Height = 539
+      Height = 533
       ActivePage = TSProjects
       Align = alClient
       NormalColor = clWhite
@@ -1285,7 +1285,7 @@ object FrmFalconMain: TFrmFalconMain
           Left = 0
           Top = 0
           Width = 175
-          Height = 508
+          Height = 502
           Align = alClient
           BorderStyle = bsNone
           BorderWidth = 1
@@ -1317,10 +1317,10 @@ object FrmFalconMain: TFrmFalconMain
     end
   end
   object PanelOutline: TSplitterPanel
-    Left = 729
-    Top = 51
+    Left = 721
+    Top = 53
     Width = 185
-    Height = 539
+    Height = 533
     Align = alRight
     BorderStyle = bsNone
     Size = 4
@@ -1330,7 +1330,7 @@ object FrmFalconMain: TFrmFalconMain
       Left = 4
       Top = 0
       Width = 181
-      Height = 539
+      Height = 533
       ActivePage = TSOutline
       Align = alClient
       NormalColor = clWhite
@@ -1348,7 +1348,7 @@ object FrmFalconMain: TFrmFalconMain
           Left = 0
           Top = 0
           Width = 175
-          Height = 508
+          Height = 502
           Align = alClient
           BorderStyle = bsNone
           BorderWidth = 1
@@ -1852,5 +1852,9 @@ object FrmFalconMain: TFrmFalconMain
   object ImageListDebug: TImageList
     Left = 340
     Top = 243
+  end
+  object VistaAltFix1: TVistaAltFix
+    Left = 112
+    Top = 248
   end
 end

@@ -51,7 +51,9 @@ uses
   UFrmGotoFunction in 'UFrmGotoFunction.pas' {FormGotoFunction},
   UFrmGotoLine in 'UFrmGotoLine.pas' {FormGotoLine},
   HintTree in '..\others\hinttree\HintTree.pas',
-  DebugWatch in '..\others\debug\DebugWatch.pas';
+  DebugWatch in '..\others\debug\DebugWatch.pas',
+  FastcodePatch in '..\others\nativehint\FastcodePatch.pas',
+  NativeHintWindow in '..\others\nativehint\NativeHintWindow.pas';
 
 {$R *.res}
 

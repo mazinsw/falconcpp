@@ -87,7 +87,6 @@ type
   public
     property Canceled: Boolean read fCancel;
     property Busy: Boolean read fBusy;
-    property ProgessVarFunc: Boolean read fVarFunc write fVarFunc;
     property OnProgess: TParserProgressEvent read fProgress write fProgress;
     property OnLogToken: TLogTokenEvent read fLogToken write fLogToken;
     //******************************************

@@ -22,7 +22,8 @@ uses
   SynEditRegexSearch, CommCtrl, DebugReader, SynExportRTF, CommandQueue,
   SynEditExport, SynExportHTML, SynExportTeX, ThreadLoadTokenFiles, DebugConsts,
   XMLDoc, XMLIntf, BreakPoint, HintTree, DebugWatch, SynEditTextBuffer,
-  UParseMsgs, SynEditMiscClasses, TBXStatusBars, XPPanels, ModernTabs;
+  UParseMsgs, SynEditMiscClasses, TBXStatusBars, XPPanels, ModernTabs,
+  VistaAltFixUnit;
 
 const
   MAX_OUTLINE_TREE_IMAGES = 27;
@@ -365,6 +366,7 @@ type
     PageControlMessages: TModernPageControl;
     TSMessages: TModernTabSheet;
     ListViewMsg: TListView;
+    VistaAltFix1: TVistaAltFix;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure About1Click(Sender: TObject);
@@ -502,6 +504,7 @@ type
     procedure ParserProgress(Sender: TObject; TokenFile: TTokenFile;
       const FileName: String; Current, Total: Integer; Parsed: Boolean;
       Method: TTokenParseMethod);
+    procedure AllParserStart(Sender: TObject);
     procedure AllParserProgress(Sender: TObject; TokenFile: TTokenFile;
       const FileName: String; Current, Total: Integer; Parsed: Boolean;
       Method: TTokenParseMethod);
@@ -1005,12 +1008,12 @@ begin
   WatchList := TDebugWatchList.Create;
   FilesParsed := TTokenFiles.Create;
   ThreadFilesParsed := TThreadTokenFiles.Create;
+  ThreadTokenFiles.OnStart := AllParserStart;
   ThreadFilesParsed.OnProgress := AllParserProgress;
   ThreadFilesParsed.OnFinish := AllParserFinish;
   AllParsedList := TStringList.Create;
   ActiveEditingFile := TTokenFile.Create;
   ParseAllFiles := TTokenFiles.Create;//parse all unparsed files
-  //ParseAllFiles.Parser.ProgessVarFunc := False;// no load function content
   HintTip := TTokenHintTip.Create(Self);//mouse over hint
   HintParams := TTokenHintParams.Create(Self);//Ctrl + Space or ( Trigger Key
   DebugParser := TDebugParser.Create;//fill treeview with debug variables
@@ -1215,8 +1218,7 @@ begin
       FileObj := TFileObject.Create;
       FileObj.ID := Prop;
       FileObj.FileName := List.Strings[I];
-      FileObj.Text := Prop.Text.Text;
-      List.Strings[I] := '-';
+      List.Strings[I] := Prop.GetCompleteFileName;
       List.Objects[I] := FileObj;
     end;
     ThreadFilesParsed.ParseLoad(FilesParsed, List);
@@ -1313,7 +1315,7 @@ begin
   begin
     ProjProp := TProjectProperty(Node.Data);
     List.AddObject(ProjProp.GetCompleteFileName, ProjProp);
-    if (ProjProp.Modified or (not ProjProp.Saved and not ProjProp.AllFilesIsNew) or ProjProp.FilesChanged) then
+    if (ProjProp.Modified or not ProjProp.Saved or ProjProp.FilesChanged) then
     begin
       R := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[10],
            [ExtractFileName(ProjProp.FileName)])), 'Falcon C++',
@@ -1529,6 +1531,7 @@ var
   prop: TFileProperty;
   ObjList: TStrings;
   FileObj: TFileObject;
+  sheet: TFilePropertySheet;
 begin
   if List.Count = 0 then
     Exit;
@@ -1541,9 +1544,16 @@ begin
       Continue;
     FileObj := TFileObject.Create;
     FileObj.ID := Prop;
-    FileObj.FileName := List.Strings[I];
-    FileObj.Text := prop.Text.Text;
-    ObjList.AddObject('-', FileObj);
+    if prop.GetSheet(sheet) then
+    begin
+      FileObj.Text := sheet.Memo.Text;
+      ObjList.AddObject('-', FileObj);
+    end
+    else if prop.Saved then
+    begin
+      FileObj.FileName := List.Strings[I];
+      ObjList.AddObject(prop.GetCompleteFileName, FileObj);
+    end;
   end;
   if ObjList.Count = 0 then
   begin
@@ -1792,7 +1802,7 @@ begin
   if GetActiveProject(ProjProp) then
   begin
     if not Assigned(FrmProperty) then
-      FrmProperty := TFrmProperty.Create(Self);
+      FrmProperty := TFrmProperty.CreateParented(Handle);
     try
       FrmProperty.SetProject(ProjProp);
       FrmProperty.ShowModal;
@@ -1823,7 +1833,7 @@ var
 begin
   if Sender is TDataMenuItem then
   begin
-    FileName := AppRoot + TDataMenuItem(Sender).HelpFile;
+    FileName := Config.Environment.UsersDefDir + TDataMenuItem(Sender).HelpFile;
     ShellExecute(Handle, 'open', PChar(FileName), '',
       PChar(ExtractFilePath(FileName)), SW_SHOW);
   end;
@@ -2144,13 +2154,10 @@ begin
       mrYes:
       begin
         if FileProp.Saved then
-          FileProp.Save
-        else
         begin
           FileProp.Modified := False;
-          FileProp.SavedInto := True;
           FileProp.Project.Compiled := False;
-          FileProp.SetText(Sheet.Memo.Lines);
+          FileProp.Save;
         end;
       end;
       mrCancel: Exit;
@@ -2967,8 +2974,7 @@ begin
   if (Node.Level = 0) then//is project
   begin
     ProjProp := FileProp.Project;
-    if ProjProp.Modified or (not ProjProp.Saved and not ProjProp.AllFilesIsNew) or
-       ProjProp.FilesChanged then
+    if ProjProp.Modified or not ProjProp.Saved or ProjProp.FilesChanged then
     begin//modified
       I := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[10],
        [ExtractFileName(ProjProp.FileName)])), 'Falcon C++',
@@ -3449,7 +3455,8 @@ begin
     //images msg  32 .. 34
     StatusBar.Panels.Items[2].Caption := STR_FRM_MAIN[40];
     StatusBar.Panels.Items[2].ImageIndex := 34;
-    LastProjectBuild.Compiled := False;
+    if Assigned(LastProjectBuild) then
+      LastProjectBuild.Compiled := False;
     PanelMessages.Show;
     if (ConsoleOut.Count = 0) then
     begin
@@ -3634,9 +3641,10 @@ begin
                        ExtractName(Files.Strings[I]),
                        ExtractFileExt(Files.Strings[I]), Files.Strings[I],
                        FileProp);
-          NewFile.Text.LoadFromFile(Files.Strings[I]);
           NewFile.Project.PropertyChanged := True;
         end;
+        if TreeViewProjects.SelectionCount > 0 then
+          TreeViewProjectsChange(TreeViewProjects, TreeViewProjects.Selected);
       end;
     end;
     Free;
@@ -3650,7 +3658,7 @@ begin
   if GetActiveProject(Proj) then
   begin
     if not Assigned(FrmRemove) then
-      FrmRemove := TFrmRemove.Create(Self);
+      FrmRemove := TFrmRemove.CreateParented(Handle);
     FrmRemove.SetProject(Proj);
     FrmRemove.ShowModal;
     FrmRemove.Free;
@@ -4836,7 +4844,7 @@ end;
 procedure TFrmFalconMain.EnvironOptions1Click(Sender: TObject);
 begin
   if not Assigned(FrmEnvOptions) then
-    FrmEnvOptions := TFrmEnvOptions.Create(Self);
+    FrmEnvOptions := TFrmEnvOptions.CreateParented(Handle);
   FrmEnvOptions.Load;
   FrmEnvOptions.ShowModal;
 end;
@@ -4844,7 +4852,7 @@ end;
 procedure TFrmFalconMain.CompilerOptions2Click(Sender: TObject);
 begin
   if not Assigned(FrmCompOptions) then
-    FrmCompOptions := TFrmCompOptions.Create(Self);
+    FrmCompOptions := TFrmCompOptions.CreateParented(Handle);
   FrmCompOptions.Load;
   FrmCompOptions.ShowModal;
 end;
@@ -4852,7 +4860,7 @@ end;
 procedure TFrmFalconMain.EditorOptions1Click(Sender: TObject);
 begin
   if not Assigned(FrmEditorOptions) then
-    FrmEditorOptions := TFrmEditorOptions.Create(Self);
+    FrmEditorOptions := TFrmEditorOptions.CreateParented(Handle);
   FrmEditorOptions.Load;
   FrmEditorOptions.ShowModal;
 end;
@@ -4932,7 +4940,7 @@ begin
     begin
       if not Assigned(FrmNewProj) then
       begin
-        FrmNewProj := TFrmNewProj.Create(Self);
+        FrmNewProj := TFrmNewProj.CreateParented(Handle);
         FrmNewProj.ShowModal;
       end;
     end;
@@ -5056,7 +5064,7 @@ begin
                 '', NewPrj);
     if FileExists(NewFile.GetCompleteFileName) then
     begin
-      NewFile.Text.LoadFromFile(NewFile.GetCompleteFileName);
+      // TODO: save to new project //NewFile.Text.LoadFromFile(NewFile.GetCompleteFileName);
       NewFile.DateOfFile := FileDateTime(NewFile.GetCompleteFileName);
       NewFile.Saved := True;
       NewFile.Modified := False;
@@ -5128,7 +5136,7 @@ function TFrmFalconMain.ImportCodeBlocksProject(const FileName: String): Boolean
       STemp := FileProp.GetCompleteFileName;
       if FileExists(STemp) then
       begin
-        FileProp.Text.LoadFromFile(STemp);
+        // TODO: save to new project FileProp.Text.LoadFromFile(STemp);
         FileProp.DateOfFile := FileDateTime(STemp);
         FileProp.Saved := True;
         FileProp.Modified := False;
@@ -5579,7 +5587,6 @@ begin
                     ExtractName(List.Strings[I]),
                     ExtractFileExt(List.Strings[I]), List.Strings[I],
                     SelFile);
-        NewFile.Text.LoadFromFile(List.Strings[I]);
         if Assigned(SelFile) then
           NewFile.Project.PropertyChanged := True;
         SrcList.AddObject(NewFile.GetCompleteFileName, NewFile);
@@ -6007,6 +6014,11 @@ begin
   ProgressBarParser.Position := (Current * 100) div Total;
 end;
 
+procedure TFrmFalconMain.AllParserStart(Sender: TObject);
+begin
+  ProgressBarParser.Show;
+end;
+
 procedure TFrmFalconMain.AllParserProgress(Sender: TObject; TokenFile: TTokenFile;
   const FileName: String; Current, Total: Integer; Parsed: Boolean;
   Method: TTokenParseMethod);
@@ -6017,6 +6029,7 @@ begin
   if ActiveEditingFile.Data = TokenFile.Data then
     UpdateActiveFileToken(TokenFile);
   AllParsedList.AddObject('', TokenFile);
+  ProgressBarParser.Position := (Current * 100) div Total;
 end;
 
 procedure TFrmFalconMain.AllParserFinish(Sender: TObject);
@@ -6033,6 +6046,7 @@ begin
   //update grayed project and outline
   PageControlEditorPageChange(PageControlEditor,
     PageControlEditor.ActivePageIndex);
+  ProgressBarParser.Show;
 end;
 
 procedure TFrmFalconMain.ParserFinish(Sender: TObject);
@@ -6932,6 +6946,7 @@ var
   SwapFileName, FileName, Directive: String;
   fprop, swfp, parent: TFileProperty;
   resp, Index: Integer;
+  Memo: TSynMemo;
 begin
   if not GetActiveSheet(sheet) then Exit;
   fprop := TFileProperty(sheet.Node.Data);
@@ -6978,18 +6993,19 @@ begin
       Directive := UpperCase(ExtractFileName(SwapFileName));
       Directive := '_' + StringReplace(Directive, '.', '_', []) + '_';
       Directive := StringReplace(Directive, ' ', '_', []);
-      swfp.Text.Add('#ifndef ' + Directive);
+      Memo := swfp.Edit.Memo;
+      Memo.Lines.Add('#ifndef ' + Directive);
       //TODO GNU License
-      swfp.Text.Add('#define ' + Directive);
-      swfp.Text.Add('');
+      Memo.Lines.Add('#define ' + Directive);
+      Memo.Lines.Add('');
       Index := FilesParsed.IndexOfByFileName(FileName, fprop);
       if Index >= 0 then
-        GenerateFunctionPrototype(FilesParsed.Items[Index], swfp.Text, 3)
+        GenerateFunctionPrototype(FilesParsed.Items[Index], Memo.Lines, 3)
       else
-        swfp.Text.Add('');//Caret here
-      swfp.Text.Add('');
-      swfp.Text.Add('#endif');
-      swfp.Edit.Memo.CaretXY := BufferCoord(1, 4);
+        Memo.Lines.Add('');//Caret here
+      Memo.Lines.Add('');
+      Memo.Lines.Add('#endif');
+      Memo.CaretXY := BufferCoord(1, 4);
     end;
   end
   else if GetFileType(FileName) = FILE_TYPE_H then
@@ -7025,14 +7041,15 @@ begin
           swfp := NewFileProperty(FILE_TYPE_CPP, parent.Project.CompilerType,
             ExtractFileName(SwapFileName),
             ExtractName(SwapFileName), '.cpp', '', parent);
-        swfp.Text.Add('#include "' + ExtractFileName(FileName) + '"');
-        swfp.Text.Add('');
+        Memo := swfp.Edit.Memo;
+        Memo.Lines.Add('#include "' + ExtractFileName(FileName) + '"');
+        Memo.Lines.Add('');
         Index := FilesParsed.IndexOfByFileName(FileName, fprop);
         if Index >= 0 then
-          GenerateFunctions(FilesParsed.Items[Index], swfp.Text, 2)
+          GenerateFunctions(FilesParsed.Items[Index], Memo.Lines, 2)
         else
-          swfp.Text.Add('');//Caret here
-        swfp.Edit.Memo.CaretXY := BufferCoord(1, 3);
+          Memo.Lines.Add('');//Caret here
+        Memo.CaretXY := BufferCoord(1, 3);
       end;
     end
     else
@@ -8004,7 +8021,7 @@ begin
     files.Free;
     Node := Node.getNextSibling;
   end;
-  FormGotoFunction := TFormGotoFunction.Create(Self);
+  FormGotoFunction := TFormGotoFunction.CreateParented(Handle);
   FormGotoFunction.Fill(List);
   List.Free;
   FormGotoFunction.ShowModal;
@@ -8018,7 +8035,7 @@ begin
     Exit;
   if sheet.Memo.Lines.Count < 3 then
     Exit;
-  FormGotoLine := TFormGotoLine.Create(Self);
+  FormGotoLine := TFormGotoLine.CreateParented(Handle);
   FormGotoLine.ShowWithRange(1, sheet.Memo.CaretY, sheet.Memo.Lines.Count);
 end;
 

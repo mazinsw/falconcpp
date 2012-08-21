@@ -3,7 +3,7 @@ object FrmRemove: TFrmRemove
   Top = 395
   BorderStyle = bsToolWindow
   Caption = 'Remove from project'
-  ClientHeight = 161
+  ClientHeight = 201
   ClientWidth = 386
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -202,53 +202,91 @@ object FrmRemove: TFrmRemove
     ParentShowHint = False
     ShowHint = True
   end
-  object BtnOk: TButton
-    Left = 144
-    Top = 128
-    Width = 75
-    Height = 25
-    Caption = 'Ok'
-    TabOrder = 0
-    OnClick = BtnOkClick
-  end
-  object BtnCancel: TButton
-    Left = 224
-    Top = 128
-    Width = 75
-    Height = 25
-    Caption = 'Cancel'
-    TabOrder = 1
-    OnClick = BtnCancelClick
-  end
-  object BtnApply: TButton
-    Left = 304
-    Top = 128
-    Width = 75
-    Height = 25
-    Caption = 'Apply'
-    Enabled = False
+  object Panel3: TPanel
+    Left = 41
+    Top = 0
+    Width = 345
+    Height = 160
+    Align = alClient
+    BevelOuter = bvNone
+    BorderWidth = 9
     TabOrder = 2
-    OnClick = BtnApplyClick
+    object FileList: TListView
+      Left = 9
+      Top = 9
+      Width = 327
+      Height = 142
+      Align = alClient
+      Columns = <
+        item
+          Caption = 'File'
+          Width = 100
+        end
+        item
+          AutoSize = True
+          Caption = 'FileName'
+        end>
+      MultiSelect = True
+      ReadOnly = True
+      RowSelect = True
+      TabOrder = 0
+      ViewStyle = vsReport
+      OnSelectItem = FileListSelectItem
+    end
   end
-  object FileList: TListView
-    Left = 40
-    Top = 8
-    Width = 337
-    Height = 113
-    Columns = <
-      item
-        Caption = 'File'
-        Width = 100
+  object Panel1: TPanel
+    Left = 0
+    Top = 160
+    Width = 386
+    Height = 41
+    Align = alBottom
+    BevelOuter = bvNone
+    TabOrder = 0
+    object Panel4: TPanel
+      Left = 128
+      Top = 0
+      Width = 258
+      Height = 41
+      Align = alRight
+      BevelOuter = bvNone
+      TabOrder = 0
+      object BtnOk: TButton
+        Left = 7
+        Top = 9
+        Width = 75
+        Height = 25
+        Caption = 'Ok'
+        TabOrder = 0
+        OnClick = BtnOkClick
       end
-      item
-        AutoSize = True
-        Caption = 'FileName'
-      end>
-    MultiSelect = True
-    ReadOnly = True
-    RowSelect = True
-    TabOrder = 3
-    ViewStyle = vsReport
-    OnSelectItem = FileListSelectItem
+      object BtnCancel: TButton
+        Left = 90
+        Top = 9
+        Width = 75
+        Height = 25
+        Caption = 'Cancel'
+        TabOrder = 1
+        OnClick = BtnCancelClick
+      end
+      object BtnApply: TButton
+        Left = 173
+        Top = 9
+        Width = 75
+        Height = 25
+        Caption = 'Apply'
+        Enabled = False
+        TabOrder = 2
+        OnClick = BtnApplyClick
+      end
+    end
+  end
+  object Panel2: TPanel
+    Left = 0
+    Top = 0
+    Width = 41
+    Height = 160
+    Align = alLeft
+    BevelOuter = bvNone
+    TabOrder = 1
   end
 end

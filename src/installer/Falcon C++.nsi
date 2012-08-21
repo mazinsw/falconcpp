@@ -13,18 +13,18 @@
 
 ;--------------------------------
 ; define
-
+  !define PROJECT_NAME "Falcon C++"
   !define REG_UNINSTALL "Software\Microsoft\Windows\CurrentVersion\Uninstall\Falcon"
   !define SHCNE_ASSOCCHANGED 0x08000000
   !define SHCNF_IDLIST 0
-  !define APP_VERSION "3.1.0.0"
   !define MAJ_VERSION "3.1"
+  !define APP_VERSION "${MAJ_VERSION}.0.0"
 ;--------------------------------
 ;General
 
 ;!define WITH_MINGW
 
-  Name "Falcon C++"
+  Name "${PROJECT_NAME}"
 !ifdef WITH_MINGW
   OutFile "..\..\bin\Falcon C++-${APP_VERSION}-Setup.exe"
 !else  
@@ -37,7 +37,7 @@
 ;Version Information
 
   VIProductVersion "${APP_VERSION}"
-  VIAddVersionKey /LANG=1046 "ProductName" "Falcon C++"
+  VIAddVersionKey /LANG=1046 "ProductName" "${PROJECT_NAME}"
   VIAddVersionKey /LANG=1046 "Comments" "C++ IDE easy and complete."
   VIAddVersionKey /LANG=1046 "CompanyName" "MZSW"
   VIAddVersionKey /LANG=1046 "LegalTrademarks" ""
@@ -197,7 +197,7 @@ FunctionEnd
 ;--------------------------------
 ;Installer Sections
 
-SectionGroup "Falcon C++" GroupFalcon
+SectionGroup "${PROJECT_NAME}" GroupFalcon
 
   Section "$(NAME_SecCore)" SecCore
 
@@ -207,8 +207,8 @@ SectionGroup "Falcon C++" GroupFalcon
   
     ;temporary to update
     StrCmp "$INSTDIR\Falcon.exe" $EXEPATH 0 diffexe
-      CopyFiles $EXEPATH "$INSTDIR\Falcon C++-${APP_VERSION}-No-MinGW-Setup.exe"
-      ExecShell open "$INSTDIR\Falcon C++-${APP_VERSION}-No-MinGW-Setup.exe"
+      CopyFiles $EXEPATH "$INSTDIR\${PROJECT_NAME}-${APP_VERSION}-No-MinGW-Setup.exe"
+      ExecShell open "$INSTDIR\${PROJECT_NAME}-${APP_VERSION}-No-MinGW-Setup.exe"
       Abort
     diffexe:
     ;goto here if not equal
@@ -236,14 +236,14 @@ SectionGroup "Falcon C++" GroupFalcon
     
     ;Create ShortCuts
     SetShellVarContext all
-    CreateDirectory "$SMPROGRAMS\Falcon C++"
-    createShortCut  "$SMPROGRAMS\Falcon C++\Falcon C++.lnk" "$INSTDIR\Falcon.exe" "" "" "" "" "" "C++ IDE easy and complete"
-    createShortCut  "$SMPROGRAMS\Falcon C++\PkgManager.lnk" "$INSTDIR\PkgManager.exe" "" "" "" "" "" "Falcon C++ Package Manager"
-    createShortCut  "$SMPROGRAMS\Falcon C++\Updater.lnk" "$INSTDIR\Updater.exe" "" "" "" "" "" "Falcon C++ Updater"
-    createShortCut  "$SMPROGRAMS\Falcon C++\Uninstall.lnk" "$INSTDIR\Uninstall.exe" "" "" "" "" "" "Uninstall program"
+    CreateDirectory "$SMPROGRAMS\${PROJECT_NAME}"
+    createShortCut  "$SMPROGRAMS\${PROJECT_NAME}\${PROJECT_NAME}.lnk" "$INSTDIR\Falcon.exe" "" "" "" "" "" "C++ IDE easy and complete"
+    createShortCut  "$SMPROGRAMS\${PROJECT_NAME}\PkgManager.lnk" "$INSTDIR\PkgManager.exe" "" "" "" "" "" "${PROJECT_NAME} Package Manager"
+    createShortCut  "$SMPROGRAMS\${PROJECT_NAME}\Updater.lnk" "$INSTDIR\Updater.exe" "" "" "" "" "" "${PROJECT_NAME} Updater"
+    createShortCut  "$SMPROGRAMS\${PROJECT_NAME}\Uninstall.lnk" "$INSTDIR\Uninstall.exe" "" "" "" "" "" "Uninstall program"
     
     ;Writing uninstall info to registry:
-    WriteRegStr HKLM "${REG_UNINSTALL}" "DisplayName" "Falcon C++ ${MAJ_VERSION}"
+    WriteRegStr HKLM "${REG_UNINSTALL}" "DisplayName" "${PROJECT_NAME} ${MAJ_VERSION}"
     WriteRegStr HKLM "${REG_UNINSTALL}" "DisplayIcon" "$INSTDIR\Falcon.exe"
     WriteRegStr HKLM "${REG_UNINSTALL}" "DisplayVersion" "${APP_VERSION}"
     WriteRegStr HKLM "${REG_UNINSTALL}" "Publisher" "Mazin sw"
@@ -332,12 +332,12 @@ SectionGroup "Falcon C++" GroupFalcon
   Section "$(NAME_SecDeskScut)" SecDeskScut 
     SetOutPath "$INSTDIR"
 	SetShellVarContext all
-    createShortCut "$DESKTOP\Falcon C++.lnk" "$INSTDIR\Falcon.exe" "" "" "" "" "" "C++ IDE easy and complete" 
+    createShortCut "$DESKTOP\${PROJECT_NAME}.lnk" "$INSTDIR\Falcon.exe" "" "" "" "" "" "C++ IDE easy and complete" 
   SectionEnd
   Section "$(NAME_SecQckLScut)" SecQckLScut 
     SetOutPath "$INSTDIR"
 	SetShellVarContext all
-    createShortCut "$QUICKLAUNCH\Falcon C++.lnk" "$INSTDIR\Falcon.exe" "" "" "" "" "" "C++ IDE easy and complete"  
+    createShortCut "$QUICKLAUNCH\${PROJECT_NAME}.lnk" "$INSTDIR\Falcon.exe" "" "" "" "" "" "C++ IDE easy and complete"  
   SectionEnd
 SectionGroupEnd
 
@@ -391,14 +391,14 @@ Section "Un.Falcon C++" UnSecCore
   
   SetShellVarContext all
   ;delete shortcuts
-  Delete "$SMPROGRAMS\Falcon C++\Falcon C++.lnk"
-  Delete "$SMPROGRAMS\Falcon C++\PkgManager.lnk"
-  Delete "$SMPROGRAMS\Falcon C++\Updater.lnk"
-  Delete "$SMPROGRAMS\Falcon C++\Uninstall.lnk"
-  RMDir  "$SMPROGRAMS\Falcon C++"
+  Delete "$SMPROGRAMS\${PROJECT_NAME}\${PROJECT_NAME}.lnk"
+  Delete "$SMPROGRAMS\${PROJECT_NAME}\PkgManager.lnk"
+  Delete "$SMPROGRAMS\${PROJECT_NAME}\Updater.lnk"
+  Delete "$SMPROGRAMS\${PROJECT_NAME}\Uninstall.lnk"
+  RMDir  "$SMPROGRAMS\${PROJECT_NAME}"
   
-  Delete "$DESKTOP\Falcon C++.lnk"
-  Delete "$QUICKLAUNCH\Falcon C++.lnk"
+  Delete "$DESKTOP\${PROJECT_NAME}.lnk"
+  Delete "$QUICKLAUNCH\${PROJECT_NAME}.lnk"
   
   ;delete languages files
   Delete "$INSTDIR\Lang\Portuguese.lng"

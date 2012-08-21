@@ -597,6 +597,7 @@ begin
   FrmFalconMain.ListViewMsg.Clear;
   I := FrmFalconMain.GetSourcesFiles(Files, True);
   ProgressBarFindFiles.Max := I;
+  Lines := TStringList.Create;
   for I := 0 to Files.Count - 1 do
   begin
     CheckIfCanceled;
@@ -605,10 +606,11 @@ begin
     FileName := FileProp.GetCompleteFileName;
     LastFindFilesDescription := Format(STR_FRM_FIND[33], [OriFindText, FileProp.Caption]);
     LblRep.Caption := LastFindFilesDescription;
+
     if FileProp.GetSheet(sheet) then
-      Lines := sheet.Memo.Lines
+      Lines.Assign(sheet.Memo.Lines)
     else
-      Lines := FileProp.Text;
+      FileProp.LoadFile(Lines);
     Results := Results + Search.FindAll(Lines.Text);
     CheckIfCanceled;
     for J := 0 to Search.ResultCount - 1 do
@@ -624,6 +626,7 @@ begin
     end;
     Application.ProcessMessages;
   end;
+  Lines.Free;
   Search.Free;
   Files.Free;
   FinishFindAll(OriFindText, Results, FindFilesCanceled);

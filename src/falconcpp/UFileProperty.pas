@@ -92,10 +92,7 @@ type
     FNode: Pointer;
     FProject: Pointer;
     FSaved: Boolean;
-    FIsNew: Boolean;
-    FSavedInto: Boolean;
     FModified: Boolean;
-    FText: TStrings;
     FBreakpoint: TBreakpointList;
     function GetCaption: String;
     function GetNode: TTreeNode;
@@ -112,8 +109,7 @@ type
     function Editing: Boolean;
     function ViewPage: Boolean;
     function Rename(new_name: String): Boolean;
-    function GetText(Text: TStrings): Boolean;
-    function SetText(Text: TStrings): Boolean;
+    procedure LoadFile(Text: TStrings);
     function GetSheet(var Sheet: TFilePropertySheet): Boolean;
     function Open: Boolean;
     function Close: Boolean;
@@ -132,13 +128,10 @@ type
     property DateOfFile: TDateTime read FFileDateTime write FFileDateTime;
     property FileType: Integer read FFileType write SetFileType;
     property Modified: Boolean read GetModified write FModified;
-    property IsNew: Boolean read FIsNew write FIsNew;
-    property SavedInto: Boolean read FSavedInto write FSavedInto;
     property Saved: Boolean read FSaved write FSaved;
     property Node: TTreeNode read GetNode;
     property PageCtrl: TModernPageControl read GetEditor;
     property Project: TProjectProperty read GetProject write SetProject;
-    property Text: TStrings read FText;
     property Breakpoint: TBreakpointList read FBreakpoint;
   end;
 
@@ -150,7 +143,7 @@ type
     FFlags: String;
     FCompOpt: String;
     FTarget: String;
-    FMinGW: String;
+    FCompilerPath: String;
     FCmdLine: String;
     FDelObjPrior: Boolean;
     FDelObjAfter: Boolean;
@@ -196,7 +189,6 @@ type
     function GetTarget: String;
     function FilesChanged: Boolean;
     function TargetChanged: Boolean;
-    function AllFilesIsNew: Boolean;
     function GetBreakpointLists(List: TStrings): Boolean;
     function HasBreakpoint: Boolean;
   published
@@ -206,7 +198,7 @@ type
     property Flags: String read FFlags write FFlags;
     property CompilerOptions: String read FCompOpt write FCompOpt;
     property Target: String read FTarget write FTarget;
-    property MinGWPath: String read FMinGW write FMinGW;
+    property CompilerPath: String read FCompilerPath write FCompilerPath;
     property CmdLine: String read FCmdLine write FCmdLine;
     property Compiled: Boolean read FCompiled write FCompiled;
     property TargetDateTime: TdateTime read FTargetDateTime write FTargetDateTime;
@@ -268,25 +260,20 @@ uses UFrmMain, UUtils, ExecWait, UConfig;
 constructor TFileProperty.Create(Editor, Node: Pointer);
 begin
   inherited Create;
-  FText := TStringList.Create;
   FBreakpoint := TBreakpointList.Create;
   FEditor := Editor;
   FBreakpoint.ImageList := FrmFalconMain.ImageListGutter;
   FBreakpoint.ImageIndex := 2;
   FBreakpoint.InvalidIndex := 3;
-
-  FIsNew := True;
   FNode := Node;
   FFileType := FILE_TYPE_UNKNOW;
   FModified := False;
-  FSavedInto := False;
   FSaved := False;
 end;
 
 destructor TFileProperty.Destroy;
 begin
   FBreakpoint.Free;
-  FText.Free;
   inherited Destroy;
 end;
 
@@ -354,11 +341,8 @@ begin
   if (FileType = FILE_TYPE_FOLDER) then Exit;
   if FileExists(GetCompleteFileName) and Saved then
   begin
-    Text.LoadFromFile(GetCompleteFileName);
-    if Editing and GetSheet(sheet) then
-    begin
-      sheet.Memo.Text := Text.Text;
-    end;
+    if GetSheet(sheet) then
+      LoadFile(sheet.Memo.Lines);
     UpdateDate;
   end;
 end;
@@ -438,10 +422,7 @@ begin
   FNode := Value.FNode;
   FProject := Value.FProject;
   FSaved := Value.FSaved;
-  FIsNew := Value.FIsNew;
-  FSavedInto := Value.FSavedInto;
   FModified := Value.FModified;
-  FText.Assign(Value.FText);
 end;
 
 function TFileProperty.GetProject: TProjectProperty;
@@ -553,7 +534,8 @@ begin
     FILE_TYPE_C..FILE_TYPE_H, FILE_TYPE_UNKNOW: Sheet.Memo.Highlighter := FrmFalconMain.CppHighligher;
     FILE_TYPE_RC: Sheet.Memo.Highlighter := FrmFalconMain.ResourceHighlighter;
   end;
-  Sheet.Memo.Lines.Assign(Text);
+  if Saved then
+    LoadFile(Sheet.Memo.Lines);
   PageCtrl.Show;
   if FrmFalconMain.Showing and Sheet.Memo.Showing then
     Sheet.Memo.SetFocus;
@@ -589,25 +571,14 @@ begin
   Result := (OldName <> GetCompleteFileName);
   if Result then
   begin
-    IsNew := False;
     Project.CompilePropertyChanged := True;
     Project.PropertyChanged := True;
   end;
 end;
 
-function TFileProperty.GetText(Text: TStrings): Boolean;
-var
-  Sheet: TFilePropertySheet;
+procedure TFileProperty.LoadFile(Text: TStrings);
 begin
-  Result := GetSheet(Sheet);
-  if Result then
-    Text.Assign(Sheet.Memo.Lines);
-end;
-
-function TFileProperty.SetText(Text: TStrings): Boolean;
-begin
-  FText.Assign(Text);
-  Result := True;
+  Text.LoadFromFile(GetCompleteFileName);
 end;
 
 function TFileProperty.GetSheet(var Sheet: TFilePropertySheet): Boolean;
@@ -681,8 +652,6 @@ begin
     ProjProp := TProjectProperty(Self);
     FModified := ProjProp.PropertyChanged or ProjProp.FileChangedInDisk;
     Result := FModified;
-    if ProjProp.PropertyChanged then
-      IsNew := False;
     Exit;
   end;
   //modification in text
@@ -694,16 +663,7 @@ begin
   if FModified then
   begin
     Result := True;
-    IsNew := False;
     Exit;
-  end;
-  //new or empty file
-  if not IsNew and not Saved then
-  begin
-    if Self = Project then
-      IsNew := (Text.Text = '')
-    else
-      IsNew := not SavedInto;
   end;
   //if saved then verify if file exist and if date are equals
   //if Saved or FileExists(GetCompleteFileName) then
@@ -762,8 +722,7 @@ begin
     if (FileType <> FILE_TYPE_FOLDER) then
     begin
       if Modified or not FileExists(GetCompleteFileName) or
-         FileChangedInDisk or (IsNew and
-          (DateOfFile <> FileDateTime(GetCompleteFileName))) then
+         FileChangedInDisk or ((DateOfFile <> FileDateTime(GetCompleteFileName))) then
       begin
         CanSaveFile := True;
       end;
@@ -775,20 +734,17 @@ begin
   if CanSaveFile then
   begin
     Project.Compiled := False;
-    if FModified then
-        SavedInto := True;
-    if GetSheet(Sheet) then
-    begin
-      Text.Assign(Sheet.Memo.Lines);
-      sheet.Memo.Modified := False;
-    end;
     if (FileType <> FILE_TYPE_PROJECT) then
     begin
+      if GetSheet(Sheet) then
+      begin
+        Sheet.Memo.Lines.SaveToFile(GetCompleteFileName);
+        sheet.Memo.Modified := False;
+      end;
       if FSaved then
         Project.Modified := False;
       if FileType = FILE_TYPE_H then
         Project.ForceClean := True;
-      Text.SaveToFile(GetCompleteFileName);
     end
     else
     begin
@@ -835,7 +791,7 @@ begin
   FCompilerType := COMPILER_CPP;
   FPropertyChanged := False;
   FCompilerPropertyChanged := False;
-  FMinGW := '$(MINGW_PATH)';
+  FCompilerPath := '$(MINGW_PATH)';
 end;
 
 destructor TProjectProperty.Destroy;
@@ -932,7 +888,7 @@ function TProjectProperty.LoadFromFile(const AFileName: String): Boolean;
   procedure LoadFiles(XMLNode: IXMLNode; Parent: TFileProperty);
   var
     Temp: IXMLNode;
-    NodeFileName, S: String;
+    NodeFileName: String;
     FileProp: TFileProperty;
   begin
     Temp := XMLNode.ChildNodes.First;
@@ -945,7 +901,6 @@ function TProjectProperty.LoadFromFile(const AFileName: String): Boolean;
           NodeFileName, '', '', Parent, True, False);
         FileProp.Modified := False;
         FileProp.Saved := True;
-        FileProp.IsNew := False;
         LoadFiles(Temp, FileProp);
       end
       else if (Temp.NodeName = 'File') then
@@ -957,19 +912,14 @@ function TProjectProperty.LoadFromFile(const AFileName: String): Boolean;
         NodeFileName := FileProp.GetCompleteFileName;
         if FileExists(NodeFileName) then
         begin
-          FileProp.Text.LoadFromFile(NodeFileName);
           FileProp.DateOfFile := FileDateTime(NodeFileName);
           FileProp.Saved := True;
-          FileProp.IsNew := False;
           FileProp.Modified := False;
         end
         else
         begin
           //file not found
-          S := StringOfChar('*', Length(NodeFileName) div 2);
-          FileProp.Text.Add('/**' + S + ' WARNING file not found *' + S + '**/');
-          FileProp.Text.Add('/************** ' + NodeFileName + ' **************/');
-          FileProp.Text.Add('/**' + S + '*************************' + S + '**/');
+          // TODO:
         end;
       end;
       Temp := Temp.NextSibling;
@@ -1600,26 +1550,6 @@ begin
   end
 end;
 
-function TProjectProperty.AllFilesIsNew: Boolean;
-var
-  I: Integer;
-  List: TStrings;
-begin
-  Result := IsNew;
-  if not IsNew then
-    Exit;
-  List := GetFiles;
-  for I:= 0 to Pred(List.Count) do
-    if not TFileProperty(List.Objects[I]).IsNew then
-    begin
-      Result := False;
-      List.Free;
-      Exit;
-    end;
-  List.Free;
-  Result := True;
-end;
-
 function TProjectProperty.GetFiles(AllTypes, WithBreakpoint: Boolean): TStrings;
 
   procedure AddFiles(List: TStrings; ANode: TTreeNode);
@@ -1816,7 +1746,7 @@ begin
     mk.Flags := Flags;
     mk.CompilerIsCpp := (CompilerType = COMPILER_CPP);
     mk.CreateLibrary := (AppType = APPTYPE_LIB);
-    mk.CompilerPath := MinGWPath;
+    mk.CompilerPath := FCompilerPath;
     mk.CompilerOptions := CompilerOptions;
     OldDebuggingState := Debugging;
     Debugging := HasBreakpoint  or BreakpointCursor.Valid;

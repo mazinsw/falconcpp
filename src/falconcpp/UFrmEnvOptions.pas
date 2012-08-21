@@ -72,6 +72,8 @@ type
     { Private declarations }
     Loading: Boolean;
     procedure OptionsChange;
+  protected
+    procedure CreateParams(var Params: TCreateParams); override;
   public
     { Public declarations }
     procedure ReloadLanguages;
@@ -87,6 +89,17 @@ implementation
 uses UFrmMain, ULanguages, UConfig, UUtils, UTemplates, UFileProperty;
 
 {$R *.dfm}
+
+procedure TFrmEnvOptions.CreateParams(var Params: TCreateParams);
+begin
+  inherited;
+  if ParentWindow <> 0 then
+  begin
+    Params.Style := Params.Style and not WS_CHILD;
+    if BorderStyle = bsNone then
+      Params.Style := Params.Style or WS_POPUP;
+  end;
+end;
 
 procedure TFrmEnvOptions.FormKeyPress(Sender: TObject; var Key: Char);
 begin

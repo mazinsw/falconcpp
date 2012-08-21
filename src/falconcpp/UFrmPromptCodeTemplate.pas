@@ -28,6 +28,8 @@ type
     { Private declarations }
     fOnOkButtonClick: TOkButtonEvent;
     fData: Pointer; 
+  protected
+    procedure CreateParams(var Params: TCreateParams); override;
   public
     { Public declarations }
     procedure UpdateLangNow;
@@ -36,7 +38,7 @@ type
 var
   FrmPromptCodeTemplate: TFrmPromptCodeTemplate;
 
-function PromptDialog(const Caption: String; var Name, Description: String;
+function PromptDialog(ParentWindow: HWND; const Caption: String; var Name, Description: String;
   Data: Pointer; OkButtonEvent: TOkButtonEvent = nil): Boolean;
 
 implementation
@@ -45,12 +47,12 @@ uses ULanguages;
 
 {$R *.dfm}
 
-function PromptDialog(const Caption: String; var Name, Description: String;
+function PromptDialog(ParentWindow: HWND; const Caption: String; var Name, Description: String;
   Data: Pointer; OkButtonEvent: TOkButtonEvent = nil): Boolean;
 begin
   Result := False;
   if not Assigned(FrmPromptCodeTemplate) then
-    FrmPromptCodeTemplate := TFrmPromptCodeTemplate.Create(nil);
+    FrmPromptCodeTemplate := TFrmPromptCodeTemplate.CreateParented(ParentWindow);
   FrmPromptCodeTemplate.Caption := Caption;
   FrmPromptCodeTemplate.EditName.Text := Name;
   FrmPromptCodeTemplate.EditDesc.Text := Description;
@@ -68,6 +70,17 @@ begin
   end;
   FrmPromptCodeTemplate.Free;
   Result := True;
+end;
+
+procedure TFrmPromptCodeTemplate.CreateParams(var Params: TCreateParams);
+begin
+  inherited;
+  if ParentWindow <> 0 then
+  begin
+    Params.Style := Params.Style and not WS_CHILD;
+    if BorderStyle = bsNone then
+      Params.Style := Params.Style or WS_POPUP;
+  end;
 end;
 
 procedure TFrmPromptCodeTemplate.UpdateLangNow;

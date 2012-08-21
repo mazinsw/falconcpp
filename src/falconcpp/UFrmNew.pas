@@ -26,6 +26,8 @@ type
     procedure ReloadTemplates(Templates: TTemplates);
   private
     { Private declarations }
+  protected
+    procedure CreateParams(var Params: TCreateParams); override;
   public
     { Public declarations }
     Page: TPageWizard;
@@ -41,6 +43,17 @@ uses UFraProjs, UFraNewOpt, UFrmMain, UUtils, ULanguages,
   TokenUtils;
 
 {$R *.dfm}
+
+procedure TFrmNewProj.CreateParams(var Params: TCreateParams);
+begin
+  inherited;
+  if ParentWindow <> 0 then
+  begin
+    Params.Style := Params.Style and not WS_CHILD;
+    if BorderStyle = bsNone then
+      Params.Style := Params.Style or WS_POPUP;
+  end;
+end;
 
 procedure TFrmNewProj.ReloadTemplates(Templates: TTemplates);
 var
@@ -414,13 +427,9 @@ begin
                                  '',
                                  OwnerFile);
       FileText := TemFiles.SourceFile[I];
-      NewFile.SetText(FileText);
+      NewFile.Edit.Memo.Lines.Assign(FileText);
       FileText.Free;
       NewFile.Modified := False;
-      if (TemFiles.DefaultFile = I) or (TemFiles.Count = 1) then
-      begin
-        NewFile.Edit;
-      end;
     end;
   end;
   case NewPrj.AppType of

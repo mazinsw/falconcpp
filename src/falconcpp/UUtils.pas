@@ -75,7 +75,7 @@ function ForceForegroundWindow(hwnd: THandle): Boolean;
 function GetCompiler(FileType: Integer): Integer;
 function GetFileType(AFileName: String): Integer;
 function Divide64(HEXText: String): String;
-function Union64(HEXText: String): String;
+function Union64(const HEXText: String): String;
 function StreamToString(Value: TStream): String;
 function StringToStream(Text: String; Value: TStream): Integer;
 function FileDateTime(const FileName: string): TDateTime;
@@ -1014,20 +1014,25 @@ begin
   Result := Text;
 end;
 
-function Union64(HEXText: String): String;
+function Union64(const HEXText: String): String;
 var
-  Res: String;
+  ptr, pres: PChar;
 begin
-  Res := HEXText;
-  if Pos(NewLine, Res) > 0 Then
-    Res := StringReplace(Res, NewLine, '', [rfReplaceAll]);
-  if Pos(#10, Res) > 0 Then
-    Res := StringReplace(Res, #10, '', [rfReplaceAll]);
-  if Pos(Ident, Res) > 0 Then
-    Res := StringReplace(Res, Ident, '', [rfReplaceAll]);
-  if Pos(' ', Res) > 0 Then
-    Res := StringReplace(Res, ' ', '', [rfReplaceAll]);
-  Result := Res;
+  Result := HEXText;
+  pres := PChar(Result);
+  ptr := PChar(HEXText);
+  while ptr^ <> #0 do
+  begin
+    if not (ptr^ in [#13, #10, ' ', #9]) then
+    begin
+      pres^ := ptr^;
+      Inc(pres);
+    end;
+    Inc(ptr);
+  end;
+  if pres^ <> #0 then
+    pres^ := #0;
+  Result := StrPas(PChar(Result));
 end;
 
 function Divide64(HEXText: String): String;
@@ -1284,12 +1289,10 @@ begin
         ProjProp.CompilerOptions := '-Wall -s -O2';
       end;
     end;
-    ProjProp.Text.LoadFromFile(ProjProp.FileName);
   end
   else
     ProjProp.LoadFromFile(ProjProp.GetCompleteFileName);
   ProjProp.Modified := False;
-  ProjProp.IsNew := False;
   if ProjProp.FileType = FILE_TYPE_PROJECT then
     ProjProp.LoadLayout;
   Result := ProjProp;

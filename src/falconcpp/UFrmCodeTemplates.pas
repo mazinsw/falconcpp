@@ -37,6 +37,8 @@ type
     procedure BtnRemClick(Sender: TObject);
   private
     { Private declarations }
+  protected
+    procedure CreateParams(var Params: TCreateParams); override;
   public
     { Public declarations }
     AutoComplete: TSynAutoComplete;
@@ -59,6 +61,18 @@ implementation
 uses UFrmEditorOptions, UFrmMain, UFrmPromptCodeTemplate, ULanguages;
 
 {$R *.dfm}
+
+
+procedure TFrmCodeTemplates.CreateParams(var Params: TCreateParams);
+begin
+  inherited;
+  if ParentWindow <> 0 then
+  begin
+    Params.Style := Params.Style and not WS_CHILD;
+    if BorderStyle = bsNone then
+      Params.Style := Params.Style or WS_POPUP;
+  end;
+end;
 
 procedure TFrmCodeTemplates.UpdateLangNow;
 begin
@@ -238,7 +252,7 @@ var
   ctiName, ctiDesc: String;
   List: TStrings;
 begin
-  if PromptDialog(STR_FRM_CODE_TEMPL[5], ctiName, ctiDesc, nil, OkButtonEvent) then
+  if PromptDialog(Handle, STR_FRM_CODE_TEMPL[5], ctiName, ctiDesc, nil, OkButtonEvent) then
   begin
     CTI := TCodeTemplateItem.Create;
     CTI.Name := ctiName;
@@ -272,7 +286,7 @@ begin
   CTI := TCodeTemplateItem(Item.Data);
   ctiName := CTI.Name;
   ctiDesc := CTI.Comment;
-  if PromptDialog(STR_FRM_CODE_TEMPL[6], ctiName, ctiDesc, CTI, OkButtonEvent) then
+  if PromptDialog(Handle, STR_FRM_CODE_TEMPL[6], ctiName, ctiDesc, CTI, OkButtonEvent) then
   begin
     I := AutoComplete.Completions.IndexOf(CTI.Name);
     AutoComplete.Completions.Strings[I] := ctiName;

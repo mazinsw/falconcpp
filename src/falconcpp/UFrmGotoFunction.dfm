@@ -23,7 +23,7 @@ object FormGotoFunction: TFormGotoFunction
   object PanelFind: TPanel
     Left = 0
     Top = 0
-    Width = 470
+    Width = 462
     Height = 37
     Align = alTop
     BevelOuter = bvNone
@@ -53,8 +53,8 @@ object FormGotoFunction: TFormGotoFunction
   object ListViewFunctions: TListView
     Left = 0
     Top = 37
-    Width = 470
-    Height = 205
+    Width = 462
+    Height = 201
     Align = alClient
     Columns = <
       item

@@ -261,13 +261,13 @@ begin
   if CleanBefore or ForceClean then
   begin
     OutFile.Add('clean-before:');
-    OutFile.Add(TabChar + EchoStr + 'for %%i in ($(OBJS)) do if exist %%i del /f %%i');
+    OutFile.Add(TabChar + EchoStr + 'rm -f $(OBJS)');
     OutFile.Add('');
   end;
   if CleanAfter then
   begin
     OutFile.Add('clean-after:');
-    OutFile.Add(TabChar + EchoStr + 'for %%i in ($(OBJS)) do if exist %%i del /f %%i');
+    OutFile.Add(TabChar + EchoStr + 'rm -f $(OBJS)');
     OutFile.Add('');
   end;
   Cop := Trim(CompilerOptions);

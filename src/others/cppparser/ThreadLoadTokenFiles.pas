@@ -16,11 +16,26 @@ type
 
   TThreadLoadTokenFiles = class(TThread)
   private
-    { Private declarations }
+    fTokenFile: TTokenFile;
+    fProgsFileName: String;
+    fCurrent: Integer;
+    fTotal: Integer;
+    fParsed: Boolean;
+
+    fMethod: TTokenParseMethod;
+    fOnStart: TNotifyEvent;
+    fOnProgress: TProgressEvent;
+    fOnFinish: TNotifyEvent;
+    
     fCancel: Boolean;
     fTokenFiles: TTokenFiles;
     fFileList: TList;
     FBusy: Boolean;
+
+    procedure DoStart;
+    procedure DoProgress;
+    procedure DoFinish;
+
     procedure ParserStart(Sender: TObject);
     procedure ParserProgress(Sender: TObject; TokenFile: TTokenFile;
       const FileName: String; Current, Total: Integer; Parsed: Boolean;
@@ -37,6 +52,9 @@ type
     procedure AddFile(TokenFiles: TTokenFiles; const FileName, BaseDir,
       FromBaseDir, Extension: String);
     property Busy: Boolean read FBusy;
+    property OnStart: TNotifyEvent read fOnStart write fOnStart;
+    property OnProgress: TProgressEvent read fOnProgress write fOnProgress;
+    property OnFinish: TNotifyEvent read fOnFinish write fOnFinish;
   end;
 
 implementation
@@ -133,19 +151,44 @@ end;
 
 procedure TThreadLoadTokenFiles.ParserStart(Sender: TObject);
 begin
-//
+  Synchronize(DoStart);
 end;
 
 procedure TThreadLoadTokenFiles.ParserProgress(Sender: TObject;
   TokenFile: TTokenFile; const FileName: String; Current, Total: Integer;
   Parsed: Boolean; Method: TTokenParseMethod);
 begin
-  //FrmFalconMain.AddItemMsg(FileName, 'TThreadLoadTokenFiles',  Current);
+  fTokenFile := TokenFile;
+  fProgsFileName := FileName;
+  fCurrent := Current;
+  fTotal := Total;
+  fParsed := Parsed;
+  fMethod := Method;
+  Synchronize(DoProgress);
 end;
 
 procedure TThreadLoadTokenFiles.ParserFinish(Sender: TObject);
 begin
-//
+  Synchronize(DoFinish);
+end;
+
+procedure TThreadLoadTokenFiles.DoFinish;
+begin
+  if Assigned(fOnFinish) then
+    fOnFinish(Self);
+end;
+
+procedure TThreadLoadTokenFiles.DoProgress;
+begin
+  if Assigned(fOnProgress) then
+    fOnProgress(Self, fTokenFile, fProgsFileName, fCurrent, fTotal, fParsed,
+      fMethod);
+end;
+
+procedure TThreadLoadTokenFiles.DoStart;
+begin
+  if Assigned(fOnStart) then
+    fOnStart(Self);
 end;
 
 end.

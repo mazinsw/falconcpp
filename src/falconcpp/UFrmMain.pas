@@ -504,12 +504,20 @@ type
     procedure ParserProgress(Sender: TObject; TokenFile: TTokenFile;
       const FileName: String; Current, Total: Integer; Parsed: Boolean;
       Method: TTokenParseMethod);
+    procedure ParserFinish(Sender: TObject);
+
     procedure AllParserStart(Sender: TObject);
     procedure AllParserProgress(Sender: TObject; TokenFile: TTokenFile;
       const FileName: String; Current, Total: Integer; Parsed: Boolean;
       Method: TTokenParseMethod);
     procedure AllParserFinish(Sender: TObject);
-    procedure ParserFinish(Sender: TObject);
+
+    procedure TokenParserStart(Sender: TObject);
+    procedure TokenParserProgress(Sender: TObject; TokenFile: TTokenFile;
+      const FileName: String; Current, Total: Integer; Parsed: Boolean;
+      Method: TTokenParseMethod);
+    procedure TokenParserFinish(Sender: TObject);
+
     procedure TimerHintTipEventTimer(Sender: TObject);
     procedure CodeCompletionExecute(Kind: TSynCompletionType;
       Sender: TObject; var CurrentInput: String; var x, y: Integer;
@@ -996,7 +1004,12 @@ begin
   SplashScreen.TextOut(55, 300, STR_FRM_MAIN[45]);
   fWorkerThread := TParserThread.Create;
   ThreadTokenFiles := TThreadTokenFiles.Create;
+
   ThreadLoadTkFiles := TThreadLoadTokenFiles.Create;
+  ThreadLoadTkFiles.OnStart := TokenParserStart;
+  ThreadLoadTkFiles.OnProgress := TokenParserProgress;
+  ThreadLoadTkFiles.OnFinish := TokenParserFinish;
+
   ThreadTokenFiles.OnStart := ParserStart;
   ThreadTokenFiles.OnProgress := ParserProgress;
   ThreadTokenFiles.OnFinish := ParserFinish;
@@ -1008,7 +1021,7 @@ begin
   WatchList := TDebugWatchList.Create;
   FilesParsed := TTokenFiles.Create;
   ThreadFilesParsed := TThreadTokenFiles.Create;
-  ThreadTokenFiles.OnStart := AllParserStart;
+  ThreadFilesParsed.OnStart := AllParserStart;
   ThreadFilesParsed.OnProgress := AllParserProgress;
   ThreadFilesParsed.OnFinish := AllParserFinish;
   AllParsedList := TStringList.Create;
@@ -1564,6 +1577,7 @@ begin
   begin
     ThreadFilesParsed.Free;
     ThreadFilesParsed := TThreadTokenFiles.Create;
+    ThreadFilesParsed.OnStart := AllParserStart;
     ThreadFilesParsed.OnProgress := AllParserProgress;
     ThreadFilesParsed.OnFinish := AllParserFinish;
     ThreadFilesParsed.ParseLoad(FilesParsed, ObjList);
@@ -4182,6 +4196,9 @@ begin
     begin
       ThreadLoadTkFiles.Free;
       ThreadLoadTkFiles := TThreadLoadTokenFiles.Create;
+      ThreadLoadTkFiles.OnStart := TokenParserStart;
+      ThreadLoadTkFiles.OnProgress := TokenParserProgress;
+      ThreadLoadTkFiles.OnFinish := TokenParserFinish;
     end;
     ThreadLoadTkFiles.Start(FilesParsed, FullIncludeName, Config.Compiler.Path +
       '\include\', ConfigRoot + 'include\', '.h.prs');
@@ -6004,6 +6021,7 @@ end;
 
 procedure TFrmFalconMain.ParserStart(Sender: TObject);
 begin
+  ProgressBarParser.Position := 0;
   ProgressBarParser.Show;
 end;
 
@@ -6014,8 +6032,30 @@ begin
   ProgressBarParser.Position := (Current * 100) div Total;
 end;
 
+procedure TFrmFalconMain.ParserFinish(Sender: TObject);
+var
+ ini: TIniFile;
+begin
+  if IsLoadingSrcFiles then
+  begin
+    if ParseAllCloseApp then
+    begin
+      Application.Terminate;
+      Exit;
+    end;
+    ini := TIniFile.Create(IniConfigFile);
+    ini.WriteInteger('Packages', 'NewInstalled', 0);
+    ini.Free;
+    IsLoadingSrcFiles := False;
+    ParseAllCloseApp := False;
+  end;
+  if not ThreadFilesParsed.Busy then
+    ProgressBarParser.Hide;
+end;
+
 procedure TFrmFalconMain.AllParserStart(Sender: TObject);
 begin
+  ProgressBarParser.Position := 0;
   ProgressBarParser.Show;
 end;
 
@@ -6046,27 +6086,24 @@ begin
   //update grayed project and outline
   PageControlEditorPageChange(PageControlEditor,
     PageControlEditor.ActivePageIndex);
-  ProgressBarParser.Show;
+  ProgressBarParser.Hide;
 end;
 
-procedure TFrmFalconMain.ParserFinish(Sender: TObject);
-var
- ini: TIniFile;
+procedure TFrmFalconMain.TokenParserStart(Sender: TObject);
 begin
-  if IsLoadingSrcFiles then
-  begin
-    if ParseAllCloseApp then
-    begin
-      Application.Terminate;
-      Exit;
-    end;
-    ini := TIniFile.Create(IniConfigFile);
-    ini.WriteInteger('Packages', 'NewInstalled', 0);
-    ini.Free;
-    IsLoadingSrcFiles := False;
-    ParseAllCloseApp := False;
-  end;
-  ProgressBarParser.Hide;
+//
+end;
+
+procedure TFrmFalconMain.TokenParserProgress(Sender: TObject;
+  TokenFile: TTokenFile; const FileName: String; Current, Total: Integer;
+  Parsed: Boolean; Method: TTokenParseMethod);
+begin
+  StatusBar.Panels.Items[3].Caption := 'Loading ' + ExtractFileName(FileName);
+end;
+
+procedure TFrmFalconMain.TokenParserFinish(Sender: TObject);
+begin
+  StatusBar.Panels.Items[3].Caption := '';
 end;
 
 procedure TFrmFalconMain.TextEditorMouseDown(Sender: TObject;

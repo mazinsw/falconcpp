@@ -1233,7 +1233,7 @@ object FrmFalconMain: TFrmFalconMain
         Tag = 0
       end
       item
-        Size = 170
+        Size = 200
         Tag = 0
       end
       item
@@ -1245,7 +1245,7 @@ object FrmFalconMain: TFrmFalconMain
     ShowHint = True
     UseSystemFont = False
     object ProgressBarParser: TProgressBar
-      Left = 480
+      Left = 510
       Top = 2
       Width = 149
       Height = 19

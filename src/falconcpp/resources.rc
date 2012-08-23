@@ -1,3 +1,5 @@
+#include "version.rc"
+
 ICONFAL RCDATA "..\..\res\images\falcon.ico"
 MANFTHEME RCDATA "..\..\res\Theme.manifest"
 MANFADMIN RCDATA "..\..\res\Admin.manifest"
@@ -14,6 +16,7 @@ DISMENUIMAGES RCDATA "..\..\res\images\dismenu.png"
 moredown BITMAP "..\..\res\images\small\moredown.bmp"    
 moreup BITMAP "..\..\res\images\small\moreup.bmp"
 
+MAINICON  ICON "..\..\res\images\Icon.ico"
 2  ICON "..\..\res\images\Template.ico"
 3  ICON "..\..\res\images\Package.ico"
 4  ICON "..\..\res\images\CSource.ico"

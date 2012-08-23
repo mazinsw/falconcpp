@@ -56,8 +56,6 @@ uses
   NativeHintWindow in '..\others\nativehint\NativeHintWindow.pas',
   rbtree in 'rbtree.pas';
 
-{$R *.res}
-
 function OpenWithOther: Boolean;
 var
   SendDT: TSendData;

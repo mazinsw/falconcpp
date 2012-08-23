@@ -39,7 +39,7 @@ var
 
 implementation
 
-uses UFrmNew, UTemplates, UFileProperty;
+uses UFrmNew, UTemplates, USourceFile;
 
 {$R *.dfm}
 

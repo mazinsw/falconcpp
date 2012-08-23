@@ -95,7 +95,8 @@ type
 
   TTokenFiles = class
   private
-    FList: TRBTree;
+    //FList: TRBTree;
+    FList: TList;
     fParser: TCppParser;
     fCancel: Boolean;
     fBusy: Boolean;
@@ -117,24 +118,24 @@ type
       //search
     function SearchSourceRecursive(const S: string;
       TokenFile: TTokenFile; var TokenFileItem: TTokenFile; var Item: TTokenClass;
-      FindedList: TRBTree; SelStart: Integer = 0; ListAll: TStrings = nil;
+      FindedList: TStrings; SelStart: Integer = 0; ListAll: TStrings = nil;
       AllFunctions: Boolean = False): Boolean;
     function GetBaseTypeRecursive(const S: string;
       SelStart: Integer; TokenFile: TTokenFile; var TokenFileItem: TTokenFile;
-      var Token: TTokenClass; FindedList: TRBTree; ListAll: TStrings;
+      var Token: TTokenClass; FindedList: TStrings; ListAll: TStrings;
       AllFunctions: Boolean): Boolean;
     function SearchTokenRecursive(const S: string; TokenFile: TTokenFile;
       var TokenFileItem: TTokenFile; var Token: TTokenClass; Mode: TTokenSearchMode;
-      FindedList: TRBTree; SelStart: Integer): Boolean;
+      FindedList: TStrings; SelStart: Integer): Boolean;
     function InvalidOrFinded(var FindedTokenFile: TTokenFile;
       const FilePath: string; IncludeToken: TTokenClass;
-      FindedList: TRBTree): Boolean;
+      FindedList: TStrings): Boolean;
     procedure FillCompletionListRecursive(InsertList,
-      ShowList: TStrings; TokenFile: TTokenFile; FindedList: TRBTree;
+      ShowList: TStrings; TokenFile: TTokenFile; FindedList: TStrings;
       CompletionColors: TCompletionColors);
     function SearchTreeTokenRecursive(const Fields: string;
       TokenFile: TTokenFile; var TokenFileItem: TTokenFile; var Token: TTokenClass;
-      Mode: TTokenSearchMode; FindedList: TRBTree; SelStart: Integer): Boolean;
+      Mode: TTokenSearchMode; FindedList: TStrings; SelStart: Integer): Boolean;
 
   public
     //list functions
@@ -677,7 +678,8 @@ end;
 constructor TTokenFiles.Create;
 begin
   inherited Create;
-  FList := TRBTree.Create;
+  //FList := TRBTree.Create;
+  FList := TList.Create;
   fPathList := TStringList.Create;
   fParser := TCppParser.Create;
   fParser.OnProgess := ParserProgress;
@@ -700,12 +702,24 @@ end;
 
 procedure TTokenFiles.Put(const FileName: string; Value: TTokenFile);
 begin
-  FList.Items[FileName] := Value;
+  //FList.Items[FileName] := Value;
+  FList.Add(Value);
 end;
 
 function TTokenFiles.Get(const FileName: string): TTokenFile;
+var
+  I: Integer;
 begin
-  Result := TTokenFile(FList.Items[FileName]);
+  //Result := TTokenFile(FList.Items[FileName]);
+  for I := 0 to FList.Count - 1 do
+  begin
+    if CompareText(TTokenFile(FList.Items[I]).FileName, FileName) = 0 then
+    begin
+      Result := TTokenFile(FList.Items[I]);
+      Exit;
+    end;
+  end;
+  Result := nil;
 end;
 
 //parse functions
@@ -1017,7 +1031,7 @@ begin
 end;
 
 function TTokenFiles.Remove(Item: TTokenFile): Boolean;
-var
+{var
   Node: PRBNode;
 begin
   Node := FList.Find(Item.FileName);
@@ -1027,11 +1041,15 @@ begin
     TTokenFile(Node^.Data).Free;
     FList.Delete(Node);
     Result := True;
-  end;
+  end;}
+begin
+  Result := FList.Remove(Item) >= 0;
+  if Result  then
+    Item.Free;
 end;
 
 procedure TTokenFiles.Delete(const FileName: string);
-var
+{var
   Node: PRBNode;
 begin
   Node := FList.Find(FileName);
@@ -1039,11 +1057,13 @@ begin
   begin
     TTokenFile(Node^.Data).Free;
     FList.Delete(Node);
-  end;
+  end;}
+begin
+  Remove(ItemOfByFileName(FileName));
 end;
 
 procedure TTokenFiles.Clear;
-var
+{var
   Node: PRBNode;
 begin
   Node := FList.First;
@@ -1054,12 +1074,19 @@ begin
     TTokenFile(Node^.Data).Free;
     RBInc(Node);
   end;
-  TTokenFile(Node^.Data).Free;
+  TTokenFile(Node^.Data).Free;}
+var
+  I: Integer;
+begin
+  for I := 0 to FList.Count - 1 do
+  begin
+    TTokenFile(FList.Items[I]).Free;
+  end;
   FList.Clear;
 end;
 
 procedure TTokenFiles.GetAllFiles(List: TStrings);
-var
+{var
   Node: PRBNode;
 begin
   Node := FList.First;
@@ -1070,12 +1097,20 @@ begin
     List.AddObject(TTokenFile(Node^.Data).FileName, TTokenFile(Node^.Data));
     RBInc(Node);
   end;
-  List.AddObject(TTokenFile(Node^.Data).FileName, TTokenFile(Node^.Data));
+  List.AddObject(TTokenFile(Node^.Data).FileName, TTokenFile(Node^.Data));}
+var
+  I: Integer;
+begin
+  for I := 0 to FList.Count - 1 do
+  begin
+    List.AddObject(TTokenFile(FList.Items[I]).FileName, FList.Items[I]);
+  end;
 end;
 
 procedure TTokenFiles.Add(Item: TTokenFile);
 begin
-  FList.Items[Item.FileName]:= Item;
+  //FList.Items[Item.FileName]:= Item;
+  FList.Add(Item);
   Item.Owner := Self;
 end;
 
@@ -1144,7 +1179,7 @@ end;
 
 function TTokenFiles.SearchSourceRecursive(const S: string;
   TokenFile: TTokenFile; var TokenFileItem: TTokenFile; var Item: TTokenClass;
-  FindedList: TRBTree; SelStart: Integer; ListAll: TStrings;
+  FindedList: TStrings; SelStart: Integer; ListAll: TStrings;
   AllFunctions: Boolean): Boolean;
 var
   I: Integer;
@@ -1160,7 +1195,7 @@ begin
       Exit;
   end;
   //don't search again
-  FindedList.Add(TokenFile.FileName, TokenFile);
+  FindedList.AddObject(TokenFile.FileName, TokenFile);
   //searched filepath
   FilePath := ExtractFilePath(TokenFile.FileName);
   //search in all include files
@@ -1270,7 +1305,7 @@ function TTokenFiles.SearchSource(const S: string; TokenFile: TTokenFile;
   var TokenFileItem: TTokenFile; var Item: TTokenClass; SelStart: Integer;
   ListAll: TStrings; AllFunctions: Boolean): Boolean;
 var
-  FindedList: TRBTree;
+  FindedList: TStrings;
   AllScope: Boolean;
   Fields: string;
   Scope, Token: TTokenClass;
@@ -1341,7 +1376,7 @@ begin
     end;
   end;
 
-  FindedList := TRBTree.Create;
+  FindedList := TStringList.Create;
   Result := SearchSourceRecursive(S, TokenFile, TokenFileItem, Item,
     FindedList, SelStart, ListAll, AllFunctions);
   FindedList.Free;
@@ -1349,7 +1384,7 @@ end;
 
 function TTokenFiles.SearchTokenRecursive(const S: string; TokenFile: TTokenFile;
   var TokenFileItem: TTokenFile; var Token: TTokenClass; Mode: TTokenSearchMode;
-  FindedList: TRBTree; SelStart: Integer): Boolean;
+  FindedList: TStrings; SelStart: Integer): Boolean;
 var
   I: Integer;
   FilePath: string;
@@ -1362,7 +1397,7 @@ begin
     Exit;
   end;
   //don't search again
-  FindedList.Add(TokenFile.FileName, TokenFile);
+  FindedList.AddObject(TokenFile.FileName, TokenFile);
   //searched filepath
   FilePath := ExtractFilePath(TokenFile.FileName);
   //search in all include files
@@ -1378,7 +1413,7 @@ end;
 
 function TTokenFiles.InvalidOrFinded(var FindedTokenFile: TTokenFile;
   const FilePath: string; IncludeToken: TTokenClass;
-  FindedList: TRBTree): Boolean;
+  FindedList: TStrings): Boolean;
 var
   FindName: string;
 begin
@@ -1405,16 +1440,16 @@ begin
     end;
   end;
   //file not parsed or already searched
-  Result := (FindedTokenFile = nil) or (FindedList.Find(FindedTokenFile.FileName) <> nil);
+  Result := (FindedTokenFile = nil) or (FindedList.IndexOf(FindedTokenFile.FileName) >= 0);
 end;
 
 function TTokenFiles.SearchToken(const S: string; TokenFile: TTokenFile;
   var TokenFileItem: TTokenFile; var Token: TTokenClass; Mode: TTokenSearchMode;
   SelStart: Integer): Boolean;
 var
-  FindedList: TRBTree;
+  FindedList: TStrings;
 begin
-  FindedList := TRBTree.Create;
+  FindedList := TStringList.Create;
   Result := SearchTokenRecursive(S, TokenFile, TokenFileItem, Token,
     Mode, FindedList, SelStart);
   FindedList.Free;
@@ -1422,7 +1457,7 @@ end;
 
 function TTokenFiles.SearchTreeTokenRecursive(const Fields: string;
   TokenFile: TTokenFile; var TokenFileItem: TTokenFile; var Token: TTokenClass;
-  Mode: TTokenSearchMode; FindedList: TRBTree; SelStart: Integer): Boolean;
+  Mode: TTokenSearchMode; FindedList: TStrings; SelStart: Integer): Boolean;
 var
   List: TStrings;
   I: Integer;
@@ -1454,7 +1489,7 @@ begin
   end;
 
   //don't search again
-  FindedList.Add(TokenFile.FileName, TokenFile);
+  FindedList.AddObject(TokenFile.FileName, TokenFile);
   //searched filepath
   FilePath := ExtractFilePath(TokenFile.FileName);
   //search in all include files
@@ -1474,12 +1509,12 @@ function TTokenFiles.SearchTreeToken(const Fields: string; TokenFile: TTokenFile
   var TokenFileItem: TTokenFile; var Token: TTokenClass; Mode: TTokenSearchMode;
   SelStart: Integer): Boolean;
 var
-  FindedList: TRBTree;
+  FindedList: TStrings;
 begin
   Result := False;
   if Trim(Fields) = '' then
     Exit;
-  FindedList := TRBTree.Create;
+  FindedList := TStringList.Create;
   Result := SearchTreeTokenRecursive(Fields, TokenFile, TokenFileItem, Token,
     Mode, FindedList, SelStart);
   FindedList.Free;
@@ -1565,7 +1600,7 @@ end;
 
 function TTokenFiles.GetBaseTypeRecursive(const S: string;
   SelStart: Integer; TokenFile: TTokenFile; var TokenFileItem: TTokenFile;
-  var Token: TTokenClass; FindedList: TRBTree; ListAll: TStrings;
+  var Token: TTokenClass; FindedList: TStrings; ListAll: TStrings;
   AllFunctions: Boolean): Boolean;
 var
   I: Integer;
@@ -1595,7 +1630,7 @@ begin
       Break;
   end;
   //don't search again
-  FindedList.Add(TokenFile.FileName, TokenFile);
+  FindedList.AddObject(TokenFile.FileName, TokenFile);
 
   //Skip token haven't a Ancestor type
   if not (Token.Token in [tkDefine, tkVariable, tkTypeStruct, tkTypeUnion,
@@ -1626,7 +1661,7 @@ function TTokenFiles.GetBaseType(const S: string; SelStart: Integer;
   TokenFile: TTokenFile; var TokenFileItem: TTokenFile;
   var Token: TTokenClass; ListAll: TStrings; AllFunctions: Boolean): Boolean;
 var
-  FindedList: TRBTree;
+  FindedList: TStrings;
 begin
   if SearchTreeToken(S, TokenFile, TokenFileItem, Token,
     [tkClass, tkNamespace], SelStart) then
@@ -1637,7 +1672,7 @@ begin
       Exit;
     end;
   end;
-  FindedList := TRBTree.Create;
+  FindedList := TStringList.Create;
   Result := GetBaseTypeRecursive(S, SelStart, TokenFile, TokenFileItem,
     Token, FindedList, ListAll, AllFunctions);
   FindedList.Free;
@@ -1997,7 +2032,7 @@ end;
 
 procedure TTokenFiles.FillCompletionListRecursive(InsertList,
   ShowList: TStrings; TokenFile: TTokenFile;
-  FindedList: TRBTree; CompletionColors: TCompletionColors);
+  FindedList: TStrings; CompletionColors: TCompletionColors);
 var
   I: Integer;
   FilePath: string;
@@ -2009,7 +2044,7 @@ begin
   FillCompletion(InsertList, ShowList, TokenFile.Defines, -1, CompletionColors);
 
   //don't search again
-  FindedList.Add(TokenFile.FileName, TokenFile);
+  FindedList.AddObject(TokenFile.FileName, TokenFile);
   //searched filepath
   FilePath := ExtractFilePath(TokenFile.FileName);
   //search in all include files
@@ -2027,20 +2062,20 @@ procedure TTokenFiles.FillCompletionList(InsertList,
   ShowList: TStrings; TokenFile: TTokenFile; SelStart: Integer;
   CompletionColors: TCompletionColors);
 var
-  FindedList: TRBTree;
+  FindedList: TStrings;
   I: Integer;
   FilePath: string;
   FindedTokenFile: TTokenFile;
 begin
 
-  FindedList := TRBTree.Create;
+  FindedList := TStringList.Create;
   FillCompletion(InsertList, ShowList, TokenFile.VarConsts, SelStart, CompletionColors);
   FillCompletion(InsertList, ShowList, TokenFile.FuncObjs, SelStart, CompletionColors);
   FillCompletion(InsertList, ShowList, TokenFile.TreeObjs, SelStart, CompletionColors);
   FillCompletion(InsertList, ShowList, TokenFile.Defines, SelStart, CompletionColors);
 
   //don't search again
-  FindedList.Add(TokenFile.FileName, TokenFile);
+  FindedList.AddObject(TokenFile.FileName, TokenFile);
   //searched filepath
   FilePath := ExtractFilePath(TokenFile.FileName);
   //search in all include files

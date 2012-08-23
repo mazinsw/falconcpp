@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Buttons, ComCtrls, StdCtrls, UFileProperty, ExtCtrls;
+  Dialogs, Buttons, ComCtrls, StdCtrls, USourceFile, ExtCtrls;
 
 type
   TFrmRemove = class(TForm)
@@ -65,9 +65,9 @@ begin
   for I := 0 to Pred(Files.Count) do
   begin
     Item := FileList.Items.Add;
-    Item.Caption := TFileProperty(Files.Objects[I]).Name;
-    Item.SubItems.Add(TFileProperty(Files.Objects[I]).FileName);
-    Item.ImageIndex := TFileProperty(Files.Objects[I]).Node.ImageIndex;
+    Item.Caption := TSourceFile(Files.Objects[I]).Name;
+    Item.SubItems.Add(TSourceFile(Files.Objects[I]).FileName);
+    Item.ImageIndex := TSourceFile(Files.Objects[I]).Node.ImageIndex;
     Item.Data := Files.Objects[I];
   end;
 end;

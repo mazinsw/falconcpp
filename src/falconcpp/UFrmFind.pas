@@ -86,15 +86,15 @@ function EncodeStr(const S: string): string;
 
 implementation
 
-uses UFileProperty, StrUtils, SynEdit, SynEditMiscClasses, ULanguages,
+uses USourceFile, StrUtils, SynEdit, SynEditMiscClasses, ULanguages,
   UUtils, UParseMsgs;
 
 {$R *.dfm}
 
 procedure StartFindText(frm: TFrmFalconMain);
 var
-  prop: TFileProperty;
-  sheet: TFilePropertySheet;
+  prop: TSourceFile;
+  sheet: TSourceFileSheet;
   memo: TSynMemo;
   seltext: string;
 begin
@@ -119,8 +119,8 @@ end;
 
 procedure StartFindNextText(frm: TFrmFalconMain; LastSearch: TSearchItem);
 var
-  prop: TFileProperty;
-  sheet: TFilePropertySheet;
+  prop: TSourceFile;
+  sheet: TSourceFileSheet;
   memo: TSynMemo;
   sopt: TSynSearchOptions;
   I, Start, Index, Count: Integer;
@@ -178,8 +178,8 @@ end;
 
 procedure StartFindPrevText(frm: TFrmFalconMain; LastSearch: TSearchItem);
 var
-  prop: TFileProperty;
-  sheet: TFilePropertySheet;
+  prop: TSourceFile;
+  sheet: TSourceFileSheet;
   memo: TSynMemo;
   sopt: TSynSearchOptions;
   I, Start, Index, Count: Integer;
@@ -235,8 +235,8 @@ end;
 
 procedure StartFindFilesText(frm: TFrmFalconMain);
 var
-  prop: TFileProperty;
-  sheet: TFilePropertySheet;
+  prop: TSourceFile;
+  sheet: TSourceFileSheet;
   memo: TSynMemo;
   seltext: string;
 begin
@@ -263,8 +263,8 @@ end;
 
 procedure StartReplaceText(frm: TFrmFalconMain);
 var
-  prop: TFileProperty;
-  sheet: TFilePropertySheet;
+  prop: TSourceFile;
+  sheet: TSourceFileSheet;
   memo: TSynMemo;
   seltext: string;
 begin
@@ -577,10 +577,10 @@ function TFrmFind.StartFindAll(const OriFindText, aText: string; Sensitive,
 var
   Files: TStrings;
   FileName: string;
-  FileProp: TFileProperty;
+  FileProp: TSourceFile;
   I, J, Results, Line, Column, EndColumn: Integer;
   Search: TSynEditSearch;
-  sheet: TFilePropertySheet;
+  sheet: TSourceFileSheet;
   sopt: TSynSearchOptions;
   Lines: TStrings;
 
@@ -616,7 +616,7 @@ begin
   begin
     CheckIfCanceled;
     ProgressBarFindFiles.Position := I + 1;
-    FileProp := TFileProperty(Files.Objects[I]);
+    FileProp := TSourceFile(Files.Objects[I]);
     FileName := FileProp.FileName;
     LastFindFilesDescription := Format(STR_FRM_FIND[33], [OriFindText, FileProp.Name]);
     LblRep.Caption := LastFindFilesDescription;
@@ -678,7 +678,7 @@ end;
 
 procedure TFrmFind.BtnFindClick(Sender: TObject);
 var
-  sheet: TFilePropertySheet;
+  sheet: TSourceFileSheet;
   memo: TSynMemo;
   search: string;
   I, Start, Index, Count, lastlength, selstart, selend: Integer;
@@ -805,7 +805,7 @@ end;
 
 procedure TFrmFind.BtnReplaceClick(Sender: TObject);
 var
-  sheet: TFilePropertySheet;
+  sheet: TSourceFileSheet;
   memo: TSynMemo;
   search, replace, text: string;
   selstart: Integer;
@@ -848,7 +848,7 @@ end;
 
 procedure TFrmFind.BtnReplAllClick(Sender: TObject);
 var
-  sheet: TFilePropertySheet;
+  sheet: TSourceFileSheet;
   memo: TSynMemo;
   search, replace: string;
   Count: Integer;

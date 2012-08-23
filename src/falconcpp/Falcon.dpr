@@ -21,7 +21,7 @@ uses
   UFrmRemove in 'UFrmRemove.pas' {FrmRemove},
   UParseMsgs in 'UParseMsgs.pas',
   UFrmUpdate in 'UFrmUpdate.pas' {FrmUpdate},
-  UFileProperty in 'UFileProperty.pas',
+  USourceFile in 'USourceFile.pas',
   UFrmEnvOptions in 'UFrmEnvOptions.pas' {FrmEnvOptions},
   UFrmEditorOptions in 'UFrmEditorOptions.pas' {FrmEditorOptions},
   UFrmFind in 'UFrmFind.pas' {FrmFind},
@@ -53,7 +53,8 @@ uses
   HintTree in '..\others\hinttree\HintTree.pas',
   DebugWatch in '..\others\debug\DebugWatch.pas',
   FastcodePatch in '..\others\nativehint\FastcodePatch.pas',
-  NativeHintWindow in '..\others\nativehint\NativeHintWindow.pas';
+  NativeHintWindow in '..\others\nativehint\NativeHintWindow.pas',
+  rbtree in 'rbtree.pas';
 
 {$R *.res}
 

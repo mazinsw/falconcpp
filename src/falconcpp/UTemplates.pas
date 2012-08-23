@@ -133,7 +133,7 @@ type
 implementation
 
 uses
-  UUtils, UFileProperty;
+  UUtils, USourceFile;
 
 {TTemplateResources}
 

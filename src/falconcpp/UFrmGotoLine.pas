@@ -41,7 +41,7 @@ var
 
 implementation
 
-uses UFrmMain, UFileProperty, ULanguages;
+uses UFrmMain, USourceFile, ULanguages;
 
 {$R *.dfm}
 
@@ -107,7 +107,7 @@ end;
 
 procedure TFormGotoLine.SelectLine(Line: Integer);
 var
-  sheet: TFilePropertySheet;
+  sheet: TSourceFileSheet;
 begin
   if not FrmFalconMain.GetActiveSheet(sheet) then
     Exit;

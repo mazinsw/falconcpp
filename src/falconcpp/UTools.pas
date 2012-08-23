@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Menus, ExtCtrls, StdCtrls, ComCtrls, Mask, ImgList, Grids,
-  ListGridView, ExtDlgs, UFileProperty, SynMemo, TBX, SynEditTypes,
+  ListGridView, ExtDlgs, USourceFile, SynMemo, TBX, SynEditTypes,
   SynEditTextBuffer;
 
 type
@@ -110,13 +110,13 @@ var
   SelText, Temp, Ident: string;
   Memo: TSynMemo;
   Line, Column, I, J: Integer;
-  FileProp: TFileProperty;
+  FileProp: TSourceFile;
   //ProjProp: TProjectProperty;
-  Sheet: TFilePropertySheet;
+  Sheet: TSourceFileSheet;
 begin
   Result := True;
-  Sheet := TFilePropertySheet(FrmFalconMain.PageControlEditor.ActivePage);
-  FileProp := TFileProperty(Sheet.Node.Data);
+  Sheet := TSourceFileSheet(FrmFalconMain.PageControlEditor.ActivePage);
+  FileProp := TSourceFile(Sheet.Node.Data);
   //ProjProp := FileProp.Project;
   Memo := Sheet.Memo;
 

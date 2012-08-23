@@ -86,7 +86,7 @@ var
 
 implementation
 
-uses UFrmMain, ULanguages, UConfig, UUtils, UTemplates, UFileProperty;
+uses UFrmMain, ULanguages, UConfig, UUtils, UTemplates, USourceFile;
 
 {$R *.dfm}
 

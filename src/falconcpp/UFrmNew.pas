@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, ComCtrls, UFileProperty, UTemplates, SynMemo,
+  Dialogs, StdCtrls, ExtCtrls, ComCtrls, USourceFile, UTemplates, SynMemo,
   FormEffect;
 
 type
@@ -285,7 +285,7 @@ procedure TFrmNewProj.BtnFnshClick(Sender: TObject);
 var
   Node: TTreeNode;
   NewPrj: TProjectProperty;
-  NewFile, OwnerFile: TFileProperty;
+  NewFile, OwnerFile: TSourceFile;
   FileName, SrcFileName, SrcDir, FolderName: string;
   Optmz: string;
   Template: TTemplate;
@@ -430,7 +430,7 @@ begin
         ExtractFileExt(SrcFileName),
         '',
         OwnerFile,
-        False, False, False);
+        False, False);
       FileText := TemFiles.SourceFile[I];
       NewFile.Edit.Memo.Lines.Assign(FileText);
       FileText.Free;

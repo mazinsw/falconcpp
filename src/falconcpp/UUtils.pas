@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Classes, Dialogs, ComCtrls, Controls, TLHelp32, PsAPI,
-  UFileProperty, Registry, ImgList, SynEditKeyCmds, SynMemo, SynEdit, UTools,
+  USourceFile, Registry, ImgList, SynEditKeyCmds, SynMemo, SynEdit, UTools,
   ShlObj, Graphics, Messages, XMLDoc, XMLIntf, CommCtrl, Consts, UParseMsgs,
   ShellAPI, Forms;
 
@@ -79,11 +79,14 @@ function Union64(const HEXText: string): string;
 function StreamToString(Value: TStream): string;
 function StringToStream(Text: string; Value: TStream): Integer;
 function FileDateTime(const FileName: string): TDateTime;
+function ExtractRootPathName(const Path: string): string;
+function ExcludeRootPathName(const Path: string): string;
+procedure ListDir(Dir, Regex: string; List: TStrings; IncludeSubDir: Boolean = False);
 function CreateSourceFolder(const Name: string;
-  Parent: TFileProperty): TFileProperty;
+  Parent: TSourceFile): TSourceFile;
 function NewSourceFile(FileType, Compiler: Integer; FirstName, BaseName,
-  Ext, FileName: string; OwnerFile: TFileProperty; UseFileName, References,
-  Expand: Boolean): TFileProperty;
+  Ext, FileName: string; OwnerFile: TSourceFile; UseFileName,
+  Expand: Boolean): TSourceFile;
 function BrowseDialog(Handle: HWND; const Title: string;
   var Directory: string): Boolean;
 function HumanToBool(Resp: string): Boolean;
@@ -93,7 +96,7 @@ function DoubleQuotedStr(const S: string): string;
 
 function EditorGotoXY(Memo: TSynMemo; X, Y: Integer): Boolean;
 function SearchFileProperty(FileName: string;
-  var FileProp: TFileProperty): Boolean;
+  var FileProp: TSourceFile): Boolean;
 function OpenFile(FileName: string): TProjectProperty;
 function RemoveOption(const S, Options: string): string;
 function DeleteResourceFiles(List: TStrings): Boolean;
@@ -1062,8 +1065,51 @@ begin
   Result := FileDateToDateTime(FileAge(FileName));
 end;
 
+function ExtractRootPathName(const Path: string): string;
+var
+  pstr: PChar;
+begin
+  pstr := PChar(Path);
+  while pstr^ <> #0 do
+  begin
+    if not (pstr^ in ['/', '\']) then
+      Break;
+    Inc(pstr);
+  end;
+  Result := '';
+  while pstr^ <> #0 do
+  begin
+    if (pstr^ in ['/', '\']) then
+      Break;
+    Result := Result + pstr^;
+    Inc(pstr);
+  end;
+end;
+
+function ExcludeRootPathName(const Path: string): string;
+var
+  pstr: PChar;
+begin
+  pstr := PChar(Path);
+  while pstr^ <> #0 do
+  begin
+    if not (pstr^ in ['/', '\']) then
+      Break;
+    Inc(pstr);
+  end;
+  while pstr^ <> #0 do
+  begin
+    if (pstr^ in ['/', '\']) then
+      Break;
+    Inc(pstr);
+  end;
+  if (pstr^ in ['/', '\']) then
+    Inc(pstr);
+  Result := StrPas(pstr);
+end;
+
 function CreateSourceFolder(const Name: string;
-  Parent: TFileProperty): TFileProperty;
+  Parent: TSourceFile): TSourceFile;
 var
   Node: TTreeNode;
 begin
@@ -1074,7 +1120,7 @@ begin
     Exit;
   end;
   Node := FrmFalconMain.TreeViewProjects.Items.AddChild(Parent.Node, Name);
-  Result := TFileProperty.Create(FrmFalconMain.PageControlEditor, Node);
+  Result := TSourceFile.Create(FrmFalconMain.PageControlEditor, Node);
   Node.Data := Result;
   Result.FileType := FILE_TYPE_FOLDER;
   Result.Project := Parent.Project;
@@ -1082,16 +1128,40 @@ begin
   Parent.Node.Expanded := True;
 end;
 
+procedure ListDir(Dir, Regex: string; List: TStrings; IncludeSubDir: Boolean);
+var
+  F: TSearchRec;
+  NormalDir: string;
+begin
+  NormalDir := IncludeTrailingPathDelimiter(Dir);
+  if FindFirst(NormalDir + Regex, faAnyFile, F) = 0 then
+  repeat
+    if (F.Attr and faDirectory) = 0 then
+      List.Add(NormalDir + F.Name);
+  until FindNext(F) <> 0;
+  FindClose(F);
+  if not IncludeSubDir then
+    Exit;
+  if FindFirst(NormalDir + '*.*', faAnyFile, F) = 0 then
+  repeat
+    if ((F.Attr and faDirectory) <> 0) and (F.Name <> '.') and (F.Name <> '..') then
+    begin
+      ListDir(NormalDir + F.Name + '\', Regex, List, IncludeSubDir);
+    end;
+  until FindNext(F) <> 0;
+  FindClose(F);
+end;
+
 function NewSourceFile(FileType, Compiler: Integer; FirstName, BaseName,
-  Ext, FileName: string; OwnerFile: TFileProperty; UseFileName: Boolean;
-  References, Expand: Boolean): TFileProperty;
+  Ext, FileName: string; OwnerFile: TSourceFile; UseFileName,
+  Expand: Boolean): TSourceFile;
 var
   Node: TTreeNode;
   NewPrj, Proj: TProjectProperty;
-  NewFile: TFileProperty;
+  NewFile: TSourceFile;
   AName: string;
 
-  function NewProject: TFileProperty;
+  function NewProject: TSourceFile;
   begin
     with FrmFalconMain do
     begin
@@ -1152,13 +1222,13 @@ begin
             Result := NewProject;
             Exit;
           end;
-          OwnerFile := TFileProperty(OwnerFile.Node.Parent.Data);
+          OwnerFile := TSourceFile(OwnerFile.Node.Parent.Data);
         end;
         Proj := OwnerFile.Project;
         AName := NextFileName(BaseName, Ext, OwnerFile.Node);
       end;
       Node := TreeViewProjects.Items.AddChild(OwnerFile.Node, AName);
-      NewFile := TFileProperty.Create(PageControlEditor, Node);
+      NewFile := TSourceFile.Create(PageControlEditor, Node);
       NewFile.Project := Proj;
       NewFile.FileName := AName;
       NewFile.FileType := FileType;
@@ -1249,9 +1319,9 @@ begin
 end;
 
 function SearchFileProperty(FileName: string;
-  var FileProp: TFileProperty): Boolean;
+  var FileProp: TSourceFile): Boolean;
 var
-  ActFile: TFileProperty;
+  ActFile: TSourceFile;
   I: Integer;
   Node: TTreeNode;
 begin
@@ -1259,7 +1329,7 @@ begin
   for I := 0 to Pred(FrmFalconMain.TreeViewProjects.Items.Count) do
   begin
     Node := FrmFalconMain.TreeViewProjects.Items.Item[I];
-    ActFile := TFileProperty(Node.Data);
+    ActFile := TSourceFile(Node.Data);
     if CompareText(ActFile.FileName, FileName) = 0 then
     begin
       Result := True;
@@ -1276,7 +1346,7 @@ var
 begin
   FileType := GetFileType(FileName);
   ProjProp := TProjectProperty(NewSourceFile(FileType,
-    GetCompiler(FileType), '', '', '', FileName, nil, True, False, False));
+    GetCompiler(FileType), '', '', '', FileName, nil, True, False));
   ProjProp.Saved := True;
   ProjProp.DateOfFile := FileDateTime(ProjProp.FileName);
 
@@ -1334,7 +1404,7 @@ function NextProjectName(FirstName, Ext: string; Nodes: TTreeNodes): string;
     Node := Nodes.GetFirstNode;
     while Node <> nil do
     begin
-      Caption := ExtractFileName(TFileProperty(Node.Data).FileName);
+      Caption := ExtractFileName(TSourceFile(Node.Data).FileName);
       if CompareText(Caption, FileName) = 0 then
       begin
         Result := True;
@@ -1373,7 +1443,7 @@ function NextFileName(FirstName, Ext: string; Node: TTreeNode): string;
     Result := False;
     for I := 0 to Pred(Node.Count) do
     begin
-      Caption := TFileProperty(Node[I].Data).Name;
+      Caption := TSourceFile(Node[I].Data).Name;
       if (Caption = FileName) then
       begin
         Result := True;

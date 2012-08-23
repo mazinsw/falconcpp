@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, Menus, ExtCtrls, StdCtrls, ComCtrls, Mask, ImgList, Grids,
-  ListGridView, ExtDlgs, UFileProperty, CheckLst, Buttons, IconDialog,
+  ListGridView, ExtDlgs, USourceFile, CheckLst, Buttons, IconDialog,
   FormEffect, EditAlign;
 
 type

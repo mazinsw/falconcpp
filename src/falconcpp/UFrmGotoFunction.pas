@@ -46,7 +46,7 @@ var
 
 implementation
 
-uses UFrmMain, TokenList, TokenFile, TokenUtils, UFileProperty, ULanguages;
+uses UFrmMain, TokenList, TokenFile, TokenUtils, USourceFile, ULanguages;
 
 {$R *.dfm}
 
@@ -277,8 +277,8 @@ procedure TFormGotoFunction.SelectFunction(Index: Integer);
 var
   Item: TListItem;
   Token: TTokenClass;
-  fileprop: TFileProperty;
-  sheet: TFilePropertySheet;
+  fileprop: TSourceFile;
+  sheet: TSourceFileSheet;
   Buffer: TBufferCoord;
 begin
   if (Index < 0) or (Index >= ListViewFunctions.Items.Count) then
@@ -289,7 +289,7 @@ begin
   if Assigned(Token) and Assigned(Token.Owner) and
     Assigned(TTokenFile(Token.Owner).Data) then
   begin
-    fileprop := TFileProperty(TTokenFile(Token.Owner).Data);
+    fileprop := TSourceFile(TTokenFile(Token.Owner).Data);
     sheet := fileprop.Edit;
     Buffer := sheet.Memo.CharIndexToRowCol(Token.SelStart);
     FrmFalconMain.GotoLineAndAlignCenter(sheet.Memo, Buffer.Line, Buffer.Char);

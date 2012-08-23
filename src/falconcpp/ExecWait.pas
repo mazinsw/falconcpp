@@ -21,12 +21,12 @@ unit ExecWait;
 
 interface
 
-uses 
+uses
 {$IFDEF WIN32}
   Windows, Classes;
 {$ENDIF}
 {$IFDEF LINUX}
-  Classes;
+Classes;
 {$ENDIF}
 
 type
@@ -55,7 +55,7 @@ type
     fExec: TExecThread;
     fIsRunning: boolean;
     fOnTermEvent: TNotifyEvent;
-    fFileName: String;
+    fFileName: string;
     procedure TerminateEvent(Sender: TObject);
   public
     class function Exec: TExecWait;
@@ -68,20 +68,19 @@ type
 
   TExecWaitGetStdOut = class
   private
-    FFileName: String;
-    FParams: String;
-    FDirectory: String;
-    FOutput: String;
+    FFileName: string;
+    FParams: string;
+    FDirectory: string;
+    FOutput: string;
     hOutputRead, hInputWrite: THandle;
     FProcessInfo: TProcessInformation;
     function Launch(hInputRead, hOutputWrite,
-      hErrorWrite : THandle): Boolean;
+      hErrorWrite: THandle): Boolean;
     procedure GetStdOut;
   public
     function ExecWait(sFileName, sParams, sPath: string;
-      var StdOut: String): Integer;
+      var StdOut: string): Integer;
   end;
-
 
 function Executor: TExecWait;
 function ExecutorGetStdOut: TExecWaitGetStdOut;
@@ -107,7 +106,8 @@ var
   ProcessInfo: TProcessInformation;
 begin
   FillChar(StartupInfo, SizeOf(TStartupInfo), 0);
-  with StartupInfo do begin
+  with StartupInfo do
+  begin
     cb := SizeOf(TStartupInfo);
     dwFlags := STARTF_USESHOWWINDOW or STARTF_FORCEONFEEDBACK;
     if fVisible then
@@ -117,7 +117,8 @@ begin
   end;
   if CreateProcess(nil, PChar('"' + fFile + '" ' + fParams), nil, nil, False,
     NORMAL_PRIORITY_CLASS, nil, PChar(fPath),
-    StartupInfo, ProcessInfo) then begin
+    StartupInfo, ProcessInfo) then
+  begin
     fProcess := ProcessInfo.hProcess;
     WaitForSingleObject(ProcessInfo.hProcess, fTimeOut);
   end;
@@ -130,7 +131,8 @@ var
 
 function Executor: TExecWait;
 begin
-  if not Assigned(fExecWait) then begin
+  if not Assigned(fExecWait) then
+  begin
     try
       fExecWait := TExecWait.Create;
     finally
@@ -153,7 +155,8 @@ begin
   fOnTermEvent := OnTermEvent;
   fExec := TExecThread.Create(True);
   FileName := sFileName;
-  with fExec do begin
+  with fExec do
+  begin
     FileName := sFileName;
     Params := sParams;
     Path := sPath;
@@ -197,7 +200,7 @@ begin
 end;
 
 function TExecWaitGetStdOut.ExecWait(sFileName, sParams, sPath: string;
-  var StdOut: String): Integer;
+  var StdOut: string): Integer;
 var
   SecAttrib: TSecurityAttributes;
   hOutputReadTmp, hInputWriteTmp: THandle;
@@ -233,7 +236,7 @@ begin
   end;
 
   if not DuplicateHandle(GetCurrentProcess(), hOutputReadTmp,
-    GetCurrentProcess(), @hOutputRead,  0, False, DUPLICATE_SAME_ACCESS) then
+    GetCurrentProcess(), @hOutputRead, 0, False, DUPLICATE_SAME_ACCESS) then
   begin
     Exit;
   end;
@@ -245,7 +248,7 @@ begin
   end;
 
   if not CloseHandle(hOutputReadTmp) or
-     not CloseHandle(hInputWriteTmp) then
+    not CloseHandle(hInputWriteTmp) then
   begin
     Exit;
   end;
@@ -261,8 +264,8 @@ begin
   end;
 
   if not CloseHandle(hInputRead) or
-     not CloseHandle(hOutputWrite) or
-     not CloseHandle(hErrorWrite) then
+    not CloseHandle(hOutputWrite) or
+    not CloseHandle(hErrorWrite) then
   begin
     Result := GetLastError;
     TerminateProcess(FProcessInfo.hProcess, Result);
@@ -279,7 +282,7 @@ begin
 end;
 
 function TExecWaitGetStdOut.Launch(hInputRead, hOutputWrite,
-  hErrorWrite : THandle): Boolean;
+  hErrorWrite: THandle): Boolean;
 var
   StartInfo: TStartupInfo;
 begin
@@ -309,7 +312,7 @@ begin
   FOutput := '';
   repeat
     bSucess := ReadFile(hOutputRead, Buffer, SizeOf(Buffer) - 1, nRead, nil);
-    if not bSucess or (nRead = 0) or (GetLastError() = ERROR_BROKEN_PIPE)  then
+    if not bSucess or (nRead = 0) or (GetLastError() = ERROR_BROKEN_PIPE) then
       Break;
     Buffer[nRead] := #0;
     FOutput := FOutput + StrPas(Buffer);
@@ -317,4 +320,3 @@ begin
 end;
 
 end.
-

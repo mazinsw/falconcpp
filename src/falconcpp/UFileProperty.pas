@@ -10,52 +10,52 @@ uses
 
 const
   FILE_TYPE_PROJECT = 1;
-  FILE_TYPE_C       = 2;
-  FILE_TYPE_CPP     = 3;
-  FILE_TYPE_H       = 4;
-  FILE_TYPE_RC      = 5;
-  FILE_TYPE_UNKNOW  = 6;
-  FILE_TYPE_FOLDER  = 7;
+  FILE_TYPE_C = 2;
+  FILE_TYPE_CPP = 3;
+  FILE_TYPE_H = 4;
+  FILE_TYPE_RC = 5;
+  FILE_TYPE_UNKNOW = 6;
+  FILE_TYPE_FOLDER = 7;
 
-  SHEET_TYPE_FILE  = 1;
+  SHEET_TYPE_FILE = 1;
   SHEET_TYPE_DESGN = 2;
 
   FILE_IMG_LIST: array[1..7] of Integer = (1, 2, 3, 4, 5, 6, 0);
 
   USER_DEFINED = -2;
-  NO_COMPILER  = -1;
-  COMPILER_C   =  0;
-  COMPILER_CPP =  1;
-  COMPILER_RC  =  2;
-  COMPILERS: array[0..2] of String = (
+  NO_COMPILER = -1;
+  COMPILER_C = 0;
+  COMPILER_CPP = 1;
+  COMPILER_RC = 2;
+  COMPILERS: array[0..2] of string = (
     'C',
     'CPP',
     'RC'
-  );
+    );
 
   APPTYPE_CONSOLE = 0;
-  APPTYPE_GUI     = 1;
-  APPTYPE_DLL     = 2;
-  APPTYPE_LIB     = 3;
-  APPTYPE_FTM     = 4;
-  APPTYPE_FPK     = 5;
-  APPTYPES: array[0..5] of String = (
+  APPTYPE_GUI = 1;
+  APPTYPE_DLL = 2;
+  APPTYPE_LIB = 3;
+  APPTYPE_FTM = 4;
+  APPTYPE_FPK = 5;
+  APPTYPES: array[0..5] of string = (
     'CONSOLE',
     'GUI',
     'DLL',
     'LIB',
     'FTM',
     'FPK'
-  );
+    );
 
-  APPEXTTYPES: array[0..5] of String = (
+  APPEXTTYPES: array[0..5] of string = (
     '.exe',
     '.exe',
     '.dll',
     '.a',
     '.ftm',
     '.fpk'
-  );
+    );
 
   NEW_LINE = #13 + #10;
 
@@ -69,15 +69,15 @@ type
     Build: Integer;
     LanguageID: Integer;
     CharsetID: Integer;
-    CompanyName: String;
-    FileVersion: String;
-    FileDescription: String;
-    InternalName: String;
-    LegalCopyright: String;
-    LegalTrademarks: String;
-    OriginalFilename: String;
-    ProductName: String;
-    ProductVersion: String;
+    CompanyName: string;
+    FileVersion: string;
+    FileDescription: string;
+    InternalName: string;
+    LegalCopyright: string;
+    LegalTrademarks: string;
+    OriginalFilename: string;
+    ProductName: string;
+    ProductVersion: string;
   end;
 
   TFilePropertySheet = class;
@@ -86,65 +86,67 @@ type
   TFileProperty = class
   private
     FFileDateTime: TDateTime;
-    FFileName: String;
+    FFileName: string;
     FFileType: Integer;
     FEditor: Pointer;
     FNode: Pointer;
     FProject: Pointer;
     FSaved: Boolean;
-    FModified: Boolean;
     FBreakpoint: TBreakpointList;
-    function GetCaption: String;
+    function GetName: string;
+    function GetCaption: string;
     function GetNode: TTreeNode;
     function GetEditor: TModernPageControl;
     function GetProject: TProjectProperty;
-    function GetModified: Boolean;
+    function IsModified: Boolean;
     procedure SetProject(Value: TProjectProperty);
     procedure SetFileType(Value: Integer);
-    procedure SetFileName(Value: String);
+    procedure SetFileName(Value: string);
+  protected
+    function GetFileName: string; virtual;
   public
     function DeleteOfDisk: Boolean;
     function Delete: Boolean;
     function Edit(SelectTab: Boolean = True): TFilePropertySheet;
     function Editing: Boolean;
     function ViewPage: Boolean;
-    function Rename(new_name: String): Boolean;
+    function Rename(NewName: string): Boolean;
     procedure LoadFile(Text: TStrings);
     function GetSheet(var Sheet: TFilePropertySheet): Boolean;
     function Open: Boolean;
     function Close: Boolean;
     function Save: Boolean;
-    function GetCompleteFileName: String;
-    function FindFile(const Name: String; var FileProp: TFileProperty): Boolean;
+    function FindFile(const Name: string; var FileProp: TFileProperty): Boolean;
     function FileChangedInDisk: Boolean;
     procedure Reload;
     procedure UpdateDate;
     procedure Assign(Value: TFileProperty);
     constructor Create(Editor, Node: Pointer);
     destructor Destroy; override;
-  published
-    property FileName: String read FFileName write SetFileName;
-    property Caption: String read GetCaption;
-    property DateOfFile: TDateTime read FFileDateTime write FFileDateTime;
-    property FileType: Integer read FFileType write SetFileType;
-    property Modified: Boolean read GetModified write FModified;
-    property Saved: Boolean read FSaved write FSaved;
-    property Node: TTreeNode read GetNode;
-    property PageCtrl: TModernPageControl read GetEditor;
-    property Project: TProjectProperty read GetProject write SetProject;
     property Breakpoint: TBreakpointList read FBreakpoint;
+    property Project: TProjectProperty read GetProject write SetProject;
+    property PageCtrl: TModernPageControl read GetEditor;
+    property DateOfFile: TDateTime read FFileDateTime write FFileDateTime;
+    property Node: TTreeNode read GetNode;
+    property Modified: Boolean read IsModified;
+  published
+    property FileName: string read GetFileName write SetFileName;
+    property Name: string read GetName;
+    property Caption: string read GetCaption;
+    property FileType: Integer read FFileType write SetFileType;
+    property Saved: Boolean read FSaved write FSaved;
   end;
 
   TProjectProperty = class(TFileProperty)
   private
     FTargetDateTime: TDateTime;
-    FLibs: String;
+    FLibs: string;
     FTemplateResources: TTemplateID;
-    FFlags: String;
-    FCompOpt: String;
-    FTarget: String;
-    FCompilerPath: String;
-    FCmdLine: String;
+    FFlags: string;
+    FCompOpt: string;
+    FTarget: string;
+    FCompilerPath: string;
+    FCmdLine: string;
     FDelObjPrior: Boolean;
     FDelObjAfter: Boolean;
     FDelMakAfter: Boolean;
@@ -155,7 +157,7 @@ type
     FCompiled: Boolean;
     FAppType: Integer;
     FCompilerType: Integer;
-    FIconFileName: String;
+    FIconFileName: string;
     FIcon: TIcon;
     FAutoIncBuild: Boolean;
     FPropertyChanged: Boolean;
@@ -164,29 +166,31 @@ type
     FVersion: TVersionInfo;
     FBreakpointChanged: Boolean;
     FBreakpointCursor: TBreakpoint;
-    FForceClean: Boolean;//for header changes
+    FForceClean: Boolean; //for header changes
     procedure SetIcon(Value: TIcon);
+  protected
+    function GetFileName: string; override;
   public
     property TemplateResources: TTemplateID read FTemplateResources
-                                            write FTemplateResources;
+      write FTemplateResources;
     property Version: TVersionInfo read FVersion;
     property BreakpointCursor: TBreakpoint read FBreakpointCursor;
     constructor Create(Editor, Node: Pointer);
     destructor Destroy; override;
     function SaveAll(SavePrjFile: Boolean = False): Boolean;
     function CloseAll: Boolean;
-    function GetFileByPathName(const RelativeName: String): TFileProperty;
-    function LoadFromFile(const AFileName: String): Boolean;
+    function GetFileByPathName(const RelativeName: string): TFileProperty;
+    function LoadFromFile(const AFileName: string): Boolean;
     function LoadLayout: Boolean;
     function SaveLayout: Boolean;
-    function SaveToFile(const AFileName: String): Boolean;
+    function SaveToFile(const AFileName: string): Boolean;
     function GetResource(Res: TStrings): Boolean;
     function GetFiles(AllTypes: Boolean = False;
       WithBreakpoint: Boolean = False): TStrings;
     function Build(Run: Boolean = False): Boolean;
-    function SaveAs(const AFileName: String): Boolean;
+    function SaveAs(const AFileName: string): Boolean;
     function NeedBuild: Boolean;
-    function GetTarget: String;
+    function GetTarget: string;
     function FilesChanged: Boolean;
     function TargetChanged: Boolean;
     function GetBreakpointLists(List: TStrings): Boolean;
@@ -194,12 +198,12 @@ type
   published
     property ForceClean: Boolean read FForceClean write FForceClean;
     property Debugging: Boolean read FDebugging write FDebugging;
-    property Libs: String read FLibs write FLibs;
-    property Flags: String read FFlags write FFlags;
-    property CompilerOptions: String read FCompOpt write FCompOpt;
-    property Target: String read FTarget write FTarget;
-    property CompilerPath: String read FCompilerPath write FCompilerPath;
-    property CmdLine: String read FCmdLine write FCmdLine;
+    property Libs: string read FLibs write FLibs;
+    property Flags: string read FFlags write FFlags;
+    property CompilerOptions: string read FCompOpt write FCompOpt;
+    property Target: string read FTarget write FTarget;
+    property CompilerPath: string read FCompilerPath write FCompilerPath;
+    property CmdLine: string read FCmdLine write FCmdLine;
     property Compiled: Boolean read FCompiled write FCompiled;
     property TargetDateTime: TdateTime read FTargetDateTime write FTargetDateTime;
     property AutoIncBuild: Boolean read FAutoIncBuild write FAutoIncBuild;
@@ -217,9 +221,8 @@ type
     property DeleteMakefileAfter: Boolean read FDelMakAfter write FDelMakAfter;
     property DeleteResourcesAfter: Boolean read FDelResAfter write FDelResAfter;
     property Icon: TIcon read FIcon write SetIcon;
-    property IconFileName: String read FIconFileName write FIconFileName;
+    property IconFileName: string read FIconFileName write FIconFileName;
   end;
-
 
   TProjectsSheet = class(TModernTabSheet)
   private
@@ -257,6 +260,7 @@ implementation
 uses UFrmMain, UUtils, ExecWait, UConfig;
 
 {TFileProperty}
+
 constructor TFileProperty.Create(Editor, Node: Pointer);
 begin
   inherited Create;
@@ -267,7 +271,6 @@ begin
   FBreakpoint.InvalidIndex := 3;
   FNode := Node;
   FFileType := FILE_TYPE_UNKNOW;
-  FModified := False;
   FSaved := False;
 end;
 
@@ -277,12 +280,20 @@ begin
   inherited Destroy;
 end;
 
-function TFileProperty.GetCaption: String;
+function TFileProperty.GetName: string;
 begin
   if (FileType = FILE_TYPE_PROJECT) then
     Result := ExtractName(FFileName)
   else
     Result := ExtractFileName(FFileName);
+end;
+
+function TFileProperty.GetCaption: string;
+begin
+  if IsModified then
+    Result := '*' + Name
+  else
+    Result := Name;
 end;
 
 function TFileProperty.GetNode: TTreeNode;
@@ -296,24 +307,27 @@ begin
 end;
 
 //partial
+
 function TFileProperty.DeleteOfDisk: Boolean;
 begin
   if (FFileType <> FILE_TYPE_FOLDER) then
   begin
-    if FileExists(GetCompleteFileName) then
+    if FileExists(FileName) then
     begin
-      Result := DeleteFile(GetCompleteFileName);
-      if Result then Delete;
+      Result := DeleteFile(FileName);
+      if Result then
+        Delete;
     end
     else
       Result := Delete;
   end
   else
   begin
-    if DirectoryExists(GetCompleteFileName) then
+    if DirectoryExists(FileName) then
     begin
-      Result := RemoveDir(GetCompleteFileName);
-      if Result then Delete;
+      Result := RemoveDir(FileName);
+      if Result then
+        Delete;
     end
     else
       Result := Delete;
@@ -325,11 +339,12 @@ var
   FileDate: TDateTime;
 begin
   Result := False;
-  if (FileType = FILE_TYPE_FOLDER) then Exit;
+  if (FileType = FILE_TYPE_FOLDER) then
+    Exit;
 
-  if FileExists(GetCompleteFileName) and Saved then
+  if FileExists(FileName) and Saved then
   begin
-    FileDate := FileDateTime(GetCompleteFileName);
+    FileDate := FileDateTime(FileName);
     Result := (FileDate <> FFileDateTime);
   end;
 end;
@@ -338,8 +353,9 @@ procedure TFileProperty.Reload;
 var
   sheet: TFilePropertySheet;
 begin
-  if (FileType = FILE_TYPE_FOLDER) then Exit;
-  if FileExists(GetCompleteFileName) and Saved then
+  if (FileType = FILE_TYPE_FOLDER) then
+    Exit;
+  if FileExists(FileName) and Saved then
   begin
     if GetSheet(sheet) then
       LoadFile(sheet.Memo.Lines);
@@ -351,15 +367,16 @@ procedure TFileProperty.UpdateDate;
 var
   FileDate: TDateTime;
 begin
-  if (FileType = FILE_TYPE_FOLDER) then Exit;
-  if FileExists(GetCompleteFileName) and Saved then
+  if (FileType = FILE_TYPE_FOLDER) then
+    Exit;
+  if FileExists(FileName) and Saved then
   begin
-    FileDate := FileDateTime(GetCompleteFileName);
+    FileDate := FileDateTime(FileName);
     FFileDateTime := FileDate;
   end;
 end;
 
-function TFileProperty.FindFile(const Name: String;
+function TFileProperty.FindFile(const Name: string;
   var FileProp: TFileProperty): Boolean;
 var
   I: Integer;
@@ -369,7 +386,7 @@ begin
   for I := 0 to Node.Count - 1 do
   begin
     fp := TFileProperty(Node.Item[I].Data);
-    if CompareText(fp.GetCaption, Name) = 0 then
+    if CompareText(fp.Name, Name) = 0 then
     begin
       FileProp := fp;
       Result := True;
@@ -378,20 +395,27 @@ begin
   end;
 end;
 
-function TFileProperty.GetCompleteFileName: String;
+function TFileProperty.GetFileName: string;
 var
   Parent: TFileProperty;
 begin
-  if (Self is TProjectProperty) or not assigned(Node.Parent) then
-    Result := FileName
-  else
+  if ExtractFileDrive(FFileName) = '' then
   begin
     Parent := TFileProperty(Node.Parent.Data);
     if (FileType = FILE_TYPE_FOLDER) then
-      Result := ExtractFilePath(Parent.GetCompleteFileName) + FileName + '\'
+      Result := ExtractFilePath(Parent.FileName) + FFileName + '\'
     else
-      Result := ExtractFilePath(Parent.GetCompleteFileName) + FileName;
+      Result := ExtractFilePath(Parent.FileName) + FFileName;
+  end
+  else
+  begin
+    if (FileType = FILE_TYPE_FOLDER) then
+      Result := IncludeTrailingPathDelimiter(FFileName)
+    else
+      Result := FFileName;
   end;
+  if Pos('..', Result) > 0 then
+    Result := ExpandFileName(Result);
 end;
 
 function TFileProperty.Delete: Boolean;
@@ -414,7 +438,8 @@ end;
 
 procedure TFileProperty.Assign(Value: TFileProperty);
 begin
-  if not assigned(Value) then Exit;
+  if not assigned(Value) then
+    Exit;
   FFileDateTime := Value.FFileDateTime;
   FFileName := Value.FFileName;
   FFileType := Value.FFileType;
@@ -422,7 +447,6 @@ begin
   FNode := Value.FNode;
   FProject := Value.FProject;
   FSaved := Value.FSaved;
-  FModified := Value.FModified;
 end;
 
 function TFileProperty.GetProject: TProjectProperty;
@@ -436,29 +460,29 @@ begin
     FProject := Value;
 end;
 
-procedure TFileProperty.SetFileName(Value: String);
+procedure TFileProperty.SetFileName(Value: string);
 var
-  Temp: String;
+  Temp: string;
 begin
   if (FileType <> FILE_TYPE_FOLDER) then
   begin
-    if ExtractFileName(Value) <> ExtractFileName(GetCompleteFileName) then
+    if ExtractFileName(Value) <> ExtractFileName(FileName) then
     begin
-      if FileExists(GetCompleteFileName) then
+      if FileExists(FileName) then
       begin
-        FrmFalconMain.RenameFileInHistory(GetCompleteFileName,
-          ExtractFilePath(GetCompleteFileName) + ExtractFileName(Value));
-        RenameFile(GetCompleteFileName,
-          ExtractFilePath(GetCompleteFileName) + ExtractFileName(Value));
+        FrmFalconMain.RenameFileInHistory(FileName,
+          ExtractFilePath(FileName) + ExtractFileName(Value));
+        RenameFile(FileName,
+          ExtractFilePath(FileName) + ExtractFileName(Value));
       end;
       if Self is TProjectProperty then
       begin
-        if(Project.AppType = APPTYPE_LIB)then
+        if (Project.AppType = APPTYPE_LIB) then
         begin
-          if CompareText('lib'+ExtractName(FileName),
+          if CompareText('lib' + ExtractName(FileName),
             ExtractName(Project.Target)) = 0 then
           begin
-            Project.Target := 'lib'+ExtractName(Value) + ExtractFileExt(Project.Target);
+            Project.Target := 'lib' + ExtractName(Value) + ExtractFileExt(Project.Target);
             if Project.Saved then
               Project.PropertyChanged := True;
           end;
@@ -473,10 +497,6 @@ begin
               Project.PropertyChanged := True;
           end;
         end;
-      end
-      else
-      begin
-        Project.Modified := True;
       end;
     end;
   end
@@ -484,15 +504,14 @@ begin
   begin
     if Value <> FileName then
     begin
-      Temp := GetCompleteFileName;
+      Temp := FileName;
       FFileName := Value;
       if DirectoryExists(Temp) then
-        RenameFile(Temp, GetCompleteFileName);
-      Project.Modified := True;
+        RenameFile(Temp, FileName);
     end;
   end;
   FFileName := Value;
-  Node.Text := Caption;
+  Node.Text := Name;
 end;
 
 procedure TFileProperty.SetFileType(Value: Integer);
@@ -550,25 +569,25 @@ begin
   Result := False;
   if (FFileType = FILE_TYPE_FOLDER) then
   begin
-    if DirectoryExists(GetCompleteFileName) then
-      ShellExecute(0, 'open', PChar(GetCompleteFileName), nil, nil, SW_SHOW);
+    if DirectoryExists(FileName) then
+      ShellExecute(0, 'open', PChar(FileName), nil, nil, SW_SHOW);
   end
   else
   begin
-    if FileExists(GetCompleteFileName) then
+    if FileExists(FileName) then
       ShellExecute(0, 'open', 'explorer.exe',
-      PChar('/select, "' + GetCompleteFileName + '"'), nil, SW_SHOW);
+        PChar('/select, "' + FileName + '"'), nil, SW_SHOW);
     //Edit;
   end;
 end;
 
-function TFileProperty.Rename(new_name: String): Boolean;
+function TFileProperty.Rename(NewName: string): Boolean;
 var
-  OldName: String;
+  OldName: string;
 begin
-  OldName := GetCompleteFileName;
-  SetFileName(new_name);
-  Result := (OldName <> GetCompleteFileName);
+  OldName := FileName;
+  SetFileName(NewName);
+  Result := (OldName <> FileName);
   if Result then
   begin
     Project.CompilePropertyChanged := True;
@@ -578,7 +597,7 @@ end;
 
 procedure TFileProperty.LoadFile(Text: TStrings);
 begin
-  Text.LoadFromFile(GetCompleteFileName);
+  Text.LoadFromFile(FileName);
 end;
 
 function TFileProperty.GetSheet(var Sheet: TFilePropertySheet): Boolean;
@@ -587,7 +606,7 @@ var
   ASheet: TFilePropertySheet;
 begin
   Result := False;
-  for I:= 0 to Pred(PageCtrl.PageCount) do
+  for I := 0 to Pred(PageCtrl.PageCount) do
   begin
     ASheet := TFilePropertySheet(PageCtrl.Pages[I]);
     if (ASheet.Node = Node) then
@@ -605,7 +624,7 @@ var
   Sheet: TFilePropertySheet;
 begin
   Result := False;
-  for I:= 0 to Pred(PageCtrl.PageCount) do
+  for I := 0 to Pred(PageCtrl.PageCount) do
   begin
     Sheet := TFilePropertySheet(PageCtrl.Pages[I]);
     if (Sheet.Node = Node) then
@@ -624,7 +643,7 @@ var
   Sheet: TFilePropertySheet;
 begin
   Result := False;
-  for I:= 0 to Pred(PageCtrl.PageCount) do
+  for I := 0 to Pred(PageCtrl.PageCount) do
   begin
     Sheet := TFilePropertySheet(PageCtrl.Pages[I]);
     if (Sheet.Node = Node) then
@@ -635,15 +654,16 @@ begin
   end;
 end;
 
-function TFileProperty.GetModified: Boolean;
+function TFileProperty.IsModified: Boolean;
 var
   FileDate: TDateTime;
   Sheet: TFilePropertySheet;
   ProjProp: TProjectProperty;
+  FModified: Boolean;
 begin
   if (FileType = FILE_TYPE_FOLDER) then
   begin
-    FModified := not DirectoryExists(GetCompleteFileName);
+    FModified := not DirectoryExists(FileName);
     Result := FModified;
     Exit;
   end;
@@ -665,20 +685,19 @@ begin
     Result := True;
     Exit;
   end;
-  //if saved then verify if file exist and if date are equals
-  //if Saved or FileExists(GetCompleteFileName) then
-  if Saved then
+  //if verify if file exist and if date are equals
+  if Saved or FileExists(FileName) then
   begin
-    FModified := not FileExists(GetCompleteFileName);
+    FModified := not FileExists(FileName);
     if not FModified then
     begin
-      FileDate := FileDateTime(GetCompleteFileName);
+      FileDate := FileDateTime(FileName);
       FModified := (FileDate <> FFileDateTime);
     end;
   end;
   //set project modified?
-  if FModified then
-    Project.Modified := True;
+  //if FModified then
+  //  Project.Modified := True;
   Result := FModified;
 end;
 
@@ -689,11 +708,12 @@ begin
   Result := False;
   if GetSheet(Sheet) then
   begin
-    if (Sheet.PageIndex = Pred(GetEditor.PageCount ))
-        and (Sheet.PageIndex > 0) then
+    if (Sheet.PageIndex = Pred(GetEditor.PageCount))
+      and (Sheet.PageIndex > 0) then
       GetEditor.ActivePageIndex := Sheet.PageIndex - 1;
     Sheet.Free;
-    if not (GetEditor.PageCount > 0) then GetEditor.Hide;
+    if not (GetEditor.PageCount > 0) then
+      GetEditor.Hide;
     Result := True;
   end;
 end;
@@ -703,33 +723,25 @@ var
   Sheet: TFilePropertySheet;
   CanSaveFile: Boolean;
 begin
-  if Project.Saved then
-    FSaved := True;
   CanSaveFile := False;
   if FSaved then
   begin
     if (FileType <> FILE_TYPE_FOLDER) then
     begin
-      if Modified or not FileExists(GetCompleteFileName) or FileChangedInDisk then
+      if Modified or not FileExists(FileName) or FileChangedInDisk then
         CanSaveFile := True;
     end
-    else
-      if not DirectoryExists(GetCompleteFileName) then
-        CreateDir(GetCompleteFileName);
+    else if not DirectoryExists(FileName) then
+      CreateDir(FileName);
   end
   else
-  begin//internal file
+  begin
     if (FileType <> FILE_TYPE_FOLDER) then
     begin
-      if Modified or not FileExists(GetCompleteFileName) or
-         FileChangedInDisk or ((DateOfFile <> FileDateTime(GetCompleteFileName))) then
-      begin
-        CanSaveFile := True;
-      end;
+      CanSaveFile := True;
     end
-    else
-      if not DirectoryExists(GetCompleteFileName) then
-          CreateDir(GetCompleteFileName);
+    else if not DirectoryExists(FileName) then
+      CreateDir(FileName);
   end;
   if CanSaveFile then
   begin
@@ -738,23 +750,24 @@ begin
     begin
       if GetSheet(Sheet) then
       begin
-        Sheet.Memo.Lines.SaveToFile(GetCompleteFileName);
+        Sheet.Memo.Lines.SaveToFile(FileName);
         sheet.Memo.Modified := False;
+        if not FSaved then
+          FSaved := True;
       end;
-      if FSaved then
-        Project.Modified := False;
       if FileType = FILE_TYPE_H then
         Project.ForceClean := True;
     end
     else
     begin
       TProjectProperty(Self).PropertyChanged := False;
-      TProjectProperty(Self).SaveToFile(GetCompleteFileName);
+      TProjectProperty(Self).SaveToFile(FileName);
+      if not FSaved then
+        FSaved := True;
     end;
-    FFileDateTime := FileDateTime(GetCompleteFileName);
+    FFileDateTime := FileDateTime(FileName);
   end;
-  FModified := False;
-  //update main form 
+  //update main form
   with FrmFalconMain do
   begin
     if GetSheet(Sheet) then
@@ -765,17 +778,18 @@ begin
         Sheet.Memo.ActiveLineColor := clNone;
       FileSave.Enabled := False;
       BtnSave.Enabled := False;
-      Sheet.Caption := GetCaption;
+      Sheet.Caption := Self.Caption;
     end;
   end;
   Result := True;
 end;
 
 {TProjectProperty}
+
 constructor TProjectProperty.Create(Editor, Node: Pointer);
 begin
   inherited Create(Editor, Node);
-  FForceClean := False;//first compilation do clean?
+  FForceClean := False; //first compilation do clean?
   FVersion := TVersionInfo.Create;
   FVersion.LanguageID := GetSystemDefaultLangID;
   FVersion.CharsetID := $04E4;
@@ -817,7 +831,7 @@ var
 begin
   Result := True;
   AllFiles := GetFiles(True);
-  for I:= 0 to Pred(AllFiles.Count) do
+  for I := 0 to Pred(AllFiles.Count) do
     TFileProperty(AllFiles.Objects[I]).Close;
 end;
 
@@ -825,22 +839,24 @@ function TProjectProperty.SaveAll(SavePrjFile: Boolean = False): Boolean;
 var
   I: Integer;
   AllFiles: TStrings;
-  S: String;
+  S: string;
   Template: TTemplate;
   Resources: TTemplateResources;
 begin
   Result := True;
   if not SavePrjFile then
   begin
-    if not (FileType = FILE_TYPE_PROJECT) then Save;//save .c or .cpp file
+    if not (FileType = FILE_TYPE_PROJECT) then
+      Save; //save .c or .cpp file
   end
   else
-  begin//save project file
-    if Modified or not FileExists(GetCompleteFileName) then Save;
+  begin //save project file
+    if Modified or not FileExists(FileName) then
+      Save;
   end;
   //save all files with folders
   AllFiles := GetFiles(True);
-  for I:= 0 to Pred(AllFiles.Count) do
+  for I := 0 to Pred(AllFiles.Count) do
     TFileProperty(AllFiles.Objects[I]).Save;
   //save template resources
   if Assigned(FTemplateResources) then
@@ -851,7 +867,7 @@ begin
       Resources := Template.Resources;
       for I := 0 to Resources.Count - 1 do
       begin
-        S := ExtractFilePath(GetCompleteFileName) +
+        S := ExtractFilePath(FileName) +
           Resources.ResourceName[I];
         Resources.SaveToFile(S, I);
       end;
@@ -861,20 +877,20 @@ begin
   end;
 end;
 
-function TProjectProperty.SaveAs(const AFileName: String): Boolean;
+function TProjectProperty.SaveAs(const AFileName: string): Boolean;
 begin
   FFileName := AFileName;
   Result := SaveAll(True);
 end;
 
-function TProjectProperty.GetTarget: String;
+function TProjectProperty.GetTarget: string;
 begin
-  Result := ExtractFilePath(GetCompleteFileName) + Target;
+  Result := ExtractFilePath(FileName) + Target;
 end;
 
-function TProjectProperty.LoadFromFile(const AFileName: String): Boolean;
+function TProjectProperty.LoadFromFile(const AFileName: string): Boolean;
 
-  function GetTagProperty(Node: IXMLNode; Tag, Attribute: String): String;
+  function GetTagProperty(Node: IXMLNode; Tag, Attribute: string): string;
   var
     Temp: IXMLNode;
   begin
@@ -888,7 +904,7 @@ function TProjectProperty.LoadFromFile(const AFileName: String): Boolean;
   procedure LoadFiles(XMLNode: IXMLNode; Parent: TFileProperty);
   var
     Temp: IXMLNode;
-    NodeFileName: String;
+    NodeFileName: string;
     FileProp: TFileProperty;
   begin
     Temp := XMLNode.ChildNodes.First;
@@ -897,29 +913,26 @@ function TProjectProperty.LoadFromFile(const AFileName: String): Boolean;
       NodeFileName := Temp.Attributes['Name'];
       if (Temp.NodeName = 'Folder') then
       begin
-        FileProp := NewFileProperty(FILE_TYPE_FOLDER, NO_COMPILER, NodeFileName,
-          NodeFileName, '', '', Parent, True, False);
-        FileProp.Modified := False;
+        FileProp := NewSourceFile(FILE_TYPE_FOLDER, NO_COMPILER, NodeFileName,
+          NodeFileName, '', '', Parent, True, False, False);
         FileProp.Saved := True;
         LoadFiles(Temp, FileProp);
       end
       else if (Temp.NodeName = 'File') then
       begin
-        FileProp := NewFileProperty(GetFileType(NodeFileName),
-                    GetCompiler(GetFileType(NodeFileName)), NodeFileName,
-                    RemoveFileExt(NodeFileName), ExtractFileExt(NodeFileName),
-                    '', Parent, True, False);
-        NodeFileName := FileProp.GetCompleteFileName;
+        FileProp := NewSourceFile(GetFileType(NodeFileName),
+          GetCompiler(GetFileType(NodeFileName)), NodeFileName,
+          RemoveFileExt(NodeFileName), ExtractFileExt(NodeFileName),
+          '', Parent, True, False, False);
+        NodeFileName := FileProp.FileName;
         if FileExists(NodeFileName) then
         begin
           FileProp.DateOfFile := FileDateTime(NodeFileName);
           FileProp.Saved := True;
-          FileProp.Modified := False;
         end
         else
         begin
-          //file not found
-          // TODO:
+          // TODO: file not found
         end;
       end;
       Temp := Temp.NextSibling;
@@ -929,7 +942,7 @@ function TProjectProperty.LoadFromFile(const AFileName: String): Boolean;
 var
   XMLDoc: TXMLDocument;
   Node, ProjNode: IXMLNode;
-  StrIcon, Temp: String;
+  StrIcon, Temp: string;
   Stream: TStream;
 begin
   Result := False;
@@ -957,17 +970,17 @@ begin
   begin
     IncludeVersionInfo := True;
     Version.Major := StrToIntDef(GetTagProperty(Node, 'VersionNumbers',
-                      'Major'), 0);
+      'Major'), 0);
     Version.Minor := StrToIntDef(GetTagProperty(Node, 'VersionNumbers',
-                      'Minor'), 0);
+      'Minor'), 0);
     Version.Release := StrToIntDef(GetTagProperty(Node, 'VersionNumbers',
-                      'Release'), 0);
+      'Release'), 0);
     Version.Build := StrToIntDef(GetTagProperty(Node, 'VersionNumbers',
-                      'Build'), 0);
+      'Build'), 0);
     Version.LanguageID := StrToIntDef(GetTagProperty(Node, 'LanguageID',
-                          'Value'), GetSystemDefaultLangID);
+      'Value'), GetSystemDefaultLangID);
     Version.CharsetID := StrToIntDef(GetTagProperty(Node, 'CharsetID',
-                          'Value'), $04E4);
+      'Value'), $04E4);
     Version.CompanyName := GetTagProperty(Node, 'CompanyName', 'Value');
     Version.FileVersion := GetTagProperty(Node, 'FileVersion', 'Value');
     Version.FileDescription := GetTagProperty(Node, 'FileDescription', 'Value');
@@ -975,7 +988,7 @@ begin
     Version.LegalCopyright := GetTagProperty(Node, 'LegalCopyright', 'Value');
     Version.LegalTrademarks := GetTagProperty(Node, 'LegalTrademarks', 'Value');
     Version.OriginalFilename := GetTagProperty(Node, 'OriginalFilename',
-                                'Value');
+      'Value');
     Version.ProductName := GetTagProperty(Node, 'ProductName', 'Value');
     Version.ProductVersion := GetTagProperty(Node, 'ProductVersion', 'Value');
     Temp := GetTagProperty(Node, 'AutoIncrementBuild', 'Value');
@@ -1042,10 +1055,14 @@ begin
   Result := True;
 end;
 
+function TProjectProperty.GetFileName: string;
+begin
+  Result := FFileName;
+end;
 
-function TProjectProperty.GetFileByPathName(const RelativeName: String): TFileProperty;
+function TProjectProperty.GetFileByPathName(const RelativeName: string): TFileProperty;
 var
-  Temp, S: String;
+  Temp, S: string;
   Parent: TFileProperty;
   I: Integer;
 begin
@@ -1076,8 +1093,8 @@ end;
 
 function TProjectProperty.LoadLayout: Boolean;
 
-  function GetTagProperty(Node: IXMLNode; Tag, Attribute: String;
-    Default: String = ''): String;
+  function GetTagProperty(Node: IXMLNode; Tag, Attribute: string;
+    Default: string = ''): string;
   var
     Temp: IXMLNode;
   begin
@@ -1092,11 +1109,11 @@ function TProjectProperty.LoadLayout: Boolean;
   begin
     Result := FrmFalconMain.PageControlEditor.PageCount
   end;
-  
+
 var
   XMLDoc: TXMLDocument;
   Node, FoldersNode, FilesNode, LytNode: IXMLNode;
-  Temp, S, LytFileName: String;
+  Temp, S, LytFileName: string;
   TopIndex, TopLine, Tabpos: Integer;
   FileProp: TFileProperty;
   sheet: TFilePropertySheet;
@@ -1104,7 +1121,7 @@ var
   //List: TStrings; //for unascendent layout file
 begin
   Result := False;
-  LytFileName := ChangeFileExt(GetCompleteFileName, '.layout');
+  LytFileName := ChangeFileExt(FileName, '.layout');
   if not FileExists(LytFileName) then
     Exit;
   XMLDoc := TXMLDocument.Create(FrmFalconMain);
@@ -1249,7 +1266,7 @@ var
   pageIndex, FilesOpenCount, FoldersExpanded: Integer;
   FileList, FolderList: TStrings;
 
-  procedure AddFile(const RelFileName: String; sheet: TFilePropertySheet);
+  procedure AddFile(const RelFileName: string; sheet: TFilePropertySheet);
   var
     I, Index, pi: Integer;
   begin
@@ -1268,7 +1285,7 @@ var
     FileList.InsertObject(Index, RelFileName, sheet)
   end;
 
-  procedure SetTagProperty(Node: IXMLNode; Tag, Attribute, Value: String);
+  procedure SetTagProperty(Node: IXMLNode; Tag, Attribute, Value: string);
   var
     Temp: IXMLNode;
   begin
@@ -1282,14 +1299,14 @@ var
   var
     I: Integer;
     FileProp: TFileProperty;
-    ProjPath, RelFileName: String;
+    ProjPath, RelFileName: string;
     sheet: TFilePropertySheet;
   begin
-    ProjPath := ExtractFilePath(GetCompleteFileName);
-    for I:= 0 to Pred(Parent.Node.Count) do
+    ProjPath := ExtractFilePath(FileName);
+    for I := 0 to Pred(Parent.Node.Count) do
     begin
       FileProp := TFileProperty(Parent.Node.Item[I].Data);
-      RelFileName := ExtractRelativePath(ProjPath, FileProp.GetCompleteFileName);
+      RelFileName := ExtractRelativePath(ProjPath, FileProp.FileName);
       if (FileProp.FileType = FILE_TYPE_FOLDER) then
       begin
         RelFileName := ExcludeTrailingPathDelimiter(RelFileName);
@@ -1312,7 +1329,7 @@ var
   XMLDoc: TXMLDocument;
   Temp, Node, LytNode: IXMLNode;
   I: Integer;
-  BoolStr: String;
+  BoolStr: string;
   sheet: TFilePropertySheet;
 begin
   XMLDoc := TXMLDocument.Create(FrmFalconMain);
@@ -1348,7 +1365,7 @@ begin
       if sheet.Memo.SelAvail then
       begin
         if (sheet.Memo.BlockBegin.Line = sheet.Memo.CaretXY.Line) and
-           (sheet.Memo.BlockBegin.Char = sheet.Memo.CaretXY.Char) then
+          (sheet.Memo.BlockBegin.Char = sheet.Memo.CaretXY.Char) then
         begin
           SetTagProperty(Temp, 'Selection', 'Line', IntToStr(sheet.Memo.BlockEnd.Line));
           SetTagProperty(Temp, 'Selection', 'Column', IntToStr(sheet.Memo.BlockEnd.Char));
@@ -1376,9 +1393,9 @@ begin
   FolderList.Free;
   try
     if (FilesOpenCount > 0) or (FoldersExpanded > 0) then
-      XMLDoc.SaveToFile(ChangeFileExt(GetCompleteFileName, '.layout'))
+      XMLDoc.SaveToFile(ChangeFileExt(FileName, '.layout'))
     else
-      DeleteFile(ChangeFileExt(GetCompleteFileName, '.layout'));
+      DeleteFile(ChangeFileExt(FileName, '.layout'));
   except
     XMLDoc.Free;
     Result := False;
@@ -1388,9 +1405,9 @@ begin
   Result := True;
 end;
 
-function TProjectProperty.SaveToFile(const AFileName: String): Boolean;
+function TProjectProperty.SaveToFile(const AFileName: string): Boolean;
 
-  procedure SetTagProperty(Node: IXMLNode; Tag, Attribute, Value: String);
+  procedure SetTagProperty(Node: IXMLNode; Tag, Attribute, Value: string);
   var
     Temp: IXMLNode;
   begin
@@ -1406,27 +1423,33 @@ function TProjectProperty.SaveToFile(const AFileName: String): Boolean;
     I: Integer;
     FileProp: TFileProperty;
   begin
-    for I:= 0 to Pred(Parent.Node.Count) do
+    for I := 0 to Pred(Parent.Node.Count) do
     begin
       FileProp := TFileProperty(Parent.Node.Item[I].Data);
       if (FileProp.FileType = FILE_TYPE_FOLDER) then
       begin
         Temp := XMLNode.AddChild('Folder');
-        Temp.Attributes['Name'] := FileProp.Caption;
+        if Pos('..', FileProp.FileName) > 0 then
+          Temp.Attributes['Name'] := FileProp.FileName
+        else
+          Temp.Attributes['Name'] := FileProp.Name;
         AddFiles(Temp, FileProp);
       end
       else
       begin
         Temp := XMLNode.AddChild('File');
-        Temp.Attributes['Name'] := FileProp.Caption;
+        if Pos('..', FileProp.FileName) > 0 then
+          Temp.Attributes['Name'] := FileProp.FileName
+        else
+          Temp.Attributes['Name'] := FileProp.Name;
       end;
     end;
   end;
-  
+
 var
   XMLDoc: TXMLDocument;
   Node, ProjNode: IXMLNode;
-  Temp: String;
+  Temp: string;
   Stream: TStream;
 begin
   XMLDoc := TXMLDocument.Create(FrmFalconMain);
@@ -1512,8 +1535,8 @@ end;
 function TProjectProperty.NeedBuild: Boolean;
 begin
   Result := FileChangedInDisk or (not Compiled) or (not FileExists(GetTarget)) or
-            CompilePropertyChanged or FilesChanged or TargetChanged or
-            (BreakpointChanged and not Debugging);
+    CompilePropertyChanged or FilesChanged or TargetChanged or
+    (BreakpointChanged and not Debugging);
 end;
 
 function TProjectProperty.FilesChanged: Boolean;
@@ -1524,7 +1547,7 @@ var
 begin
   Result := False;
   List := GetFiles;
-  for I:= 0 to Pred(List.Count) do
+  for I := 0 to Pred(List.Count) do
   begin
     FileProp := TFileProperty(List.Objects[I]);
     if FileProp.Modified or FileProp.FileChangedInDisk then
@@ -1564,19 +1587,20 @@ function TProjectProperty.GetFiles(AllTypes, WithBreakpoint: Boolean): TStrings;
     if AllTypes then
     begin
       if canAdd then
-        List.AddObject(fp.GetCompleteFileName, fp);
+        List.AddObject(fp.FileName, fp);
     end
     else
     begin
       if (TFileProperty(ANode.Data).FileType <> FILE_TYPE_FOLDER) then
       begin
         if canAdd then
-          List.AddObject(fp.GetCompleteFileName, fp);
+          List.AddObject(fp.FileName, fp);
       end;
     end;
     if (ANode.Count > 0) then
     begin
-      for X:= 0 to Pred(ANode.Count) do AddFiles(List, ANode.Item[X]);
+      for X := 0 to Pred(ANode.Count) do
+        AddFiles(List, ANode.Item[X]);
     end;
   end;
 
@@ -1586,8 +1610,8 @@ var
 begin
   List := TStringList.Create;
   if (FileType = FILE_TYPE_PROJECT) then
-    for I:= 0 to Pred(Node.Count) do
-        AddFiles(List, Node.Item[I])
+    for I := 0 to Pred(Node.Count) do
+      AddFiles(List, Node.Item[I])
   else
   begin
     if (not (FileType in [FILE_TYPE_RC, FILE_TYPE_FOLDER]) and
@@ -1601,22 +1625,23 @@ function TProjectProperty.GetResource(Res: TStrings): Boolean;
 var
   List: TStrings;
   I: Integer;
-  Vers: String;
+  Vers: string;
   Manf: Byte;
 begin
   Result := False;
   List := GetFiles(True);
-  for I:= 0 to Pred(List.Count) do
+  for I := 0 to Pred(List.Count) do
   begin
     if (TFileProperty(List.Objects[I]).FFileType = FILE_TYPE_RC) then
     begin
       Result := True;
       Res.Add('#include "' + ExtractRelativePath(ExtractFilePath(FileName),
-              TFileProperty(List.Objects[I]).GetCompleteFileName + '"'));
+        TFileProperty(List.Objects[I]).FileName + '"'));
     end;
   end;
   Manf := 0;
-  if IncludeVersionInfo or Assigned(Icon) then Result := True;
+  if IncludeVersionInfo or Assigned(Icon) then
+    Result := True;
   if EnableTheme and (AppType in [APPTYPE_CONSOLE, APPTYPE_GUI]) then
     Manf := Manf or 1;
   if RequiresAdmin and (AppType in [APPTYPE_CONSOLE, APPTYPE_GUI]) then
@@ -1633,16 +1658,16 @@ begin
       if IncludeVersionInfo then
       begin
         Res.Add('1 VERSIONINFO');
-        Vers := IntToStr(FVersion.Major)  + ',' +
-                IntToStr(FVersion.Minor)  + ',' +
-                IntToStr(FVersion.Release)  + ',' +
-                IntToStr(FVersion.Build);
+        Vers := IntToStr(FVersion.Major) + ',' +
+          IntToStr(FVersion.Minor) + ',' +
+          IntToStr(FVersion.Release) + ',' +
+          IntToStr(FVersion.Build);
         Res.Add('    FILEVERSION ' + Vers);
         if (Length(FVersion.ProductVersion) = 0) then
           Res.Add('    PRODUCTVERSION ' + Vers)
         else
           Res.Add('    PRODUCTVERSION ' + StringReplace(FVersion.ProductVersion,
-                                    '.', ',', [rfReplaceAll]));
+            '.', ',', [rfReplaceAll]));
         Res.Add('    FILEOS 0x4L');
         Res.Add('    FILETYPE 0x1L');
         Res.Add('BEGIN');
@@ -1664,7 +1689,7 @@ begin
         Res.Add('    BLOCK "VarFileInfo"');
         Res.Add('    BEGIN');
         Res.Add('        VALUE "Translation", 0x' +
-          IntToHex(FVersion.LanguageID, 4)+', 0x' + IntToHex(FVersion.CharsetID, 4));
+          IntToHex(FVersion.LanguageID, 4) + ', 0x' + IntToHex(FVersion.CharsetID, 4));
         Res.Add('    END');
         Res.Add('END');
       end;
@@ -1675,7 +1700,7 @@ end;
 
 function TProjectProperty.Build(Run: Boolean = False): Boolean;
 
-  procedure SaveManifest(AFileName, ResName: String);
+  procedure SaveManifest(AFileName, ResName: string);
   var
     EnbTheme: TStrings;
   begin
@@ -1687,7 +1712,7 @@ function TProjectProperty.Build(Run: Boolean = False): Boolean;
   end;
 
 var
-  Makefile, FileContSpc, Temp: String;
+  Makefile, FileContSpc, Temp: string;
   Files: TStrings;
   Res, MkWar: TStrings;
   MkRes: Integer;
@@ -1749,7 +1774,7 @@ begin
     mk.CompilerPath := FCompilerPath;
     mk.CompilerOptions := CompilerOptions;
     OldDebuggingState := Debugging;
-    Debugging := HasBreakpoint  or BreakpointCursor.Valid;
+    Debugging := HasBreakpoint or BreakpointCursor.Valid;
     if not OldDebuggingState and Debugging then
       ForceClean := True;
     mk.ForceClean := ForceClean;
@@ -1769,7 +1794,7 @@ begin
     Files.Free;
     if MkRes = 0 then
     begin
-      ForceClean := False;//WARNING if mingw32-make.exe not complete clean rule
+      ForceClean := False; //WARNING if mingw32-make.exe not complete clean rule
                           //directives aren't updated
       FrmFalconMain.CompilerCmd.FileName := 'mingw32-make.exe';
       FrmFalconMain.CompilerCmd.Directory := ExtractFilePath(Makefile);
@@ -1784,37 +1809,36 @@ begin
       MkWar.Free;
     end;
   end
-  else
-    if (CompilerType = COMPILER_RC) then
+  else if (CompilerType = COMPILER_RC) then
+  begin
+    Res := TStringList.Create;
+    Temp := Name;
+    if GetResource(Res) then
     begin
-      Res := TStringList.Create;
-      Temp := Caption;
-      if GetResource(Res) then
-      begin
-        if Assigned(Icon) then
-          Icon.SaveToFile(ExtractFilePath(FileName) + 'AppIcon.ico');
-        Manf := 0;
-        if EnableTheme and (AppType in [APPTYPE_CONSOLE, APPTYPE_GUI]) then
-          Manf := Manf or 1;
-        if RequiresAdmin and (AppType in [APPTYPE_CONSOLE, APPTYPE_GUI]) then
-          Manf := Manf or 2;
-        Temp := ExtractFilePath(FileName) + 'AppManifest.dat';
-        case Manf of
-          1: SaveManifest(Temp, 'MANFTHEME');
-          2: SaveManifest(Temp, 'MANFADMIN');
-          3: SaveManifest(Temp, 'MANFBOTH');
-        end;
-        Res.SaveToFile(ExtractFilePath(FileName) + 'AppResource.rc');
-        Temp := 'AppResource.rc';
+      if Assigned(Icon) then
+        Icon.SaveToFile(ExtractFilePath(FileName) + 'AppIcon.ico');
+      Manf := 0;
+      if EnableTheme and (AppType in [APPTYPE_CONSOLE, APPTYPE_GUI]) then
+        Manf := Manf or 1;
+      if RequiresAdmin and (AppType in [APPTYPE_CONSOLE, APPTYPE_GUI]) then
+        Manf := Manf or 2;
+      Temp := ExtractFilePath(FileName) + 'AppManifest.dat';
+      case Manf of
+        1: SaveManifest(Temp, 'MANFTHEME');
+        2: SaveManifest(Temp, 'MANFADMIN');
+        3: SaveManifest(Temp, 'MANFBOTH');
       end;
-      Res.Free;
-
-      FrmFalconMain.CompilerCmd.FileName := 'windres.exe';
-      FrmFalconMain.CompilerCmd.Directory := ExtractFilePath(GetCompleteFileName);
-      FrmFalconMain.CompilerCmd.Params := '-i "' + Temp + '" -J rc -o "' +
-                                          Target + '" -O COFF';
-      FrmFalconMain.CompilerCmd.Start;
+      Res.SaveToFile(ExtractFilePath(FileName) + 'AppResource.rc');
+      Temp := 'AppResource.rc';
     end;
+    Res.Free;
+
+    FrmFalconMain.CompilerCmd.FileName := 'windres.exe';
+    FrmFalconMain.CompilerCmd.Directory := ExtractFilePath(FileName);
+    FrmFalconMain.CompilerCmd.Params := '-i "' + Temp + '" -J rc -o "' +
+      Target + '" -O COFF';
+    FrmFalconMain.CompilerCmd.Start;
+  end;
 end;
 
 function TProjectProperty.GetBreakpointLists(List: TStrings): Boolean;
@@ -1843,10 +1867,11 @@ begin
 end;
 
 {TProjectsSheet}
+
 constructor TProjectsSheet.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  FListView :=  TListView.Create(Self);
+  FListView := TListView.Create(Self);
   FListView.Parent := Self;
   FListView.Align := alClient;
   FListView.BorderStyle := bsNone;
@@ -1863,6 +1888,7 @@ begin
 end;
 
 {TFilePropertySheet}
+
 constructor TFilePropertySheet.CreateEditor(Node: TTreeNode;
   PageCtrl: TModernPageControl; SelectTab: Boolean);
 var
@@ -1872,36 +1898,56 @@ begin
   ParentBackground := False;
   FNode := Node;
   FSheetType := SHEET_TYPE_FILE;
-  FSynMemo :=  TSynMemo.Create(Self);
+  FSynMemo := TSynMemo.Create(Self);
   FSynMemo.BorderStyle := bsNone;
   with FrmFalconMain.Config.Editor do
   begin
     Options := FSynMemo.Options;
     //------------ General --------------------------//
-    if AutoIndent then Include(Options, eoAutoIndent)
-    else Exclude(Options, eoAutoIndent);
+    if AutoIndent then
+      Include(Options, eoAutoIndent)
+    else
+      Exclude(Options, eoAutoIndent);
     //find text at cursor
     FSynMemo.InsertMode := InsertMode;
-    if GroupUndo then Include(Options, eoGroupUndo)
-    else Exclude(Options, eoGroupUndo);
+    if GroupUndo then
+      Include(Options, eoGroupUndo)
+    else
+      Exclude(Options, eoGroupUndo);
     //remove file on close
-    if KeepTrailingSpaces then Exclude(Options, eoTabIndent)
-    else Include(Options, eoTrimTrailingSpaces);
+    if KeepTrailingSpaces then
+      Exclude(Options, eoTabIndent)
+    else
+      Include(Options, eoTrimTrailingSpaces);
 
-    if ScrollHint then Exclude(Options, eoShowScrollHint)
-    else Include(Options, eoShowScrollHint);
-    if TabIndentUnindent then Include(Options, eoTabIndent)
-    else Exclude(Options, eoTabIndent);
-    if SmartTabs then Include(Options, eoSmartTabs)
-    else Exclude(Options, eoSmartTabs);
-    if SmartTabs then Include(Options, eoSmartTabs)
-    else Exclude(Options, eoSmartTabs);
-    if UseTabChar then Exclude(Options, eoTabsToSpaces)
-    else Include(Options, eoTabsToSpaces);
-    if EnhancedHomeKey then Include(Options, eoEnhanceHomeKey)
-    else Exclude(Options, eoEnhanceHomeKey);
-    if ShowLineChars then Include(Options, eoShowSpecialChars)
-    else Exclude(Options, eoShowSpecialChars);
+    if ScrollHint then
+      Exclude(Options, eoShowScrollHint)
+    else
+      Include(Options, eoShowScrollHint);
+    if TabIndentUnindent then
+      Include(Options, eoTabIndent)
+    else
+      Exclude(Options, eoTabIndent);
+    if SmartTabs then
+      Include(Options, eoSmartTabs)
+    else
+      Exclude(Options, eoSmartTabs);
+    if SmartTabs then
+      Include(Options, eoSmartTabs)
+    else
+      Exclude(Options, eoSmartTabs);
+    if UseTabChar then
+      Exclude(Options, eoTabsToSpaces)
+    else
+      Include(Options, eoTabsToSpaces);
+    if EnhancedHomeKey then
+      Include(Options, eoEnhanceHomeKey)
+    else
+      Exclude(Options, eoEnhanceHomeKey);
+    if ShowLineChars then
+      Include(Options, eoShowSpecialChars)
+    else
+      Exclude(Options, eoShowSpecialChars);
 
     FSynMemo.MaxUndo := MaxUndo;
     FSynMemo.TabWidth := TabWidth;
@@ -1974,7 +2020,7 @@ procedure TFilePropertySheet.TextEditorMouseDown(Sender: TObject;
 var
   P: TBufferCoord;
 begin
-  if(Button = mbMiddle) then
+  if (Button = mbMiddle) then
   begin
     P := Memo.DisplayToBufferPos(Memo.PixelsToRowColumn(X, Y));
     if (P.Char > 0) and (P.Line > 0) and (Memo.CanPaste) then
@@ -1998,3 +2044,4 @@ begin
 end;
 
 end.
+

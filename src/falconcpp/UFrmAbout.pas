@@ -66,13 +66,14 @@ end;
 procedure TFormAbout.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-  if (Key = VK_ESCAPE) then Close;
+  if (Key = VK_ESCAPE) then
+    Close;
 end;
 
 procedure TFormAbout.LoadTranslators(Languages: TFalconLanguages);
 var
   I: Integer;
-  S: String;
+  S: string;
 begin
   EditTranslators.Clear;
   for I := 0 to Languages.Count - 1 do

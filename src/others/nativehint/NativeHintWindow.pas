@@ -43,7 +43,7 @@ uses
   Classes, Controls, Windows, Messages;
 
 const
-  TTM_ADJUSTRECT = WM_USER+31;
+  TTM_ADJUSTRECT = WM_USER + 31;
 type
   THintWindowFix = class(THintWindow)
   private
@@ -74,19 +74,14 @@ procedure ApplicationActivateHint(CursorPos: TPoint);
 // Applies the patch of HintWindowClass.
 procedure PatchHintWindowClass;
 
-
 var
   AutoPatchOnStartup: Boolean = True;
-
 
 implementation
 
 uses
   CommCtrl, Forms, SysUtils,
-  FastcodePatch{http://fastcode.sourceforge.net/};
-
-
-
+  FastcodePatch {http://fastcode.sourceforge.net/};
 
 { Utils }
 
@@ -136,8 +131,6 @@ begin
   Inc(Result.cy, Dim.cy);
 end;
 
-
-
 { THintWindowFix }
 
 var
@@ -163,15 +156,16 @@ begin
     // Calculates the rect of the hint window.
     Mon := Screen.MonitorFromPoint(PopupPoint);
     if Mon <> nil then
-         MonRect := Mon.BoundsRect
-    else MonRect := Screen.DesktopRect;
+      MonRect := Mon.BoundsRect
+    else
+      MonRect := Screen.DesktopRect;
     with CalcHintRect(MonRect.Right - MonRect.Left, HintText, nil) do
     begin
       HintWinDim.X := Right - Left;
       HintWinDim.Y := Bottom - Top;
     end;
     FillChar(TmpRect, SizeOf(TmpRect), #0);
-    SendMessage(Result, TTM_ADJUSTRECT{WM_USER+31}, 1, WPARAM(@TmpRect));
+    SendMessage(Result, TTM_ADJUSTRECT {WM_USER+31}, 1, WPARAM(@TmpRect));
     Inc(HintWinDim.X, (TmpRect.Right - TmpRect.Left) * 2);
     Inc(HintWinDim.Y, (TmpRect.Bottom - TmpRect.Top) * 2);
     // Corrects the position of the hint window, when it is partial out of the screen.
@@ -192,11 +186,11 @@ begin
     // Specifies the text font style
     //SendMessage(Result, WM_SETFONT, Screen.HintFont.Handle, Integer(LongBool(False)))
 
-    FillChar(TI, SizeOf(TI), #0);    
-    TI.cbSize   := SizeOf(TI);
-    TI.hwnd     := hControl;
+    FillChar(TI, SizeOf(TI), #0);
+    TI.cbSize := SizeOf(TI);
+    TI.hwnd := hControl;
     TI.lpszText := PChar(HintText);
-    TI.uFlags   := TTF_TRANSPARENT or TTF_SUBCLASS or TTF_TRACK or TTF_ABSOLUTE;
+    TI.uFlags := TTF_TRANSPARENT or TTF_SUBCLASS or TTF_TRACK or TTF_ABSOLUTE;
     SendMessage(Result, TTM_ADDTOOL, 0, Integer(@TI));
     SendMessage(Result, TTM_TRACKPOSITION, 0, MAKELPARAM(PopupPoint.X, PopupPoint.Y + 1));
     SendMessage(Result, TTM_TRACKACTIVATE, Integer(LongBool(True)), Integer(@TI));
@@ -206,12 +200,12 @@ end;
 constructor THintWindowFix.Create(AOwner: TComponent);
 begin
   inherited;
-  OldAppHintHandler  := Application.OnHint;
+  OldAppHintHandler := Application.OnHint;
   Application.OnHint := AppHintHandler;
   // http://msdn2.microsoft.com/en-us/library/aa511495.aspx
-  Application.HintPause      := GetDoubleClickTime();
+  Application.HintPause := GetDoubleClickTime();
   Application.HintShortPause := GetDoubleClickTime() div 5;
-  Application.HintHidePause  := GetDoubleClickTime() * 10;
+  Application.HintHidePause := GetDoubleClickTime() * 10;
 
   // Adds to global instance register
   HintWindowInstances.Add(Self);
@@ -266,7 +260,7 @@ end;
 
 type
   THintWindowHack = class(THintWindow) // CAUTION: Please check the declaration
-  private                              //          of Controls.THintWindow
+  private //          of Controls.THintWindow
     FActivating: Boolean;
     FLastActive: Cardinal;
   end;
@@ -309,6 +303,7 @@ begin
 end;
 
 // A replacement of TApplication.ActivateHint() when HintWindowClass=THintWindowFix.
+
 procedure ApplicationActivateHint(CursorPos: TPoint);
 begin
   if Application.ShowHint then
@@ -324,8 +319,6 @@ begin
         Rect(CursorPos.X, CursorPos.Y, 0, 0), Application.Hint);
   end;
 end;
-
-
 
 { RTL patch }
 
@@ -347,9 +340,8 @@ begin
     THintWindowFix(HintWindowInstances.Items[0]).ReleaseHandle;
 end;
 
-
-
 // Applies the patch of HintWindowClass.
+
 procedure PatchHintWindowClass;
 begin
   HintWindowClass := THintWindowFix;
@@ -358,8 +350,6 @@ begin
     FastcodeGetAddress(@TApplicationHideHintStub),
     @TApplicationPatch.HideHint);
 end;
-
-
 
 initialization
   HintWindowInstances := TList.Create;

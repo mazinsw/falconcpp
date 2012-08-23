@@ -5,7 +5,7 @@ unit StrMatch;
     Copyright (C) 2009, 2010  by Russell J. Peters, Roger Aelbrecht,
       Eric W. Engler and Chris Vleghert.
 
-	This file is part of TZipMaster Version 1.9.
+ This file is part of TZipMaster Version 1.9.
   modified 2011-03-05
 ---------------------------------------------------------------------------*)
 
@@ -19,14 +19,14 @@ const
   MAIN = $01; // not empty
   MAIN_WILDALL = $02; // is *
   MAIN_HASWILD = $04;
-  EXTN         = $10;
+  EXTN = $10;
   EXTN_WILDALL = $20;
   EXTN_HASWILD = $40;
-  HAD_DOT      = $08;
-  
+  HAD_DOT = $08;
+
 type
   TBounds = record
-    Start:  PChar;
+    Start: PChar;
     Finish: PChar;
   end;
 
@@ -37,28 +37,30 @@ type
     ExtnLen: Integer;
   end;
 
-function FileNameMatch(const UPattern, USpec: String): Boolean;
-function StringIn(const S: String; List: Array of String): Boolean;
+function FileNameMatch(const UPattern, USpec: string): Boolean;
+function StringIn(const S: string; List: array of string): Boolean;
 
 implementation
 
-function StringIn(const S: String; List: Array of String): Boolean;
+function StringIn(const S: string; List: array of string): Boolean;
 var
   I: Integer;
 begin
   Result := True;
-  for I:= Low(List) to High(List) do
-    if CompareText(List[I], S) = 0 then Exit;
+  for I := Low(List) to High(List) do
+    if CompareText(List[I], S) = 0 then
+      Exit;
   Result := False;
 end;
 
 // return <0 _ match to *, 0 _ match to end, >0 _ no match
+
 function Wild(var Bp, Bs: TBounds): Integer;
 var
   cp: Char;
   cs: Char;
 begin
-  Result := -1;// matches so far
+  Result := -1; // matches so far
   // handle matching characters before wild
   while (Bs.Start <= Bs.Finish) and (Bp.Start <= Bp.Finish) do
   begin
@@ -67,11 +69,11 @@ begin
     if cp <> cs then
     begin
       if cp = '*' then
-        break;     // matched to *
+        break; // matched to *
       // would match anything except path sep
       if (cp <> '?') or (cs = '\') then
       begin
-        Result := 1;  // no match
+        Result := 1; // no match
         Exit;
       end;
     end;
@@ -83,7 +85,7 @@ begin
   if Bp.Start > Bp.Finish then
   begin
     if Bs.Start > Bs.Finish then
-      Result := 0;   // matched to end
+      Result := 0; // matched to end
   end;
   if Result < 0 then
   begin
@@ -99,7 +101,7 @@ begin
           // must not match path sep
         if (cp <> '?') or (cs = '\') then
         begin
-          Result := 1;  // no match
+          Result := 1; // no match
           break;
         end;
       end;
@@ -109,31 +111,32 @@ begin
     end;
   end;
 end;
+
 function WildCmp(Bp, Bs: TBounds): Integer;
 var
   bpt: TBounds;
   bst: TBounds;
-  sm:  Integer;
+  sm: Integer;
   pidx: PChar;
   sidx: PChar;
 begin
   // quick check for '*'
   if (Bp.Start = Bp.Finish) and (Bp.Start <> nil) and (Bp.Start^ = '*') then
   begin
-    Result := 0;  // matches any/none
+    Result := 0; // matches any/none
     exit;
   end;
   // no more Spec?
   if Bs.Finish < Bs.Start then
   begin
     if Bp.Finish < Bp.Start then
-      Result := 0   // empty matches empty
+      Result := 0 // empty matches empty
     else
-      Result := 3;  // no match
+      Result := 3; // no match
     exit;
   end;
   // handle matching characters before wild
-  Result := Wild(Bp, Bs);       
+  Result := Wild(Bp, Bs);
   if Result < 0 then
   begin
     pidx := Bp.Start;
@@ -154,13 +157,13 @@ begin
         Inc(pidx);
       // end of Pattern?
       if pidx = Bp.Finish then
-        Result := 0  // match
+        Result := 0 // match
       else
       begin
         Inc(pidx);
-        bpt.Start  := pidx;
+        bpt.Start := pidx;
         bpt.Finish := Bp.Finish;
-        bst.Start  := sidx;
+        bst.Start := sidx;
         bst.Finish := Bs.Finish;
         while (bst.Start <= bst.Finish) do
         begin
@@ -168,13 +171,13 @@ begin
           sm := WildCmp(bpt, bst);
           if sm = 0 then
           begin
-            Result := 0;  // match
+            Result := 0; // match
             break;
           end;
           Inc(bst.Start);
         end;
         if Result <> 0 then
-          Result := 1;  // no match
+          Result := 1; // no match
       end;
     end;
     // end of Spec - Pattern must only have *
@@ -183,7 +186,7 @@ begin
       while (pidx <= Bp.Finish) and (pidx^ = '*') do
         Inc(pidx);
       if pidx > Bp.Finish then
-        Result := 0;  // matched
+        Result := 0; // matched
     end;
   end;
 end;
@@ -207,75 +210,75 @@ begin
   ExtnStart := nil;
   ExtnFinish := nil;
   // at start of text or spec
-  MainStart := idx;     
+  MainStart := idx;
   MainFinish := nil; // keep compiler happy
-  while True do 
+  while True do
   begin
     c := idx^;
     case c of
       '.':
-      if idx > MainStart then
-      begin
-        // we probably have extn
-        if ExtnStart <> nil then
-          Inc(mwildall, xwildall); // count all * in main
-        ExtnStart := idx+ 1;
-        xwildall := 0;
-      end;
-      '\', '/', ':':
-      begin             
-        if c = '/' then
-          idx^ := '\'; // normalise path seps
-        if ExtnStart <> nil then
+        if idx > MainStart then
         begin
-          // was false start of extn
-          ExtnStart := nil;
-          Inc(mwildall, xwildall); // count all * in main
+        // we probably have extn
+          if ExtnStart <> nil then
+            Inc(mwildall, xwildall); // count all * in main
+          ExtnStart := idx + 1;
           xwildall := 0;
         end;
-      end;
+      '\', '/', ':':
+        begin
+          if c = '/' then
+            idx^ := '\'; // normalise path seps
+          if ExtnStart <> nil then
+          begin
+          // was false start of extn
+            ExtnStart := nil;
+            Inc(mwildall, xwildall); // count all * in main
+            xwildall := 0;
+          end;
+        end;
       ' ':
-      begin
+        begin
         // space can be embedded but cannot trail
-        tmp := idx;                                
-        Inc(idx);
-        while idx^ = ' ' do
+          tmp := idx;
           Inc(idx);
-        if idx^ < ' ' then
-        begin
+          while idx^ = ' ' do
+            Inc(idx);
+          if idx^ < ' ' then
+          begin
           // terminate
-          MainFinish := tmp - 1;
-          Break;
-        end;
-        if idx^ = '|' then
-        begin
+            MainFinish := tmp - 1;
+            Break;
+          end;
+          if idx^ = '|' then
+          begin
           // terminate
-          MainFinish := tmp - 1;
-          Inc(idx);
-          Break;
+            MainFinish := tmp - 1;
+            Inc(idx);
+            Break;
+          end;
+          Continue;
         end;
-        Continue;
-      end;
       #0..#31:
-      begin
+        begin
         // control terminates
-        MainFinish := idx - 1;
-        Break;
-      end;
+          MainFinish := idx - 1;
+          Break;
+        end;
       '|':
-      begin
+        begin
         // at the end
-        MainFinish := idx - 1; 
-        Inc(idx);
-        break;
-      end;
-      '*':    
-      begin
-        if ExtnStart <> nil then
-          Inc(xwildall)
-        else
-          Inc(mwildall);
-      end;
+          MainFinish := idx - 1;
+          Inc(idx);
+          break;
+        end;
+      '*':
+        begin
+          if ExtnStart <> nil then
+            Inc(xwildall)
+          else
+            Inc(mwildall);
+        end;
     end;
     Inc(idx);
   end;
@@ -287,10 +290,10 @@ begin
     begin
       // we have extn
       ExtnFinish := MainFinish;
-      MainFinish := ExtnStart - 2;    
+      MainFinish := ExtnStart - 2;
       parts.Extnlen := 1 + (ExtnFinish - ExtnStart);
       Result := Result or EXTN;
-      if  xwildall <> 0 then
+      if xwildall <> 0 then
       begin
         if xwildall = parts.Extnlen then
           Result := Result or EXTN_WILDALL;
@@ -309,7 +312,7 @@ begin
   if parts.Mainlen > 0 then
   begin
     Result := Result or MAIN;
-    if  mwildall <> 0 then
+    if mwildall <> 0 then
     begin
       if mwildall = parts.Mainlen then
         Result := Result or MAIN_WILDALL;
@@ -328,7 +331,7 @@ var
   cp: Char;
   cs: Char;
 begin
-  Result := 1;  // no match
+  Result := 1; // no match
   if (Bs.Start > Bs.Finish) then
     exit;
   if (Bp.Start^ <> Bs.Start^) and ((Bp.Start^ = '\') or (Bp.Start^ <> '?')) then
@@ -345,13 +348,13 @@ begin
     begin
       // must not match path sep
       if (cp <> '?') or (cs = '\') then
-        Exit;   // no match
+        Exit; // no match
     end;
   end;
-  Result := 0;  // match
+  Result := 0; // match
 end;
 
-function UpperFileNameMatch(const Pattern, Spec: String): Boolean;
+function UpperFileNameMatch(const Pattern, Spec: string): Boolean;
 const
   FULL_WILD = MAIN_WILDALL or EXTN_WILDALL;
 var
@@ -369,7 +372,7 @@ begin
   Result := False;
   // check the spec if has extension
   SpecStt := PChar(Spec);
-  sidx  := SpecStt;
+  sidx := SpecStt;
   while sidx^ <= ' ' do
   begin
     if sidx^ = #0 then
@@ -388,7 +391,7 @@ begin
         exit;
       Inc(pidx);
       ch := pidx^;
-    end;     
+    end;
     pFlag := Decompose(pidx, ptn);
     // work out what we must test
     if ((pFlag and FULL_WILD) = FULL_WILD) or
@@ -398,14 +401,14 @@ begin
       Break;
     end;
     if ((pFlag and (EXTN_HASWILD or EXTN)) = EXTN) and (spc.ExtnLen <> ptn.ExtnLen) then
-        Continue;   // cannot match
+      Continue; // cannot match
     if ((pFlag and MAIN_HASWILD) = 0) and (spc.MainLen <> ptn.MainLen) then
-        Continue;   // cannot match
-    xres := -1;   // not tried to match
+      Continue; // cannot match
+    xres := -1; // not tried to match
     // make copy of spc
     Move(spc, spc1, SizeOf(TParts));
     if (pFlag and EXTN_WILDALL) <> 0 then
-      xres := 0   // ignore extn as matched
+      xres := 0 // ignore extn as matched
     else
     begin
       // if pattern has extn, we must 'split' spec
@@ -416,14 +419,14 @@ begin
         begin
           // pattern ended in dot - spec must not have extn
           if (sFlag and EXTN) <> 0 then
-             Continue;    // spec has extn - cannot match
-          xres := 0;  // no extn to check
+            Continue; // spec has extn - cannot match
+          xres := 0; // no extn to check
         end
         else
         begin
           // spec must have extn
           if (sFlag and EXTN) = 0 then
-            Continue;   // no spec extn - cannot match
+            Continue; // no spec extn - cannot match
         end;
       end
       else
@@ -431,7 +434,7 @@ begin
         // no Pattern dot _ test full spec
         if ((sFlag and EXTN) <> 0) then
           spc1.Main.Finish := spc.Extn.Finish; // full spec
-        xres := 0;  // only test spec
+        xres := 0; // only test spec
       end;
 
       // test extn first (if required)
@@ -442,12 +445,12 @@ begin
     if xres = 0 then
     begin
       if (pFlag and MAIN_WILDALL) = 0 then
-        begin
-          if (pFlag and MAIN_HASWILD) <> 0 then
-            xres := WildCmp(ptn.Main, spc1.Main)
-          else
-            xres := FileRCmp(ptn.Main, spc1.Main);
-        end;
+      begin
+        if (pFlag and MAIN_HASWILD) <> 0 then
+          xres := WildCmp(ptn.Main, spc1.Main)
+        else
+          xres := FileRCmp(ptn.Main, spc1.Main);
+      end;
     end;
     // equate
     Result := xres = 0;
@@ -455,10 +458,10 @@ begin
   until Result;
 end;
 
-function FileNameMatch(const UPattern, USpec: String): Boolean;
+function FileNameMatch(const UPattern, USpec: string): Boolean;
 var
-  Pattern: String;
-  Spec: String;
+  Pattern: string;
+  Spec: string;
 begin
   Pattern := UpperCase(UPattern);
   Spec := UpperCase(USpec);

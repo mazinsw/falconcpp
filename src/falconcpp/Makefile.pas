@@ -11,13 +11,13 @@ const
 type
   TMakefile = class
   private
-    FTarget: String;
-    FCompilerPath: String;
-    FBaseDir: String;
-    FLibs: String;
-    FFlags: String;
-    FCompilerOptions: String;
-    FFileName: String;
+    FTarget: string;
+    FCompilerPath: string;
+    FBaseDir: string;
+    FLibs: string;
+    FFlags: string;
+    FCompilerOptions: string;
+    FFileName: string;
     FCreateLibrary: Boolean;
     FFiles: TStrings;
     FCompilerIsCpp: Boolean;
@@ -27,19 +27,19 @@ type
     FEcho: Boolean;
     FForceClean: Boolean;
     procedure SetFiles(Value: TStrings);
-    procedure SelectFilesByExt(Extensions: array of String; List: TStrings);
+    procedure SelectFilesByExt(Extensions: array of string; List: TStrings);
     procedure TransformToRelativePath;
   public
     constructor Create;
     destructor Destroy; override;
     function BuildMakefile: Integer;
-    property Target: String read FTarget write FTarget;
-    property CompilerPath: String read FCompilerPath write FCompilerPath;
-    property BaseDir: String read FBaseDir write FBaseDir;
-    property Libs: String read FLibs write FLibs;
-    property Flags: String read FFlags write FFlags;
-    property CompilerOptions: String read FCompilerOptions write FCompilerOptions;
-    property FileName: String read FFileName write FFileName;
+    property Target: string read FTarget write FTarget;
+    property CompilerPath: string read FCompilerPath write FCompilerPath;
+    property BaseDir: string read FBaseDir write FBaseDir;
+    property Libs: string read FLibs write FLibs;
+    property Flags: string read FFlags write FFlags;
+    property CompilerOptions: string read FCompilerOptions write FCompilerOptions;
+    property FileName: string read FFileName write FFileName;
     property CreateLibrary: Boolean read FCreateLibrary write FCreateLibrary;
     property Files: TStrings read FFiles write SetFiles;
     property CompilerIsCpp: Boolean read FCompilerIsCpp write FCompilerIsCpp;
@@ -52,15 +52,16 @@ type
 
 implementation
 
-function ConvertAnsiToOem(const S: String): String;
+function ConvertAnsiToOem(const S: string): string;
 begin
   Result := '';
-  if Length(s) = 0 then Exit;
+  if Length(s) = 0 then
+    Exit;
   SetLength(Result, Length(S));
   AnsiToOem(PChar(S), PChar(Result));
 end;
 
-function EscapeString(const S: String): String;
+function EscapeString(const S: string): string;
 begin
   Result := StringReplace(S, ' ', '\ ', [rfReplaceAll]);
 end;
@@ -73,6 +74,7 @@ begin
 end;
 
 {TMakefile}
+
 constructor TMakefile.Create;
 begin
   inherited Create;
@@ -95,17 +97,17 @@ procedure TMakefile.TransformToRelativePath;
 var
   I: Integer;
 begin
-  for I:= 0 to Pred(Files.Count) do
+  for I := 0 to Pred(Files.Count) do
     Files.Strings[I] := ExtractRelativePath(BaseDir, Files.Strings[I]);
 end;
 
-procedure TMakefile.SelectFilesByExt(Extensions: array of String; List: TStrings);
+procedure TMakefile.SelectFilesByExt(Extensions: array of string; List: TStrings);
 var
   I, X: Integer;
 begin
-  for I:= 0 to Pred(Files.Count) do
+  for I := 0 to Pred(Files.Count) do
   begin
-    for X:= 0 to Pred(Length(Extensions)) do
+    for X := 0 to Pred(Length(Extensions)) do
     begin
       if CompareText(ExtractFileExt(Files.Strings[I]), Extensions[X]) = 0 then
         List.Add(Files.Strings[I]);
@@ -117,7 +119,7 @@ function TMakefile.BuildMakefile: Integer;
 var
   Source, Resources, OutFile: TStrings;
   I: Integer;
-  S, Temp, Cop, EchoStr: String;
+  S, Temp, Cop, EchoStr: string;
   ShowAnsiOBJS: Boolean;
 begin
   Result := 0;
@@ -143,7 +145,7 @@ begin
   if Source.Count > 0 then
   begin
     S := ChangeFileExt(Source.Strings[0], '.o');
-    if(ConvertAnsiToOem(S) <> S) then
+    if (ConvertAnsiToOem(S) <> S) then
       ShowAnsiOBJS := True;
     S := EscapeString(ConvertAnsiToOem(S));
     if (Source.Count + Resources.Count) > 1 then
@@ -154,7 +156,7 @@ begin
     for I := 1 to Source.Count - 2 do
     begin
       S := ChangeFileExt(Source.Strings[I], '.o');
-      if(ConvertAnsiToOem(S) <> S) then
+      if (ConvertAnsiToOem(S) <> S) then
         ShowAnsiOBJS := True;
       S := EscapeString(ConvertAnsiToOem(S));
       OutFile.Add('        ' + S + ' \');
@@ -164,13 +166,13 @@ begin
       if Source.Count > 1 then
       begin
         S := ChangeFileExt(Source.Strings[Source.Count - 1], '.o');
-        if(ConvertAnsiToOem(S) <> S) then
+        if (ConvertAnsiToOem(S) <> S) then
           ShowAnsiOBJS := True;
         S := EscapeString(ConvertAnsiToOem(S));
         OutFile.Add('        ' + S + ' \');
       end;
       S := ChangeFileExt(Resources.Strings[0], '.res');
-      if(ConvertAnsiToOem(S) <> S) then
+      if (ConvertAnsiToOem(S) <> S) then
         ShowAnsiOBJS := True;
       S := EscapeString(ConvertAnsiToOem(S));
       OutFile.Add('        ' + S);
@@ -178,7 +180,7 @@ begin
     else if Source.Count > 1 then
     begin
       S := ChangeFileExt(Source.Strings[Source.Count - 1], '.o');
-      if(ConvertAnsiToOem(S) <> S) then
+      if (ConvertAnsiToOem(S) <> S) then
         ShowAnsiOBJS := True;
       S := EscapeString(ConvertAnsiToOem(S));
       OutFile.Add('        ' + S);
@@ -187,7 +189,7 @@ begin
   else if Resources.Count = 1 then
   begin
     S := ChangeFileExt(Resources.Strings[0], '.res');
-    if(ConvertAnsiToOem(S) <> S) then
+    if (ConvertAnsiToOem(S) <> S) then
       ShowAnsiOBJS := True;
     S := EscapeString(ConvertAnsiToOem(S));
     OutFile.Add('OBJS   =' + S);
@@ -254,8 +256,10 @@ begin
   if not Echo then
     EchoStr := '@';
   S := 'build';
-  if CleanBefore or ForceClean then S := 'clean-before ' + S;
-  if CleanAfter then S := S + ' clean-after';
+  if CleanBefore or ForceClean then
+    S := 'clean-before ' + S;
+  if CleanAfter then
+    S := S + ' clean-after';
   OutFile.Add('all: ' + S);
   OutFile.Add('');
   if CleanBefore or ForceClean then
@@ -319,7 +323,7 @@ begin
     OutFile.Add(TabChar + EchoStr + '$(WINDRES) -i ' + Temp + ' -J rc -o ' + S + ' -O coff');
     OutFile.Add('');
   end;
-  
+
   try
     OutFile.SaveToFile(FileName);
   except

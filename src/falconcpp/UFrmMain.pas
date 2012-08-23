@@ -28,40 +28,40 @@ uses
 const
   MAX_OUTLINE_TREE_IMAGES = 27;
   TreeImages: array[0..MAX_OUTLINE_TREE_IMAGES - 1] of Integer = (
-    0,  //Include List
-    1,  //include
-    2,  //Define List
+    0, //Include List
+    1, //include
+    2, //Define List
     18, //define
-    3,  //Variables and Constants List
-    9,  //public variable
-    10,  //private variable
+    3, //Variables and Constants List
+    9, //public variable
+    10, //private variable
     11, //protected variable
-    3,  //Function and Prototype List
+    3, //Function and Prototype List
     15, //public function
     16, //private function
     17, //protected function
     14, //prototype
-    3,  //Type List
-    4,  //class
-    5,  //struct
-    6,  //union
-    7,  //enum
+    3, //Type List
+    4, //class
+    5, //struct
+    6, //union
+    7, //enum
     19, //namespace
     20, //typedef
-    5,  //typedef struct
-    6,  //typedef union
-    7,  //typedef enum
-    21,  //Enum Item
-    8,  //typedef prototype
+    5, //typedef struct
+    6, //typedef union
+    7, //typedef enum
+    21, //Enum Item
+    8, //typedef prototype
     12, //constructor
-    13  //destructor
-  );
+    13 //destructor
+    );
   WM_RELOADFTM = WM_USER + $1008;
   MINLINE_TOENABLE_GOTOLINE = 3;
 
 type
   TSearchItem = record
-    Search: String;
+    Search: string;
     DiffCase: Boolean;
     FullWord: Boolean;
     CircSearch: Boolean;
@@ -406,7 +406,7 @@ type
     procedure SubMSelectAllClick(Sender: TObject);
     procedure SubMBuildClick(Sender: TObject);
     procedure TreeViewProjectsEdited(Sender: TObject; Node: TTreeNode;
-      var S: String);
+      var S: string);
     procedure TreeViewProjectsKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure PopProjRenameClick(Sender: TObject);
@@ -421,11 +421,11 @@ type
     procedure PanelEditorMessagesProc(var Msg: TMessage);
     //procedure PanelEditorProc(var Msg: TMessage);
     procedure GetDropredFiles(Sender: TObject; var Msg: TMessage);
-    procedure OnDragDropFiles(Sender: TObject; Files:TStrings);
+    procedure OnDragDropFiles(Sender: TObject; Files: TStrings);
     procedure CompilerCmdStart(Sender: TObject; const FileName,
-      Params: String);
+      Params: string);
     procedure CompilerCmdFinish(Sender: TObject; const FileName,
-      Params: String; ConsoleOut: TStrings; ExitCode: Integer);
+      Params: string; ConsoleOut: TStrings; ExitCode: Integer);
     procedure ListViewMsgDblClick(Sender: TObject);
     procedure PopProjDelFromDskClick(Sender: TObject);
     procedure ProjectAddClick(Sender: TObject);
@@ -451,7 +451,7 @@ type
     procedure TextEditorMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     procedure TextEditorLinkClick(Sender: TObject; S, AttriName,
-      FirstWord: String);
+      FirstWord: string);
     procedure TextEditorMouseLeave(Sender: TObject;
       Shift: TShiftState; X, Y: Integer);
     procedure TextEditorKeyDown(Sender: TObject; var Key: Word;
@@ -502,28 +502,28 @@ type
     procedure TreeViewOutlineDblClick(Sender: TObject);
     procedure ParserStart(Sender: TObject);
     procedure ParserProgress(Sender: TObject; TokenFile: TTokenFile;
-      const FileName: String; Current, Total: Integer; Parsed: Boolean;
+      const FileName: string; Current, Total: Integer; Parsed: Boolean;
       Method: TTokenParseMethod);
     procedure ParserFinish(Sender: TObject);
 
     procedure AllParserStart(Sender: TObject);
     procedure AllParserProgress(Sender: TObject; TokenFile: TTokenFile;
-      const FileName: String; Current, Total: Integer; Parsed: Boolean;
+      const FileName: string; Current, Total: Integer; Parsed: Boolean;
       Method: TTokenParseMethod);
     procedure AllParserFinish(Sender: TObject);
 
     procedure TokenParserStart(Sender: TObject);
     procedure TokenParserProgress(Sender: TObject; TokenFile: TTokenFile;
-      const FileName: String; Current, Total: Integer; Parsed: Boolean;
+      const FileName: string; Current, Total: Integer; Parsed: Boolean;
       Method: TTokenParseMethod);
     procedure TokenParserFinish(Sender: TObject);
 
     procedure TimerHintTipEventTimer(Sender: TObject);
     procedure CodeCompletionExecute(Kind: TSynCompletionType;
-      Sender: TObject; var CurrentInput: String; var x, y: Integer;
+      Sender: TObject; var CurrentInput: string; var x, y: Integer;
       var CanExecute: Boolean);
     procedure CodeCompletionCodeCompletion(Sender: TObject;
-      var Value: String; Shift: TShiftState; Index: Integer;
+      var Value: string; Shift: TShiftState; Index: Integer;
       EndToken: Char);
     procedure TreeViewOutlineAdvancedCustomDrawItem(
       Sender: TCustomTreeView; Node: TTreeNode; State: TCustomDrawState;
@@ -559,7 +559,7 @@ type
     //*********** debug ************************//
     procedure DebugReaderStart(Sender: TObject);
     procedure DebugReaderCommand(Sender: TObject; Command: TDebugCmd;
-      const Name, Value: String; Line: Integer);
+      const Name, Value: string; Line: Integer);
     procedure DebugReaderFinish(Sender: TObject; ExitCode: Integer);
     procedure RunStepReturnClick(Sender: TObject);
     procedure RunStepIntoClick(Sender: TObject);
@@ -575,77 +575,77 @@ type
       var Handled: Boolean);
     procedure ApplicationEventsDeactivate(Sender: TObject);
     procedure CodeCompletionAfterCodeCompletion(Sender: TObject;
-      const Value: String; Shift: TShiftState; Index: Integer;
+      const Value: string; Shift: TShiftState; Index: Integer;
       EndToken: Char);
     //**********************************************/
   private
     { Private declarations }
-    fWorkerThread           : TThread;//scan current file
+    fWorkerThread: TThread; //scan current file
   public
     { Public declarations }
     //accept drag drop
-    TreeViewProjectsOldProc : TWndMethod;
+    TreeViewProjectsOldProc: TWndMethod;
     PanelEditorMessagesOldProc: TWndMethod;
-    TreeViewOutlineOldProc  : TWndMethod;
+    TreeViewOutlineOldProc: TWndMethod;
 
     //config, resources, sintax
-    OutlineImages           : TOutlineImages;
-    SintaxList              : TSintaxList;//highlighter list
-    Config                  : TConfig;//window objects positions, zoom, etc.
-    Templates               : TTemplates;//all falcon c++ templates
+    OutlineImages: TOutlineImages;
+    SintaxList: TSintaxList; //highlighter list
+    Config: TConfig; //window objects positions, zoom, etc.
+    Templates: TTemplates; //all falcon c++ templates
 
     //paths
-    AppRoot                 : String;//path of executable
-    CompilerActiveMsg       : String;//Caption compiler info
-    ConfigRoot              : String;//directory configuration
-    IniConfigFile           : String;//file configuration
-    LastOpenFileName        : String;
+    AppRoot: string; //path of executable
+    CompilerActiveMsg: string; //Caption compiler info
+    ConfigRoot: string; //directory configuration
+    IniConfigFile: string; //file configuration
+    LastOpenFileName: string;
     //flags
-    IsLoading               : Boolean;
-    ShowingReloadEnquiry    : Boolean;
-    RunNow                  : Boolean;//?
-    ActDropDownBtn          : Boolean;//?
-    XMLOpened               : Boolean;
-    CompilationStopped      : Boolean;
-    FullScreenMode          : Boolean;
-    CanShowHintTip          : Boolean;
-    UsingCtrlSpace          : Boolean;
-    HandlingTabs            : Boolean;
-    LastKeyPressed          : Char;
-    CanFillCompletion       : Boolean;
-    CurrentFileIsParsed     : Boolean;
-    LastMousePos            : TPoint;
-    LastWordHintStart       : Integer;
+    IsLoading: Boolean;
+    ShowingReloadEnquiry: Boolean;
+    RunNow: Boolean; //?
+    ActDropDownBtn: Boolean; //?
+    XMLOpened: Boolean;
+    CompilationStopped: Boolean;
+    FullScreenMode: Boolean;
+    CanShowHintTip: Boolean;
+    UsingCtrlSpace: Boolean;
+    HandlingTabs: Boolean;
+    LastKeyPressed: Char;
+    CanFillCompletion: Boolean;
+    CurrentFileIsParsed: Boolean;
+    LastMousePos: TPoint;
+    LastWordHintStart: Integer;
     //for ThreadTokenFiles
-    IsLoadingSrcFiles       : Boolean;
-    LoadTokenMode           : Integer;
-    ParseAllCloseApp        : Boolean;
+    IsLoadingSrcFiles: Boolean;
+    LoadTokenMode: Integer;
+    ParseAllCloseApp: Boolean;
 
-    FalconVersion           : TVersion;//this file version
-    LastProjectBuild        : TProjectProperty;//last builded project
-    startBuildTicks         : Cardinal;
-    BuildTime               : Cardinal;
-    LastSearch              : TSearchItem;
-    ZoomEditor              : Integer;//edit zoom
-    ActiveEditingFile       : TTokenFile;//last parsed tokens
-    FilesParsed             : TTokenFiles;//all files parsed
+    FalconVersion: TVersion; //this file version
+    LastProjectBuild: TProjectProperty; //last builded project
+    startBuildTicks: Cardinal;
+    BuildTime: Cardinal;
+    LastSearch: TSearchItem;
+    ZoomEditor: Integer; //edit zoom
+    ActiveEditingFile: TTokenFile; //last parsed tokens
+    FilesParsed: TTokenFiles; //all files parsed
     //for Project
-    ThreadFilesParsed       : TThreadTokenFiles;
-    AllParsedList           : TStrings;
+    ThreadFilesParsed: TThreadTokenFiles;
+    AllParsedList: TStrings;
     //for Cache
-    ParseAllFiles           : TTokenFiles;//parse unparsed static files
-    ThreadLoadTkFiles       : TThreadLoadTokenFiles;
-    ThreadTokenFiles        : TThreadTokenFiles;
-    HintTip                 : TTokenHintTip;//mouse over hint
-    HintParams              : TTokenHintParams;
-    AutoComplete: TSynAutoComplete;//auto complete
+    ParseAllFiles: TTokenFiles; //parse unparsed static files
+    ThreadLoadTkFiles: TThreadLoadTokenFiles;
+    ThreadTokenFiles: TThreadTokenFiles;
+    HintTip: TTokenHintTip; //mouse over hint
+    HintParams: TTokenHintParams;
+    AutoComplete: TSynAutoComplete; //auto complete
     //debug
     DebugReader: TDebugReader;
     WatchList: TDebugWatchList;
     CommandQueue: TCommandQueue;
     DebugActiveLine: Integer;
     DebugActiveFile: TFileProperty;
-    DebugHint               : THintTree;
+    DebugHint: THintTree;
     DebugParser: TDebugParser;
     //Completion List Colors
     CompletionColors: TCompletionColors;
@@ -656,14 +656,14 @@ type
     procedure ExecuteApplication(ProjectProperty: TProjectProperty);
     procedure ShowLineError(Project: TProjectProperty; Msg: TMessageItem);
     function SaveProject(ProjProp: TProjectProperty): Boolean;
-    procedure SelectTheme(Theme: String);
+    procedure SelectTheme(Theme: string);
     procedure InvalidateDebugLine;
     procedure AddWatchDebugVariables(scopeToken: TTokenClass;
       SelLine: Integer; var LastID: Integer; var VarAdded: Integer);
-    function AddWatchItem(ID: Integer; const Name: String;
+    function AddWatchItem(ID: Integer; const Name: string;
       token: TTokenClass; watchType: TWatchType): Boolean;
-    function DeleteWatchItem(const Name: String): Boolean;
-    function SearchAndOpenFile(const FileName: String;
+    function DeleteWatchItem(const Name: string): Boolean;
+    function SearchAndOpenFile(const FileName: string;
       var fp: TFileProperty): Boolean;
     procedure UpdateActiveDebugLine(fp: TFileProperty;
       Line: Integer);
@@ -684,30 +684,33 @@ type
     function GetActiveProject(var Project: TProjectProperty): Boolean;
     function GetActiveFile(var ActiveFile: TFileProperty): Boolean;
     function GetActiveSheet(var sheet: TFilePropertySheet): Boolean;
-    function FileInHistory(const FileName: String;
+    function FileInHistory(const FileName: string;
       var HistCount: Integer): Boolean;
     function RenameFileInHistory(const FileName,
-      NewFileName: String): Boolean;
-    function AddFileToHistory(const FileName: String): Boolean;
-    function OpenFileWithHistoric(Value: String;
+      NewFileName: string): Boolean;
+    function AddFileToHistory(const FileName: string): Boolean;
+    function OpenFileWithHistoric(Value: string;
       var Proj: TProjectProperty): Boolean;
-    procedure RemoveFileFromHistoric(FileName: String);
+    procedure RemoveFileFromHistoric(FileName: string);
     procedure UpdateLangNow;
     procedure TextEditorFileParsed(EditFile: TFileProperty;
       TokenFile: TTokenFile);
     procedure UpdateOpenedSheets;
-    function ImportDevCppProject(const FileName: String): Boolean;
-    function ImportCodeBlocksProject(const FileName: String): Boolean;
-    function ImportMSVCProject(const FileName: String): Boolean;
+    function ImportDevCppProject(const FileName: string;
+      var Proj: TProjectProperty): Boolean;
+    function ImportCodeBlocksProject(const FileName: string;
+      var Proj: TProjectProperty): Boolean;
+    function ImportMSVCProject(const FileName: string;
+      var Proj: TProjectProperty): Boolean;
     procedure ToolbarCheck(const Index: Integer; const Value: Boolean);
     procedure DropFilesIntoProjectList(List: TStrings; X, Y: Integer);
     //outline functions
     procedure UpdateActiveFileToken(NewToken: TTokenFile;
       Reload: Boolean = False);
     //hint functions
-    procedure ProcessDebugHint(Input: String; Line, SelStart: integer;
+    procedure ProcessDebugHint(Input: string; Line, SelStart: integer;
       CursorPos: TPoint);
-    procedure AddMessage(const FileName, Title, Msg: String; Line,
+    procedure AddMessage(const FileName, Title, Msg: string; Line,
       Column, EndColumn: Integer; MsgType: TMessageItemType;
       AlignCenter: Boolean = True);
     procedure GotoLineAndAlignCenter(Memo: TSynMemo; Line: Integer;
@@ -724,17 +727,17 @@ type
 
   TParserThread = class(TThread)
   private
-    fLastPercent     : Integer;
-    fScanEventHandle : THandle;
-    fSourceChanged   : Boolean;
-    fSource          : String;
-    fStartTime       : Cardinal;
-    fParseTime       : Cardinal;
-    fTokenFile       : TTokenFile;
-    fHasParsed       : Boolean;
-    fCppParser       : TCppParser;
-    fMsg             : String;
-    fCurrLine        : Integer;
+    fLastPercent: Integer;
+    fScanEventHandle: THandle;
+    fSourceChanged: Boolean;
+    fSource: string;
+    fStartTime: Cardinal;
+    fParseTime: Cardinal;
+    fTokenFile: TTokenFile;
+    fHasParsed: Boolean;
+    fCppParser: TCppParser;
+    fMsg: string;
+    fCurrLine: Integer;
     procedure GetSource;
     procedure SetResults;
     procedure ShowProgress;
@@ -746,7 +749,7 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    procedure SetModified;//actual files has modified
+    procedure SetModified; //actual files has modified
     procedure Shutdown;
     property CppParser: TCppParser read fCppParser write fCppParser;
     property TokenFile: TTokenFile read fTokenFile write fTokenFile;
@@ -792,7 +795,8 @@ end;
 
 procedure TParserThread.ShowProgress;
 begin
-  if not Assigned(FrmFalconMain) then Exit;
+  if not Assigned(FrmFalconMain) then
+    Exit;
   with FrmFalconMain do
   begin
     //StatusBar.Panels.Items[2].Caption := Format('%d %% done', [fLastPercent]);
@@ -801,7 +805,8 @@ end;
 
 procedure TParserThread.AddLogEvent;
 begin
-  if not Assigned(FrmFalconMain) then Exit;
+  if not Assigned(FrmFalconMain) then
+    Exit;
   with FrmFalconMain do
   begin
     AddMessage(fTokenFile.FileName, ExtractFileName(fTokenFile.FileName), fMsg,
@@ -820,9 +825,11 @@ begin
     fCppParser.Cancel;
     Exit;
   end;
-  if Total = 0 then Exit;
-  I := Round(Current*100/Total);
-  if I = fLastPercent then Exit;
+  if Total = 0 then
+    Exit;
+  I := Round(Current * 100 / Total);
+  if I = fLastPercent then
+    Exit;
   fLastPercent := I;
   //Sleep(10);
   Synchronize(ShowProgress);
@@ -838,7 +845,8 @@ end;
 
 procedure TParserThread.Execute;
 begin
-  while not Terminated do begin
+  while not Terminated do
+  begin
     WaitForSingleObject(fScanEventHandle, INFINITE);
     fHasParsed := False;
     repeat
@@ -855,13 +863,15 @@ begin
 
       fStartTime := GetTickCount;
       fHasParsed := fCppParser.Parse(fSource, TokenFile);
-      if fSourceChanged then Break;
+      if fSourceChanged then
+        Break;
     until not fSourceChanged;
 
     if Terminated then
       break;
     // source was changed while scanning
-    if fSourceChanged then begin
+    if fSourceChanged then
+    begin
       Sleep(100);
       continue;
     end;
@@ -909,7 +919,8 @@ var
   sheet: TFilePropertySheet;
   FileProp: TFileProperty;
 begin
-  if not Assigned(FrmFalconMain) then Exit;
+  if not Assigned(FrmFalconMain) then
+    Exit;
   with FrmFalconMain do
   begin
     if not GetActiveSheet(sheet) then
@@ -923,7 +934,8 @@ begin
     UpdateActiveFileToken(fTokenFile, True);
     FileProp := TFileProperty(ActiveEditingFile.Data);
     TextEditorFileParsed(FileProp, ActiveEditingFile);
-    if HintParams.Activated then ShowHintParams(sheet.Memo);
+    if HintParams.Activated then
+      ShowHintParams(sheet.Memo);
   end;
 end;
 
@@ -937,10 +949,10 @@ end;
 
 {TFrmFalconMain}
 
-procedure SetActiveCompiler(OldPath, Actpath: String;
+procedure SetActiveCompiler(OldPath, Actpath: string;
   SplashScreen: TSplashScreen = nil);
 var
-  path, temp: String;
+  path, temp: string;
 begin
   Actpath := ExcludeTrailingPathDelimiter(Actpath);
   path := GetEnvironmentVariable('PATH');
@@ -978,11 +990,9 @@ var
   List: TStrings;
   I: Integer;
   Template: TTemplate;
-  Temp, path: String;
+  Temp, path: string;
   ini: TIniFile;
   Rs: TResourceStream;
-  Prop: TFileProperty;
-  FileObj: TFileObject;
   HistList, SourceFileList, AutoCompleteList: TStrings;
   FileProp: TFileProperty;
   Proj: TProjectProperty;
@@ -1004,36 +1014,39 @@ begin
   SplashScreen.TextOut(55, 300, STR_FRM_MAIN[45]);
   fWorkerThread := TParserThread.Create;
   ThreadTokenFiles := TThreadTokenFiles.Create;
+  ThreadTokenFiles.OnStart := ParserStart;
+  ThreadTokenFiles.OnProgress := ParserProgress;
+  ThreadTokenFiles.OnFinish := ParserFinish;
 
   ThreadLoadTkFiles := TThreadLoadTokenFiles.Create;
   ThreadLoadTkFiles.OnStart := TokenParserStart;
   ThreadLoadTkFiles.OnProgress := TokenParserProgress;
   ThreadLoadTkFiles.OnFinish := TokenParserFinish;
 
-  ThreadTokenFiles.OnStart := ParserStart;
-  ThreadTokenFiles.OnProgress := ParserProgress;
-  ThreadTokenFiles.OnFinish := ParserFinish;
+  ThreadFilesParsed := TThreadTokenFiles.Create;
+  ThreadFilesParsed.OnStart := AllParserStart;
+  ThreadFilesParsed.OnProgress := AllParserProgress;
+  ThreadFilesParsed.OnFinish := AllParserFinish;
+
+  ParseAllFiles := TTokenFiles.Create; //parse all unparsed files
+  FilesParsed := TTokenFiles.Create;
+  ActiveEditingFile := TTokenFile.Create;
+  AllParsedList := TStringList.Create;
+
   DebugReader := TDebugReader.Create;
   DebugReader.OnStart := DebugReaderStart;
   DebugReader.OnCommand := DebugReaderCommand;
   DebugReader.OnFinish := DebugReaderFinish;
   CommandQueue := TCommandQueue.Create;
   WatchList := TDebugWatchList.Create;
-  FilesParsed := TTokenFiles.Create;
-  ThreadFilesParsed := TThreadTokenFiles.Create;
-  ThreadFilesParsed.OnStart := AllParserStart;
-  ThreadFilesParsed.OnProgress := AllParserProgress;
-  ThreadFilesParsed.OnFinish := AllParserFinish;
-  AllParsedList := TStringList.Create;
-  ActiveEditingFile := TTokenFile.Create;
-  ParseAllFiles := TTokenFiles.Create;//parse all unparsed files
-  HintTip := TTokenHintTip.Create(Self);//mouse over hint
-  HintParams := TTokenHintParams.Create(Self);//Ctrl + Space or ( Trigger Key
-  DebugParser := TDebugParser.Create;//fill treeview with debug variables
+  HintTip := TTokenHintTip.Create(Self);
+  //HintTip := TTokenHintTip.Create(Self); //mouse over hint
+  HintParams := TTokenHintParams.Create(Self); //Ctrl + Space or ( Trigger Key
+  DebugParser := TDebugParser.Create; //fill treeview with debug variables
   DebugParser.TreeView := TreeViewOutline;
-  DebugHint  := THintTree.Create(Self);//hint with a treeview
+  DebugHint := THintTree.Create(Self); //hint with a treeview
   DebugHint.ImageList := ImageListDebug;
-  AutoComplete := TSynAutoComplete.Create(Self);//Ctrl+J
+  AutoComplete := TSynAutoComplete.Create(Self); //Ctrl+J
   //Load default auto complete
   Rs := TResourceStream.Create(HInstance, 'AUTOCOMPLETE', RT_RCDATA);
   Rs.Position := 0;
@@ -1060,12 +1073,12 @@ begin
   begin
     OutlineImages[I] := TreeImages[I];
   end;
-  ViewZoomInc.ShortCut := ShortCut(VK_ADD, [ssCtrl]);//Ctrl + +
-  ViewZoomDec.ShortCut := ShortCut(VK_SUBTRACT, [ssCtrl]);//Ctrl + -
-  BtnPrevPage.ShortCut := ShortCut(VK_TAB, [ssCtrl, ssShift]);//Ctrl + Shift + Tab
-  BtnNextPage.ShortCut := ShortCut(VK_TAB, [ssCtrl]);//Ctrl + Tab
-  SearchGotoPrevFunc.ShortCut := ShortCut(VK_UP, [ssCtrl, ssShift]);//Ctrl + Shift + UP
-  SearchGotoNextFunc.ShortCut := ShortCut(VK_DOWN, [ssCtrl, ssShift]);//Ctrl + Shift + DOWN
+  ViewZoomInc.ShortCut := ShortCut(VK_ADD, [ssCtrl]); //Ctrl + +
+  ViewZoomDec.ShortCut := ShortCut(VK_SUBTRACT, [ssCtrl]); //Ctrl + -
+  BtnPrevPage.ShortCut := ShortCut(VK_TAB, [ssCtrl, ssShift]); //Ctrl + Shift + Tab
+  BtnNextPage.ShortCut := ShortCut(VK_TAB, [ssCtrl]); //Ctrl + Tab
+  SearchGotoPrevFunc.ShortCut := ShortCut(VK_UP, [ssCtrl, ssShift]); //Ctrl + Shift + UP
+  SearchGotoNextFunc.ShortCut := ShortCut(VK_DOWN, [ssCtrl, ssShift]); //Ctrl + Shift + DOWN
 
   FalconVersion := GetFileVersionA(Application.ExeName);
   ActDropDownBtn := True;
@@ -1107,9 +1120,9 @@ begin
     end;
   end;
 
-  TimerHintParams.Interval := Config.Editor.CodeDelay*100;
-  TimerHintTipEvent.Interval := Config.Editor.CodeDelay*100;
-  CodeCompletion.TimerInterval := Config.Editor.CodeDelay*100;
+  TimerHintParams.Interval := Config.Editor.CodeDelay * 100;
+  TimerHintTipEvent.Interval := Config.Editor.CodeDelay * 100;
+  CodeCompletion.TimerInterval := Config.Editor.CodeDelay * 100;
   UpdateCompletionColors(Config.Editor);
   if Assigned(Config.Environment.Langs.Current) then
   begin
@@ -1120,7 +1133,7 @@ begin
     end;
   end;
   SplashScreen.TextOut(55, 300, STR_FRM_MAIN[33], False);
-  ini:= TIniFile.Create(IniConfigFile);
+  ini := TIniFile.Create(IniConfigFile);
   HistList := TStringList.Create;
   ini.ReadSection('History', HistList);
   for I := Pred(HistList.Count) downto 0 do
@@ -1150,6 +1163,7 @@ begin
     Temp := ini.ReadString('HighlighterList', List.Strings[I], '{}');
     SintaxList.Insert(I, TSintax.Create(List.Strings[I], Temp));
   end;
+  List.Free;
   I := SintaxList.IndexOfName(Config.Editor.ActiveSintax);
   if I >= 0 then
     SintaxList.ItemIndex := I;
@@ -1164,10 +1178,6 @@ begin
 
   TreeViewOutlineOldProc := TreeViewOutline.WindowProc;
   TreeViewOutline.WindowProc := TreeViewOutlineProc;
-
-  //PanelEditorOldProc := PanelEditor.WindowProc;
-  //PanelEditor.WindowProc := PanelEditorProc;
-  //DragAcceptFiles(PanelEditor.Handle, True);
 
   PanelEditorMessagesOldProc := PanelEditorMessages.WindowProc;
   PanelEditorMessages.WindowProc := PanelEditorMessagesProc;
@@ -1186,7 +1196,7 @@ begin
   List := Config.LoadTemplates(Config.Environment.TemplatesDir);
   SplashScreen.TextOut(55, 300, STR_FRM_MAIN[26]);
   //load templates
-  for I:= 0 to Pred(List.Count) do
+  for I := 0 to Pred(List.Count) do
   begin
     Template := TTemplate.Create;
     if Template.Load(Config.Environment.TemplatesDir + List.Strings[I], HelpFalcon) then
@@ -1197,12 +1207,8 @@ begin
   List.Free;
   SplashScreen.TextOut(55, 300, STR_FRM_MAIN[27]);
   //load projects
-  for I:= 1 to ParamCount do
-  begin
+  for I := 1 to ParamCount do
     OpenFileWithHistoric(ParamStr(I), Proj);
-    //if OpenFileWithHistoric(ParamStr(I), Proj) then
-    //  ParseProjectFiles(Proj);
-  end;
   List := TStringList.Create;
   ini := TIniFile.Create(IniConfigFile);
   ini.ReadSection('LastSection', List);
@@ -1221,25 +1227,10 @@ begin
     end;
   end;
   ini.Free;
-  List.Clear;
-  GetSourcesFiles(List);
-  if List.Count > 0 then
-  begin
-    for I := 0 to List.Count - 1 do
-    begin
-      Prop := TFileProperty(List.Objects[I]);
-      FileObj := TFileObject.Create;
-      FileObj.ID := Prop;
-      FileObj.FileName := List.Strings[I];
-      List.Strings[I] := Prop.GetCompleteFileName;
-      List.Objects[I] := FileObj;
-    end;
-    ThreadFilesParsed.ParseLoad(FilesParsed, List);
-  end;
   List.Free;
   SplashScreen.TextOut(55, 300, STR_FRM_MAIN[28]);
   CreateStdTools;
-  
+
   //detect compiler
   List := TStringList.Create;
   SearchCompilers(List, temp);
@@ -1308,12 +1299,17 @@ begin
     end;
     SourceFileList.Free;
   end;
+  List := TStringList.Create;
+  GetSourcesFiles(List);
+  ParseFiles(List);
+  List.Free;
   SplashScreen.Hide;
   IsLoading := False;
   //update grayed project and outline
 end;
 
 //on close application
+
 procedure TFrmFalconMain.FormClose(Sender: TObject; var Action: TCloseAction);
 var
   ProjProp: TProjectProperty;
@@ -1327,35 +1323,35 @@ begin
   while Node <> nil do
   begin
     ProjProp := TProjectProperty(Node.Data);
-    List.AddObject(ProjProp.GetCompleteFileName, ProjProp);
+    List.AddObject(ProjProp.FileName, ProjProp);
     if (ProjProp.Modified or not ProjProp.Saved or ProjProp.FilesChanged) then
     begin
       R := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[10],
-           [ExtractFileName(ProjProp.FileName)])), 'Falcon C++',
-           MB_YESNOCANCEL + MB_ICONINFORMATION);
+        [ExtractFileName(ProjProp.FileName)])), 'Falcon C++',
+        MB_YESNOCANCEL + MB_ICONINFORMATION);
       case R of
         mrYes:
-        begin
-          if not ProjProp.Saved then
           begin
-            if not SaveProject(ProjProp) then
+            if not ProjProp.Saved then
             begin
-              Action := caNone;
-              List.Free;
-              Exit;
-            end;
-          end
-          else if ProjProp.Modified or ProjProp.FilesChanged then
+              if not SaveProject(ProjProp) then
+              begin
+                Action := caNone;
+                List.Free;
+                Exit;
+              end;
+            end
+            else if ProjProp.Modified or ProjProp.FilesChanged then
               ProjProp.SaveAll(True);
-        end;//mrYes
+          end; //mrYes
         mrCancel:
-        begin
-          Action := caNone;
-          List.Free;
-          Exit;
-        end;//mrCancel
-      end;//case
-    end;//modified or not salved
+          begin
+            Action := caNone;
+            List.Free;
+            Exit;
+          end; //mrCancel
+      end; //case
+    end; //modified or not salved
     if Config.Environment.CreateLayoutFiles and ProjProp.Saved and
       (ProjProp.FileType = FILE_TYPE_PROJECT) then
       ProjProp.SaveLayout;
@@ -1372,10 +1368,10 @@ begin
       Exit;
     end;
     Config.Save(IniConfigFile, Self);
-    ini:= TIniFile.Create(IniConfigFile);
+    ini := TIniFile.Create(IniConfigFile);
     ini.EraseSection('History');
     for I := 2 to Pred(FileReopen.Count) do
-      ini.WriteString('History', 'File'+ IntToStr(I - 1),
+      ini.WriteString('History', 'File' + IntToStr(I - 1),
         TDataMenuItem(FileReopen.Items[I]).HelpFile);
     ini.WriteBool('Search', 'DiffCase', LastSearch.DiffCase);
     ini.WriteBool('Search', 'FullWord', LastSearch.FullWord);
@@ -1393,7 +1389,8 @@ begin
     ini.EraseSection('HighlighterList');
     for I := 0 to SintaxList.Count - 1 do
     begin
-      if SintaxList.Items[I].ReadOnly then Continue;
+      if SintaxList.Items[I].ReadOnly then
+        Continue;
       ini.WriteString('HighlighterList', SintaxList.Items[I].Name,
         SintaxList.Items[I].GetSintaxString);
     end;
@@ -1406,20 +1403,20 @@ begin
       begin
         case Config.Environment.AutoOpen of
           0, 3:
-          begin
-            Inc(J);
-            if TProjectProperty(List.Objects[I]).FileType = FILE_TYPE_PROJECT then
             begin
-              ini.WriteString('LastSection', 'File' + IntToStr(J), List.Strings[I]);
-              if Config.Environment.AutoOpen = 3 then
-                Break;
+              Inc(J);
+              if TProjectProperty(List.Objects[I]).FileType = FILE_TYPE_PROJECT then
+              begin
+                ini.WriteString('LastSection', 'File' + IntToStr(J), List.Strings[I]);
+                if Config.Environment.AutoOpen = 3 then
+                  Break;
+              end;
             end;
-          end;
           1:
-          begin
-            Inc(J);
-            ini.WriteString('LastSection', 'File' + IntToStr(J), List.Strings[I]);
-          end;
+            begin
+              Inc(J);
+              ini.WriteString('LastSection', 'File' + IntToStr(J), List.Strings[I]);
+            end;
         end;
       end;
     end;
@@ -1454,7 +1451,7 @@ begin
     Template.CompilerType := COMPILER_C;
   aTemplates.Insert(Template);
   //load templates
-  for I:= 0 to Pred(List.Count) do
+  for I := 0 to Pred(List.Count) do
   begin
     Template := TTemplate.Create;
     if Template.Load(Config.Environment.TemplatesDir + List.Strings[I], HelpFalcon) then
@@ -1494,7 +1491,7 @@ begin
       if Token.Token in [tkFunction, tkProtoType, tkConstructor, tkDestructor] then
       begin
         if Token.Token in [tkConstructor, tkDestructor] then
-          Node := TreeViewOutline.Items.AddChildObject(Node,  GetFuncScope(Token) +
+          Node := TreeViewOutline.Items.AddChildObject(Node, GetFuncScope(Token) +
             Token.Name + GetFuncProtoTypes(Token), Token)
         else
           Node := TreeViewOutline.Items.AddChildObject(Node, Token.Name +
@@ -1517,17 +1514,17 @@ end;
 
 procedure TFrmFalconMain.UpdateCompletionColors(EdtOpt: TEditorOptions);
 begin
-  CompletionColors[TTkType(0)]  := Format(CompletionNames[0],  [ColorToString(EdtOpt.CompListType)]);
-  CompletionColors[TTkType(1)]  := Format(CompletionNames[1],  [ColorToString(EdtOpt.CompListFunc)]);
-  CompletionColors[TTkType(2)]  := Format(CompletionNames[2],  [ColorToString(EdtOpt.CompListFunc)]);
-  CompletionColors[TTkType(3)]  := Format(CompletionNames[3],  [ColorToString(EdtOpt.CompListConstructor)]);
-  CompletionColors[TTkType(4)]  := Format(CompletionNames[4],  [ColorToString(EdtOpt.CompListDestructor)]);
+  CompletionColors[TTkType(0)] := Format(CompletionNames[0], [ColorToString(EdtOpt.CompListType)]);
+  CompletionColors[TTkType(1)] := Format(CompletionNames[1], [ColorToString(EdtOpt.CompListFunc)]);
+  CompletionColors[TTkType(2)] := Format(CompletionNames[2], [ColorToString(EdtOpt.CompListFunc)]);
+  CompletionColors[TTkType(3)] := Format(CompletionNames[3], [ColorToString(EdtOpt.CompListConstructor)]);
+  CompletionColors[TTkType(4)] := Format(CompletionNames[4], [ColorToString(EdtOpt.CompListDestructor)]);
   //CompletionColors[TTkType(5)]  := Format(CompletionNames[5],  [ColorToString(EdtOpt.CompListInclude)]);
-  CompletionColors[TTkType(6)]  := Format(CompletionNames[6],  [ColorToString(EdtOpt.CompListPreproc)]);
-  CompletionColors[TTkType(7)]  := Format(CompletionNames[7],  [ColorToString(EdtOpt.CompListVar)]);
-  CompletionColors[TTkType(8)]  := Format(CompletionNames[8],  [ColorToString(EdtOpt.CompListTypedef)]);
-  CompletionColors[TTkType(9)]  := Format(CompletionNames[9],  [ColorToString(EdtOpt.CompListTypedef)]);
-  CompletionColors[TTkType(10)]  := Format(CompletionNames[10],  [ColorToString(EdtOpt.CompListType)]);
+  CompletionColors[TTkType(6)] := Format(CompletionNames[6], [ColorToString(EdtOpt.CompListPreproc)]);
+  CompletionColors[TTkType(7)] := Format(CompletionNames[7], [ColorToString(EdtOpt.CompListVar)]);
+  CompletionColors[TTkType(8)] := Format(CompletionNames[8], [ColorToString(EdtOpt.CompListTypedef)]);
+  CompletionColors[TTkType(9)] := Format(CompletionNames[9], [ColorToString(EdtOpt.CompListTypedef)]);
+  CompletionColors[TTkType(10)] := Format(CompletionNames[10], [ColorToString(EdtOpt.CompListType)]);
   CompletionColors[TTkType(11)] := Format(CompletionNames[11], [ColorToString(EdtOpt.CompListType)]);
   CompletionColors[TTkType(12)] := Format(CompletionNames[12], [ColorToString(EdtOpt.CompListType)]);
   CompletionColors[TTkType(13)] := Format(CompletionNames[13], [ColorToString(EdtOpt.CompListType)]);
@@ -1538,6 +1535,7 @@ begin
 end;
 
 //get source file to parse
+
 procedure TFrmFalconMain.ParseFiles(List: TStrings);
 var
   I: Integer;
@@ -1559,13 +1557,14 @@ begin
     FileObj.ID := Prop;
     if prop.GetSheet(sheet) then
     begin
+      FileObj.FileName := prop.FileName;
       FileObj.Text := sheet.Memo.Text;
       ObjList.AddObject('-', FileObj);
     end
     else if prop.Saved then
     begin
       FileObj.FileName := List.Strings[I];
-      ObjList.AddObject(prop.GetCompleteFileName, FileObj);
+      ObjList.AddObject(prop.FileName, FileObj);
     end;
   end;
   if ObjList.Count = 0 then
@@ -1588,6 +1587,7 @@ begin
 end;
 
 //get source file to parse
+
 procedure TFrmFalconMain.ParseProjectFiles(Proj: TProjectProperty);
 var
   List: TStrings;
@@ -1621,6 +1621,7 @@ begin
 end;
 
 //get source file to parse
+
 function TFrmFalconMain.GetSourcesFiles(List: TStrings;
   IncludeRC: Boolean): Integer;
 var
@@ -1632,16 +1633,17 @@ begin
   begin
     prop := TFileProperty(TreeViewProjects.Items.Item[I].Data);
     if not (prop.FileType in [FILE_TYPE_PROJECT, FILE_TYPE_FOLDER,
-                              FILE_TYPE_RC]) then
+      FILE_TYPE_RC]) then
     begin
       Inc(Result);
-      List.AddObject(prop.GetCompleteFileName, prop);
+      List.AddObject(prop.FileName, prop);
     end;
   end;
 //
 end;
 
 //update user configuration editor
+
 procedure TFrmFalconMain.UpdateOpenedSheets;
 var
   Options: TSynEditorOptions;
@@ -1650,9 +1652,9 @@ var
 begin
   ZoomEditor := Config.Editor.FontSize;
   UpdateCompletionColors(Config.Editor);
-  TimerHintParams.Interval := Config.Editor.CodeDelay*100;
-  TimerHintTipEvent.Interval := Config.Editor.CodeDelay*100;
-  CodeCompletion.TimerInterval := Config.Editor.CodeDelay*100;
+  TimerHintParams.Interval := Config.Editor.CodeDelay * 100;
+  TimerHintTipEvent.Interval := Config.Editor.CodeDelay * 100;
+  CodeCompletion.TimerInterval := Config.Editor.CodeDelay * 100;
 
   for I := 0 to Pred(PageControlEditor.PageCount) do
   begin
@@ -1662,30 +1664,50 @@ begin
     begin
       Options := SynMemo.Options;
       //------------ General --------------------------//
-      if AutoIndent then Include(Options, eoAutoIndent)
-      else Exclude(Options, eoAutoIndent);
+      if AutoIndent then
+        Include(Options, eoAutoIndent)
+      else
+        Exclude(Options, eoAutoIndent);
       //find text at cursor
       SynMemo.InsertMode := InsertMode;
-      if GroupUndo then Include(Options, eoGroupUndo)
-      else Exclude(Options, eoGroupUndo);
+      if GroupUndo then
+        Include(Options, eoGroupUndo)
+      else
+        Exclude(Options, eoGroupUndo);
       //remove file on close
-      if KeepTrailingSpaces then Exclude(Options, eoTabIndent)
-      else Include(Options, eoTrimTrailingSpaces);
+      if KeepTrailingSpaces then
+        Exclude(Options, eoTabIndent)
+      else
+        Include(Options, eoTrimTrailingSpaces);
 
-      if ScrollHint then Exclude(Options, eoShowScrollHint)
-      else Include(Options, eoShowScrollHint);
-      if TabIndentUnindent then Include(Options, eoTabIndent)
-      else Exclude(Options, eoTabIndent);
-      if SmartTabs then Include(Options, eoSmartTabs)
-      else Exclude(Options, eoSmartTabs);
-      if SmartTabs then Include(Options, eoSmartTabs)
-      else Exclude(Options, eoSmartTabs);
-      if UseTabChar then Exclude(Options, eoTabsToSpaces)
-      else Include(Options, eoTabsToSpaces);
-      if EnhancedHomeKey then Include(Options, eoEnhanceHomeKey)
-      else Exclude(Options, eoEnhanceHomeKey);
-      if ShowLineChars then Include(Options, eoShowSpecialChars)
-      else Exclude(Options, eoShowSpecialChars);
+      if ScrollHint then
+        Exclude(Options, eoShowScrollHint)
+      else
+        Include(Options, eoShowScrollHint);
+      if TabIndentUnindent then
+        Include(Options, eoTabIndent)
+      else
+        Exclude(Options, eoTabIndent);
+      if SmartTabs then
+        Include(Options, eoSmartTabs)
+      else
+        Exclude(Options, eoSmartTabs);
+      if SmartTabs then
+        Include(Options, eoSmartTabs)
+      else
+        Exclude(Options, eoSmartTabs);
+      if UseTabChar then
+        Exclude(Options, eoTabsToSpaces)
+      else
+        Include(Options, eoTabsToSpaces);
+      if EnhancedHomeKey then
+        Include(Options, eoEnhanceHomeKey)
+      else
+        Exclude(Options, eoEnhanceHomeKey);
+      if ShowLineChars then
+        Include(Options, eoShowSpecialChars)
+      else
+        Exclude(Options, eoShowSpecialChars);
 
       SynMemo.MaxUndo := MaxUndo;
       SynMemo.TabWidth := TabWidth;
@@ -1725,15 +1747,18 @@ begin
 end;
 
 //get selected file in project list
+
 function TFrmFalconMain.GetSelectedFileInList(var ActiveFile: TFileProperty): Boolean;
 begin
   Result := False;
-  if (TreeViewProjects.SelectionCount = 0) then Exit;
+  if (TreeViewProjects.SelectionCount = 0) then
+    Exit;
   ActiveFile := TFileProperty(TreeViewProjects.Selected.Data);
   Result := True;
 end;
 
 // get active file in treeview or active sheet
+
 function TFrmFalconMain.GetActiveFile(var ActiveFile: TFileProperty): Boolean;
 var
   Sheet: TFilePropertySheet;
@@ -1765,7 +1790,7 @@ begin
   else
   begin
     Node := TreeViewProjects.Items.GetFirstNode;
-    if Node  = nil then
+    if Node = nil then
       Exit;
     if Node.getNextSibling <> nil then
       Exit;
@@ -1775,12 +1800,14 @@ begin
 end;
 
 //get active project
+
 function TFrmFalconMain.GetActiveProject(var Project: TProjectProperty): Boolean;
 var
   ActFile: TFileProperty;
 begin
   Result := False;
-  if not GetActiveFile(ActFile) then Exit;
+  if not GetActiveFile(ActFile) then
+    Exit;
   if (TObject(ActFile) is TProjectProperty) then
     Project := TProjectProperty(ActFile)
   else
@@ -1789,15 +1816,18 @@ begin
 end;
 
 //get active sheet
+
 function TFrmFalconMain.GetActiveSheet(var sheet: TFilePropertySheet): Boolean;
 begin
   Result := False;
-  if PageControlEditor.ActivePageIndex < 0 then Exit;
+  if PageControlEditor.ActivePageIndex < 0 then
+    Exit;
   sheet := TFilePropertySheet(PageControlEditor.ActivePage);
   Result := True;
 end;
 
 //show about window
+
 procedure TFrmFalconMain.About1Click(Sender: TObject);
 begin
   if not Assigned(FormAbout) then
@@ -1809,6 +1839,7 @@ begin
 end;
 
 //show properties window of project
+
 procedure TFrmFalconMain.ProjectPropertiesClick(Sender: TObject);
 var
   ProjProp: TProjectProperty;
@@ -1828,6 +1859,7 @@ begin
 end;
 
 //open files
+
 procedure TFrmFalconMain.FileOpenClick(Sender: TObject);
 begin
   if OpenDlg.Execute then
@@ -1841,9 +1873,10 @@ begin
 end;
 
 //on click menu help execute filehelp
+
 procedure TFrmFalconMain.FalconHelpClick(Sender: TObject);
 var
-  FileName: String;
+  FileName: string;
 begin
   if Sender is TDataMenuItem then
   begin
@@ -1853,11 +1886,12 @@ begin
   end;
 end;
 
-procedure BoldTreeNode(treeNode: TTreeNode; Value: Boolean) ;
+procedure BoldTreeNode(treeNode: TTreeNode; Value: Boolean);
 var
   treeItem: TTVItem;
 begin
-  if not Assigned(treeNode) then Exit;
+  if not Assigned(treeNode) then
+    Exit;
   with treeItem do
   begin
     hItem := treeNode.ItemId;
@@ -1868,11 +1902,11 @@ begin
     else
       state := 0;
   end;
-  TreeView_SetItem(treeNode.Handle, treeItem) ;
+  TreeView_SetItem(treeNode.Handle, treeItem);
 end;
 
-
 //on change file selection
+
 procedure TFrmFalconMain.TreeViewProjectsChange(Sender: TObject; Node: TTreeNode);
 var
   FilePrp: TFileProperty;
@@ -1887,7 +1921,7 @@ begin
   BtnRemove.Enabled := (TreeViewProjects.SelectionCount > 0);
   FileRemove.Enabled := (TreeViewProjects.SelectionCount > 0);
 
-  if(TreeViewProjects.Items.Count = 0) then
+  if (TreeViewProjects.Items.Count = 0) then
   begin
     StatusBar.Panels.Items[0].ImageIndex := -1;
     StatusBar.Panels.Items[0].Caption := '';
@@ -1898,9 +1932,9 @@ begin
     FilesParsed.Clear;
   end;
 
-  //No file selected and none editing file 
+  //No file selected and none editing file
   if (TreeViewProjects.Items.Count = 0) or
-    ((TreeViewProjects.SelectionCount = 0) and (PageControlEditor.PageCount = 0))  then
+    ((TreeViewProjects.SelectionCount = 0) and (PageControlEditor.PageCount = 0)) then
   begin
     FileSave.Enabled := False;
     BtnSave.Enabled := False;
@@ -1967,17 +2001,16 @@ begin
 
   BoldTreeNode(TFileProperty(Node.Data).Project.Node, True);
 
-
   FileSaveAS.Enabled := True;
   TextEditorEnter(Sender);
   FilePrp := TFileProperty(Node.Data);
   StatusBar.Panels.Items[0].ImageIndex := FILE_IMG_LIST[FilePrp.FileType];
-  StatusBar.Panels.Items[0].Caption := FilePrp.Caption;
+  StatusBar.Panels.Items[0].Caption := FilePrp.Name;
   StatusBar.Panels.Items[0].Hint := '';
   if (FilePrp is TProjectProperty) then
     BtnSave.Enabled := (FilePrp.Modified or
-                        TProjectProperty(FilePrp).FilesChanged) or
-                        not FilePrp.Saved
+      TProjectProperty(FilePrp).FilesChanged) or
+      not FilePrp.Saved
   else
     BtnSave.Enabled := FilePrp.Modified or not FilePrp.Saved;
   BtnSaveAll.Enabled := True;
@@ -1987,20 +2020,20 @@ begin
   PopTabsSaveAll.Enabled := FileSaveAll.Enabled;
   case FilePrp.FileType of
     FILE_TYPE_PROJECT:
-    begin
-      ProjectPopupMenuItens(True, False, True, True, True, True, True, True,
-        False, FilePrp.Saved, True, True, True);
-    end;
+      begin
+        ProjectPopupMenuItens(True, False, True, True, True, True, True, True,
+          False, FilePrp.Saved, True, True, True);
+      end;
     FILE_TYPE_FOLDER:
-    begin
-      ProjectPopupMenuItens(True, False, True, True, True, True, True, True,
-        False, FilePrp.Saved, True, True, True);
-    end;
+      begin
+        ProjectPopupMenuItens(True, False, True, True, True, True, True, True,
+          False, FilePrp.Saved, True, True, True);
+      end;
     FILE_TYPE_C..FILE_TYPE_UNKNOW:
-    begin
-      ProjectPopupMenuItens(True, False, False, False, False, False, False,
-        not(FilePrp is TProjectProperty), True, FilePrp.Saved, True, True, True);
-    end;
+      begin
+        ProjectPopupMenuItens(True, False, False, False, False, False, False,
+          not (FilePrp is TProjectProperty), True, FilePrp.Saved, True, True, True);
+      end;
   end;
   ProjectBuild.Enabled := True;
   ProjectProperties.Enabled := True;
@@ -2012,6 +2045,7 @@ begin
 end;
 
 //edit selected file in list of projects
+
 procedure TFrmFalconMain.EditFileClick(Sender: TObject);
 begin
   if (TreeViewProjects.SelectionCount > 0) then
@@ -2023,12 +2057,14 @@ begin
 end;
 
 //delete selected text in editor or next char
+
 procedure TFrmFalconMain.RemoveClick(Sender: TObject);
 var
   ControlHand: HWnd;
   Node: TTreeNode;
 begin
-  if TreeViewProjects.SelectionCount = 0 then Exit;
+  if TreeViewProjects.SelectionCount = 0 then
+    Exit;
 
   if not TreeViewProjects.IsEditing then
   begin
@@ -2038,7 +2074,7 @@ begin
   else
   begin
     ControlHand := TreeView_GetEditControl(TreeViewProjects.Handle);
-    if(ControlHand <> 0) and IsWindowVisible(ControlHand) then
+    if (ControlHand <> 0) and IsWindowVisible(ControlHand) then
     begin
       SendMessage(ControlHand, WM_KEYDOWN, VK_DELETE, VK_DELETE);
       SendMessage(ControlHand, WM_KEYUP, VK_DELETE, VK_DELETE);
@@ -2074,7 +2110,7 @@ begin
   end;
 end;
 
-//cut selected text of editor 
+//cut selected text of editor
 
 procedure TFrmFalconMain.SubMCutClick(Sender: TObject);
 var
@@ -2102,7 +2138,7 @@ begin
   end;
 end;
 
-//paste copied text on editor 
+//paste copied text on editor
 
 procedure TFrmFalconMain.SubMPasteClick(Sender: TObject);
 var
@@ -2124,27 +2160,28 @@ var
   Node: TTreeNode;
   MPos: TPoint;
 begin
-    GetCursorPos(MPos);
-    MPos := TreeViewProjects.ScreenToClient(MPos);
-    Node := TreeViewProjects.GetNodeAt(MPos.X, MPos.Y);
-    if Assigned(Node) then
+  GetCursorPos(MPos);
+  MPos := TreeViewProjects.ScreenToClient(MPos);
+  Node := TreeViewProjects.GetNodeAt(MPos.X, MPos.Y);
+  if Assigned(Node) then
+  begin
+    if PtInRect(node.DisplayRect(False), MPos) then
     begin
-      if PtInRect(node.DisplayRect(False), MPos) then
-      begin
-        Node.Selected := True;
-        Node.Focused := True;
-        Node.EndEdit(True);
-        if (TFileProperty(Node.Data).FileType = FILE_TYPE_PROJECT) then
-          ProjectPropertiesClick(Sender)
-        else if(TFileProperty(Node.Data).FileType = FILE_TYPE_FOLDER) then
-          TFileProperty(Node.Data).Open
-        else
-          TFileProperty(Node.Data).Edit;
-      end;
+      Node.Selected := True;
+      Node.Focused := True;
+      Node.EndEdit(True);
+      if (TFileProperty(Node.Data).FileType = FILE_TYPE_PROJECT) then
+        ProjectPropertiesClick(Sender)
+      else if (TFileProperty(Node.Data).FileType = FILE_TYPE_FOLDER) then
+        TFileProperty(Node.Data).Open
+      else
+        TFileProperty(Node.Data).Edit;
     end;
+  end;
 end;
 
 //on close tab editor
+
 procedure TFrmFalconMain.PageControlEditorClose(Sender: TObject;
   TabIndex: Integer; var AllowClose: Boolean);
 var
@@ -2153,27 +2190,31 @@ var
   Sheet: TFilePropertySheet;
   I: Integer;
   allow, clAction: Boolean;
+  FileName: string;
 begin
   if TabIndex < 0 then
     Exit;
   Sheet := TFilePropertySheet(PageControlEditor.Pages[TabIndex]);
   FileProp := TFileProperty(Sheet.Node.Data);
-  if FileProp.Modified and not (Config.Environment.RemoveFileOnClose and
-  (FileProp.Project.FileType <> FILE_TYPE_PROJECT)) then
+  if not FileProp.Saved or (FileProp.Modified and not (Config.Environment.RemoveFileOnClose and
+    (FileProp.Project.FileType <> FILE_TYPE_PROJECT))) then
   begin
+    if FileProp.Project.Saved then
+      FileName := FileProp.Name
+    else
+      FileName := FileProp.FileName;
     I := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[10], [
-         FileProp.Caption])), 'Falcon C++',
-         MB_YESNOCANCEL + MB_ICONINFORMATION);
+      FileName])), 'Falcon C++',
+        MB_YESNOCANCEL + MB_ICONINFORMATION);
     case I of
       mrYes:
-      begin
-        if FileProp.Saved then
         begin
-          FileProp.Modified := False;
-          FileProp.Project.Compiled := False;
+          if FileProp.Modified then
+          begin
+            FileProp.Project.Compiled := False;
+          end;
           FileProp.Save;
         end;
-      end;
       mrCancel: Exit;
     end;
   end;
@@ -2199,7 +2240,7 @@ begin
   RunRuntoCursor.Enabled := PageControlEditor.Visible;
   PopTabsClose.Enabled := PageControlEditor.Visible;
   if not DebugReader.Running and
-    (TabIndex  = PageControlEditor.ActivePageIndex) then
+    (TabIndex = PageControlEditor.ActivePageIndex) then
     TreeViewOutline.Items.Clear;
   if not PageControlEditor.Visible then
   begin
@@ -2303,57 +2344,57 @@ begin
   Result := False;
   with TSaveDialog.Create(Self) do
   begin
-    FileName := ProjProp.Caption;
+    FileName := ProjProp.Name;
     case ProjProp.FileType of
       FILE_TYPE_PROJECT:
-      begin
-        DefaultExt := '.fpj';
-        Filter := STR_FRM_MAIN[11] + ' (*.fpj)|*.fpj';
-      end;
+        begin
+          DefaultExt := '.fpj';
+          Filter := STR_FRM_MAIN[11] + ' (*.fpj)|*.fpj';
+        end;
       FILE_TYPE_C:
-      begin
-        DefaultExt := '.c';
-        Filter := STR_NEW_MENU[2] + ' (*.c)|*.c';
-      end;
+        begin
+          DefaultExt := '.c';
+          Filter := STR_NEW_MENU[2] + ' (*.c)|*.c';
+        end;
       FILE_TYPE_CPP:
-      begin
-        DefaultExt := '.cpp';
-        Filter := STR_NEW_MENU[3] + ' (*.cpp, *.cc, *.cxx, *.c++, *.cp)|*.cpp; *.cc; *.cxx; *.c++; *.cp';
-      end;
+        begin
+          DefaultExt := '.cpp';
+          Filter := STR_NEW_MENU[3] + ' (*.cpp, *.cc, *.cxx, *.c++, *.cp)|*.cpp; *.cc; *.cxx; *.c++; *.cp';
+        end;
       FILE_TYPE_H:
-      begin
-        DefaultExt := '.h';
-        Filter := STR_NEW_MENU[4] + ' (*.h, *.hpp, *.rh, *.hh)|*.h; *.hpp; *.rh; *.hh';
-      end;
+        begin
+          DefaultExt := '.h';
+          Filter := STR_NEW_MENU[4] + ' (*.h, *.hpp, *.rh, *.hh)|*.h; *.hpp; *.rh; *.hh';
+        end;
       FILE_TYPE_RC:
-      begin
-        DefaultExt := '.rc';
-        Filter := STR_NEW_MENU[5] + ' (*.rc)|*.rc';
-      end;
+        begin
+          DefaultExt := '.rc';
+          Filter := STR_NEW_MENU[5] + ' (*.rc)|*.rc';
+        end;
       FILE_TYPE_UNKNOW:
-      begin
-        Filter := STR_NEW_MENU[2] + ' (*.c)|*.c';
-        Filter := Filter + '|' + STR_NEW_MENU[3] + ' (*.cpp, *.cc, *.cxx, *.c++, *.cp)|*.cpp; *.cc; *.cxx; *.c++; *.cp';
-        Filter := Filter + '|' + STR_NEW_MENU[4] + '  (*.h, *.hpp, *.rh, *.hh)|*.h; *.hpp; *.rh; *.hh';
-        Filter := Filter + '|' + STR_NEW_MENU[5] + ' (*.rc)|*.rc';
-        Filter := Filter + '|' + STR_FRM_MAIN[12] + '|*.*';
+        begin
+          Filter := STR_NEW_MENU[2] + ' (*.c)|*.c';
+          Filter := Filter + '|' + STR_NEW_MENU[3] + ' (*.cpp, *.cc, *.cxx, *.c++, *.cp)|*.cpp; *.cc; *.cxx; *.c++; *.cp';
+          Filter := Filter + '|' + STR_NEW_MENU[4] + '  (*.h, *.hpp, *.rh, *.hh)|*.h; *.hpp; *.rh; *.hh';
+          Filter := Filter + '|' + STR_NEW_MENU[5] + ' (*.rc)|*.rc';
+          Filter := Filter + '|' + STR_FRM_MAIN[12] + '|*.*';
         //if DefFileType = FILE_TYPE_CPP then
         //begin
-            FilterIndex := 2;
-            DefaultExt := 'cpp';
+          FilterIndex := 2;
+          DefaultExt := 'cpp';
         //end
         //else
         //begin
         //  FilterIndex := 1;
         //  DefaultExt := '.c';
         //end;
-        OnTypeChange := SaveExtensionChange;
-      end;
+          OnTypeChange := SaveExtensionChange;
+        end;
     end;
     Options := Options + [ofOverwritePrompt];
     if not Execute then
       Exit;
-    if(ProjProp.FileType = FILE_TYPE_UNKNOW) then
+    if (ProjProp.FileType = FILE_TYPE_UNKNOW) then
     begin
       ProjProp.FileType := GetFileType(FileName);
       ProjProp.CompilerType := GetCompiler(ProjProp.FileType);
@@ -2372,12 +2413,14 @@ begin
 end;
 
 //save selected project or file in list
+
 procedure TFrmFalconMain.FileSaveClick(Sender: TObject);
 var
   FileProp: TFileProperty;
   ProjProp: TProjectProperty;
 begin
-  if not GetActiveFile(FileProp) then Exit;
+  if not GetActiveFile(FileProp) then
+    Exit;
   ProjProp := FileProp.Project;
 
   if not ProjProp.Saved then
@@ -2399,12 +2442,15 @@ begin
 end;
 
 //detect if enter action on file of list
+
 procedure TFrmFalconMain.TreeViewProjectsKeyPress(Sender: TObject; var Key: Char);
 var
   ProjProp: TProjectProperty;
 begin
-  if not (Key = #13) or TreeViewProjects.IsEditing then Exit;
-  if (TreeViewProjects.SelectionCount < 1) then Exit;
+  if not (Key = #13) or TreeViewProjects.IsEditing then
+    Exit;
+  if (TreeViewProjects.SelectionCount < 1) then
+    Exit;
   Key := #0;
   if (TObject(TreeViewProjects.Selected.Data) is TProjectProperty) then
   begin
@@ -2419,6 +2465,7 @@ begin
 end;
 
 //on change tab editor
+
 procedure TFrmFalconMain.PageControlEditorChange(Sender: TObject);
 begin
   FileClose.Enabled := (PageControlEditor.PageCount > 0);
@@ -2450,7 +2497,7 @@ begin
   CurrentFileIsParsed := False;
   if ViewOutline.Checked then
     PanelOutline.Show;
-  Index := FilesParsed.IndexOfByFileName(FileProp.GetCompleteFileName, FileProp);
+  Index := FilesParsed.IndexOfByFileName(FileProp.FileName);
   if Index >= 0 then
   begin
     CurrentFileIsParsed := True;
@@ -2459,6 +2506,7 @@ begin
 end;
 
 //popupmenu close active tab editor
+
 procedure TFrmFalconMain.FileCloseClick(Sender: TObject);
 var
   sheet: TFilePropertySheet;
@@ -2472,9 +2520,10 @@ begin
 end;
 
 //execute application
+
 procedure TFrmFalconMain.ExecuteApplication(ProjectProperty: TProjectProperty);
 var
-  FileName, ExecFile, Source, SourcePath: String;
+  FileName, ExecFile, Source, SourcePath: string;
   List: TStrings;
   Breakpoint: TBreakpointList;
   I, J: Integer;
@@ -2484,82 +2533,82 @@ begin
   begin
     case ProjectProperty.AppType of
       APPTYPE_DLL, APPTYPE_LIB:
-      begin
+        begin
         //nothing
-      end;
+        end;
       APPTYPE_CONSOLE, APPTYPE_GUI:
-      begin
-        BtnStop.Enabled := True;
-        RunStop.Enabled := True;
-        RunRun.Enabled := ProjectProperty.Debugging;
-        BtnRun.Enabled := ProjectProperty.Debugging;
-        ProjectBuild.Enabled := False;
-        RunCompile.Enabled := False;
-        BtnCompile.Enabled := False;
-        RunExecute.Enabled := False;
-        BtnExecute.Enabled := False;
-        if ProjectProperty.Debugging then
-          Caption := 'Falcon C++ [' + STR_FRM_MAIN[44] + ']'
-        else
-          Caption := 'Falcon C++ [' + STR_FRM_MAIN[17] + ']';//?
-        HintTip.Cancel;
-        if ProjectProperty.Debugging then
         begin
-          ExecFile := StringReplace(FileName, '\', '/', [rfReplaceAll]);
-          SourcePath := ExtractFilePath(ProjectProperty.GetCompleteFileName);
-          DebugReader.FileName := 'gdb';
-          DebugReader.Params := '-quiet -fullname -nx';
-          DebugReader.Directory := ExtractFilePath(FileName);
-          DebugReader.Start;
-          if ProjectProperty.AppType = APPTYPE_CONSOLE then
-            DebugReader.SendCommand(GDB_SETNEWCONSOLE);
-          DebugReader.SendCommand(GDB_SETCONFIRM, GDB_OFF);
-          DebugReader.SendCommand(GDB_SETWIDTH, '0');
-          DebugReader.SendCommand(GDB_SETHEIGHT, '0');
-          DebugReader.SendCommand(GDB_FILE, DoubleQuotedStr(ExecFile));
-          DebugReader.SendCommand(GDB_SETARGS, ProjectProperty.CmdLine);
-          DebugReader.SendCommand(GDB_EXECFILE, DoubleQuotedStr(ExecFile));
-          List := TStringList.Create;
-          ProjectProperty.GetBreakpointLists(List);
-          if ProjectProperty.BreakpointCursor.Valid then
+          BtnStop.Enabled := True;
+          RunStop.Enabled := True;
+          RunRun.Enabled := ProjectProperty.Debugging;
+          BtnRun.Enabled := ProjectProperty.Debugging;
+          ProjectBuild.Enabled := False;
+          RunCompile.Enabled := False;
+          BtnCompile.Enabled := False;
+          RunExecute.Enabled := False;
+          BtnExecute.Enabled := False;
+          if ProjectProperty.Debugging then
+            Caption := 'Falcon C++ [' + STR_FRM_MAIN[44] + ']'
+          else
+            Caption := 'Falcon C++ [' + STR_FRM_MAIN[17] + ']'; //?
+          HintTip.Cancel;
+          if ProjectProperty.Debugging then
           begin
-            Source := ExtractRelativePath(SourcePath,
-              ProjectProperty.BreakpointCursor.FileName);
-            Source := StringReplace(Source, '\', '/', [rfReplaceAll]);
-            DebugReader.SendCommand(GDB_BREAK, Source + ':' +
-              IntToStr(ProjectProperty.BreakpointCursor.Line));
-          end;
-          for I := 0 to List.Count - 1 do
-          begin
-            Breakpoint := TBreakpointList(List.Objects[I]);
-            Source := ExtractRelativePath(SourcePath, List.Strings[I]);
-            Source := StringReplace(Source, '\', '/', [rfReplaceAll]);
-            for J := 0 to Breakpoint.Count - 1 do
+            ExecFile := StringReplace(FileName, '\', '/', [rfReplaceAll]);
+            SourcePath := ExtractFilePath(ProjectProperty.FileName);
+            DebugReader.FileName := 'gdb';
+            DebugReader.Params := '-quiet -fullname -nx';
+            DebugReader.Directory := ExtractFilePath(FileName);
+            DebugReader.Start;
+            if ProjectProperty.AppType = APPTYPE_CONSOLE then
+              DebugReader.SendCommand(GDB_SETNEWCONSOLE);
+            DebugReader.SendCommand(GDB_SETCONFIRM, GDB_OFF);
+            DebugReader.SendCommand(GDB_SETWIDTH, '0');
+            DebugReader.SendCommand(GDB_SETHEIGHT, '0');
+            DebugReader.SendCommand(GDB_FILE, DoubleQuotedStr(ExecFile));
+            DebugReader.SendCommand(GDB_SETARGS, ProjectProperty.CmdLine);
+            DebugReader.SendCommand(GDB_EXECFILE, DoubleQuotedStr(ExecFile));
+            List := TStringList.Create;
+            ProjectProperty.GetBreakpointLists(List);
+            if ProjectProperty.BreakpointCursor.Valid then
             begin
+              Source := ExtractRelativePath(SourcePath,
+                ProjectProperty.BreakpointCursor.FileName);
+              Source := StringReplace(Source, '\', '/', [rfReplaceAll]);
               DebugReader.SendCommand(GDB_BREAK, Source + ':' +
-                IntToStr(Breakpoint.Items[J].Line));
+                IntToStr(ProjectProperty.BreakpointCursor.Line));
             end;
-          end;
-          List.Free;
-          DebugReader.SendCommand(GDB_RUN);
-        end
-        else
-        begin
-          if (ProjectProperty.AppType = APPTYPE_CONSOLE) and
-            FileExists(AppRoot + 'ConsoleRunner.exe') and
-            Config.Environment.RunConsoleRunner then
-          begin
-            Executor.ExecuteAndWatch(AppRoot + 'ConsoleRunner.exe',
-              DoubleQuotedStr(FileName) + ' ' + ProjectProperty.CmdLine,
-              ExtractFilePath(FileName), True, INFINITE, LauncherFinished);
+            for I := 0 to List.Count - 1 do
+            begin
+              Breakpoint := TBreakpointList(List.Objects[I]);
+              Source := ExtractRelativePath(SourcePath, List.Strings[I]);
+              Source := StringReplace(Source, '\', '/', [rfReplaceAll]);
+              for J := 0 to Breakpoint.Count - 1 do
+              begin
+                DebugReader.SendCommand(GDB_BREAK, Source + ':' +
+                  IntToStr(Breakpoint.Items[J].Line));
+              end;
+            end;
+            List.Free;
+            DebugReader.SendCommand(GDB_RUN);
           end
           else
           begin
-            Executor.ExecuteAndWatch(FileName, ProjectProperty.CmdLine,
-              ExtractFilePath(FileName), True, INFINITE, LauncherFinished);
+            if (ProjectProperty.AppType = APPTYPE_CONSOLE) and
+              FileExists(AppRoot + 'ConsoleRunner.exe') and
+              Config.Environment.RunConsoleRunner then
+            begin
+              Executor.ExecuteAndWatch(AppRoot + 'ConsoleRunner.exe',
+                DoubleQuotedStr(FileName) + ' ' + ProjectProperty.CmdLine,
+                ExtractFilePath(FileName), True, INFINITE, LauncherFinished);
+            end
+            else
+            begin
+              Executor.ExecuteAndWatch(FileName, ProjectProperty.CmdLine,
+                ExtractFilePath(FileName), True, INFINITE, LauncherFinished);
+            end;
           end;
         end;
-      end;
     end;
   end;
 end;
@@ -2573,6 +2622,7 @@ begin
 end;
 
 //on enter in project list
+
 procedure TFrmFalconMain.TreeViewProjectsEnter(Sender: TObject);
 var
   ProjProp: TProjectProperty;
@@ -2585,11 +2635,10 @@ begin
       ProjProp := TFileProperty(TreeViewProjects.Selected.Data).Project;
 
     BtnRun.Enabled := not Executor.Running or (assigned(LastProjectBuild) and
-        (LastProjectBuild <> ProjProp) or DebugReader.Running);
+      (LastProjectBuild <> ProjProp) or DebugReader.Running);
     RunRun.Enabled := BtnRun.Enabled;
     RunCompile.Enabled := BtnRun.Enabled and not DebugReader.Running;
     BtnCompile.Enabled := RunCompile.Enabled;
-
 
     if FileExists(ProjProp.GetTarget) then
     begin
@@ -2616,7 +2665,8 @@ begin
   end;
 end;
 
-//on change the active tab 
+//on change the active tab
+
 procedure TFrmFalconMain.PageControlEditorPageChange(Sender: TObject;
   TabIndex: Integer);
 var
@@ -2653,7 +2703,6 @@ begin
     RunCompile.Enabled := BtnRun.Enabled and not DebugReader.Running;
     BtnCompile.Enabled := RunCompile.Enabled;
 
-
     FileSave.Enabled := Prop.Modified or not Prop.Saved;
     BtnSave.Enabled := FileSave.Enabled;
     PopTabsSave.Enabled := FileSave.Enabled;
@@ -2661,7 +2710,7 @@ begin
     if FileExists(ProjProp.GetTarget) then
     begin
       RunExecute.Enabled := ProjProp.Compiled and BtnRun.Enabled
-         and not DebugReader.Running;
+        and not DebugReader.Running;
       BtnExecute.Enabled := RunExecute.Enabled;
     end
     else
@@ -2672,7 +2721,7 @@ begin
     //Reload Tokens ?
     if not IsLoading then
     begin
-      Index := FilesParsed.IndexOfByFileName(Prop.GetCompleteFileName, Prop);
+      Index := FilesParsed.IndexOfByFileName(Prop.FileName);
       if Index >= 0 then
         UpdateActiveFileToken(FilesParsed.Items[Index])
       else if not FilesParsed.Busy and not DebugReader.Running then
@@ -2687,7 +2736,7 @@ begin
     if not DebugReader.Running then
       TreeViewOutline.Items.Clear;
     Index := PageControlEditor.PageCount;
-    if  Index > 0 then
+    if Index > 0 then
       PageControlEditor.ActivePageIndex := Index - 1;
   end;
   CheckIfFilesHasChanged;
@@ -2697,6 +2746,7 @@ begin
 end;
 
 //compile and execute application
+
 procedure TFrmFalconMain.RunApplication(ProjectProperty: TProjectProperty;
   RunToCursor: Boolean);
 begin
@@ -2707,7 +2757,7 @@ begin
     Exit;
   end;
   CompilerActiveMsg := STR_FRM_MAIN[18];
-  if ProjectProperty.NeedBuild  then
+  if ProjectProperty.NeedBuild then
   begin
     CompilationStopped := False;
     ProjectProperty.Build(True);
@@ -2725,6 +2775,7 @@ begin
 end;
 
 //on execution finished
+
 procedure TFrmFalconMain.LauncherFinished(Sender: TObject);
 var
   ProjProp: TProjectProperty;
@@ -2768,8 +2819,8 @@ begin
   Caption := 'Falcon C++';
 end;
 
-
 //stop execution or compilation
+
 procedure TFrmFalconMain.StopAll;
 begin
   CompilationStopped := True;
@@ -2783,7 +2834,7 @@ begin
   if DebugReader.Running then
   begin
     Application.ProcessMessages;
-    Sleep(100);//?
+    Sleep(100); //?
     DebugReader.Stop;
   end;
 end;
@@ -2794,6 +2845,7 @@ begin
 end;
 
 //previous sheet of editor
+
 procedure TFrmFalconMain.BtnPreviousPageClick(Sender: TObject);
 begin
   if PageControlEditor.ActivePageIndex - 1 < 0 then
@@ -2803,6 +2855,7 @@ begin
 end;
 
 //next sheet of editor
+
 procedure TFrmFalconMain.BtnNextPageClick(Sender: TObject);
 begin
   PageControlEditor.ActivePageIndex :=
@@ -2810,6 +2863,7 @@ begin
 end;
 
 //on popupmenu on project list
+
 procedure TFrmFalconMain.TreeViewProjectsContextPopup(Sender: TObject; MousePos: TPoint;
   var Handled: Boolean);
 var
@@ -2826,7 +2880,7 @@ begin
     if (TreeViewProjects.SelectionCount = 1) then
       TreeViewProjects.Selected.Selected := False;
     ProjectPopupMenuItens(True, True, True, True, True, True, True, False,
-        False, False, False, False, False);
+      False, False, False, False, False);
   end
   else
   begin
@@ -2836,6 +2890,7 @@ begin
 end;
 
 //on click on project list
+
 procedure TFrmFalconMain.TreeViewProjectsClick(Sender: TObject);
 var
   Node: TTreeNode;
@@ -2846,7 +2901,7 @@ begin
   GetCursorPos(MPos);
   MPos := TreeViewProjects.ScreenToClient(MPos);
   Hits := TreeViewProjects.GetHitTestInfoAt(MPos.X, MPos.Y);
-  if ([htOnItem]* Hits) <> [] then
+  if ([htOnItem] * Hits) <> [] then
     Node := TreeViewProjects.GetNodeAt(MPos.X, MPos.Y)
   else
     Node := nil;
@@ -2870,6 +2925,7 @@ begin
 end;
 
 //compile current project
+
 procedure TFrmFalconMain.RunCompileClick(Sender: TObject);
 var
   ProjProp: TProjectProperty;
@@ -2883,6 +2939,7 @@ begin
 end;
 
 //select all text
+
 procedure TFrmFalconMain.SubMSelectAllClick(Sender: TObject);
 var
   Sheet: TFilePropertySheet;
@@ -2896,19 +2953,21 @@ begin
 end;
 
 //build application
+
 procedure TFrmFalconMain.SubMBuildClick(Sender: TObject);
 var
   ProjProp: TProjectProperty;
 begin
   CompilerActiveMsg := STR_FRM_MAIN[19];
-  if GetActiveProject(ProjProp) then ProjProp.Build;
+  if GetActiveProject(ProjProp) then
+    ProjProp.Build;
 end;
 
 procedure TFrmFalconMain.TreeViewProjectsEdited(Sender: TObject; Node: TTreeNode;
-  var S: String);
+  var S: string);
 var
-  OldName, NewName: String;
-  Ext: String;
+  OldName, NewName: string;
+  Ext: string;
   Index: Integer;
   Sheet: TFilePropertySheet;
 begin
@@ -2917,7 +2976,7 @@ begin
     NewName := TFileProperty(Node.Data).FileName;
     if (TFileProperty(Node.Data).FileType = FILE_TYPE_PROJECT) then
     begin
-      if (S <> TFileProperty(Node.Data).Caption) then
+      if (S <> TFileProperty(Node.Data).Name) then
         TFileProperty(Node.Data).Rename(ExtractFilePath(NewName) +
           RemoveFileExt(S) + '.fpj');
       Exit;
@@ -2935,12 +2994,12 @@ begin
       TFileProperty(Node.Data).Rename(NewName + S);
     S := ExtractFileName(TFileProperty(Node.Data).FileName);
     if TFileProperty(Node.Data).GetSheet(Sheet) then
-      Sheet.Caption :=S;
+      Sheet.Caption := S;
   end
   else
   begin
     NewName := TFileProperty(Node.Data).FileName;
-    OldName := TFileProperty(Node.Data).GetCompleteFileName;
+    OldName := TFileProperty(Node.Data).FileName;
     if (Length(S) = 0) then
     begin
       S := NewName;
@@ -2952,20 +3011,20 @@ begin
     else
       TFileProperty(Node.Data).Rename(S);
     S := TFileProperty(Node.Data).FileName;
-    NewName := TFileProperty(Node.Data).GetCompleteFileName;
+    NewName := TFileProperty(Node.Data).FileName;
     Index := FilesParsed.IndexOfByFileName(OldName);
     if Index >= 0 then
       FilesParsed.Items[Index].FileName := NewName;
     if GetActiveSheet(sheet) then
     begin
-      if Sheet.Node  = Node then
+      if Sheet.Node = Node then
       begin
         ActiveEditingFile.FileName := NewName;
       end;
     end;
 
     if TFileProperty(Node.Data).GetSheet(Sheet) then
-      Sheet.Caption :=S;
+      Sheet.Caption := S;
   end;
 end;
 
@@ -2985,22 +3044,23 @@ var
 begin
   Result := False;
   Node := FileProp.Node;
-  if (Node.Level = 0) then//is project
+  if (Node.Level = 0) then //is project
   begin
     ProjProp := FileProp.Project;
     if ProjProp.Modified or not ProjProp.Saved or ProjProp.FilesChanged then
-    begin//modified
+    begin //modified
       I := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[10],
-       [ExtractFileName(ProjProp.FileName)])), 'Falcon C++',
-       MB_YESNOCANCEL + MB_ICONINFORMATION);
+        [ExtractFileName(ProjProp.FileName)])), 'Falcon C++',
+        MB_YESNOCANCEL + MB_ICONINFORMATION);
       case I of
         mrYes:
-        begin
-          FileSaveClick(Self);
-          if not ProjProp.Saved then Exit;
-        end;
+          begin
+            FileSaveClick(Self);
+            if not ProjProp.Saved then
+              Exit;
+          end;
         mrCancel: Exit;
-      end;//case
+      end; //case
     end;
     if DebugReader.Running and Assigned(DebugActiveFile) and
       (DebugActiveFile.Project = ProjProp) then
@@ -3031,23 +3091,23 @@ begin
       ListViewMsg.Clear;
       PanelMessages.Hide;
     end;
-  end//level = 0
+  end //level = 0
   else
   begin
     FileProp := TFileProperty(Node.Data);
     if FileProp.Modified and FileProp.Saved then
-    begin//modified
+    begin //modified
       I := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[10],
         [ExtractFileName(FileProp.FileName)])), 'Falcon C++',
         MB_YESNO + MB_ICONINFORMATION);
       case I of
         mrYes: FileProp.Save;
-      end;//case
+      end; //case
     end;
     if Config.Environment.AskForDeleteFile then
     begin
       I := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[20],
-      [FileProp.Caption])), 'Falcon C++',
+        [FileProp.Name])), 'Falcon C++',
         MB_YESNO + MB_ICONQUESTION);
       if I <> mrYes then
         Exit;
@@ -3062,7 +3122,7 @@ begin
   end;
 
   ProjectPopupMenuItens(True, True, True, True, True, True, True,
-      False, False, False, False, False, False);
+    False, False, False, False, False, False);
   TreeViewProjectsChange(TreeViewProjects, TreeViewProjects.Selected);
   TextEditorExit(Self);
   //enable items if has open in sheet
@@ -3079,7 +3139,7 @@ begin
   FilePrint.Enabled := PageControlEditor.PageCount > 0;
   RunToggleBreakpoint.Enabled := PageControlEditor.PageCount > 0;
   RunRuntoCursor.Enabled := PageControlEditor.PageCount > 0;
-  FileExport.Enabled := PageControlEditor.PageCount > 0;//?
+  FileExport.Enabled := PageControlEditor.PageCount > 0; //?
   PanelOutline.Visible := (PageControlEditor.PageCount > 0) and ViewOutline.Checked;
   Result := True;
 end;
@@ -3097,19 +3157,19 @@ begin
       Node := TreeViewProjects.Selected;
       FileProp := TFileProperty(Node.Data);
       I := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[21],
-           [FileProp.Caption])), 'Falcon C++', MB_YESNOCANCEL+MB_ICONEXCLAMATION);
+        [FileProp.Name])), 'Falcon C++', MB_YESNOCANCEL + MB_ICONEXCLAMATION);
       case I of
         mrYes:
-        begin
-          FileProp.DeleteOfDisk;
-          TreeViewProjectsChange(TreeViewProjects, TreeViewProjects.Selected);
-          PageControlEditorChange(PageControlEditor);
-          if PageControlEditor.ActivePageIndex < 0 then
-            TextEditorExit(nil);
-        end;
+          begin
+            FileProp.DeleteOfDisk;
+            TreeViewProjectsChange(TreeViewProjects, TreeViewProjects.Selected);
+            PageControlEditorChange(PageControlEditor);
+            if PageControlEditor.ActivePageIndex < 0 then
+              TextEditorExit(nil);
+          end;
       end;
-    end;//not editing
-  end;//count > 0
+    end; //not editing
+  end; //count > 0
 end;
 
 procedure TFrmFalconMain.PopProjRenameClick(Sender: TObject);
@@ -3132,7 +3192,7 @@ var
   I: Integer;
 begin
   HandlingTabs := True;
-  for I:= Pred(PageControlEditor.PageCount) downto 0 do
+  for I := Pred(PageControlEditor.PageCount) downto 0 do
   begin
     PageControlEditor.ActivePageIndex := I;
     PageControlEditor.CloseActiveTab;
@@ -3152,14 +3212,15 @@ begin
   SendData.Action(Msg);
 end;
 
-function TFrmFalconMain.FileInHistory(const FileName: String;
+function TFrmFalconMain.FileInHistory(const FileName: string;
   var HistCount: Integer): Boolean;
 var
   I: Integer;
 begin
   HistCount := 0;
   Result := False;
-  if FileReopen.Count < 3 then Exit;
+  if FileReopen.Count < 3 then
+    Exit;
   HistCount := FileReopen.Count - 2;
   for I := 2 to Pred(FileReopen.Count) do
   begin
@@ -3174,12 +3235,13 @@ begin
 end;
 
 function TFrmFalconMain.RenameFileInHistory(const FileName,
-  NewFileName: String): Boolean;
+  NewFileName: string): Boolean;
 var
   I: Integer;
 begin
   Result := False;
-  if FileReopen.Count < 3 then Exit;
+  if FileReopen.Count < 3 then
+    Exit;
   for I := 2 to Pred(FileReopen.Count) do
   begin
     if CompareText(TDataMenuItem(FileReopen.Items[I]).HelpFile, FileName) = 0 then
@@ -3193,18 +3255,21 @@ begin
   end;
 end;
 
-function TFrmFalconMain.AddFileToHistory(const FileName: String): Boolean;
+function TFrmFalconMain.AddFileToHistory(const FileName: string): Boolean;
 var
   HistCount: Integer;
   Item: TDataMenuItem;
 begin
   Result := False;
-  if not FileExists(FileName) then Exit;
-  if FileInHistory(FileName, HistCount) then Exit;
+  if not FileExists(FileName) then
+    Exit;
+  if FileInHistory(FileName, HistCount) then
+    Exit;
   while (HistCount >= Config.Environment.MaxFileInReopen) do
   begin
     FileReopen.Delete(Pred(FileReopen.Count));
-    if FileReopen.Count <= 2 then Break;
+    if FileReopen.Count <= 2 then
+      Break;
   end;
   Item := TDataMenuItem.Create(Self);
   Item.Caption := FileName;
@@ -3222,17 +3287,19 @@ begin
   Result := True;
 end;
 
-procedure TFrmFalconMain.RemoveFileFromHistoric(FileName: String);
+procedure TFrmFalconMain.RemoveFileFromHistoric(FileName: string);
 var
   I: Integer;
 begin
-  if FileReopen.Count < 3 then Exit;
+  if FileReopen.Count < 3 then
+    Exit;
   for I := 2 to Pred(FileReopen.Count) do
   begin
     if CompareText(TDataMenuItem(FileReopen.Items[I]).HelpFile, FileName) = 0 then
     begin
       FileReopen.Delete(I);
-      if FileReopen.Count > 2 then Exit;
+      if FileReopen.Count > 2 then
+        Exit;
       FileReopen.Delete(1);
       TTBXItem(FileReopen.Items[0]).Caption := STR_FRM_MAIN[31];
       TTBXItem(FileReopen.Items[0]).Enabled := False;
@@ -3257,14 +3324,15 @@ procedure TFrmFalconMain.ReopenFileClick(Sender: TObject);
 var
   Proj: TProjectProperty;
 begin
-  if not (Sender is TDataMenuItem) then Exit;
+  if not (Sender is TDataMenuItem) then
+    Exit;
   IsLoading := True;
   if OpenFileWithHistoric(TDataMenuItem(Sender).HelpFile, Proj) then
     ParseProjectFiles(Proj);
   IsLoading := False;
 end;
 
-function TFrmFalconMain.OpenFileWithHistoric(Value: String;
+function TFrmFalconMain.OpenFileWithHistoric(Value: string;
   var Proj: TProjectProperty): Boolean;
 var
   ProjProp: TProjectProperty;
@@ -3287,18 +3355,19 @@ begin
   else
   begin
     if CompareText(ExtractFileExt(Value), '.dev') = 0 then
-      ImportDevCppProject(Value)
+      Result := ImportDevCppProject(Value, Proj)
     else if CompareText(ExtractFileExt(Value), '.cbp') = 0 then
-      ImportCodeBlocksProject(Value)
+      Result := ImportCodeBlocksProject(Value, Proj)
     else if CompareText(ExtractFileExt(Value), '.vcproj') = 0 then
-      ImportMSVCProject(Value)
+      Result := ImportMSVCProject(Value, Proj)
     else
     begin
       ProjProp := OpenFile(Value);
       Result := True;
       Proj := ProjProp;
       AddFileToHistory(Value);
-      if ProjProp.FileType <> FILE_TYPE_PROJECT then ProjProp.Edit;
+      if ProjProp.FileType <> FILE_TYPE_PROJECT then
+        ProjProp.Edit;
       ProjProp.Node.Selected := True;
     end;
   end;
@@ -3332,21 +3401,21 @@ end;
 
 procedure TFrmFalconMain.GetDropredFiles(Sender: TObject; var Msg: TMessage);
 var
-   FileCount : longInt;
-   Buffer : array[0..MAX_PATH] of char;
-   Files: TStrings;
-   I: Integer;
-   P: TPoint;
+  FileCount: longInt;
+  Buffer: array[0..MAX_PATH] of char;
+  Files: TStrings;
+  I: Integer;
+  P: TPoint;
 begin
   Files := TStringList.Create;
-  FileCount := DragQueryFile(TWMDropFiles(Msg).Drop, $FFFFFFFF, nil, 0) ;
-  for I:= 0 to Pred(FileCount) do
+  FileCount := DragQueryFile(TWMDropFiles(Msg).Drop, $FFFFFFFF, nil, 0);
+  for I := 0 to Pred(FileCount) do
   begin
     DragQueryFile(TWMDropFiles(Msg).Drop, i, @Buffer, sizeof(buffer));
     if FileExists(StrPas(buffer)) then
       Files.Add(StrPas(buffer));
   end;
-  if(Sender = TreeViewProjects) then
+  if (Sender = TreeViewProjects) then
   begin
     GetCursorPos(P);
     P := TreeViewProjects.ScreenToClient(P);
@@ -3357,13 +3426,13 @@ begin
   Files.Free;
 end;
 
-procedure TFrmFalconMain.OnDragDropFiles(Sender: TObject; Files:TStrings);
+procedure TFrmFalconMain.OnDragDropFiles(Sender: TObject; Files: TStrings);
 var
   I: Integer;
   Proj: TProjectProperty;
 begin
   IsLoading := True;
-  for I:= 0 to Pred(Files.Count) do
+  for I := 0 to Pred(Files.Count) do
   begin
     if OpenFileWithHistoric(Files.Strings[I], Proj) then
       ParseProjectFiles(Proj);
@@ -3372,18 +3441,19 @@ begin
 end;
 
 procedure TFrmFalconMain.CompilerCmdStart(Sender: TObject;
-  const FileName, Params: String);
+  const FileName, Params: string);
 begin
   Caption := 'Falcon C++ [' + CompilerActiveMsg + ']';
   startBuildTicks := GetTickCount;
 end;
 
 //on build finished
+
 procedure TFrmFalconMain.CompilerCmdFinish(Sender: TObject; const FileName,
-  Params: String; ConsoleOut: TStrings; ExitCode: Integer);
+  Params: string; ConsoleOut: TStrings; ExitCode: Integer);
 var
   Item: TListItem;
-  Temp, capt: String;
+  Temp, capt: string;
   RowSltd: Boolean;
   I: Integer;
   CompMessages: TStrings;
@@ -3406,11 +3476,12 @@ begin
     begin
       PanelMessages.Hide;
     end;
-    for I:= 0 to Pred(CompMessages.Count) do
+    for I := 0 to Pred(CompMessages.Count) do
     begin
-      if CompilationStopped then break;
+      if CompilationStopped then
+        break;
       if (CompMessages.Count > 500) then
-        Caption := Format('Falcon C++ ['+STR_FRM_MAIN[41]+']',
+        Caption := Format('Falcon C++ [' + STR_FRM_MAIN[41] + ']',
           [I + 1, CompMessages.Count]);
       Application.ProcessMessages;
       Msg := TMessageItem(CompMessages.Objects[I]);
@@ -3431,18 +3502,18 @@ begin
         Inc(LastProjectBuild.Version.Release);
     Temp := ExtractFilePath(LastProjectBuild.FileName);
     if FileExists(Temp + 'Makefile.mak') and
-       LastProjectBuild.DeleteMakefileAfter then
+      LastProjectBuild.DeleteMakefileAfter then
       DeleteFile(Temp + 'Makefile.mak');
     if (LastProjectBuild.EnableTheme or LastProjectBuild.RequiresAdmin) and
-       (LastProjectBuild.AppType in [APPTYPE_CONSOLE, APPTYPE_GUI]) and
-       FileExists(Temp + 'AppManifest.dat') and
-       LastProjectBuild.DeleteResourcesAfter then
+      (LastProjectBuild.AppType in [APPTYPE_CONSOLE, APPTYPE_GUI]) and
+      FileExists(Temp + 'AppManifest.dat') and
+      LastProjectBuild.DeleteResourcesAfter then
       DeleteFile(Temp + 'AppManifest.dat');
     if FileExists(Temp + 'AppResource.rc') and
-       LastProjectBuild.DeleteResourcesAfter then
+      LastProjectBuild.DeleteResourcesAfter then
       DeleteFile(Temp + 'AppResource.rc');
     if FileExists(Temp + 'AppIcon.ico') and
-       LastProjectBuild.DeleteResourcesAfter then
+      LastProjectBuild.DeleteResourcesAfter then
       DeleteFile(Temp + 'AppIcon.ico');
     if FileExists(LastProjectBuild.GetTarget) then
     begin
@@ -3450,7 +3521,7 @@ begin
       BtnExecute.Enabled := True;
       LastProjectBuild.TargetDateTime := FileDateTime(LastProjectBuild.GetTarget);
       if RunNow and ((LastProjectBuild.AppType = APPTYPE_CONSOLE) or
-         (LastProjectBuild.AppType = APPTYPE_GUI)) then
+        (LastProjectBuild.AppType = APPTYPE_GUI)) then
         ExecuteApplication(LastProjectBuild)
       else
       begin
@@ -3486,11 +3557,12 @@ begin
       Item.Data := Msg;
     end;
     RowSltd := False;
-    for I:= 0 to Pred(CompMessages.Count) do
+    for I := 0 to Pred(CompMessages.Count) do
     begin
-      if CompilationStopped then break;
+      if CompilationStopped then
+        break;
       if (CompMessages.Count > 500) then
-        Caption := Format('Falcon C++ ['+STR_FRM_MAIN[41]+']',
+        Caption := Format('Falcon C++ [' + STR_FRM_MAIN[41] + ']',
           [I + 1, CompMessages.Count]);
       Application.ProcessMessages;
       Msg := TMessageItem(CompMessages.Objects[I]);
@@ -3531,7 +3603,7 @@ procedure TFrmFalconMain.ShowLineError(Project: TProjectProperty; Msg: TMessageI
 var
   FileProp: TFileProperty;
   Sheet: TFilePropertySheet;
-  SLine, Temp, MMsg: String;
+  SLine, Temp, MMsg: string;
   Line, ColS, ColE, Col: Integer;
 begin
   Line := 0;
@@ -3540,9 +3612,10 @@ begin
   if Assigned(Msg) then
   begin
     if Msg.MsgType <> mitCompiler then
-      GotoAndExit; 
+      GotoAndExit;
   end;
-  if not Assigned(Project) then Exit;
+  if not Assigned(Project) then
+    Exit;
 
   Temp := ExtractFilePath(Project.FileName);
   if Assigned(Msg) then
@@ -3562,42 +3635,42 @@ begin
   end
   else if FileExists(Temp) then
   begin
-      FileProp := OpenFile(Temp);
+    FileProp := OpenFile(Temp);
   end
   else
     Exit;
 
   if (Pos(MAKEFILE_MSG[2], MMsg) > 0) then
+  begin
+    FileProp.Node.Owner.Owner.SetFocus;
+    FileProp.Node.Selected := True;
+    FileProp.Node.Focused := True;
+    Exit;
+  end;
+  FileProp.Edit;
+  if FileProp.GetSheet(Sheet) then
+  begin
+    if Line > 0 then
     begin
-      FileProp.Node.Owner.Owner.SetFocus;
-      FileProp.Node.Selected := True;
-      FileProp.Node.Focused := True;
-      Exit;
-    end;
-    FileProp.Edit;
-    if FileProp.GetSheet(Sheet) then
-    begin
-      if Line > 0 then
+      Sheet.Memo.GotoLineAndCenter(Line);
+      SLine := Sheet.Memo.Lines.Strings[Pred(Line)];
+      SLine := StringReplace(SLine, #9, GetIdent(Sheet.Memo.TabWidth),
+        [rfReplaceAll]);
+      Temp := StringBetween(MMsg, #39, #39, False);
+      if (Length(Temp) > 0) then
       begin
-        Sheet.Memo.GotoLineAndCenter(Line);
-        SLine := Sheet.Memo.Lines.Strings[Pred(Line)];
-        SLine := StringReplace(SLine, #9, GetIdent(Sheet.Memo.TabWidth),
-          [rfReplaceAll]);
-        Temp := StringBetween(MMsg, #39, #39, False);
-        if (Length(Temp) > 0) then
+        ColS := Pos(Temp, SLine);
+        if (ColS > 0) then
         begin
-          ColS := Pos(Temp, SLine);
-          if (ColS > 0) then
-          begin
-            ColE := ColS + Length(Temp);
-            GotoLineAndAlignCenter(Sheet.Memo, Line, ColS, ColE, True);
-          end;
+          ColE := ColS + Length(Temp);
+          GotoLineAndAlignCenter(Sheet.Memo, Line, ColS, ColE, True);
         end;
-        if Col > 0 then
-          GotoLineAndAlignCenter(Sheet.Memo, Line, Col);
-        Sheet.Memo.ActiveLineColor := clRed;
       end;
+      if Col > 0 then
+        GotoLineAndAlignCenter(Sheet.Memo, Line, Col);
+      Sheet.Memo.ActiveLineColor := clRed;
     end;
+  end;
 end;
 
 procedure TFrmFalconMain.ListViewMsgDblClick(Sender: TObject);
@@ -3623,39 +3696,59 @@ procedure TFrmFalconMain.ProjectAddClick(Sender: TObject);
 var
   FileProp, NewFile: TFileProperty;
   I: Integer;
+  FilesPath: string;
+  References: Boolean;
 begin
   with TOpenDialog.Create(Self) do
   begin
-    Filter := STR_FRM_MAIN[12] + ' |*.c; *.cpp; *.cc; *.cxx; *.c++; *.cp; *.h;'+
-              ' *.hpp; *.rh; *.hh; *.rc|' + STR_NEW_MENU[2] +
-              ' (*.c)|*.c|' + STR_NEW_MENU[3] +
-              ' (*.cpp, *.cc, *.cxx, *.c++, *.cp)|*.cpp; *.cc; *.cxx; *.c++; *.cp|'
-              + STR_NEW_MENU[4] + ' (*.h, *.hpp, *.rh, *.hh)|*.h; *.hpp; *.rh; *.hh|' +
-              STR_NEW_MENU[5] + ' (*.rc)|*.rc';
+    Filter := STR_FRM_MAIN[12] + ' |*.c; *.cpp; *.cc; *.cxx; *.c++; *.cp; *.h;' +
+      ' *.hpp; *.rh; *.hh; *.rc|' + STR_NEW_MENU[2] +
+      ' (*.c)|*.c|' + STR_NEW_MENU[3] +
+      ' (*.cpp, *.cc, *.cxx, *.c++, *.cp)|*.cpp; *.cc; *.cxx; *.c++; *.cp|'
+      + STR_NEW_MENU[4] + ' (*.h, *.hpp, *.rh, *.hh)|*.h; *.hpp; *.rh; *.hh|' +
+      STR_NEW_MENU[5] + ' (*.rc)|*.rc';
     FilterIndex := 1;
     Options := Options + [ofAllowMultiSelect, ofFileMustExist, ofPathMustExist, ofNoChangeDir];
     if GetSelectedFileInList(FileProp) then
     begin
       if (FileProp.FileType <> FILE_TYPE_FOLDER) then
-        InitialDir := ExtractFilePath(FileProp.GetCompleteFileName)
+        InitialDir := ExtractFilePath(FileProp.FileName)
       else
-        InitialDir := FileProp.GetCompleteFileName;
+        InitialDir := FileProp.FileName;
     end;
     if Execute then
     begin
       if GetSelectedFileInList(FileProp) then
       begin
+        References := True;
+        FilesPath := ExtractFilePath(Files.Strings[0]);
+        if Pos(LowerCase(InitialDir), LowerCase(Files.Strings[0])) <> 1 then
+        begin
+          if MessageBox(Handle, 'Copy files to project?', 'Falcon C++',
+            MB_ICONQUESTION + MB_YESNO) = IDYES then
+          begin
+            References := False;
+          end;
+        end;
+
         if not (TObject(FileProp) is TProjectProperty) then
           if (FileProp.FileType <> FILE_TYPE_FOLDER) then
             FileProp := TFileProperty(FileProp.Node.Parent.Data);
-        for I:= 0 to Pred(Files.Count) do
+        for I := 0 to Pred(Files.Count) do
         begin
-          NewFile := NewFileProperty(GetFileType(Files.Strings[I]), COMPILER_C,
-                       ExtractFileName(Files.Strings[I]),
-                       ExtractName(Files.Strings[I]),
-                       ExtractFileExt(Files.Strings[I]), Files.Strings[I],
-                       FileProp);
+          NewFile := NewSourceFile(GetFileType(Files.Strings[I]),
+            COMPILER_C,
+            ExtractFileName(Files.Strings[I]),
+            ExtractName(Files.Strings[I]),
+            ExtractFileExt(Files.Strings[I]),
+            Files.Strings[I],
+            FileProp,
+            True,
+            References,
+            False);
           NewFile.Project.PropertyChanged := True;
+          if not References then
+            NewFile.Edit.Memo.Lines.LoadFromFile(Files.Strings[I]);
         end;
         if TreeViewProjects.SelectionCount > 0 then
           TreeViewProjectsChange(TreeViewProjects, TreeViewProjects.Selected);
@@ -3687,62 +3780,62 @@ var
 begin
   //Top Menu
   //Item := MenuBar.Items.Items[0];
-  for I:= 0 to Pred(MenuBar.Items.Count) do
+  for I := 0 to Pred(MenuBar.Items.Count) do
     MenuBar.Items.Items[I].Caption := STR_MENUS[I + 1];
 
   //File Menu
   Item := MenuFile;
-  for I:= 0 to Pred(Item.Count) do
+  for I := 0 to Pred(Item.Count) do
     Item[I].Caption := STR_MENU_FILE[I + 1];
 
   //Edit Menu
   Item := MenuEdit;
-  for I:= 0 to Pred(Item.Count) do
+  for I := 0 to Pred(Item.Count) do
     Item[I].Caption := STR_MENU_EDIT[I + 1];
 
   //Search Menu
   Item := MenuSearch;
-  for I:= 0 to Pred(Item.Count) do
+  for I := 0 to Pred(Item.Count) do
     Item[I].Caption := STR_MENU_SERH[I + 1];
 
   //Search Menu
   Item := MenuView;
-  for I:= 0 to Pred(Item.Count) do
+  for I := 0 to Pred(Item.Count) do
     Item[I].Caption := STR_MENU_VIEW[I + 1];
 
   //Project Menu
   Item := MenuProject;
-  for I:= 0 to Pred(Item.Count) do
+  for I := 0 to Pred(Item.Count) do
     Item[I].Caption := STR_MENU_PROJ[I + 1];
 
   //Run Menu
   Item := MenuRun;
-  for I:= 0 to Pred(Item.Count) do
+  for I := 0 to Pred(Item.Count) do
     Item[I].Caption := STR_MENU_RUN[I + 1];
 
   //Tools Menu
   Item := MenuTools;
-  for I:= 0 to Pred(Item.Count) do
+  for I := 0 to Pred(Item.Count) do
     Item[I].Caption := STR_MENU_TOOL[I + 1];
 
   //Help Menu
   Item := MenuHelp;
-  for I:= 0 to Pred(Item.Count) do
+  for I := 0 to Pred(Item.Count) do
     Item[I].Caption := STR_MENU_HELP[I + 1];
 
   //New From File Menu
   Item := FileNew;
-  for I:= 0 to Pred(Item.Count) do
+  for I := 0 to Pred(Item.Count) do
     Item[I].Caption := STR_NEW_MENU[I + 1];
 
   //Import From File Menu
   Item := FileImport;
-  for I:= 0 to Pred(Item.Count) do
+  for I := 0 to Pred(Item.Count) do
     Item[I].Caption := STR_IMPORT_MENU[I + 1];
 
   //Toolbars From View Menu
   Item := ViewToolbar;
-  for I:= 0 to Pred(Item.Count) do
+  for I := 0 to Pred(Item.Count) do
     Item[I].Caption := STR_VIEWTOOLBAR_MENU[I + 1];
 
   //(Empty) From File Menu Reopen
@@ -3753,22 +3846,22 @@ begin
 
   //PopupMenu from Project List
   //Item := PopupProject.Items.Items;
-  for I:= 0 to Pred(PopupProject.Items.Count) do
+  for I := 0 to Pred(PopupProject.Items.Count) do
     PopupProject.Items.Items[I].Caption := STR_POPUP_PROJ[I + 1];
 
   //PopupMenu from Editor
   //Item := PopupEditor.Items;
-  for I:= 0 to Pred(PopupEditor.Items.Count) do
+  for I := 0 to Pred(PopupEditor.Items.Count) do
     PopupEditor.Items.Items[I].Caption := STR_POPUP_EDITOR[I + 1];
 
   //PopupMenu from Tabs
   //Item := PopupTabs.Items;
-  for I:= 0 to Pred(PopupTabs.Items.Count) do
+  for I := 0 to Pred(PopupTabs.Items.Count) do
     PopupTabs.Items.Items[I].Caption := STR_POPUP_TABS[I + 1];
 
   //PopupMenu from Messages
   //Item := PopupMsg.Items;
-  for I:= 0 to Pred(PopupMsg.Items.Count) do
+  for I := 0 to Pred(PopupMsg.Items.Count) do
     PopupMsg.Items.Items[I].Caption := STR_POPUP_MSGS[I + 1];
 
   //tabs left
@@ -3789,7 +3882,7 @@ begin
   //Toolbars
   //DefaultBar
   DefaultBar.Caption := STR_VIEWTOOLBAR_MENU[1];
-  for I:= 0 to Pred(DefaultBar.Items.Count) do
+  for I := 0 to Pred(DefaultBar.Items.Count) do
   begin
     DefaultBar.Items.Items[I].Caption := STR_DEFAULTBAR[I + 1];
     DefaultBar.Items.Items[I].Hint := STR_DEFAULTBAR[I + 1];
@@ -3797,7 +3890,7 @@ begin
 
   //EditBar
   EditBar.Caption := STR_VIEWTOOLBAR_MENU[2];
-  for I:= 0 to Pred(EditBar.Items.Count) do
+  for I := 0 to Pred(EditBar.Items.Count) do
   begin
     EditBar.Items.Items[I].Caption := STR_EDITBAR[I + 1];
     EditBar.Items.Items[I].Hint := STR_EDITBAR[I + 1];
@@ -3805,7 +3898,7 @@ begin
 
   //SearchBar
   SearchBar.Caption := STR_VIEWTOOLBAR_MENU[3];
-  for I:= 0 to Pred(SearchBar.Items.Count) do
+  for I := 0 to Pred(SearchBar.Items.Count) do
   begin
     SearchBar.Items.Items[I].Caption := STR_SEARCHBAR[I + 1];
     SearchBar.Items.Items[I].Hint := STR_SEARCHBAR[I + 1];
@@ -3813,7 +3906,7 @@ begin
 
   //CompilerBar
   CompilerBar.Caption := STR_VIEWTOOLBAR_MENU[4];
-  for I:= 0 to Pred(CompilerBar.Items.Count) do
+  for I := 0 to Pred(CompilerBar.Items.Count) do
   begin
     CompilerBar.Items.Items[I].Caption := STR_COMPILERBAR[I + 1];
     CompilerBar.Items.Items[I].Hint := STR_COMPILERBAR[I + 1];
@@ -3821,7 +3914,7 @@ begin
 
   //NavigatorBar
   NavigatorBar.Caption := STR_VIEWTOOLBAR_MENU[5];
-  for I:= 0 to Pred(NavigatorBar.Items.Count) do
+  for I := 0 to Pred(NavigatorBar.Items.Count) do
   begin
     NavigatorBar.Items.Items[I].Caption := STR_NAVIGATORBAR[I + 1];
     NavigatorBar.Items.Items[I].Hint := STR_NAVIGATORBAR[I + 1];
@@ -3829,7 +3922,7 @@ begin
 
   //ProjectBar
   ProjectBar.Caption := STR_VIEWTOOLBAR_MENU[6];
-  for I:= 0 to Pred(ProjectBar.Items.Count) do
+  for I := 0 to Pred(ProjectBar.Items.Count) do
   begin
     ProjectBar.Items.Items[I].Caption := STR_PROJECTBAR[I + 1];
     ProjectBar.Items.Items[I].Hint := STR_PROJECTBAR[I + 1];
@@ -3837,7 +3930,7 @@ begin
 
   //HelpBar
   HelpBar.Caption := STR_VIEWTOOLBAR_MENU[7];
-  for I:= 0 to Pred(HelpBar.Items.Count) do
+  for I := 0 to Pred(HelpBar.Items.Count) do
   begin
     HelpBar.Items.Items[I].Caption := STR_HELPBAR[I + 1];
     HelpBar.Items.Items[I].Hint := STR_HELPBAR[I + 1];
@@ -3845,7 +3938,7 @@ begin
 
   //DebugBar
   DebugBar.Caption := STR_VIEWTOOLBAR_MENU[8];
-  for I:= 0 to Pred(DebugBar.Items.Count) do
+  for I := 0 to Pred(DebugBar.Items.Count) do
   begin
     DebugBar.Items.Items[I].Caption := STR_DEBUGBAR[I + 1];
     DebugBar.Items.Items[I].Hint := STR_DEBUGBAR[I + 1];
@@ -3859,13 +3952,13 @@ begin
   if Assigned(FrmUpdate) then
     FrmUpdate.Close;
   ShellExecute(Handle, 'open', PChar(AppRoot + 'Updater.exe'), '',
-        PChar(AppRoot), SW_SHOW)
+    PChar(AppRoot), SW_SHOW)
 end;
 
 procedure TFrmFalconMain.Copiar1Click(Sender: TObject);
 var
   msg: TMessageItem;
-  S: String;
+  S: string;
   I, C: Integer;
 begin
   if ListViewMsg.SelCount > 0 then
@@ -3897,7 +3990,7 @@ end;
 procedure TFrmFalconMain.Originalmessage1Click(Sender: TObject);
 var
   msg: TMessageItem;
-  S, tmp: String;
+  S, tmp: string;
   I, C: Integer;
 begin
   if ListViewMsg.SelCount > 0 then
@@ -3912,7 +4005,7 @@ begin
       tmp := msg.OriMsg;
       if Pos('${COMPILER_PATH}', Msg.OriMsg) > 0 then
         tmp := StringReplace(msg.OriMsg, '${COMPILER_PATH}',
-                  FrmFalconMain.Config.Compiler.Path, []);
+          FrmFalconMain.Config.Compiler.Path, []);
       if C = 0 then
         S := tmp
       else
@@ -3935,7 +4028,7 @@ end;
 procedure TFrmFalconMain.Copyoriginalmessage1Click(Sender: TObject);
 var
   msg: TMessageItem;
-  S, tmp: String;
+  S, tmp: string;
   I, C: Integer;
 begin
   if ListViewMsg.SelCount > 0 then
@@ -3951,7 +4044,7 @@ begin
       tmp := msg.OriMsg;
       if Pos('${COMPILER_PATH}', Msg.OriMsg) > 0 then
         tmp := StringReplace(msg.OriMsg, '${COMPILER_PATH}',
-                  FrmFalconMain.Config.Compiler.Path, []);
+          FrmFalconMain.Config.Compiler.Path, []);
       if C = 0 then
         S := tmp
       else
@@ -3967,55 +4060,56 @@ var
   ProjProp: TProjectProperty;
   I: Integer;
 begin
-  for I:= 0 to Pred(TreeViewProjects.Items.Count) do
+  for I := 0 to Pred(TreeViewProjects.Items.Count) do
   begin
-    if (TreeViewProjects.Items.Item[I].Level <> 0) then Continue;
+    if (TreeViewProjects.Items.Item[I].Level <> 0) then
+      Continue;
     ProjProp := TProjectProperty(TreeViewProjects.Items.Item[I].Data);
     if not ProjProp.Saved then
-    with TSaveDialog.Create(Self) do
-    begin
-      FileName := ProjProp.Caption;
-      case ProjProp.FileType of
-        FILE_TYPE_PROJECT:
-        begin
-          DefaultExt := '.fpj';
-          Filter := STR_FRM_MAIN[11] + ' (*.fpj)|*.fpj';
-        end;
-        FILE_TYPE_C:
-        begin
-          DefaultExt := '.c';
-          Filter := STR_NEW_MENU[2] + ' (*.c)|*.c';
-        end;
-        FILE_TYPE_CPP:
-        begin
-          DefaultExt := '.cpp';
-          Filter := STR_NEW_MENU[3] + ' (*.cpp)|*.cpp';
-        end;
-        FILE_TYPE_H:
-        begin
-          DefaultExt := '.h';
-          Filter := STR_NEW_MENU[4] + ' (*.h)|*.h';
-        end;
-        FILE_TYPE_RC:
-        begin
-          DefaultExt := '.rc';
-          Filter := STR_NEW_MENU[5] + ' (*.rc)|*.rc';
-        end;
-        FILE_TYPE_UNKNOW: Filter := STR_FRM_MAIN[12] + '|*.*';
-      end;
-      Options := Options + [ofOverwritePrompt];
-      if Execute then
+      with TSaveDialog.Create(Self) do
       begin
-        ProjProp.Saved := True;
-        ProjProp.FileType := GetFileType(FileName);
-        ProjProp.CompilerType := GetCompiler(ProjProp.FileType);
-        ProjProp.FileName := FileName;
-        ProjProp.SaveAll(True);
-        FileSave.Enabled := False;
-        BtnSave.Enabled := FileSave.Enabled;
-        PopTabsSave.Enabled := FileSave.Enabled;
-      end;
-    end
+        FileName := ProjProp.Name;
+        case ProjProp.FileType of
+          FILE_TYPE_PROJECT:
+            begin
+              DefaultExt := '.fpj';
+              Filter := STR_FRM_MAIN[11] + ' (*.fpj)|*.fpj';
+            end;
+          FILE_TYPE_C:
+            begin
+              DefaultExt := '.c';
+              Filter := STR_NEW_MENU[2] + ' (*.c)|*.c';
+            end;
+          FILE_TYPE_CPP:
+            begin
+              DefaultExt := '.cpp';
+              Filter := STR_NEW_MENU[3] + ' (*.cpp)|*.cpp';
+            end;
+          FILE_TYPE_H:
+            begin
+              DefaultExt := '.h';
+              Filter := STR_NEW_MENU[4] + ' (*.h)|*.h';
+            end;
+          FILE_TYPE_RC:
+            begin
+              DefaultExt := '.rc';
+              Filter := STR_NEW_MENU[5] + ' (*.rc)|*.rc';
+            end;
+          FILE_TYPE_UNKNOW: Filter := STR_FRM_MAIN[12] + '|*.*';
+        end;
+        Options := Options + [ofOverwritePrompt];
+        if Execute then
+        begin
+          ProjProp.Saved := True;
+          ProjProp.FileType := GetFileType(FileName);
+          ProjProp.CompilerType := GetCompiler(ProjProp.FileType);
+          ProjProp.FileName := FileName;
+          ProjProp.SaveAll(True);
+          FileSave.Enabled := False;
+          BtnSave.Enabled := FileSave.Enabled;
+          PopTabsSave.Enabled := FileSave.Enabled;
+        end;
+      end
     else
     begin
       ProjProp.SaveAll(True);
@@ -4039,55 +4133,55 @@ begin
       ProjProp := FileProp.Project;
     with TSaveDialog.Create(Self) do
     begin
-      FileName := ProjProp.Caption;
+      FileName := ProjProp.Name;
       case ProjProp.FileType of
         FILE_TYPE_PROJECT:
-        begin
-          DefaultExt := '.fpj';
-          Filter := STR_FRM_MAIN[11] + ' (*.fpj)|*.fpj';
-        end;
+          begin
+            DefaultExt := '.fpj';
+            Filter := STR_FRM_MAIN[11] + ' (*.fpj)|*.fpj';
+          end;
         FILE_TYPE_C:
-        begin
-          DefaultExt := '.c';
-          Filter := STR_NEW_MENU[2] + ' (*.c)|*.c';
-        end;
+          begin
+            DefaultExt := '.c';
+            Filter := STR_NEW_MENU[2] + ' (*.c)|*.c';
+          end;
         FILE_TYPE_CPP:
-        begin
-          DefaultExt := '.cpp';
-          Filter := STR_NEW_MENU[3] + ' (*.cpp, *.cc, *.cxx, *.c++, *.cp)|*.cpp; *.cc; *.cxx; *.c++; *.cp';
-        end;
+          begin
+            DefaultExt := '.cpp';
+            Filter := STR_NEW_MENU[3] + ' (*.cpp, *.cc, *.cxx, *.c++, *.cp)|*.cpp; *.cc; *.cxx; *.c++; *.cp';
+          end;
         FILE_TYPE_H:
-        begin
-          DefaultExt := '.h';
-          Filter := STR_NEW_MENU[4] + ' (*.h, *.hpp, *.rh, *.hh)|*.h; *.hpp; *.rh; *.hh';
-        end;
+          begin
+            DefaultExt := '.h';
+            Filter := STR_NEW_MENU[4] + ' (*.h, *.hpp, *.rh, *.hh)|*.h; *.hpp; *.rh; *.hh';
+          end;
         FILE_TYPE_RC:
-        begin
-          DefaultExt := '.rc';
-          Filter := STR_NEW_MENU[5] + ' (*.rc)|*.rc';
-        end;
+          begin
+            DefaultExt := '.rc';
+            Filter := STR_NEW_MENU[5] + ' (*.rc)|*.rc';
+          end;
         FILE_TYPE_UNKNOW: Filter := STR_FRM_MAIN[35] + ' |*.fpj; *.c; *.cpp;' +
           ' *.cc; *.cxx; *.c++; *.cp; *.h; *.hpp; *.rh; *.hh; *.rc| ' +
-          STR_FRM_MAIN[12] + ' (*.*)|*.*';
+            STR_FRM_MAIN[12] + ' (*.*)|*.*';
       end;
       Options := Options + [ofOverwritePrompt];
       if Execute then
       begin
         ProjProp.Saved := True;
-        if(ProjProp.FileType = FILE_TYPE_UNKNOW) then
+        if (ProjProp.FileType = FILE_TYPE_UNKNOW) then
         begin
           ProjProp.FileType := GetFileType(FileName);
           ProjProp.CompilerType := GetCompiler(ProjProp.FileType);
         end;
         ProjProp.SaveAs(FileName);
-        ProjProp.Node.Text := ProjProp.Caption;
+        ProjProp.Node.Text := ProjProp.Name;
         FileSave.Enabled := FileProp.Modified;
         BtnSave.Enabled := FileSave.Enabled;
         PopTabsSave.Enabled := FileSave.Enabled;
         //update status bar
         StatusBar.Panels.Items[0].ImageIndex := FILE_IMG_LIST[FileProp.FileType];
-        StatusBar.Panels.Items[0].Caption := FileProp.Caption;
-        StatusBar.Panels.Items[0].Hint := FileProp.GetCompleteFileName;
+        StatusBar.Panels.Items[0].Caption := FileProp.Name;
+        StatusBar.Panels.Items[0].Hint := FileProp.FileName;
       end;
     end
   end;
@@ -4145,6 +4239,7 @@ begin
 end;
 
 //all actions of text editor
+
 procedure TFrmFalconMain.TextEditorAllAction(Sender: TObject);
 var
   Memo: TSynMemo;
@@ -4161,11 +4256,11 @@ begin
     StatusBar.Panels.Items[1].Caption := Format('Ln : %d  Col : %d   Sel : %d',
       [Memo.DisplayY, Memo.DisplayX, Memo.SelLength]);
     EditSelectAll.Enabled := not (Memo.SelLength = Length(Memo.Text)) and
-                            (Length(Memo.Text) > 0);
+      (Length(Memo.Text) > 0);
     PopEditorSelectAll.Enabled := EditSelectAll.Enabled;
     PopEditorDelete.Enabled := ((Memo.Focused) and (Length(Memo.Text) > 0)
-                          and (Memo.SelStart <> Length(Memo.Text))) or
-                          (TreeViewProjects.SelectionCount > 0);
+      and (Memo.SelStart <> Length(Memo.Text))) or
+      (TreeViewProjects.SelectionCount > 0);
     EditDelete.Enabled := PopEditorDelete.Enabled;
 
     EditCopy.Enabled := (Memo.SelLength > 0);
@@ -4182,10 +4277,11 @@ begin
 end;
 
 //onparser last active file
+
 procedure TFrmFalconMain.TextEditorFileParsed(EditFile: TFileProperty;
   TokenFile: TTokenFile);
 var
-  FullIncludeName: String;
+  FullIncludeName: string;
   I: Integer;
 begin
   for I := 0 to TokenFile.Includes.Count - 1 do
@@ -4206,6 +4302,7 @@ begin
 end;
 
 //event on change text in editor
+
 procedure TFrmFalconMain.TextEditorChange(Sender: TObject);
 var
   Memo: TSynMemo;
@@ -4226,14 +4323,14 @@ begin
     BtnSave.Enabled := FileSave.Enabled;
     PopTabsSave.Enabled := FileSave.Enabled;
     if FilePrp.Modified then
-      Sheet.Caption := '*' + FilePrp.Caption
+      Sheet.Caption := '*' + FilePrp.Name
     else
-      Sheet.Caption := FilePrp.Caption;
+      Sheet.Caption := FilePrp.Name;
     CanShowHintTip := False;
     TimerHintTipEvent.Enabled := False;
     HintTip.Cancel;
     DebugHint.Cancel;
-    ActiveEditingFile.FileName := FilePrp.GetCompleteFileName;
+    ActiveEditingFile.FileName := FilePrp.FileName;
     ActiveEditingFile.Data := FilePrp;
     Memo.InvalidateGutterLines(Memo.CaretY - 1, Memo.CaretY + 1);
     if CurrentFileIsParsed then
@@ -4255,8 +4352,8 @@ begin
   end;
 end;
 
-
 //other event of change of code editor
+
 procedure TFrmFalconMain.TextEditorStatusChange(Sender: TObject;
   Changes: TSynStatusChanges);
 begin
@@ -4276,13 +4373,14 @@ begin
   if HintParams.Activated and ((scCaretX in Changes) or (scCaretY in Changes))
     and (Sender is TSynMemo) then
   begin
-     TimerHintParams.Enabled := False;
-     TimerHintParams.Enabled := True;
+    TimerHintParams.Enabled := False;
+    TimerHintParams.Enabled := True;
   end;
   TextEditorAllAction(Sender);
 end;
 
 // on enter in code editor
+
 procedure TFrmFalconMain.TextEditorEnter(Sender: TObject);
 var
   ProjProp: TProjectProperty;
@@ -4293,13 +4391,13 @@ begin
   if GetActiveFile(FileProp) then
   begin
     StatusBar.Panels.Items[0].ImageIndex := FILE_IMG_LIST[FileProp.FileType];
-    StatusBar.Panels.Items[0].Caption := FileProp.Caption;
-    StatusBar.Panels.Items[0].Hint := FileProp.GetCompleteFileName;
+    StatusBar.Panels.Items[0].Caption := FileProp.Name;
+    StatusBar.Panels.Items[0].Hint := FileProp.FileName;
   end;
   if GetActiveProject(ProjProp) then
   begin
     FileSaveAs.Enabled := True;
-    if (Sender Is TSynMemo) then
+    if (Sender is TSynMemo) then
     begin
       TextEditorAllAction(Sender);
       for I := 1 to 9 do
@@ -4339,7 +4437,7 @@ begin
     end;
 
     BtnRun.Enabled := not Executor.Running or (assigned(LastProjectBuild) and
-        (LastProjectBuild <> ProjProp)) or DebugReader.Running;
+      (LastProjectBuild <> ProjProp)) or DebugReader.Running;
     RunRun.Enabled := BtnRun.Enabled;
     RunCompile.Enabled := BtnRun.Enabled and not DebugReader.Running;
     BtnCompile.Enabled := RunCompile.Enabled;
@@ -4362,6 +4460,7 @@ begin
 end;
 
 //on exit of code editor
+
 procedure TFrmFalconMain.TextEditorExit(Sender: TObject);
 var
   ProjProp: TProjectProperty;
@@ -4402,7 +4501,7 @@ begin
   EditIndent.Enabled := False;
   EditUnindent.Enabled := False;
   EditFormat.Enabled := AStyleLoaded and (PageControlEditor.PageCount > 0);
-  
+
   SearchFind.Enabled := PageControlEditor.PageCount > 0;
   SearchGotoFunction.Enabled := (PageControlEditor.PageCount > 0) or
     (TreeViewProjects.Items.Count > 0);
@@ -4420,12 +4519,12 @@ begin
   if GetActiveProject(ProjProp) then
   begin
     BtnRun.Enabled := not Executor.Running or (assigned(LastProjectBuild) and
-        (LastProjectBuild <> ProjProp)) or DebugReader.Running;
+      (LastProjectBuild <> ProjProp)) or DebugReader.Running;
     RunRun.Enabled := BtnRun.Enabled;
     RunCompile.Enabled := BtnRun.Enabled and not DebugReader.Running;
     BtnCompile.Enabled := RunCompile.Enabled;
     RunExecute.Enabled := not ProjProp.TargetChanged and BtnRun.Enabled
-       and not DebugReader.Running;
+      and not DebugReader.Running;
     BtnExecute.Enabled := BtnExecute.Enabled;
   end
   else
@@ -4460,11 +4559,14 @@ begin
     end;
     if not HintParams.Activated and CanShowHintTip then
     begin
-      if not GetActiveSheet(sheet) then Exit;
+      if not GetActiveSheet(sheet) then
+        Exit;
       TimerHintTipEvent.Enabled := False;
-      if not GetActiveFile(FileProp) then Exit;
+      if not GetActiveFile(FileProp) then
+        Exit;
       ProcessHintView(FileProp, sheet.Memo, X, Y);
-    end else if not HintParams.Activated then
+    end
+    else if not HintParams.Activated then
     begin
       CanShowHintTip := False;
       TimerHintTipEvent.Enabled := True;
@@ -4473,10 +4575,11 @@ begin
 end;
 
 //link click in edit
+
 procedure TFrmFalconMain.TextEditorLinkClick(Sender: TObject; S,
-  AttriName, FirstWord: String);
+  AttriName, FirstWord: string);
 var
-  FileName, Fields, Input, SaveFields: String;
+  FileName, Fields, Input: string;
   Prop: TFileProperty;
   Proj: TProjectProperty;
   sheet: TFilePropertySheet;
@@ -4496,14 +4599,14 @@ begin
       //search #include <stdio.h> in project
       Prop := TFileProperty(sheet.Node.Data);
       Proj := Prop.Project;
-      FileName := ExpandFileName(ExtractFilePath(Prop.GetCompleteFileName) + S);
+      FileName := ExpandFileName(ExtractFilePath(Prop.FileName) + S);
       if Proj.FileType = FILE_TYPE_PROJECT then
       begin
         Files := Proj.GetFiles;
-        for I:= 0 to Files.Count - 1 do
+        for I := 0 to Files.Count - 1 do
         begin
           Prop := TFileProperty(Files.Objects[I]);
-          if CompareText(FileName, Prop.GetCompleteFileName) = 0 then
+          if CompareText(FileName, Prop.FileName) = 0 then
           begin
             Prop.Edit;
             Files.Free;
@@ -4520,8 +4623,8 @@ begin
       end;
       if FileExists(FileName) then
       begin
-         OpenFile(FileName).Edit;
-         Exit;
+        OpenFile(FileName).Edit;
+        Exit;
       end;
     end;
     //search in compiler folder
@@ -4545,67 +4648,29 @@ begin
       MessageBox(Handle, PChar(Format(STR_FRM_MAIN[34], [S])), 'Falcon C++',
         MB_ICONEXCLAMATION);
   end
-  else {if (AttriName = 'Preprocessor') and (FirstWord = 'define') then}
+  else
   begin
-    if not GetActiveSheet(sheet) then Exit;
+    if not GetActiveSheet(sheet) then
+      Exit;
     SelStart := sheet.Memo.RowColToCharIndex(sheet.Memo.WordStart);
-    if ParseFields(sheet.Memo.Text, SelStart, Input, Fields, InputError) then
+    if not ParseFields(sheet.Memo.Text, SelStart, Input, Fields, InputError) then
+      Exit;
+    // find declaration
+    if not FilesParsed.FindDeclaration(Input, Fields, ActiveEditingFile, TokenFileItem,
+      Token, SelStart, sheet.Memo.WordStart.Line) then
+      Exit;
+    if TokenFileItem = ActiveEditingFile then //current file
     begin
-      if ActiveEditingFile.GetScopeAt(Token, SelStart) then
-      begin
-        if (Token.Token in [tkNamespace]) then
-        begin
-          Fields := Token.Name + '::' + Fields;
-          while Assigned(Token.Parent) and (Token.Parent.Token in [tkNamespace]) do
-          begin
-            Token := Token.Parent;
-            Fields := Token.Name + '::' + Fields;
-          end;
-        end;
-        if (Fields <> '') and FilesParsed.SearchTreeToken(Fields, ActiveEditingFile,
-            TokenFileItem, Token, [tkClass, tkNamespace], Token.SelStart) then
-        begin
-          if (Input <> '') and Token.SearchSource(Input, Token) then
-          begin
-            if TokenFileItem = ActiveEditingFile then //current file
-            begin
-                SelectToken(Token);
-                Exit;
-            end;
-            //other file
-            //is in project list
-            if SearchFileProperty(TokenFileItem.FileName, Prop) then
-              Prop.Edit
-            else//non opened. open
-              TFileProperty(OpenFile(TokenFileItem.FileName)).Edit;
-            SelectToken(Token);
-            Exit;
-          end;
-        end;
-      end;
-
-      SaveFields := Fields;
-      Fields := Fields + Input;
-      Input := GetFirstWord(Fields);
-      if  (SaveFields <> '') and not FilesParsed.GetFieldsBaseType(Input,
-        Fields, SelStart, ActiveEditingFile, TokenFileItem, Token) then
-        Exit
-      else if (SaveFields = '') and not FilesParsed.SearchSource(Input,
-        ActiveEditingFile, TokenFileItem, Token, SelStart) then
-        Exit;
-      if TokenFileItem = ActiveEditingFile then //current file
-      begin
-          SelectToken(Token);
-          Exit;
-      end;
-      //other file
-      //is in project list
-      if SearchFileProperty(TokenFileItem.FileName, Prop) then
-        Prop.Edit
-      else//non opened. open
-        TFileProperty(OpenFile(TokenFileItem.FileName)).Edit;
       SelectToken(Token);
+      Exit;
     end;
+    //other file
+    //is in project list
+    if SearchFileProperty(TokenFileItem.FileName, Prop) then
+      Prop.Edit
+    else //non opened. open
+      TFileProperty(OpenFile(TokenFileItem.FileName)).Edit;
+    SelectToken(Token);
   end;
 end;
 
@@ -4659,7 +4724,7 @@ procedure TFrmFalconMain.TextEditorKeyPress(Sender: TObject;
 var
   sheet: TFilePropertySheet;
   emptyLine: Boolean;
-  str, LineStr: String;
+  str, LineStr: string;
   bStart, caret: TBufferCoord;
 begin
   LastKeyPressed := Key;
@@ -4900,8 +4965,8 @@ end;
 
 procedure TFrmFalconMain.Packages1Click(Sender: TObject);
 begin
-    ShellExecute(Handle, 'open', PChar(AppRoot + 'PkgManager.exe'), '',
-        PChar(AppRoot), SW_SHOW)
+  ShellExecute(Handle, 'open', PChar(AppRoot + 'PkgManager.exe'), '',
+    PChar(AppRoot), SW_SHOW)
 end;
 
 procedure TFrmFalconMain.FormDestroy(Sender: TObject);
@@ -4927,10 +4992,10 @@ begin
     0: ProjectPanel.Visible := TTBXItem(Sender).Checked;
     1: StatusBar.Visible := TTBXItem(Sender).Checked;
     2:
-    begin
-      PanelOutline.Visible := TTBXItem(Sender).Checked and
+      begin
+        PanelOutline.Visible := TTBXItem(Sender).Checked and
           (PageControlEditor.ActivePageIndex >= 0);
-    end;
+      end;
   end;
 end;
 
@@ -4938,7 +5003,7 @@ procedure TFrmFalconMain.NewItemClick(Sender: TObject);
 var
   SelFile: TFileProperty;
   FileType, CompilerType: Integer;
-  Ext: String;
+  Ext: string;
 begin
   FileType := FILE_TYPE_CPP;
   CompilerType := COMPILER_CPP;
@@ -4951,25 +5016,26 @@ begin
   end;
   //BtnNew.Tag := TControl(Sender).Tag;
   //BtnNew.ImageIndex := TControl(Sender).Tag;
-  if not GetSelectedFileInList(SelFile) then SelFile := nil;
+  if not GetSelectedFileInList(SelFile) then
+    SelFile := nil;
   case TControl(Sender).Tag of
     1:
-    begin
-      if not Assigned(FrmNewProj) then
       begin
-        FrmNewProj := TFrmNewProj.CreateParented(Handle);
-        FrmNewProj.ShowModal;
+        if not Assigned(FrmNewProj) then
+        begin
+          FrmNewProj := TFrmNewProj.CreateParented(Handle);
+          FrmNewProj.ShowModal;
+        end;
       end;
-    end;
-    2:  NewFileProperty(FILE_TYPE_C, COMPILER_C, 'main' + '.c', STR_FRM_MAIN[13], '.c', '', SelFile).Edit;
-    3:  NewFileProperty(FILE_TYPE_CPP, COMPILER_CPP, 'main' + '.cpp', STR_FRM_MAIN[13], '.cpp', '', SelFile).Edit;
-    4:  NewFileProperty(FILE_TYPE_H, NO_COMPILER, 'main' + '.h', STR_FRM_MAIN[13], '.h', '', SelFile).Edit;
-    5:  NewFileProperty(FILE_TYPE_RC, COMPILER_RC, STR_FRM_MAIN[16] + '.rc', STR_FRM_MAIN[13], '.rc', '', SelFile).Edit;
-    6:  NewFileProperty(FILE_TYPE_UNKNOW, CompilerType, 'main', STR_FRM_MAIN[13], '', '', SelFile).Edit;
-    7:  NewFileProperty(FILE_TYPE_FOLDER, NO_COMPILER, STR_NEW_MENU[8], STR_FRM_MAIN[14], '', '', SelFile);
+    2: NewSourceFile(FILE_TYPE_C, COMPILER_C, 'main' + '.c', STR_FRM_MAIN[13], '.c', '', SelFile, False, False, False).Edit;
+    3: NewSourceFile(FILE_TYPE_CPP, COMPILER_CPP, 'main' + '.cpp', STR_FRM_MAIN[13], '.cpp', '', SelFile, False, False, False).Edit;
+    4: NewSourceFile(FILE_TYPE_H, NO_COMPILER, 'main' + '.h', STR_FRM_MAIN[13], '.h', '', SelFile, False, False, False).Edit;
+    5: NewSourceFile(FILE_TYPE_RC, COMPILER_RC, STR_FRM_MAIN[16] + '.rc', STR_FRM_MAIN[13], '.rc', '', SelFile, False, False, False).Edit;
+    6: NewSourceFile(FILE_TYPE_UNKNOW, CompilerType, 'main', STR_FRM_MAIN[13], '', '', SelFile, False, False, False).Edit;
+    7: NewSourceFile(FILE_TYPE_FOLDER, NO_COMPILER, STR_NEW_MENU[8], STR_FRM_MAIN[14], '', '', SelFile, True, False, False);
   else
-    NewFileProperty(FileType, CompilerType, 'main' + Ext,
-      STR_FRM_MAIN[13], Ext, '', SelFile).Edit;
+    NewSourceFile(FileType, CompilerType, 'main' + Ext,
+      STR_FRM_MAIN[13], Ext, '', SelFile, False, False, False).Edit;
   end;
 end;
 
@@ -4987,7 +5053,8 @@ begin
   end;
 end;
 
-function TFrmFalconMain.ImportDevCppProject(const FileName: String): Boolean;
+function TFrmFalconMain.ImportDevCppProject(const FileName: string;
+  var Proj: TProjectProperty): Boolean;
 const
   DevType: array[0..3] of Integer = (APPTYPE_GUI, APPTYPE_CONSOLE, APPTYPE_LIB,
     APPTYPE_DLL);
@@ -4998,10 +5065,11 @@ var
   NewFile: TFileProperty;
   PrjDevType, UnitCount, I: Integer;
   IsCpp, Edited: Boolean;
-  IconName, SourceFileName: String;
+  IconName, SourceFileName: string;
 begin
   Result := False;
-  if not FileExists(FileName) then Exit;
+  if not FileExists(FileName) then
+    Exit;
   ini := TIniFile.Create(FileName);
   if not ini.SectionExists('Project') then
   begin
@@ -5015,7 +5083,7 @@ begin
   Node.Data := NewPrj;
   NewPrj.FileName := ChangeFileExt(FileName, '.fpj');
   NewPrj.Compiled := False;
-  Node.Text := NewPrj.Caption;
+  Node.Text := NewPrj.Name;
   Node.Selected := True;
   Node.Focused := True;
   IsCpp := ini.ReadBool('Project', 'IsCpp', False);
@@ -5033,7 +5101,8 @@ begin
   NewPrj.Libs := StringReplace(NewPrj.Libs, '_@@_', '', [rfReplaceAll]);
   NewPrj.Flags := StringReplace(NewPrj.Flags, '_@@_', '', [rfReplaceAll]);
   PrjDevType := ini.ReadInteger('Project', 'Type', 1);
-  if PrjDevType > 3 then PrjDevType := 1;
+  if PrjDevType > 3 then
+    PrjDevType := 1;
   NewPrj.AppType := DevType[PrjDevType];
   case NewPrj.AppType of
     APPTYPE_GUI: NewPrj.Libs := '-mwindows ' + NewPrj.Libs;
@@ -5054,57 +5123,55 @@ begin
       NewPrj.Icon := nil;
     end;
   end;
-  NewPrj.IncludeVersionInfo       := ini.ReadBool   ('Project',     'IncludeVersionInfo', False);
-  NewPrj.Version.Major            := ini.ReadInteger('VersionInfo', 'Major', 0);
-  NewPrj.Version.Minor            := ini.ReadInteger('VersionInfo', 'Minor', 0);
-  NewPrj.Version.Release          := ini.ReadInteger('VersionInfo', 'Release', 0);
-  NewPrj.Version.Build            := ini.ReadInteger('VersionInfo', 'Build', 0);
-  NewPrj.Version.LanguageID       := ini.ReadInteger('VersionInfo', 'LanguageID', 1033);
-  NewPrj.Version.CharsetID        := ini.ReadInteger('VersionInfo', 'CharsetID', 1252);
-  NewPrj.Version.CompanyName      := ini.ReadString ('VersionInfo', 'CompanyName', '');
-  NewPrj.Version.FileVersion      := ini.ReadString ('VersionInfo', 'FileVersion', '');
-  NewPrj.Version.FileDescription  := ini.ReadString ('VersionInfo', 'FileDescription', '');
-  NewPrj.Version.InternalName     := ini.ReadString ('VersionInfo', 'InternalName', '');
-  NewPrj.Version.LegalCopyright   := ini.ReadString ('VersionInfo', 'LegalCopyright', '');
-  NewPrj.Version.OriginalFilename := ini.ReadString ('VersionInfo', 'OriginalFilename', '');
-  NewPrj.Version.ProductName      := ini.ReadString ('VersionInfo', 'ProductName', '');
-  NewPrj.Version.ProductVersion   := ini.ReadString ('VersionInfo', 'ProductVersion', '');
-  NewPrj.AutoIncBuild             := ini.ReadBool   ('VersionInfo', 'AutoIncBuildNr', False);
-  UnitCount                       := ini.ReadInteger('Project',     'UnitCount', 0);
+  NewPrj.IncludeVersionInfo := ini.ReadBool('Project', 'IncludeVersionInfo', False);
+  NewPrj.Version.Major := ini.ReadInteger('VersionInfo', 'Major', 0);
+  NewPrj.Version.Minor := ini.ReadInteger('VersionInfo', 'Minor', 0);
+  NewPrj.Version.Release := ini.ReadInteger('VersionInfo', 'Release', 0);
+  NewPrj.Version.Build := ini.ReadInteger('VersionInfo', 'Build', 0);
+  NewPrj.Version.LanguageID := ini.ReadInteger('VersionInfo', 'LanguageID', 1033);
+  NewPrj.Version.CharsetID := ini.ReadInteger('VersionInfo', 'CharsetID', 1252);
+  NewPrj.Version.CompanyName := ini.ReadString('VersionInfo', 'CompanyName', '');
+  NewPrj.Version.FileVersion := ini.ReadString('VersionInfo', 'FileVersion', '');
+  NewPrj.Version.FileDescription := ini.ReadString('VersionInfo', 'FileDescription', '');
+  NewPrj.Version.InternalName := ini.ReadString('VersionInfo', 'InternalName', '');
+  NewPrj.Version.LegalCopyright := ini.ReadString('VersionInfo', 'LegalCopyright', '');
+  NewPrj.Version.OriginalFilename := ini.ReadString('VersionInfo', 'OriginalFilename', '');
+  NewPrj.Version.ProductName := ini.ReadString('VersionInfo', 'ProductName', '');
+  NewPrj.Version.ProductVersion := ini.ReadString('VersionInfo', 'ProductVersion', '');
+  NewPrj.AutoIncBuild := ini.ReadBool('VersionInfo', 'AutoIncBuildNr', False);
+  UnitCount := ini.ReadInteger('Project', 'UnitCount', 0);
   Edited := False;
-  for I:= 1 to UnitCount do
+  for I := 1 to UnitCount do
   begin
-    SourceFileName :=  ini.ReadString('Unit'+ IntToStr(I), 'FileName', '');
-    NewFile := NewFileProperty(GetFileType(SourceFileName),
-                GetCompiler(GetFileType(SourceFileName)), SourceFileName,
-                RemoveFileExt(SourceFileName), ExtractFileExt(SourceFileName),
-                '', NewPrj);
-    if FileExists(NewFile.GetCompleteFileName) then
+    SourceFileName := ini.ReadString('Unit' + IntToStr(I), 'FileName', '');
+    NewFile := NewSourceFile(GetFileType(SourceFileName),
+      GetCompiler(GetFileType(SourceFileName)), SourceFileName,
+      RemoveFileExt(SourceFileName), ExtractFileExt(SourceFileName),
+      '', NewPrj, False, False, False);
+    if FileExists(NewFile.FileName) then
     begin
-      // TODO: save to new project //NewFile.Text.LoadFromFile(NewFile.GetCompleteFileName);
-      NewFile.DateOfFile := FileDateTime(NewFile.GetCompleteFileName);
+      NewFile.DateOfFile := FileDateTime(NewFile.FileName);
       NewFile.Saved := True;
-      NewFile.Modified := False;
-      if (CompareText(NewFile.Caption, 'main.c') = 0) or
-         (CompareText(NewFile.Caption, 'main.cpp') = 0) then
+      if (CompareText(NewFile.Name, 'main.c') = 0) or
+        (CompareText(NewFile.Name, 'main.cpp') = 0) then
       begin
         NewFile.Edit;
         Edited := True;
       end;
     end;
   end;
-  NewPrj.Modified := False;
   if not Edited then
     NewPrj.Node.Selected := True;
   ini.Free;
-  ParseProjectFiles(NewPrj);
+  Proj := NewPrj;
   Result := True;
 end;
 
-function TFrmFalconMain.ImportCodeBlocksProject(const FileName: String): Boolean;
+function TFrmFalconMain.ImportCodeBlocksProject(const FileName: string;
+  var Proj: TProjectProperty): Boolean;
 
-  function GetTagProperty(Node: IXMLNode; Tag, Attribute: String;
-    Default: String = ''): String;
+  function GetTagProperty(Node: IXMLNode; Tag, Attribute: string;
+    Default: string = ''): string;
   var
     Temp: IXMLNode;
   begin
@@ -5119,7 +5186,7 @@ function TFrmFalconMain.ImportCodeBlocksProject(const FileName: String): Boolean
   var
     XMLDoc: TXMLDocument;
     Temp, LytRoot, FileNode: IXMLNode;
-    STemp, StrProp, LytFileName: String;
+    STemp, StrProp, LytFileName: string;
     FileProp, TopFile: TFileProperty;
     CaretXY: TBufferCoord;
     sheet: TFilePropertySheet;
@@ -5147,22 +5214,21 @@ function TFrmFalconMain.ImportCodeBlocksProject(const FileName: String): Boolean
         Continue;
       end;
       STemp := Temp.Attributes['filename'];
-      FileProp := NewFileProperty(GetFileType(STemp),
-                  GetCompiler(GetFileType(STemp)), STemp,
-                  RemoveFileExt(STemp), ExtractFileExt(STemp), '', Parent);
-      STemp := FileProp.GetCompleteFileName;
+      FileProp := NewSourceFile(GetFileType(STemp),
+        GetCompiler(GetFileType(STemp)), STemp,
+        RemoveFileExt(STemp), ExtractFileExt(STemp), '', Parent,
+        False, False, False);
+      STemp := FileProp.FileName;
       if FileExists(STemp) then
       begin
-        // TODO: save to new project FileProp.Text.LoadFromFile(STemp);
         FileProp.DateOfFile := FileDateTime(STemp);
         FileProp.Saved := True;
-        FileProp.Modified := False;
         if FileProp.FileType = FILE_TYPE_CPP then
           FileProp.Project.CompilerType := COMPILER_CPP;
       end;
       if Assigned(LytRoot) then
       begin
-        FileNode :=  LytRoot.ChildNodes.First;
+        FileNode := LytRoot.ChildNodes.First;
         while FileNode <> nil do
         begin
           if FileNode.NodeName <> 'File' then
@@ -5171,7 +5237,7 @@ function TFrmFalconMain.ImportCodeBlocksProject(const FileName: String): Boolean
             Continue;
           end;
           LytFileName := FileNode.Attributes['name'];
-          if CompareText(LytFileName, FileProp.Caption) = 0 then
+          if CompareText(LytFileName, FileProp.Name) = 0 then
           begin
             StrProp := FileNode.Attributes['top'];
             if StrProp = '1' then
@@ -5208,7 +5274,7 @@ var
   Node: TTreeNode;
   NewPrj: TProjectProperty;
   Major, Minor: Integer;
-  TempStr: String;
+  TempStr: string;
   ExtAuto, createStaticLib, createDefFile: Boolean;
 begin
   Result := False;
@@ -5249,7 +5315,7 @@ begin
   NewPrj.FileName := ChangeFileExt(FileName, '.fpj');
   NewPrj.Compiled := False;
   NewPrj.CompilerType := COMPILER_C;
-  Node.Text := NewPrj.Caption;
+  Node.Text := NewPrj.Name;
   Node.Selected := True;
   Node.Focused := True;
   BuildNode := ProjNode.ChildNodes.FindNode('Build');
@@ -5289,7 +5355,7 @@ begin
           if TempStr = '0' then
           begin
             NewPrj.AppType := APPTYPE_GUI;
-            NewPrj.Libs := Trim('-mwindows '+ NewPrj.Libs);
+            NewPrj.Libs := Trim('-mwindows ' + NewPrj.Libs);
           end
           else if TempStr = '1' then
             NewPrj.AppType := APPTYPE_CONSOLE
@@ -5298,7 +5364,7 @@ begin
           else if TempStr = '3' then
           begin
             NewPrj.AppType := APPTYPE_DLL;
-            NewPrj.Libs := Trim('-shared '+ NewPrj.Libs);
+            NewPrj.Libs := Trim('-shared ' + NewPrj.Libs);
           end;
         end
         else if TempNode.HasAttribute('createStaticLib') then
@@ -5355,7 +5421,7 @@ begin
     if TempStr = 'Release' then
       Break;
     TargetNode := TargetNode.NextSibling;
-  end;//end build childs
+  end; //end build childs
   CompNode := ProjNode.ChildNodes.FindNode('Compiler');
   if CompNode <> nil then
   begin
@@ -5394,7 +5460,7 @@ begin
       AddNode := AddNode.NextSibling;
     end;
   end;
-  
+
   if ExtAuto then
   begin
     case NewPrj.AppType of
@@ -5414,19 +5480,20 @@ begin
     //not implemented
   end;
   LoadFiles(ProjNode, NewPrj);
-  NewPrj.Modified := False;
   XMLDoc.Free;
-  ParseProjectFiles(NewPrj);
+  Proj := NewPrj;
   Result := True;
 end;
 
-function TFrmFalconMain.ImportMSVCProject(const FileName: String): Boolean;
+function TFrmFalconMain.ImportMSVCProject(const FileName: string;
+  var Proj: TProjectProperty): Boolean;
 begin
-  //ParseProjectFiles(NewPrj);
   Result := False;
 end;
 
 procedure TFrmFalconMain.ImportFromDevCpp(Sender: TObject);
+var
+  Proj: TProjectProperty;
 begin
   with TOpenDialog.Create(Self) do
   begin
@@ -5434,15 +5501,18 @@ begin
     Options := Options + [ofFileMustExist];
     if Execute then
     begin
-      if not ImportDevCppProject(FileName) then
+      if not ImportDevCppProject(FileName, Proj) then
         MessageBox(Self.Handle, PChar(Format(STR_FRM_MAIN[47], ['Dev-C++'])),
           'Falcon C++', MB_ICONEXCLAMATION);
+      ParseProjectFiles(Proj);
     end;
     Free;
   end;
 end;
 
 procedure TFrmFalconMain.ImportFromCodeBlocks(Sender: TObject);
+var
+  Proj: TProjectProperty;
 begin
   with TOpenDialog.Create(Self) do
   begin
@@ -5450,16 +5520,19 @@ begin
     Options := Options + [ofFileMustExist];
     if Execute then
     begin
-      if not ImportCodeBlocksProject(FileName) then
+      if not ImportCodeBlocksProject(FileName, Proj) then
         MessageBox(Self.Handle,
           PChar(Format(STR_FRM_MAIN[47], ['Code::Blocks'])), 'Falcon C++',
           MB_ICONEXCLAMATION);
+      ParseProjectFiles(Proj);
     end;
     Free;
   end;
 end;
 
 procedure TFrmFalconMain.ImportFromMSVC(Sender: TObject);
+var
+  Proj: TProjectProperty;
 begin
   with TOpenDialog.Create(Self) do
   begin
@@ -5467,16 +5540,18 @@ begin
     Options := Options + [ofFileMustExist];
     if Execute then
     begin
-      if not ImportMSVCProject(FileName) then
+      if not ImportMSVCProject(FileName, Proj) then
         MessageBox(Self.Handle,
           PChar(Format(STR_FRM_MAIN[47], ['MS Visual C++'])), 'Falcon C++',
           MB_ICONEXCLAMATION);
+      ParseProjectFiles(Proj);
     end;
     Free;
   end;
 end;
 
 //text change parse delay
+
 procedure TFrmFalconMain.TimerChangeDelayTimer(Sender: TObject);
 begin
   if fWorkerThread <> nil then
@@ -5494,12 +5569,12 @@ begin
   ToolbarCheck(TToolBar(Sender).Tag, False);
 end;
 
-
 procedure TFrmFalconMain.ViewZoomIncClick(Sender: TObject);
 var
   I: Integer;
 begin
-  if ZoomEditor >= 48 then Exit;
+  if ZoomEditor >= 48 then
+    Exit;
   Inc(ZoomEditor);
   for I := 0 to Pred(PageControlEditor.PageCount) do
   begin
@@ -5512,7 +5587,8 @@ procedure TFrmFalconMain.ViewZoomDecClick(Sender: TObject);
 var
   I: Integer;
 begin
-  if ZoomEditor <= 8 then Exit;
+  if ZoomEditor <= 8 then
+    Exit;
   Dec(ZoomEditor);
   for I := 0 to Pred(PageControlEditor.PageCount) do
   begin
@@ -5526,8 +5602,10 @@ var
   FileProp: TFileProperty;
   Sheet: TFilePropertySheet;
 begin
-  if not GetActiveFile(FileProp) then Exit;
-  if not FileProp.GetSheet(Sheet) then Exit;
+  if not GetActiveFile(FileProp) then
+    Exit;
+  if not FileProp.GetSheet(Sheet) then
+    Exit;
   if TTBXItem(Sender).Checked then //set bookmark
   begin
     TTBXItem(EditGotoBookmarks.Items[TTBXItem(Sender).Tag - 1]).Checked := True;
@@ -5560,21 +5638,21 @@ begin
   for I := 0 to List.Count - 1 do
   begin
     if CompareText(ExtractFileExt(List.Strings[I]), '.dev') = 0 then
-      ImportDevCppProject(List.Strings[I])
+      ImportDevCppProject(List.Strings[I], Proj)
     else if CompareText(ExtractFileExt(List.Strings[I]), '.cbp') = 0 then
-      ImportCodeBlocksProject(List.Strings[I])
+      ImportCodeBlocksProject(List.Strings[I], Proj)
     else if CompareText(ExtractFileExt(List.Strings[I]), '.vcproj') = 0 then
-      ImportMSVCProject(List.Strings[I])
+      ImportMSVCProject(List.Strings[I], Proj)
     else
     begin
       if Assigned(AnItem) then
       begin
         if not (TFileProperty(AnItem.Data).FileType in
           [FILE_TYPE_PROJECT, FILE_TYPE_FOLDER]) then
-         SelFile := nil;
+          SelFile := nil;
       end;
       FileType := GetFileType(List.Strings[I]);
-      if(FileType = FILE_TYPE_PROJECT) or not Assigned(SelFile) then
+      if (FileType = FILE_TYPE_PROJECT) or not Assigned(SelFile) then
       begin
         if SearchFileProperty(List.Strings[I], ExisFile) then
         begin
@@ -5598,15 +5676,15 @@ begin
       end
       else
       begin
-        NewFile := NewFileProperty(GetFileType(List.Strings[I]),
-                    GetCompiler(FileType),
-                    ExtractFileName(List.Strings[I]),
-                    ExtractName(List.Strings[I]),
-                    ExtractFileExt(List.Strings[I]), List.Strings[I],
-                    SelFile);
+        NewFile := NewSourceFile(GetFileType(List.Strings[I]),
+          GetCompiler(FileType),
+          ExtractFileName(List.Strings[I]),
+          ExtractName(List.Strings[I]),
+          ExtractFileExt(List.Strings[I]), List.Strings[I],
+          SelFile, False, False, False);
         if Assigned(SelFile) then
           NewFile.Project.PropertyChanged := True;
-        SrcList.AddObject(NewFile.GetCompleteFileName, NewFile);
+        SrcList.AddObject(NewFile.FileName, NewFile);
       end;
     end;
   end;
@@ -5619,8 +5697,10 @@ var
   FileProp: TFileProperty;
   Sheet: TFilePropertySheet;
 begin
-  if not GetActiveFile(FileProp) then Exit;
-  if not FileProp.GetSheet(Sheet) then Exit;
+  if not GetActiveFile(FileProp) then
+    Exit;
+  if not FileProp.GetSheet(Sheet) then
+    Exit;
   if TTBXItem(Sender).Checked then
     Sheet.Memo.GotoBookMark(TTBXItem(Sender).Tag);
 end;
@@ -5631,7 +5711,7 @@ var
 begin
   TFileProperty(Node.Data).Project := Proj;
   for I := 0 to Node.Count - 1 do
-      AdjustNewProject(Node.Item[I], Proj);
+    AdjustNewProject(Node.Item[I], Proj);
 end;
 
 procedure TFrmFalconMain.TreeViewProjectsDragDrop(Sender, Source: TObject; X,
@@ -5642,17 +5722,19 @@ var
   HT: THitTests;
   fpd, fps: TFileProperty;
 begin
-  if TreeViewProjects.Selected = nil then Exit;
+  if TreeViewProjects.Selected = nil then
+    Exit;
   Selitem := TreeViewProjects.Selected;
-  HT := TreeViewProjects.GetHitTestInfoAt(X, Y) ;
-  AnItem := TreeViewProjects.GetNodeAt(X, Y) ;
-  if (AnItem = nil) or (AnItem = Selitem) then Exit;
+  HT := TreeViewProjects.GetHitTestInfoAt(X, Y);
+  AnItem := TreeViewProjects.GetNodeAt(X, Y);
+  if (AnItem = nil) or (AnItem = Selitem) then
+    Exit;
   if (HT - [htOnItem, htOnIcon, htNowhere, htOnIndent, htBelow] <> HT) then
   begin
     AttachMode := naAddChild;
     if (htOnItem in HT) or
-       (htOnIcon in HT) then
-        AttachMode := naAddChildFirst
+      (htOnIcon in HT) then
+      AttachMode := naAddChildFirst
     else if htNowhere in HT then
       AttachMode := naAdd
     else if htOnIndent in HT then
@@ -5667,13 +5749,13 @@ begin
     if fps is TProjectProperty then
     begin
       Selitem.Data := TFileProperty.Create(fps.PageCtrl, fps.Node);
-      TFileProperty(Selitem.Data).Assign(fps);//copy
-      fps.Free;//release
+      TFileProperty(Selitem.Data).Assign(fps); //copy
+      fps.Free; //release
       fps := TFileProperty(Selitem.Data);
-      fps.FileName := fps.Caption;
+      fps.FileName := fps.Name;
     end;
     AdjustNewProject(Selitem, fpd.Project);
-    TreeViewProjects.Selected.MoveTo(AnItem, AttachMode) ;
+    TreeViewProjects.Selected.MoveTo(AnItem, AttachMode);
     BoldTreeNode(fpd.Project.Node, True);
   end;
 end;
@@ -5685,16 +5767,18 @@ var
   HT: THitTests;
 begin
   Accept := False;
-  if not Assigned(TreeViewProjects.Selected) then Exit;
+  if not Assigned(TreeViewProjects.Selected) then
+    Exit;
   Selitem := TreeViewProjects.Selected;
   HT := TreeViewProjects.GetHitTestInfoAt(X, Y);
   AnItem := TreeViewProjects.GetNodeAt(X, Y);
-  if not Assigned(AnItem) or (AnItem = Selitem) then Exit;
+  if not Assigned(AnItem) or (AnItem = Selitem) then
+    Exit;
   if (HT - [htOnItem, htOnIcon, htNowhere, htOnIndent, htBelow] <> HT) and
-     (TFileProperty(Selitem.Data).FileType <> FILE_TYPE_PROJECT) then
+    (TFileProperty(Selitem.Data).FileType <> FILE_TYPE_PROJECT) then
   begin
     if TFileProperty(AnItem.Data).FileType in
-        [FILE_TYPE_PROJECT, FILE_TYPE_FOLDER] then
+      [FILE_TYPE_PROJECT, FILE_TYPE_FOLDER] then
       Accept := True
     else if htBelow in HT then
       Accept := True;
@@ -5702,6 +5786,7 @@ begin
 end;
 
 //enter focus on popup menu
+
 procedure TFrmFalconMain.PageControlEditorContextPopup(Sender: TObject;
   MousePos: TPoint; var Handled: Boolean);
 var
@@ -5722,9 +5807,11 @@ var
   sheet: TFilePropertySheet;
   dc: TDisplayCoord;
 begin
-  if not GetActiveSheet(sheet) then Exit;
+  if not GetActiveSheet(sheet) then
+    Exit;
   dc := sheet.Memo.PixelsToRowColumn(MousePos.X, MousePos.Y);
-  if (dc.Column = 0) or (dc.Row = 0) or (sheet.Memo.SelLength > 0) then Exit;
+  if (dc.Column = 0) or (dc.Row = 0) or (sheet.Memo.SelLength > 0) then
+    Exit;
   sheet.Memo.SetFocus;
   EditorGotoXY(sheet.Memo, dc.Column, dc.Row);
 end;
@@ -5761,8 +5848,9 @@ var
   TopLine: Integer;
 begin
   Memo.SetFocus;
-  TopLine := Line  - (Memo.LinesInWindow div 2);
-  if TopLine <= 0 then TopLine := 1;
+  TopLine := Line - (Memo.LinesInWindow div 2);
+  if TopLine <= 0 then
+    TopLine := 1;
   Memo.TopLine := TopLine;
   if Col < EndCol then
   begin
@@ -5788,14 +5876,15 @@ var
   sheet: TFilePropertySheet;
   TopLine: Integer;
 begin
-  if not GetActiveSheet(sheet) then Exit;
+  if not GetActiveSheet(sheet) then
+    Exit;
   bC := sheet.Memo.CharIndexToRowCol(Token.SelStart);
   bSs := bC;
   bSe := sheet.Memo.CharIndexToRowCol(Token.SelStart + Token.SelLength);
   sheet.Memo.SetCaretAndSelection(bC, bSs, bSe);
   sheet.Memo.SetFocus;
 
-  TopLine := Token.SelLine  - (sheet.Memo.LinesInWindow div 2);
+  TopLine := Token.SelLine - (sheet.Memo.LinesInWindow div 2);
   if TopLine <= 0 then
     TopLine := 1;
   sheet.Memo.TopLine := TopLine;
@@ -5808,7 +5897,7 @@ var
   TokenFileItem: TTokenFile;
   sheet: TFilePropertySheet;
 begin
-  Index := FilesParsed.IndexOfByFileName(NewToken.FileName, NewToken.Data);
+  Index := FilesParsed.IndexOfByFileName(NewToken.FileName);
   if Index < 0 then //not parsed
   begin
     TokenFileItem := TTokenFile.Create(FilesParsed);
@@ -5817,7 +5906,8 @@ begin
   else
   begin
     TokenFileItem := FilesParsed.Items[Index];
-    if Reload then TokenFileItem.Assign(NewToken);
+    if Reload then
+      TokenFileItem.Assign(NewToken);
   end;
   ActiveEditingFile.Assign(TokenFileItem);
   if Index < 0 then
@@ -5825,11 +5915,14 @@ begin
   if DebugReader.Running then
     Exit;
   TreeViewOutline.Items.Clear;
-  FillTreeView(nil, ActiveEditingFile.Includes);
-  FillTreeView(nil, ActiveEditingFile.Defines);
-  FillTreeView(nil, ActiveEditingFile.TreeObjs);
-  FillTreeView(nil, ActiveEditingFile.VarConsts);
-  FillTreeView(nil, ActiveEditingFile.FuncObjs);
+  if ViewOutline.Checked then
+  begin
+    FillTreeView(nil, ActiveEditingFile.Includes);
+    FillTreeView(nil, ActiveEditingFile.Defines);
+    FillTreeView(nil, ActiveEditingFile.TreeObjs);
+    FillTreeView(nil, ActiveEditingFile.VarConsts);
+    FillTreeView(nil, ActiveEditingFile.FuncObjs);
+  end;
   if GetActiveSheet(sheet) then
     DetectScope(sheet.Memo);
 end;
@@ -5838,11 +5931,13 @@ procedure TFrmFalconMain.TreeViewOutlineDblClick(Sender: TObject);
 var
   Token: TTokenClass;
 begin
-  if TreeViewOutline.SelectionCount = 0 then Exit;
+  if TreeViewOutline.SelectionCount = 0 then
+    Exit;
   TreeViewOutline.Selected.EndEdit(True);
   Token := TTokenClass(TreeViewOutline.Selected.Data);
   if Token.Token in [tkIncludeList, tkDefineList, tkTreeObjList, tkVarConsList,
-                     tkFuncProList] then Exit;
+    tkFuncProList] then
+    Exit;
   if not DebugReader.Running then
     SelectToken(Token);
 end;
@@ -5857,9 +5952,10 @@ begin
 end;
 
 //hint functions
+
 procedure TFrmFalconMain.ShowHintParams(Memo: TSynMemo);
 var
-  S, Params, Fields, Input, SaveInput, SaveFields: String;
+  S, Params, Fields, Input, SaveInput, SaveFields: string;
   Token, tokenParams, scope: TTokenClass;
   InputError, InQuote: Boolean;
   QuoteChar: Char;
@@ -5939,7 +6035,7 @@ begin
   ParamsList := TStringList.Create;
   TokenFileItem := ActiveEditingFile;
   //show function params
-   if not FilesParsed.GetFieldsBaseParams(Input, Fields, BracketStart,
+  if not FilesParsed.GetFieldsBaseParams(Input, Fields, BracketStart,
     TokenFileItem, ParamsList) then
   begin
     if ActiveEditingFile.GetScopeAt(Token, BracketStart) then
@@ -6026,7 +6122,7 @@ begin
 end;
 
 procedure TFrmFalconMain.ParserProgress(Sender: TObject; TokenFile: TTokenFile;
-  const FileName: String; Current, Total: Integer; Parsed: Boolean;
+  const FileName: string; Current, Total: Integer; Parsed: Boolean;
   Method: TTokenParseMethod);
 begin
   ProgressBarParser.Position := (Current * 100) div Total;
@@ -6034,7 +6130,7 @@ end;
 
 procedure TFrmFalconMain.ParserFinish(Sender: TObject);
 var
- ini: TIniFile;
+  ini: TIniFile;
 begin
   if IsLoadingSrcFiles then
   begin
@@ -6060,7 +6156,7 @@ begin
 end;
 
 procedure TFrmFalconMain.AllParserProgress(Sender: TObject; TokenFile: TTokenFile;
-  const FileName: String; Current, Total: Integer; Parsed: Boolean;
+  const FileName: string; Current, Total: Integer; Parsed: Boolean;
   Method: TTokenParseMethod);
 begin
   if not Parsed then
@@ -6095,7 +6191,7 @@ begin
 end;
 
 procedure TFrmFalconMain.TokenParserProgress(Sender: TObject;
-  TokenFile: TTokenFile; const FileName: String; Current, Total: Integer;
+  TokenFile: TTokenFile; const FileName: string; Current, Total: Integer;
   Parsed: Boolean; Method: TTokenParseMethod);
 begin
   StatusBar.Panels.Items[3].Caption := 'Loading ' + ExtractFileName(FileName);
@@ -6114,7 +6210,7 @@ begin
   DebugHint.Cancel;
 end;
 
-procedure TFrmFalconMain.ProcessDebugHint(Input: String; Line, SelStart: integer;
+procedure TFrmFalconMain.ProcessDebugHint(Input: string; Line, SelStart: integer;
   CursorPos: TPoint);
 var
   token: TTokenClass;
@@ -6140,11 +6236,11 @@ procedure TFrmFalconMain.ProcessHintView(FileProp: TFileProperty;
   function BufferIn(BS, Buffer, BE: TBufferCoord): Boolean;
   begin
     Result := (BS.Line = Buffer.Line) and (BS.Char <= Buffer.Char) and
-              (BE.Line = Buffer.Line) and (BE.Char >= Buffer.Char);
+      (BE.Line = Buffer.Line) and (BE.Char >= Buffer.Char);
   end;
 
 var
-  S, Fields, Input: String;
+  S, Fields, Input: string;
   DisplayCoord: TDisplayCoord;
   BufferCoord, WordStart: TBufferCoord;
   Token: TTokenClass;
@@ -6186,7 +6282,7 @@ begin
     Exit;
   LastWordHintStart := WordStartPos;
   if Memo.GetHighlighterAttriAtRowColEx(BufferCoord, Input, TokenType, Start,
-      attri) then
+    attri) then
   begin
     //invalid attribute
     if ((not StringIn(attri.Name, ['Identifier', 'Preprocessor']) or
@@ -6216,6 +6312,7 @@ begin
   P := Memo.ClientToScreen(P);
   if ParseFields(Memo.Text, I, Input, Fields, InputError) then
   begin
+    // show Debug hint
     if DebugReader.Running then
     begin
       if Input <> '' then
@@ -6231,40 +6328,9 @@ begin
       end;
       Exit;
     end;
-    if ActiveEditingFile.GetScopeAt(Token, I) then
-    begin
-      if (Token.Token in [tkNamespace]) then
-      begin
-        Fields := Token.Name + '::' + Fields;
-        while Assigned(Token.Parent) and (Token.Parent.Token in [tkNamespace]) do
-        begin
-          Token := Token.Parent;
-          Fields := Token.Name + '::' + Fields;
-        end;
-      end;
-      if (Fields <> '') and FilesParsed.SearchTreeToken(Fields, ActiveEditingFile,
-          TokenFileItem, Token, [tkClass, tkNamespace], Token.SelStart) then
-      begin
-        if (Input <> '') and Token.SearchSource(Input, Token) then
-        begin
-          S := MakeTokenHint(Token, TokenFileItem.FileName);
-          HintTip.UpdateHint(S, P.X, P.Y + Memo.Canvas.TextHeight(S) + 4);
-          Exit;
-        end;
-      end;
-    end;
-    S := Fields;
-    Fields := Fields + Input;
-    Input := GetFirstWord(Fields);    //enum fields and functions class
-    if (S <> '') and FilesParsed.GetFieldsBaseType(Input, Fields,
-        I, ActiveEditingFile, TokenFileItem, Token) then
-    begin
-      S := MakeTokenHint(Token, TokenFileItem.FileName);
-      HintTip.UpdateHint(S, P.X, P.Y + Memo.Canvas.TextHeight(S) + 4);
-      Exit;
-    end
-    else if (S = '') and FilesParsed.SearchSource(Input, ActiveEditingFile,
-      TokenFileItem, Token, I) then
+    // show hint
+    if FilesParsed.FindDeclaration(Input, Fields, ActiveEditingFile, TokenFileItem,
+      Token, I, BufferCoord.Line) then
     begin
       S := MakeTokenHint(Token, TokenFileItem.FileName);
       HintTip.UpdateHint(S, P.X, P.Y + Memo.Canvas.TextHeight(S) + 4);
@@ -6288,18 +6354,20 @@ begin
   CanShowHintTip := True;
   if not HintParams.Activated then
   begin
-    if not GetActiveSheet(sheet) then Exit;
-    if not GetActiveFile(FileProp) then Exit;
+    if not GetActiveSheet(sheet) then
+      Exit;
+    if not GetActiveFile(FileProp) then
+      Exit;
     P := sheet.Memo.ScreenToClient(Mouse.CursorPos);
     ProcessHintView(FileProp, sheet.Memo, P.X, P.Y);
   end;
 end;
 
 procedure TFrmFalconMain.CodeCompletionExecute(Kind: TSynCompletionType;
-  Sender: TObject; var CurrentInput: String; var x, y: Integer;
+  Sender: TObject; var CurrentInput: string; var x, y: Integer;
   var CanExecute: Boolean);
 var
-  S, Fields, Input: String;
+  S, Fields, Input: string;
   sheet: TFilePropertySheet;
   TokenItem: TTokenFile;
   SelStart, I, LineLen: integer;
@@ -6314,7 +6382,8 @@ begin
   CanExecute := False;
   if not Config.Editor.CodeCompletion then
     Exit;
-  if not GetActiveSheet(sheet) then Exit;
+  if not GetActiveSheet(sheet) then
+    Exit;
   if ParseFields(sheet.Memo.Text, sheet.Memo.SelStart, Input, Fields, InputError) then
     Input := GetFirstWord(Fields);
   if InputError then
@@ -6400,7 +6469,7 @@ begin
         end;
       end;
       if (Fields <> '') and FilesParsed.SearchTreeToken(Fields, ActiveEditingFile,
-          TokenItem, Token, [tkClass, tkNamespace], Token.SelStart) then
+        TokenItem, Token, [tkClass, tkNamespace], Token.SelStart) then
       begin
         AllowScope := [];
         FilesParsed.FillCompletionClass(CodeCompletion.InsertList,
@@ -6408,12 +6477,12 @@ begin
         DebugHint.Cancel;
         HintTip.Cancel;
         CanExecute := True;
-        Exit;//?
+        Exit; //?
       end;
     end;
     //search base type and list fields and functions of struct, union or class
     if FilesParsed.GetFieldsBaseType(Input, Fields,
-      SelStart, ActiveEditingFile, TokenItem, Token, True) then
+      SelStart, ActiveEditingFile, TokenItem, Token) then
     begin
       //show private fields only on implementation scope
       AllowScope := [];
@@ -6441,9 +6510,9 @@ begin
       DebugHint.Cancel;
       HintTip.Cancel;
       CanExecute := True;
-      Exit;//?
+      Exit; //?
     end;
-    Exit;//WARNNING cin. if cin not found then does not show code completion
+    Exit; //WARNNING cin. if cin not found then does not show code completion
   end;
   //get current object in location
   if ActiveEditingFile.GetScopeAt(Token, SelStart) then
@@ -6479,7 +6548,7 @@ begin
         Fields := Token.Name + '::' + Fields;
       end;
       AllScope := FilesParsed.SearchTreeToken(Fields, ActiveEditingFile,
-          TokenItem, Token, [tkClass, tkNamespace], Token.SelStart);
+        TokenItem, Token, [tkClass, tkNamespace], Token.SelStart);
     end
     else if (Token.Token in [tkNamespace]) then
     begin
@@ -6490,7 +6559,7 @@ begin
         Fields := Token.Name + '::' + Fields;
       end;
       AllScope := FilesParsed.SearchTreeToken(Fields, ActiveEditingFile,
-          TokenItem, Token, [tkClass, tkNamespace], Token.SelStart);
+        TokenItem, Token, [tkClass, tkNamespace], Token.SelStart);
     end;
     //show all objects from class, struct or scope
     if AllScope then
@@ -6510,13 +6579,14 @@ begin
 end;
 
 procedure TFrmFalconMain.CodeCompletionCodeCompletion(Sender: TObject;
-  var Value: String; Shift: TShiftState; Index: Integer; EndToken: Char);
+  var Value: string; Shift: TShiftState; Index: Integer; EndToken: Char);
 var
   Token: TTokenClass;
   NextChar: Char;
   sheet: TFilePropertySheet;
 begin
-  if not GetActiveSheet(sheet) then Exit;
+  if not GetActiveSheet(sheet) then
+    Exit;
   Token := TTokenClass(CodeCompletion.ItemList.Objects[Index]);
   if EndToken = ')' then
   begin
@@ -6527,9 +6597,9 @@ begin
     NextChar := GetNextValidChar(sheet.Memo.Text, sheet.Memo.SelStart);
     if EndToken <> '(' then
     begin
-      if (NextChar in LetterChars+['{', '}']) and (EndToken <> ';') then
+      if (NextChar in LetterChars + ['{', '}']) and (EndToken <> ';') then
         Value := Value + '();'
-      else if NextChar in DigitChars+ArithmChars+CloseBraceChars+[';'] then
+      else if NextChar in DigitChars + ArithmChars + CloseBraceChars + [';'] then
         Value := Value + '()'
       else
         Value := Value + '(';
@@ -6543,7 +6613,7 @@ begin
 end;
 
 procedure TFrmFalconMain.CodeCompletionAfterCodeCompletion(Sender: TObject;
-  const Value: String; Shift: TShiftState; Index: Integer; EndToken: Char);
+  const Value: string; Shift: TShiftState; Index: Integer; EndToken: Char);
 var
   Token: TTokenClass;
   I: Integer;
@@ -6579,7 +6649,7 @@ begin
   begin
     if (NextChar in LetterChars + ['{', '}']) and (EndToken <> ';') then
       Inc(I, 2);
-    if NextChar in DigitChars+ArithmChars+[';']+(CloseBraceChars - ['{', '}']) then
+    if NextChar in DigitChars + ArithmChars + [';'] + (CloseBraceChars - ['{', '}']) then
       Inc(I);
   end;
   if EndToken <> ';' then
@@ -6592,7 +6662,7 @@ begin
   CodeCompletion.InsertList.Clear;
 end;
 
-procedure TFrmFalconMain.AddMessage(const FileName, Title, Msg: String; Line,
+procedure TFrmFalconMain.AddMessage(const FileName, Title, Msg: string; Line,
   Column, EndColumn: Integer; MsgType: TMessageItemType;
   AlignCenter: Boolean);
 var
@@ -6602,7 +6672,7 @@ begin
   MsgItem := TMessageItem.Create;
   MsgItem.MsgType := MsgType;
   MsgItem.FileName := FileName;
-  MsgItem.Msg  := Msg;
+  MsgItem.Msg := Msg;
   MsgItem.Line := Line;
   MsgItem.Col := Column;
   MsgItem.EndCol := EndColumn;
@@ -6637,11 +6707,12 @@ end;
 procedure TFrmFalconMain.PaintTokenItem(const ToCanvas: TCanvas;
   DisplayRect: TRect; Token: TTokenClass; State: TCustomDrawState);
 var
-  Flag, FullFlag, Vector, Params: String;
+  Flag, FullFlag, Vector, Params: string;
   HasVector, ChangeTextColor: Boolean;
   I, Len: Integer;
 begin
-  if Token.Token in [tkInclude, tkTypedefProto] then Exit;
+  if Token.Token in [tkInclude, tkTypedefProto] then
+    Exit;
   ChangeTextColor := not (cdsSelected in State);
   if Token.Token in [tkFunction, tkProtoType, tkConstructor, tkDestructor] then
   begin
@@ -6661,24 +6732,29 @@ begin
       ToCanvas.Refresh;
     end;
     ToCanvas.FillRect(DisplayRect);
-    if (cdsFocused in State) then ToCanvas.DrawFocusRect(DisplayRect);
+    if (cdsFocused in State) then
+      ToCanvas.DrawFocusRect(DisplayRect);
     ToCanvas.TextOut(DisplayRect.Left + 2, DisplayRect.Top + 1, Params);
     if Flag = '' then
       Exit;
     //custom return type or value defined
-    if ChangeTextColor then ToCanvas.Font.Color := clBlue;
+    if ChangeTextColor then
+      ToCanvas.Font.Color := clBlue;
     ToCanvas.Refresh;
     Inc(DisplayRect.Left, 2 + ToCanvas.TextWidth(Params));
     ToCanvas.TextOut(DisplayRect.Left, DisplayRect.Top + 1, ' : ');
-    if ChangeTextColor then ToCanvas.Font.Color := clOlive;
+    if ChangeTextColor then
+      ToCanvas.Font.Color := clOlive;
     ToCanvas.Refresh;
     Inc(DisplayRect.Left, ToCanvas.TextWidth(' : '));
     ToCanvas.TextOut(DisplayRect.Left, DisplayRect.Top + 1, Flag);
     Exit;
   end;
   Len := Length(Token.Flag);
-  if Len = 0 then Exit;
-  if (Token.Token = tkDefine) and not IsNumber(Token.Flag) then Exit;
+  if Len = 0 then
+    Exit;
+  if (Token.Token = tkDefine) and not IsNumber(Token.Flag) then
+    Exit;
   DisplayRect.Right := DisplayRect.Left + 5 + ToCanvas.TextWidth(
     Token.Name + ' : ' + Token.Flag) + 2;
   if (cdsSelected in State) and not (cdsFocused in State) then
@@ -6689,15 +6765,18 @@ begin
     ToCanvas.Refresh;
   end;
   ToCanvas.FillRect(DisplayRect);
-  if (cdsFocused in State) then ToCanvas.DrawFocusRect(DisplayRect);
+  if (cdsFocused in State) then
+    ToCanvas.DrawFocusRect(DisplayRect);
   ToCanvas.TextOut(DisplayRect.Left + 2, DisplayRect.Top + 1, Token.Name);
   //custom return type or value defined
-  if ChangeTextColor then ToCanvas.Font.Color := clBlue;
+  if ChangeTextColor then
+    ToCanvas.Font.Color := clBlue;
   ToCanvas.Refresh;
   Inc(DisplayRect.Left, 2 + ToCanvas.TextWidth(Token.Name));
   ToCanvas.TextOut(DisplayRect.Left, DisplayRect.Top + 1, ' : ');
 
-  if ChangeTextColor then ToCanvas.Font.Color := clOlive;
+  if ChangeTextColor then
+    ToCanvas.Font.Color := clOlive;
   ToCanvas.Refresh;
   Inc(DisplayRect.Left, ToCanvas.TextWidth(' : '));
   FullFlag := Token.Flag;
@@ -6710,26 +6789,30 @@ begin
     Vector := Copy(FullFlag, I + 1, Len - I);
     Flag := Copy(FullFlag, 1, I - 1);
     FullFlag := Vector;
-    I :=  Pos(']', Vector);
+    I := Pos(']', Vector);
     Vector := Copy(Vector, 1, I - 1);
     FullFlag := Copy(FullFlag, I + 1, Len - I);
     HasVector := True;
   end;
   ToCanvas.TextOut(DisplayRect.Left, DisplayRect.Top + 1, Flag);
-  if not HasVector or (Token.Token <> tkVariable)  then Exit;
-  if ChangeTextColor then ToCanvas.Font.Color := clMaroon;
+  if not HasVector or (Token.Token <> tkVariable) then
+    Exit;
+  if ChangeTextColor then
+    ToCanvas.Font.Color := clMaroon;
   ToCanvas.Refresh;
   Inc(DisplayRect.Left, ToCanvas.TextWidth(Flag) + 1);
   while True do
   begin
     ToCanvas.TextOut(DisplayRect.Left, DisplayRect.Top + 1, '[');
 
-    if ChangeTextColor then ToCanvas.Font.Color := clGreen;
+    if ChangeTextColor then
+      ToCanvas.Font.Color := clGreen;
     ToCanvas.Refresh;
     Inc(DisplayRect.Left, ToCanvas.TextWidth('[') + 1);
     ToCanvas.TextOut(DisplayRect.Left, DisplayRect.Top + 1, Vector);
 
-    if ChangeTextColor then ToCanvas.Font.Color := clMaroon;
+    if ChangeTextColor then
+      ToCanvas.Font.Color := clMaroon;
     ToCanvas.Refresh;
     Inc(DisplayRect.Left, ToCanvas.TextWidth(Vector) + 1);
     ToCanvas.TextOut(DisplayRect.Left, DisplayRect.Top + 1, ']');
@@ -6742,7 +6825,7 @@ begin
       Vector := Copy(FullFlag, I + 1, Len - I);
       Flag := Copy(FullFlag, 1, I - 1);
       FullFlag := Vector;
-      I :=  Pos(']', Vector);
+      I := Pos(']', Vector);
       Vector := Copy(Vector, 1, I - 1);
       FullFlag := Copy(FullFlag, I + 1, Len - I);
     end
@@ -6756,7 +6839,8 @@ var
   sheet: TFilePropertySheet;
 begin
   TimerHintParams.Enabled := False;
-  if not GetActiveSheet(sheet) then Exit;
+  if not GetActiveSheet(sheet) then
+    Exit;
   ShowHintParams(sheet.Memo);
 end;
 
@@ -6770,21 +6854,24 @@ var
   sheet: TFilePropertySheet;
   AFont: TFont;
 begin
-  if not GetActiveSheet(sheet) then Exit;
+  if not GetActiveSheet(sheet) then
+    Exit;
   if PrintDialog.Execute then
   begin
     EditorPrint.Highlighter := sheet.Memo.Highlighter;
     EditorPrint.SynEdit := sheet.Memo;
-    EditorPrint.DocTitle := TFileProperty(sheet.Node.Data).Caption;
+    EditorPrint.DocTitle := TFileProperty(sheet.Node.Data).Name;
     AFont := TFont.Create;
-    with EditorPrint.Header do begin
+    with EditorPrint.Header do
+    begin
       AFont.Assign(DefaultFont);
       AFont.Size := 7;
       AFont.Style := [fsBold];
-      Add(TFileProperty(sheet.Node.Data).GetCompleteFileName, AFont, taLeftJustify, 1);
+      Add(TFileProperty(sheet.Node.Data).FileName, AFont, taLeftJustify, 1);
       Add(FormatDateTime(STR_FRM_MAIN[38], Now), AFont, taRightJustify, 1);
     end;
-    with EditorPrint.Footer do begin
+    with EditorPrint.Footer do
+    begin
       AFont.Assign(DefaultFont);
       AFont.Size := 8;
       Add('-$PAGENUM$-', AFont, taCenter, 1);
@@ -6806,7 +6893,8 @@ var
   Item: TListItem;
   Msg: TMessageItem;
 begin
-  if ListViewMsg.SelCount = 0 then Exit;
+  if ListViewMsg.SelCount = 0 then
+    Exit;
   Item := ListViewMsg.Selected;
   if Assigned(Item.Data) then
     Msg := TMessageItem(Item.Data)
@@ -6836,7 +6924,8 @@ begin
   P := Mouse.CursorPos;
   P := PageControlEditor.ScreenToClient(P);
   I := PageControlEditor.IndexOfTabAt(P.X, P.Y);
-  if I > -1 then Exit;
+  if I > -1 then
+    Exit;
   //Get folder of active file or project
   SelFile := nil;
   if GetActiveFile(SelFile) then
@@ -6854,18 +6943,19 @@ begin
       SelFile := Proj;
   end;
   if Config.Environment.DefaultCppNewFile then
-    NewFileProperty(FILE_TYPE_CPP, COMPILER_CPP, STR_FRM_MAIN[15] + '.cpp',
-      STR_FRM_MAIN[13], '.cpp', '', nil).Edit
+    NewSourceFile(FILE_TYPE_CPP, COMPILER_CPP, STR_FRM_MAIN[15] + '.cpp',
+      STR_FRM_MAIN[13], '.cpp', '', SelFile, False, False, False).Edit
   else
-    NewFileProperty(FILE_TYPE_C, COMPILER_C, STR_FRM_MAIN[15] + '.c',
-      STR_FRM_MAIN[13], '.c', '', SelFile).Edit;
+    NewSourceFile(FILE_TYPE_C, COMPILER_C, STR_FRM_MAIN[15] + '.c',
+      STR_FRM_MAIN[13], '.c', '', SelFile, False, False, False).Edit;
 end;
 
 procedure TFrmFalconMain.PopEditorDeleteClick(Sender: TObject);
 var
   sheet: TFilePropertySheet;
 begin
-  if not GetActiveSheet(sheet) then Exit;
+  if not GetActiveSheet(sheet) then
+    Exit;
   SendMessage(sheet.Memo.Handle, WM_KEYDOWN, VK_DELETE, VK_DELETE);
   SendMessage(sheet.Memo.Handle, WM_KEYUP, VK_DELETE, VK_DELETE);
 end;
@@ -6874,9 +6964,10 @@ procedure TFrmFalconMain.FileExportHTMLClick(Sender: TObject);
 var
   sheet: TFilePropertySheet;
 begin
-  if not GetActiveSheet(sheet) then Exit;
+  if not GetActiveSheet(sheet) then
+    Exit;
   ExporterHTML.Highlighter := sheet.Memo.Highlighter;
-  ExporterHTML.Title := TFileProperty(sheet.Node.Data).Caption;
+  ExporterHTML.Title := TFileProperty(sheet.Node.Data).Name;
   ExporterHTML.ExportAll(sheet.Memo.Lines);
   ExporterHTML.ExportAsText := True;
 
@@ -6884,7 +6975,7 @@ begin
   begin
     Filter := ExporterHTML.DefaultFilter;
     DefaultExt := '.html';
-    FileName := ChangeFileExt(TFileProperty(sheet.Node.Data).Caption, '.html');
+    FileName := ChangeFileExt(TFileProperty(sheet.Node.Data).Name, '.html');
     if Execute then
     begin
       ExporterHTML.SaveToFile(FileName);
@@ -6897,9 +6988,10 @@ procedure TFrmFalconMain.FileExportRTFClick(Sender: TObject);
 var
   sheet: TFilePropertySheet;
 begin
-  if not GetActiveSheet(sheet) then Exit;
+  if not GetActiveSheet(sheet) then
+    Exit;
   ExporterRTF.Highlighter := sheet.Memo.Highlighter;
-  ExporterRTF.Title := TFileProperty(sheet.Node.Data).Caption;
+  ExporterRTF.Title := TFileProperty(sheet.Node.Data).Name;
   ExporterRTF.ExportAll(sheet.Memo.Lines);
   //ExporterRTF.ExportAsText := True;
 
@@ -6907,7 +6999,7 @@ begin
   begin
     Filter := ExporterRTF.DefaultFilter;
     DefaultExt := '.rtf';
-    FileName := ChangeFileExt(TFileProperty(sheet.Node.Data).Caption, '.rtf');
+    FileName := ChangeFileExt(TFileProperty(sheet.Node.Data).Name, '.rtf');
     if Execute then
     begin
       ExporterRTF.SaveToFile(FileName);
@@ -6920,9 +7012,10 @@ procedure TFrmFalconMain.FileExportTeXClick(Sender: TObject);
 var
   sheet: TFilePropertySheet;
 begin
-  if not GetActiveSheet(sheet) then Exit;
+  if not GetActiveSheet(sheet) then
+    Exit;
   ExporterTeX.Highlighter := sheet.Memo.Highlighter;
-  ExporterTeX.Title := TFileProperty(sheet.Node.Data).Caption;
+  ExporterTeX.Title := TFileProperty(sheet.Node.Data).Name;
   ExporterTeX.ExportAll(sheet.Memo.Lines);
   ExporterTeX.TabWidth := sheet.Memo.TabWidth;
 
@@ -6930,7 +7023,7 @@ begin
   begin
     Filter := ExporterTeX.DefaultFilter;
     DefaultExt := '.tex';
-    FileName := ChangeFileExt(TFileProperty(sheet.Node.Data).Caption, '.tex');
+    FileName := ChangeFileExt(TFileProperty(sheet.Node.Data).Name, '.tex');
     if Execute then
     begin
       ExporterTeX.SaveToFile(FileName);
@@ -6944,7 +7037,8 @@ var
   sheet: TFilePropertySheet;
   I: Integer;
 begin
-  if not GetActiveSheet(sheet) then Exit;
+  if not GetActiveSheet(sheet) then
+    Exit;
   HandlingTabs := True;
   for I := PageControlEditor.PageCount - 1 downto sheet.PageIndex + 1 do
   begin
@@ -6980,18 +7074,19 @@ end;
 procedure TFrmFalconMain.EditSwapClick(Sender: TObject);
 var
   sheet: TFilePropertySheet;
-  SwapFileName, FileName, Directive: String;
+  SwapFileName, FileName, Directive: string;
   fprop, swfp, parent: TFileProperty;
   resp, Index: Integer;
   Memo: TSynMemo;
 begin
-  if not GetActiveSheet(sheet) then Exit;
+  if not GetActiveSheet(sheet) then
+    Exit;
   fprop := TFileProperty(sheet.Node.Data);
   parent := nil;
   if Assigned(fprop.Node.Parent) then
     parent := TFileProperty(fprop.Node.Parent.Data);
 
-  FileName := fprop.GetCompleteFileName;
+  FileName := fprop.FileName;
   if (GetFileType(FileName) in [FILE_TYPE_CPP, FILE_TYPE_C]) then
   begin
     SwapFileName := ChangeFileExt(FileName, '.h');
@@ -7021,12 +7116,12 @@ begin
     end;
     resp := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[34] +
       #10 + STR_FRM_MAIN[43], [SwapFileName])),
-      'Falcon C++', MB_ICONEXCLAMATION+MB_YESNOCANCEL);
+      'Falcon C++', MB_ICONEXCLAMATION + MB_YESNOCANCEL);
     if resp = IDYES then
     begin
-      swfp := NewFileProperty(FILE_TYPE_H, NO_COMPILER,
+      swfp := NewSourceFile(FILE_TYPE_H, NO_COMPILER,
         ExtractFileName(SwapFileName), ExtractName(SwapFileName), '.h', '',
-        parent);
+        parent, False, False, False);
       Directive := UpperCase(ExtractFileName(SwapFileName));
       Directive := '_' + StringReplace(Directive, '.', '_', []) + '_';
       Directive := StringReplace(Directive, ' ', '_', []);
@@ -7035,11 +7130,11 @@ begin
       //TODO GNU License
       Memo.Lines.Add('#define ' + Directive);
       Memo.Lines.Add('');
-      Index := FilesParsed.IndexOfByFileName(FileName, fprop);
+      Index := FilesParsed.IndexOfByFileName(FileName);
       if Index >= 0 then
         GenerateFunctionPrototype(FilesParsed.Items[Index], Memo.Lines, 3)
       else
-        Memo.Lines.Add('');//Caret here
+        Memo.Lines.Add(''); //Caret here
       Memo.Lines.Add('');
       Memo.Lines.Add('#endif');
       Memo.CaretXY := BufferCoord(1, 4);
@@ -7066,26 +7161,26 @@ begin
         Exit;
       end;
       resp := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[34] +
-                #10 + STR_FRM_MAIN[43], [SwapFileName])),
-                'Falcon C++', MB_ICONEXCLAMATION+MB_YESNOCANCEL);
+        #10 + STR_FRM_MAIN[43], [SwapFileName])),
+        'Falcon C++', MB_ICONEXCLAMATION + MB_YESNOCANCEL);
       if resp = IDYES then
       begin
         if parent.Project.CompilerType = COMPILER_C then
-          swfp := NewFileProperty(FILE_TYPE_C, parent.Project.CompilerType,
+          swfp := NewSourceFile(FILE_TYPE_C, parent.Project.CompilerType,
             ExtractFileName(SwapFileName),
-            ExtractName(SwapFileName), '.c', '', parent)
+            ExtractName(SwapFileName), '.c', '', parent, False, False, False)
         else
-          swfp := NewFileProperty(FILE_TYPE_CPP, parent.Project.CompilerType,
+          swfp := NewSourceFile(FILE_TYPE_CPP, parent.Project.CompilerType,
             ExtractFileName(SwapFileName),
-            ExtractName(SwapFileName), '.cpp', '', parent);
+            ExtractName(SwapFileName), '.cpp', '', parent, False, False, False);
         Memo := swfp.Edit.Memo;
         Memo.Lines.Add('#include "' + ExtractFileName(FileName) + '"');
         Memo.Lines.Add('');
-        Index := FilesParsed.IndexOfByFileName(FileName, fprop);
+        Index := FilesParsed.IndexOfByFileName(FileName);
         if Index >= 0 then
           GenerateFunctions(FilesParsed.Items[Index], Memo.Lines, 2)
         else
-          Memo.Lines.Add('');//Caret here
+          Memo.Lines.Add(''); //Caret here
         Memo.CaretXY := BufferCoord(1, 3);
       end;
     end
@@ -7132,7 +7227,8 @@ procedure TFrmFalconMain.PageControlEditorTabClick(Sender: TObject);
 var
   sheet: TFilePropertySheet;
 begin
-  if not GetActiveSheet(sheet) then Exit;
+  if not GetActiveSheet(sheet) then
+    Exit;
   sheet.Memo.SetFocus;
 end;
 
@@ -7158,110 +7254,111 @@ var
   caret: TBufferCoord;
   topLine: Integer;
 begin
-  if not GetActiveSheet(sheet) then Exit;
+  if not GetActiveSheet(sheet) then
+    Exit;
   with TAStyle.Create do
   begin
     MaxInstatementIndent := Config.Editor.RightMargin;
     case Config.Editor.StyleIndex of
       0: // ansi
-      begin
-        Style := fsALLMAN;
-        BracketFormat := bfBreakMode;
-        Properties[aspIndentNamespace] := True;
-        Properties[aspSingleStatements] := True;
-        Properties[aspBreakOneLineBlocks] := True;
-      end;
+        begin
+          Style := fsALLMAN;
+          BracketFormat := bfBreakMode;
+          Properties[aspIndentNamespace] := True;
+          Properties[aspSingleStatements] := True;
+          Properties[aspBreakOneLineBlocks] := True;
+        end;
       1: // K&R
-      begin
-        Style := fsKR;
-        BracketFormat := bfAtatch;
-        Properties[aspIndentNamespace] := True;
-        Properties[aspSingleStatements] := True;
-        Properties[aspBreakOneLineBlocks] := True;
-      end;
+        begin
+          Style := fsKR;
+          BracketFormat := bfAtatch;
+          Properties[aspIndentNamespace] := True;
+          Properties[aspSingleStatements] := True;
+          Properties[aspBreakOneLineBlocks] := True;
+        end;
       2: //Linux
-      begin
-        Style := fsLINUX;
-        TabWidth := 8;
-        SpaceWidth := 8;
-        BracketFormat := bfBDAC;
-        Properties[aspIndentNamespace] := True;
-        Properties[aspSingleStatements] := True;
-        Properties[aspBreakOneLineBlocks] := True;
-      end;
+        begin
+          Style := fsLINUX;
+          TabWidth := 8;
+          SpaceWidth := 8;
+          BracketFormat := bfBDAC;
+          Properties[aspIndentNamespace] := True;
+          Properties[aspSingleStatements] := True;
+          Properties[aspBreakOneLineBlocks] := True;
+        end;
       3: //GNU
-      begin
-        Style := fsGNU;
-        TabWidth := 2;
-        SpaceWidth := 2;
-        BracketFormat := bfBreakMode;
-        Properties[aspIndentBlock] := True;
-        Properties[aspIndentNamespace] := True;
-        Properties[aspSingleStatements] := True;
-        Properties[aspBreakOneLineBlocks] := True;
-      end;
+        begin
+          Style := fsGNU;
+          TabWidth := 2;
+          SpaceWidth := 2;
+          BracketFormat := bfBreakMode;
+          Properties[aspIndentBlock] := True;
+          Properties[aspIndentNamespace] := True;
+          Properties[aspSingleStatements] := True;
+          Properties[aspBreakOneLineBlocks] := True;
+        end;
       4: //java
-      begin
-        Style := fsJAVA;
-        BracketFormat := bfAtatch;
-        Properties[aspSingleStatements] := True;
-        Properties[aspBreakOneLineBlocks] := True;
-      end;
+        begin
+          Style := fsJAVA;
+          BracketFormat := bfAtatch;
+          Properties[aspSingleStatements] := True;
+          Properties[aspBreakOneLineBlocks] := True;
+        end;
       5: //custom
-      begin
-        Style := fsNONE;
-        TabWidth := Config.Editor.TabWidth;
-        SpaceWidth := Config.Editor.TabWidth;
-        ForceUsingTabs := Config.Editor.ForceUsingTabs;
+        begin
+          Style := fsNONE;
+          TabWidth := Config.Editor.TabWidth;
+          SpaceWidth := Config.Editor.TabWidth;
+          ForceUsingTabs := Config.Editor.ForceUsingTabs;
         //Indentation
-        Properties[aspIndentClass] := Config.Editor.IndentClasses;
-        Properties[aspIndentSwitch] := Config.Editor.IndentSwitches;
-        Properties[aspIndentCase] := Config.Editor.IndentCase;
-        Properties[aspIndentBracket] := Config.Editor.IndentBrackets;
-        Properties[aspIndentBlock] := Config.Editor.IndentBlocks;
-        Properties[aspIndentNamespace] := Config.Editor.IndentNamespaces;
-        Properties[aspIndentLabels] := Config.Editor.IndentLabels;
-        Properties[aspIndentMultLinePreprocessor] := Config.Editor.IndentMultLine;
-        Properties[aspIndentCol1Comments] := Config.Editor.IndentSingleLineComments;
+          Properties[aspIndentClass] := Config.Editor.IndentClasses;
+          Properties[aspIndentSwitch] := Config.Editor.IndentSwitches;
+          Properties[aspIndentCase] := Config.Editor.IndentCase;
+          Properties[aspIndentBracket] := Config.Editor.IndentBrackets;
+          Properties[aspIndentBlock] := Config.Editor.IndentBlocks;
+          Properties[aspIndentNamespace] := Config.Editor.IndentNamespaces;
+          Properties[aspIndentLabels] := Config.Editor.IndentLabels;
+          Properties[aspIndentMultLinePreprocessor] := Config.Editor.IndentMultLine;
+          Properties[aspIndentCol1Comments] := Config.Editor.IndentSingleLineComments;
 
         //padding
-        Properties[aspBreakBlocks] := Config.Editor.PadEmptyLines;
-        Properties[aspBreakClosingHeaderBlocks] := Config.Editor.BreakClosingHeaderBlocks;
-        Properties[aspOperatorPadding] := Config.Editor.InsertSpacePaddingOperators;
-        Properties[aspParensOutsidePadding] := Config.Editor.InsertSpacePaddingParenthesisOutside;
-        Properties[aspParensInsidePadding] := Config.Editor.InsertSpacePaddingParenthesisInside;
-        Properties[aspParensHeaderPadding] := Config.Editor.ParenthesisHeaderPadding;
-        Properties[aspParensUnPadding] := Config.Editor.RemoveExtraSpace;
-        Properties[aspDeleteEmptyLines] := Config.Editor.DeleteEmptyLines;
-        Properties[aspFillEmptyLines] := Config.Editor.FillEmptyLines;
+          Properties[aspBreakBlocks] := Config.Editor.PadEmptyLines;
+          Properties[aspBreakClosingHeaderBlocks] := Config.Editor.BreakClosingHeaderBlocks;
+          Properties[aspOperatorPadding] := Config.Editor.InsertSpacePaddingOperators;
+          Properties[aspParensOutsidePadding] := Config.Editor.InsertSpacePaddingParenthesisOutside;
+          Properties[aspParensInsidePadding] := Config.Editor.InsertSpacePaddingParenthesisInside;
+          Properties[aspParensHeaderPadding] := Config.Editor.ParenthesisHeaderPadding;
+          Properties[aspParensUnPadding] := Config.Editor.RemoveExtraSpace;
+          Properties[aspDeleteEmptyLines] := Config.Editor.DeleteEmptyLines;
+          Properties[aspFillEmptyLines] := Config.Editor.FillEmptyLines;
 
         //Formatting
-        case Config.Editor.BracketStyle of
-          1: BracketFormat := bfBreakMode;//Break
-          2: BracketFormat := bfAtatch;//Attach
-          3: BracketFormat := bfBDAC;//Linux
+          case Config.Editor.BracketStyle of
+            1: BracketFormat := bfBreakMode; //Break
+            2: BracketFormat := bfAtatch; //Attach
+            3: BracketFormat := bfBDAC; //Linux
           //TODO 4: BracketFormat := bfRunIn;//?
           //TODO 5: BracketFormat := bfStroustrup;//?
-        else
+          else
           //None
-          BracketFormat := bfNone;
+            BracketFormat := bfNone;
+          end;
+          if (Config.Editor.BracketStyle < 2) then //Does not work
+            Properties[aspBreakClosingHeaderBrackets] := Config.Editor.BreakClosingHeadersBrackets;
+          Properties[aspBreakElseIfs] := Config.Editor.BreakIfElse;
+          Properties[aspAddBrackets] := Config.Editor.AddBrackets;
+          Properties[aspAddOneLineBrackets] := Config.Editor.AddOneLineBrackets;
+          Properties[aspBreakOneLineBlocks] := not Config.Editor.DontBreakOnelineBlocks;
+          Properties[aspSingleStatements] := Config.Editor.DontBreakComplex;
+          Properties[aspTabSpaceConversion] := Config.Editor.ConvertTabToSpaces;
+          case Config.Editor.PointerAlign of
+            1: PointerAlign := paType;
+            2: PointerAlign := paMiddle;
+            3: PointerAlign := paName;
+          else
+            PointerAlign := paNone;
+          end;
         end;
-        if (Config.Editor.BracketStyle < 2) then//Does not work
-          Properties[aspBreakClosingHeaderBrackets] := Config.Editor.BreakClosingHeadersBrackets;
-        Properties[aspBreakElseIfs] := Config.Editor.BreakIfElse;
-        Properties[aspAddBrackets] := Config.Editor.AddBrackets;
-        Properties[aspAddOneLineBrackets] := Config.Editor.AddOneLineBrackets;
-        Properties[aspBreakOneLineBlocks] := not Config.Editor.DontBreakOnelineBlocks;
-        Properties[aspSingleStatements] := Config.Editor.DontBreakComplex;
-        Properties[aspTabSpaceConversion] := Config.Editor.ConvertTabToSpaces;
-        case Config.Editor.PointerAlign of
-          1: PointerAlign := paType;
-          2: PointerAlign := paMiddle;
-          3: PointerAlign := paName;
-        else
-          PointerAlign := paNone;
-        end;
-      end;
     end;
     sheet.Memo.BeginUpdate;
     caret := sheet.Memo.CaretXY;
@@ -7279,7 +7376,8 @@ procedure TFrmFalconMain.EditIndentClick(Sender: TObject);
 var
   sheet: TFilePropertySheet;
 begin
-  if not GetActiveSheet(sheet) then Exit;
+  if not GetActiveSheet(sheet) then
+    Exit;
   sheet.Memo.CommandProcessor(ecBlockIndent, #0, nil);
 end;
 
@@ -7287,7 +7385,8 @@ procedure TFrmFalconMain.EditUnindentClick(Sender: TObject);
 var
   sheet: TFilePropertySheet;
 begin
-  if not GetActiveSheet(sheet) then Exit;
+  if not GetActiveSheet(sheet) then
+    Exit;
   sheet.Memo.CommandProcessor(ecBlockUnindent, #0, nil);
 end;
 
@@ -7295,7 +7394,7 @@ procedure TFrmFalconMain.CheckIfFilesHasChanged;
 var
   FileProp: TFileProperty;
   Node: TTreeNode;
-  FileName: String;
+  FileName: string;
   I: Integer;
 begin
   if not IsLoading and not ShowingReloadEnquiry then
@@ -7307,7 +7406,7 @@ begin
       FileProp := TFileProperty(Node.Data);
       if FileProp.FileChangedInDisk then
       begin
-        FileName := FileProp.GetCompleteFileName;
+        FileName := FileProp.FileName;
         if MessageBox(Handle, PChar(FileName +
           #13#13 + STR_FRM_MAIN[49]), 'Falcon C++',
           MB_ICONQUESTION or MB_YESNO) = IDYES then
@@ -7357,10 +7456,11 @@ procedure TFrmFalconMain.PopEditorFindDeclClick(Sender: TObject);
 var
   sheet: TFilePropertySheet;
   SelStart, SelLine: Integer;
-  TextAtCursor: String;
+  Input, Fields: string;
   Token: TTokenClass;
   TokenFile: TTokenFile;
   BufferCoord: TBufferCoord;
+  InputError: Boolean;
 begin
   if not GetActiveSheet(sheet) then
     Exit;
@@ -7371,13 +7471,13 @@ begin
     if BufferCoord.Char > (Length(sheet.Memo.Lines[SelLine - 1]) + 1) then
       BufferCoord.Char := Length(sheet.Memo.Lines[SelLine - 1]) + 1;
   end;
-  TextAtCursor := sheet.Memo.GetWordAtRowCol(BufferCoord);
   SelStart := sheet.Memo.RowColToCharIndex(BufferCoord);
-  if FilesParsed.FindDeclaration(TextAtCursor, ActiveEditingFile,
-    TokenFile, Token, SelStart, SelLine) then
-  begin
-
-  end;
+  if not ParseFields(sheet.Memo.Text, SelStart, Input, Fields, InputError) then
+    Exit;
+  if not FilesParsed.FindDeclaration(Input, Fields, ActiveEditingFile, TokenFile,
+    Token, SelStart, SelLine) then
+    Exit;
+  ShowMessage(TokenFile.FileName + ' - ' + Token.Flag + ' ' + Token.Name);
 end;
 
 procedure TFrmFalconMain.InvalidateDebugLine;
@@ -7397,7 +7497,7 @@ procedure TFrmFalconMain.ToggleBreakpoint(aLine: Integer);
 var
   sheet: TFilePropertySheet;
   fprop: TFileProperty;
-  SourcePath, Source: String;
+  SourcePath, Source: string;
   Breakpoint: TBreakpoint;
 begin
   if not GetActiveSheet(sheet) then
@@ -7412,8 +7512,8 @@ begin
     end
     else
     begin
-      SourcePath := ExtractFilePath(fprop.Project.GetCompleteFileName);
-      Source := ExtractRelativePath(SourcePath, fprop.GetCompleteFileName);
+      SourcePath := ExtractFilePath(fprop.Project.FileName);
+      Source := ExtractRelativePath(SourcePath, fprop.FileName);
       Source := StringReplace(Source, '\', '/', [rfReplaceAll]);
       DebugReader.SendCommand(GDB_BREAK, Source + ':' + IntToStr(aLine));
     end;
@@ -7428,7 +7528,7 @@ procedure TFrmFalconMain.TextEditorGutterClick(Sender: TObject;
   Button: TMouseButton; X, Y, Line: Integer; Mark: TSynEditMark);
 var
   sheet: TFilePropertySheet;
-  S: String;
+  S: string;
 begin
   if not GetActiveSheet(sheet) then
     Exit;
@@ -7445,7 +7545,7 @@ procedure TFrmFalconMain.TextEditorGutterPaint(Sender: TObject; aLine, X,
 var
   sheet: TFilePropertySheet;
   fprop: TFileProperty;
-  S: String;
+  S: string;
 begin
   if not GetActiveSheet(sheet) then
     Exit;
@@ -7539,12 +7639,12 @@ begin
   DebugParser.Clear;
   if WatchList.Count = 1 then
   begin
-    DebugReader.SendCommand(GDB_DELETE  + ' ' + GDB_DISPLAY,
+    DebugReader.SendCommand(GDB_DELETE + ' ' + GDB_DISPLAY,
       IntToStr(WatchList.Items[0].ID));
   end
   else if WatchList.Count > 1 then
   begin
-    DebugReader.SendCommand(GDB_DELETE  + ' ' + GDB_DISPLAY,
+    DebugReader.SendCommand(GDB_DELETE + ' ' + GDB_DISPLAY,
       IntToStr(WatchList.Items[0].ID) + '-' +
       IntToStr(WatchList.Items[WatchList.Count - 1].ID));
   end;
@@ -7598,7 +7698,7 @@ begin
   List.Free;
 end;
 
-function TFrmFalconMain.AddWatchItem(ID: Integer; const Name: String;
+function TFrmFalconMain.AddWatchItem(ID: Integer; const Name: string;
   token: TTokenClass; watchType: TWatchType): Boolean;
 var
   Node: TTreeNode;
@@ -7624,7 +7724,7 @@ begin
   Result := True;
 end;
 
-function TFrmFalconMain.DeleteWatchItem(const Name: String): Boolean;
+function TFrmFalconMain.DeleteWatchItem(const Name: string): Boolean;
 var
   Node: TTreeNode;
   Item: TWatchVariable;
@@ -7649,7 +7749,7 @@ begin
   end;
 end;
 
-function TFrmFalconMain.SearchAndOpenFile(const FileName: String;
+function TFrmFalconMain.SearchAndOpenFile(const FileName: string;
   var fp: TFileProperty): Boolean;
 var
   sheet: TFilePropertySheet;
@@ -7658,7 +7758,7 @@ begin
   if GetActiveSheet(sheet) then
   begin
     fp := TFileProperty(sheet.Node.Data);
-    if CompareText(fp.GetCompleteFileName, FileName) <> 0 then
+    if CompareText(fp.FileName, FileName) <> 0 then
     begin
       if not SearchFileProperty(FileName, fp) then
       begin
@@ -7682,6 +7782,7 @@ begin
   Result := True;
 end;
 //Repaint old active line and draw current debug line
+
 procedure TFrmFalconMain.UpdateActiveDebugLine(fp: TFileProperty;
   Line: Integer);
 var
@@ -7708,12 +7809,12 @@ begin
 end;
 
 procedure TFrmFalconMain.DebugReaderCommand(Sender: TObject;
-  Command: TDebugCmd; const Name, Value: String; Line: Integer);
+  Command: TDebugCmd; const Name, Value: string; Line: Integer);
 var
   sheet: TFilePropertySheet;
   fp: TFileProperty;
   varID, Index: Integer;
-  S, FileName: String;
+  S, FileName: string;
   Breakpoint: TBreakpoint;
   token: TTokenClass;
   dbgc: TDebugCommand;
@@ -7722,140 +7823,140 @@ begin
   //  0, 0, mitGoto);
   case Command of
     dcBreakpoint:
-    begin
-      if GetActiveSheet(sheet) then
       begin
-        fp := TFileProperty(sheet.Node.Data);
-        S := ExtractFilePath(fp.Project.GetCompleteFileName);
-        FileName := ConvertSlashes(S + Name);
-        if CompareText(fp.GetCompleteFileName, FileName) <> 0 then
+        if GetActiveSheet(sheet) then
+        begin
+          fp := TFileProperty(sheet.Node.Data);
+          S := ExtractFilePath(fp.Project.FileName);
+          FileName := ConvertSlashes(S + Name);
+          if CompareText(fp.FileName, FileName) <> 0 then
+            if not SearchFileProperty(FileName, fp) then
+              Exit;
+        end
+        else if Assigned(LastProjectBuild) then
+        begin
+          S := ExtractFilePath(LastProjectBuild.FileName);
+          FileName := ConvertSlashes(S + Name);
           if not SearchFileProperty(FileName, fp) then
             Exit;
-      end
-      else if Assigned(LastProjectBuild) then
-      begin
-        S := ExtractFilePath(LastProjectBuild.GetCompleteFileName);
-        FileName := ConvertSlashes(S + Name);
-        if not SearchFileProperty(FileName, fp) then
+        end
+        else
           Exit;
-      end
-      else
-        Exit;
-      if  fp.Breakpoint.HasBreakpoint(Line) then
-      begin
-        Breakpoint := fp.Breakpoint.GetBreakpoint(Line);
-        Breakpoint.Index := StrToInt(Value);
-        //AddItemMsg('breakpoint set index', Value, Line);
-      end;
-    end;
-    dcLocalize:
-    begin
-      if not SearchAndOpenFile(Name, fp) then
-        Exit;
-      UpdateActiveDebugLine(fp, Line);
-      DeleteDebugVariables;
-      UpdateDebugActiveVariables(Line);
-      DebugReader.SendCommand(GDB_DISPLAY);
-    end;
-    dcOnBreak:
-    begin
-      if Assigned(LastProjectBuild) then
-      begin
-        Breakpoint := LastProjectBuild.BreakpointCursor;
-        if Breakpoint.Valid and (Breakpoint.Line = Line) and
-          (CompareText(Breakpoint.FileName, Name) = 0) then
+        if fp.Breakpoint.HasBreakpoint(Line) then
         begin
-          DebugReader.SendCommand(GDB_DELETE, Value);
-          LastProjectBuild.BreakpointCursor.Valid := False;
+          Breakpoint := fp.Breakpoint.GetBreakpoint(Line);
+          Breakpoint.Index := StrToInt(Value);
+        //AddItemMsg('breakpoint set index', Value, Line);
         end;
       end;
-      if DebugReader.FunctionChanged then
+    dcLocalize:
+      begin
+        if not SearchAndOpenFile(Name, fp) then
+          Exit;
+        UpdateActiveDebugLine(fp, Line);
         DeleteDebugVariables;
-      UpdateDebugActiveVariables(Line);
-      DebugReader.SendCommand(GDB_DISPLAY);
+        UpdateDebugActiveVariables(Line);
+        DebugReader.SendCommand(GDB_DISPLAY);
+      end;
+    dcOnBreak:
+      begin
+        if Assigned(LastProjectBuild) then
+        begin
+          Breakpoint := LastProjectBuild.BreakpointCursor;
+          if Breakpoint.Valid and (Breakpoint.Line = Line) and
+            (CompareText(Breakpoint.FileName, Name) = 0) then
+          begin
+            DebugReader.SendCommand(GDB_DELETE, Value);
+            LastProjectBuild.BreakpointCursor.Valid := False;
+          end;
+        end;
+        if DebugReader.FunctionChanged then
+          DeleteDebugVariables;
+        UpdateDebugActiveVariables(Line);
+        DebugReader.SendCommand(GDB_DISPLAY);
       //DebugReader.SendCommand(GDB_INFO, GDB_DISPLAY);
-    end;
+      end;
     dcIdle:
-    begin
-      if not CommandQueue.Empty then
+      begin
+        if not CommandQueue.Empty then
+        begin
+          DebugHint.Cancel;
+          CanShowHintTip := False;
+        end;
+        CommandQueue.Clear;
+      end;
+    dcNoSymbol:
+      begin
+        if not CommandQueue.Empty then
+        begin
+          if CommandQueue.Front.VarName = Name then
+            CommandQueue.Dequeue;
+        end;
+        DebugHint.Cancel;
+        CanShowHintTip := False;
+      end;
+    dcNextLine:
+      begin
+        if not SearchAndOpenFile(Name, fp) then
+          Exit;
+        UpdateActiveDebugLine(fp, Line);
+        UpdateDebugActiveVariables(Line, True);
+      end;
+    dcOnAddWatch, dcOnWatchPoint:
+      begin
+      end;
+    dcDisplay:
+      begin
+        Index := WatchList.GetIndex(Line);
+        if Index < 0 then
+          Index := WatchList.UpdateID(Name, Line);
+        if Index >= 0 then
+          DebugParser.Fill(Name + ' = ' + Value, nil);
+      end;
+    dcPrint:
+      begin
+        if not GetActiveSheet(sheet) or CommandQueue.Empty then
+          Exit;
+        dbgc := CommandQueue.Front;
+        fp := TFileProperty(sheet.Node.Data);
+        S := dbgc.VarName + ' = ' + Value;
+        varID := StrToInt(Name);
+        if varID <> dbgc.ID then
+        begin
+        //AddItemMsg('Diff ID of ' + dbgc.VarName,
+        //  Format('%d = %d? ' + Value, [varID, dbgc.ID]), Line);
+        end;
+        token := TTokenClass(dbgc.Data);
+        case dbgc.CmdType of
+          dctPrint:
+            begin
+              DebugHint.UpdateHint(S, dbgc.Point.X,
+                dbgc.Point.Y + sheet.Memo.Canvas.TextHeight(S) + 6, token);
+            end;
+          dctAutoWatch: //not used
+            begin
+            end;
+        end;
+      //delete dbgc also
+        CommandQueue.Dequeue;
+      end;
+    dcTerminate:
+      begin
+        DebugReader.SendCommand(GDB_QUIT);
+        DebugHint.Cancel;
+        CanShowHintTip := False;
+      end;
+    dcExternalStep, dcOnExiting:
+      begin
+        InvalidateDebugLine;
+      //DebugParser.Clear;
+        DebugReader.SendCommand(GDB_CONTINUE);
+      end;
+    dcUnknow:
       begin
         DebugHint.Cancel;
         CanShowHintTip := False;
       end;
-      CommandQueue.Clear;
-    end;
-    dcNoSymbol:
-    begin
-      if not CommandQueue.Empty then
-      begin
-        if CommandQueue.Front.VarName = Name then
-          CommandQueue.Dequeue;
-      end;
-      DebugHint.Cancel;
-      CanShowHintTip := False;
-    end;
-    dcNextLine:
-    begin
-      if not SearchAndOpenFile(Name, fp) then
-        Exit;
-      UpdateActiveDebugLine(fp, Line);
-      UpdateDebugActiveVariables(Line, True);
-    end;
-    dcOnAddWatch, dcOnWatchPoint:
-    begin
-    end;
-    dcDisplay:
-    begin
-      Index := WatchList.GetIndex(Line);
-      if Index < 0 then
-        Index := WatchList.UpdateID(Name, Line);
-      if Index >= 0 then
-        DebugParser.Fill(Name + ' = ' + Value, nil);
-    end;
-    dcPrint:
-    begin
-      if not GetActiveSheet(sheet) or CommandQueue.Empty then
-        Exit;
-      dbgc := CommandQueue.Front;
-      fp := TFileProperty(sheet.Node.Data);
-      S := dbgc.VarName + ' = ' + Value;
-      varID := StrToInt(Name);
-      if varID <> dbgc.ID then
-      begin
-        //AddItemMsg('Diff ID of ' + dbgc.VarName,
-        //  Format('%d = %d? ' + Value, [varID, dbgc.ID]), Line);
-      end;
-      token := TTokenClass(dbgc.Data);
-      case dbgc.CmdType of
-        dctPrint:
-        begin
-          DebugHint.UpdateHint(S, dbgc.Point.X,
-            dbgc.Point.Y + sheet.Memo.Canvas.TextHeight(S) + 6, token);
-        end;
-        dctAutoWatch://not used
-        begin
-        end;
-      end;
-      //delete dbgc also
-      CommandQueue.Dequeue;
-    end;
-    dcTerminate:
-    begin
-      DebugReader.SendCommand(GDB_QUIT);
-      DebugHint.Cancel;
-      CanShowHintTip := False;
-    end;
-    dcExternalStep, dcOnExiting:
-    begin
-      InvalidateDebugLine;
-      //DebugParser.Clear;
-      DebugReader.SendCommand(GDB_CONTINUE);
-    end;
-    dcUnknow:
-    begin
-      DebugHint.Cancel;
-      CanShowHintTip := False;
-    end;
   else
   end;
 end;
@@ -7888,7 +7989,7 @@ begin
   if GetActiveSheet(sheet) then
   begin
     prop := TFileProperty(sheet.Node.Data);
-    Index := FilesParsed.IndexOfByFileName(Prop.GetCompleteFileName, Prop);
+    Index := FilesParsed.IndexOfByFileName(Prop.FileName);
     if Index >= 0 then
       UpdateActiveFileToken(FilesParsed.Items[Index]);
   end;
@@ -7931,7 +8032,7 @@ begin
   DebugReader.SendCommand(GDB_FINISH);
 end;
 
-procedure TFrmFalconMain.SelectTheme(Theme: String);
+procedure TFrmFalconMain.SelectTheme(Theme: string);
 begin
   TBXSwitcher.Theme := Theme;
   Config.Environment.Theme := Theme;
@@ -8001,7 +8102,7 @@ var
   ProjProp: TProjectProperty;
   FileProp: TFileProperty;
   sheet: TFilePropertySheet;
-  SourcePath, Source: String;
+  SourcePath, Source: string;
 begin
   if GetActiveSheet(sheet) then
   begin
@@ -8010,11 +8111,11 @@ begin
     ProjProp.BreakpointChanged := True;
     ProjProp.BreakpointCursor.Line := sheet.Memo.CaretY;
     ProjProp.BreakpointCursor.Valid := True;
-    ProjProp.BreakpointCursor.FileName := FileProp.GetCompleteFileName;
+    ProjProp.BreakpointCursor.FileName := FileProp.FileName;
     if DebugReader.Running then
     begin
-      SourcePath := ExtractFilePath(ProjProp.GetCompleteFileName);
-      Source := ExtractRelativePath(SourcePath, FileProp.GetCompleteFileName);
+      SourcePath := ExtractFilePath(ProjProp.FileName);
+      Source := ExtractRelativePath(SourcePath, FileProp.FileName);
       Source := StringReplace(Source, '\', '/', [rfReplaceAll]);
       DebugReader.SendCommand(GDB_BREAK, Source + ':' +
         IntToStr(ProjProp.BreakpointCursor.Line));
@@ -8022,7 +8123,7 @@ begin
       Exit;
     end;
     CompilerActiveMsg := STR_FRM_MAIN[18];
-    if ProjProp.NeedBuild  then
+    if ProjProp.NeedBuild then
     begin
       CompilationStopped := False;
       ProjProp.Build(True);
@@ -8088,7 +8189,7 @@ begin
   if not GetActiveSheet(sheet) then
     Exit;
   fprop := TFileProperty(sheet.Node.Data);
-  Index := FilesParsed.IndexOfByFileName(fprop.GetCompleteFileName, fprop);
+  Index := FilesParsed.IndexOfByFileName(fprop.FileName);
   if Index < 0 then
     Exit;
   TokenFile := FilesParsed.Items[Index];
@@ -8111,7 +8212,7 @@ begin
   if not GetActiveSheet(sheet) then
     Exit;
   fprop := TFileProperty(sheet.Node.Data);
-  Index := FilesParsed.IndexOfByFileName(fprop.GetCompleteFileName, fprop);
+  Index := FilesParsed.IndexOfByFileName(fprop.FileName);
   if Index < 0 then
     Exit;
   TokenFile := FilesParsed.Items[Index];
@@ -8123,3 +8224,4 @@ begin
 end;
 
 end.
+

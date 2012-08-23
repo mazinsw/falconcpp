@@ -62,13 +62,13 @@ type
     Frm: TFrmFalconMain;
     FindFilesRunning, FindFilesCanceled: Boolean;
     FindFilesMoreTag: Integer;
-    LastFindFilesDescription: String;
+    LastFindFilesDescription: string;
   public
     { Public declarations }
-    procedure ProgressFindFile(const FileName, Msg: String; Line,
+    procedure ProgressFindFile(const FileName, Msg: string; Line,
       Column, EndColumn: Integer);
-    procedure FinishFindAll(const aSearch: String; Results: Integer; Canceled: Boolean);
-    function StartFindAll(const OriFindText, aText: String; Sensitive,
+    procedure FinishFindAll(const aSearch: string; Results: Integer; Canceled: Boolean);
+    function StartFindAll(const OriFindText, aText: string; Sensitive,
       WholeWord: Boolean): Boolean;
   end;
 
@@ -81,8 +81,8 @@ procedure StartFindPrevText(frm: TFrmFalconMain; LastSearch: TSearchItem);
 procedure StartReplaceText(frm: TFrmFalconMain);
 procedure StartFindFilesText(frm: TFrmFalconMain);
 
-function ResolveStr(const S: String): String;
-function EncodeStr(const S: String): String;
+function ResolveStr(const S: string): string;
+function EncodeStr(const S: string): string;
 
 implementation
 
@@ -96,17 +96,19 @@ var
   prop: TFileProperty;
   sheet: TFilePropertySheet;
   memo: TSynMemo;
-  seltext: String;
+  seltext: string;
 begin
-  if not frm.GetActiveFile(prop) then Exit;
-  if not prop.GetSheet(sheet) then Exit;
+  if not frm.GetActiveFile(prop) then
+    Exit;
+  if not prop.GetSheet(sheet) then
+    Exit;
   memo := sheet.Memo;
   seltext := memo.SelText;
   if not memo.SelAvail then
     seltext := memo.GetWordAtRowCol(memo.PrevWordPos);
 
   if FrmFind = nil then
-    FrmFind:= TFrmFind.Create(frm);
+    FrmFind := TFrmFind.Create(frm);
   FrmFind.Frm := frm;
   FrmFind.TabCtrl.TabIndex := 0;
   FrmFind.TabCtrlChange(FrmFind.TabCtrl);
@@ -123,16 +125,19 @@ var
   sopt: TSynSearchOptions;
   I, Start, Index, Count: Integer;
 begin
-  if not frm.GetActiveFile(prop) then Exit;
-  if not prop.GetSheet(sheet) then Exit;
+  if not frm.GetActiveFile(prop) then
+    Exit;
+  if not prop.GetSheet(sheet) then
+    Exit;
   memo := sheet.Memo;
   if Length(LastSearch.Search) = 0 then
   begin
-   if not memo.SelAvail then Exit;
-   LastSearch.Search := memo.SelText;
+    if not memo.SelAvail then
+      Exit;
+    LastSearch.Search := memo.SelText;
   end
   else if memo.SelAvail then
-   LastSearch.Search := memo.SelText;
+    LastSearch.Search := memo.SelText;
   sopt := [];
   if LastSearch.DiffCase then
     sopt := sopt + [ssoMatchCase];
@@ -179,16 +184,19 @@ var
   sopt: TSynSearchOptions;
   I, Start, Index, Count: Integer;
 begin
-  if not frm.GetActiveFile(prop) then Exit;
-  if not prop.GetSheet(sheet) then Exit;
+  if not frm.GetActiveFile(prop) then
+    Exit;
+  if not prop.GetSheet(sheet) then
+    Exit;
   memo := sheet.Memo;
   if Length(LastSearch.Search) = 0 then
   begin
-   if not memo.SelAvail then Exit;
-   LastSearch.Search := memo.SelText;
+    if not memo.SelAvail then
+      Exit;
+    LastSearch.Search := memo.SelText;
   end
   else if memo.SelAvail then
-   LastSearch.Search := memo.SelText;
+    LastSearch.Search := memo.SelText;
   sopt := [];
   if LastSearch.DiffCase then
     sopt := sopt + [ssoMatchCase];
@@ -230,7 +238,7 @@ var
   prop: TFileProperty;
   sheet: TFilePropertySheet;
   memo: TSynMemo;
-  seltext: String;
+  seltext: string;
 begin
   seltext := '';
   if frm.GetActiveFile(prop) then
@@ -244,7 +252,7 @@ begin
     end;
   end;
   if FrmFind = nil then
-    FrmFind:= TFrmFind.Create(frm);
+    FrmFind := TFrmFind.Create(frm);
   FrmFind.Frm := frm;
   FrmFind.TabCtrl.TabIndex := 2;
   FrmFind.TabCtrlChange(FrmFind.TabCtrl);
@@ -258,16 +266,18 @@ var
   prop: TFileProperty;
   sheet: TFilePropertySheet;
   memo: TSynMemo;
-  seltext: String;
+  seltext: string;
 begin
-  if not frm.GetActiveFile(prop) then Exit;
-  if not prop.GetSheet(sheet) then Exit;
+  if not frm.GetActiveFile(prop) then
+    Exit;
+  if not prop.GetSheet(sheet) then
+    Exit;
   memo := sheet.Memo;
   seltext := memo.SelText;
   if not memo.SelAvail then
     seltext := memo.GetWordAtRowCol(memo.PrevWordPos);
   if FrmFind = nil then
-    FrmFind:= TFrmFind.Create(frm);
+    FrmFind := TFrmFind.Create(frm);
   FrmFind.Frm := frm;
   FrmFind.TabCtrl.TabIndex := 1;
   FrmFind.TabCtrlChange(FrmFind.TabCtrl);
@@ -276,14 +286,14 @@ begin
   FrmFind.Show;
 end;
 
-function ResolveStr(const S: String): String;
+function ResolveStr(const S: string): string;
 begin
   Result := StringReplace(S, '\n', #10, [rfReplaceAll]);
   Result := StringReplace(Result, '\r', #13, [rfReplaceAll]);
   Result := StringReplace(Result, '\t', #09, [rfReplaceAll]);
 end;
 
-function EncodeStr(const S: String): String;
+function EncodeStr(const S: string): string;
 begin
   Result := StringReplace(S, #10, '\n', [rfReplaceAll]);
   Result := StringReplace(Result, #13, '\r', [rfReplaceAll]);
@@ -366,7 +376,8 @@ end;
 procedure TFrmFind.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-  if Key = VK_ESCAPE then Close;
+  if Key = VK_ESCAPE then
+    Close;
 end;
 
 procedure TFrmFind.BtnMoreClick(Sender: TObject);
@@ -411,67 +422,70 @@ end;
 procedure TFrmFind.TabCtrlChange(Sender: TObject);
 begin
   case TabCtrl.TabIndex of
-    0: begin
-      ProgressBarFindFiles.Visible := False;
-      LblRep.Caption := STR_FRM_FIND[6];
-      BtnFind.Caption := STR_FRM_FIND[12];
-      LblRep.Visible := False;
-      CboReplace.Visible := False;
-      BtnReplace.Visible := False;
-      GBoxRplcAll.Visible := False;
-      ChbCircSearch.Visible := BtnMore.Tag = 1;
-      GBoxDirection.Visible := BtnMore.Tag = 1;
-      RdbtUp.Enabled := True;
-      BtnMore.Left := 231;
-      BtnMore.Visible := True;
-      if Visible then
-        CboFind.SetFocus;
-    end;
-    1: begin
-      ProgressBarFindFiles.Visible := False;
-      LblRep.Caption := STR_FRM_FIND[6];
-      BtnFind.Caption := STR_FRM_FIND[12];
-      BtnReplace.Left := 131;
-      GBoxRplcAll.Left := 228;
-      LblRep.Visible := True;
-      CboReplace.Visible := True;
-      BtnReplace.Visible := True;
-      GBoxRplcAll.Visible := True;
-      ChbCircSearch.Visible := BtnMore.Tag = 1;
-      GBoxDirection.Visible := BtnMore.Tag = 1;
-      RdbtDown.Checked := True;
-      RdbtUp.Enabled := False;
-      BtnMore.Left := 31;
-      BtnMore.Visible := True;
-      if Visible then
-        CboFind.SetFocus;
-    end;
-    2: begin
-      //TODO
-      ProgressBarFindFiles.Visible := FindFilesRunning;
-      LblRep.Visible := FindFilesRunning;
-      if not FindFilesRunning then
+    0:
       begin
+        ProgressBarFindFiles.Visible := False;
         LblRep.Caption := STR_FRM_FIND[6];
-        BtnFind.Caption := STR_FRM_FIND[2];
-      end
-      else
-      begin
-        LblRep.Caption := LastFindFilesDescription;
-        BtnFind.Caption := STR_FRM_FIND[32];
-        BtnMore.Tag := 1;
-        BtnMoreClick(BtnMore);
+        BtnFind.Caption := STR_FRM_FIND[12];
+        LblRep.Visible := False;
+        CboReplace.Visible := False;
+        BtnReplace.Visible := False;
+        GBoxRplcAll.Visible := False;
+        ChbCircSearch.Visible := BtnMore.Tag = 1;
+        GBoxDirection.Visible := BtnMore.Tag = 1;
+        RdbtUp.Enabled := True;
+        BtnMore.Left := 231;
+        BtnMore.Visible := True;
+        if Visible then
+          CboFind.SetFocus;
       end;
-      CboReplace.Visible := False;
-      BtnReplace.Visible := False;
-      GBoxRplcAll.Visible := False;
-      ChbCircSearch.Visible := False;
-      GBoxDirection.Visible := False;
-      BtnMore.Visible := not FindFilesRunning;
-      BtnMore.Left := 231;
-      if Visible then
-        CboFind.SetFocus;
-    end;
+    1:
+      begin
+        ProgressBarFindFiles.Visible := False;
+        LblRep.Caption := STR_FRM_FIND[6];
+        BtnFind.Caption := STR_FRM_FIND[12];
+        BtnReplace.Left := 131;
+        GBoxRplcAll.Left := 228;
+        LblRep.Visible := True;
+        CboReplace.Visible := True;
+        BtnReplace.Visible := True;
+        GBoxRplcAll.Visible := True;
+        ChbCircSearch.Visible := BtnMore.Tag = 1;
+        GBoxDirection.Visible := BtnMore.Tag = 1;
+        RdbtDown.Checked := True;
+        RdbtUp.Enabled := False;
+        BtnMore.Left := 31;
+        BtnMore.Visible := True;
+        if Visible then
+          CboFind.SetFocus;
+      end;
+    2:
+      begin
+      //TODO
+        ProgressBarFindFiles.Visible := FindFilesRunning;
+        LblRep.Visible := FindFilesRunning;
+        if not FindFilesRunning then
+        begin
+          LblRep.Caption := STR_FRM_FIND[6];
+          BtnFind.Caption := STR_FRM_FIND[2];
+        end
+        else
+        begin
+          LblRep.Caption := LastFindFilesDescription;
+          BtnFind.Caption := STR_FRM_FIND[32];
+          BtnMore.Tag := 1;
+          BtnMoreClick(BtnMore);
+        end;
+        CboReplace.Visible := False;
+        BtnReplace.Visible := False;
+        GBoxRplcAll.Visible := False;
+        ChbCircSearch.Visible := False;
+        GBoxDirection.Visible := False;
+        BtnMore.Visible := not FindFilesRunning;
+        BtnMore.Left := 231;
+        if Visible then
+          CboFind.SetFocus;
+      end;
   end;
 end;
 
@@ -523,14 +537,14 @@ begin
     Key := #0;
 end;
 
-procedure TFrmFind.ProgressFindFile(const FileName, Msg: String;
+procedure TFrmFind.ProgressFindFile(const FileName, Msg: string;
   Line, Column, EndColumn: Integer);
 begin
   FrmFalconMain.AddMessage(FileName, ExtractFileName(FileName), Msg, Line,
     Column, EndColumn, mitFound, False);
 end;
 
-procedure TFrmFind.FinishFindAll(const aSearch: String; Results: Integer; Canceled: Boolean);
+procedure TFrmFind.FinishFindAll(const aSearch: string; Results: Integer; Canceled: Boolean);
 begin
   TabCtrl.TabIndex := 2;
   //TODO Stop
@@ -558,11 +572,11 @@ begin
   Close;
 end;
 
-function TFrmFind.StartFindAll(const OriFindText, aText: String; Sensitive,
+function TFrmFind.StartFindAll(const OriFindText, aText: string; Sensitive,
   WholeWord: Boolean): Boolean;
 var
   Files: TStrings;
-  FileName: String;
+  FileName: string;
   FileProp: TFileProperty;
   I, J, Results, Line, Column, EndColumn: Integer;
   Search: TSynEditSearch;
@@ -603,8 +617,8 @@ begin
     CheckIfCanceled;
     ProgressBarFindFiles.Position := I + 1;
     FileProp := TFileProperty(Files.Objects[I]);
-    FileName := FileProp.GetCompleteFileName;
-    LastFindFilesDescription := Format(STR_FRM_FIND[33], [OriFindText, FileProp.Caption]);
+    FileName := FileProp.FileName;
+    LastFindFilesDescription := Format(STR_FRM_FIND[33], [OriFindText, FileProp.Name]);
     LblRep.Caption := LastFindFilesDescription;
 
     if FileProp.GetSheet(sheet) then
@@ -634,7 +648,7 @@ end;
 
 procedure TFrmFind.FindInFiles;
 var
-  search: String;
+  search: string;
 begin
   if not FindFilesRunning then
   begin
@@ -666,7 +680,7 @@ procedure TFrmFind.BtnFindClick(Sender: TObject);
 var
   sheet: TFilePropertySheet;
   memo: TSynMemo;
-  search: String;
+  search: string;
   I, Start, Index, Count, lastlength, selstart, selend: Integer;
   pt: TPoint;
   rect: TRect;
@@ -677,7 +691,8 @@ begin
     FindInFiles;
     Exit;
   end;
-  if not frm.GetActiveSheet(sheet) then Exit;
+  if not frm.GetActiveSheet(sheet) then
+    Exit;
   memo := sheet.Memo;
   search := CboFind.Text;
   sopt := [];
@@ -792,10 +807,11 @@ procedure TFrmFind.BtnReplaceClick(Sender: TObject);
 var
   sheet: TFilePropertySheet;
   memo: TSynMemo;
-  search, replace, text: String;
+  search, replace, text: string;
   selstart: Integer;
 begin
-  if not frm.GetActiveSheet(sheet) then Exit;
+  if not frm.GetActiveSheet(sheet) then
+    Exit;
   memo := sheet.Memo;
   search := CboFind.Text;
   replace := CboReplace.Text;
@@ -834,11 +850,12 @@ procedure TFrmFind.BtnReplAllClick(Sender: TObject);
 var
   sheet: TFilePropertySheet;
   memo: TSynMemo;
-  search, replace: String;
+  search, replace: string;
   Count: Integer;
   sopt: TSynSearchOptions;
 begin
-  if not frm.GetActiveSheet(sheet) then Exit;
+  if not frm.GetActiveSheet(sheet) then
+    Exit;
   memo := sheet.Memo;
   search := CboFind.Text;
   replace := CboReplace.Text;
@@ -899,4 +916,3 @@ begin
 end;
 
 end.
-

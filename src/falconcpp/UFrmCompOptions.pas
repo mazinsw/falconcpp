@@ -81,7 +81,6 @@ uses UFrmMain, ULanguages, ExecWait, UUtils, UConfig;
 
 {$R *.dfm}
 
-
 procedure TFrmCompOptions.CreateParams(var Params: TCreateParams);
 begin
   inherited;
@@ -104,13 +103,14 @@ end;
 
 procedure TFrmCompOptions.OptionsChange;
 begin
-  if Loading then Exit;
+  if Loading then
+    Exit;
   BtnApply.Enabled := True;
 end;
 
 procedure TFrmCompOptions.Load;
 begin
-//  
+//
 end;
 
 procedure TFrmCompOptions.UpdateLangNow;
@@ -143,7 +143,7 @@ end;
 
 procedure TFrmCompOptions.BtnApplyClick(Sender: TObject);
 var
-  newPath: String;
+  newPath: string;
   Index: Integer;
   NeedRestartApp: Boolean;
 begin
@@ -179,7 +179,7 @@ end;
 procedure TFrmCompOptions.CheckCompiler;
 var
   exitCode: Integer;
-  stdout, path, aName, aVersion: String;
+  stdout, path, aName, aVersion: string;
 begin
   if ComboBoxCompilerPath.ItemIndex < 0 then
     Exit;
@@ -240,7 +240,7 @@ end;
 
 procedure TFrmCompOptions.FillCompilerList;
 var
-  path: String;
+  path: string;
 begin
   ComboBoxCompilerPath.Clear;
   //find compilers

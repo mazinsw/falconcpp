@@ -8,10 +8,9 @@ unit SciZipFile;
 
 // uses the Borland out of the box zlib
 
+// 2005 Added support for streams (LoadFromStream(const ZipFileStream: TStream),SaveToStream(...))
 
-// 2005 Added support for streams (LoadFromStream(const ZipFileStream: TStream),SaveToStream(...)) 
-
-// Nick Naimo <nick@naimo.com> added support for folders on 6/29/2004 
+// Nick Naimo <nick@naimo.com> added support for folders on 6/29/2004
 // Marcin Wojda <Marcin@sacer.com.pl> added exceptions and try finally blocks
 
 interface
@@ -108,7 +107,7 @@ var
 begin
   ZipFileStream := TFileStream.Create(filename, fmCreate);
   try
-  SaveToStream(ZipFileStream);
+    SaveToStream(ZipFileStream);
   finally
     ZipFileStream.Free;
   end;
@@ -118,57 +117,56 @@ procedure TZipFile.SaveToStream(ZipFileStream: TStream);
 var
   i: integer;
 begin
-    for i := 0 to High(Files) do
-      with Files[i] do
-      begin
-        CentralDirectory[i].RelativeOffsetOfLocalHeader :=
-          ZipFileStream.Position;
-        ZipFileStream.Write(LocalFileHeaderSignature, 4);
-        if (LocalFileHeaderSignature = ($04034B50)) then
-        begin
-          ZipFileStream.Write(CommonFileHeader, SizeOf(CommonFileHeader));
-          ZipFileStream.Write(PChar(filename)^,
-            CommonFileHeader.FilenameLength);
-          ZipFileStream.Write(PChar(extrafield)^,
-            CommonFileHeader.ExtraFieldLength);
-          ZipFileStream.Write(PChar(CompressedData)^,
-            CommonFileHeader.CompressedSize);
-        end;
-      end;
-
-    EndOfCentralDirectory.OffsetOfStartOfCentralDirectory :=
-      ZipFileStream.Position;
-
-    for i := 0 to High(CentralDirectory) do
-      with CentralDirectory[i] do
-      begin
-        ZipFileStream.Write(CentralFileHeaderSignature, 4);
-        ZipFileStream.Write(VersionMadeBy, 2);
-        ZipFileStream.Write(CommonFileHeader, SizeOf(CommonFileHeader));
-        ZipFileStream.Write(FileCommentLength, 2);
-        ZipFileStream.Write(DiskNumberStart, 2);
-        ZipFileStream.Write(InternalFileAttributes, 2);
-        ZipFileStream.Write(ExternalFileAttributes, 4);
-        ZipFileStream.Write(RelativeOffsetOfLocalHeader, 4);
-        ZipFileStream.Write(PChar(filename)^, length(filename));
-        ZipFileStream.Write(PChar(extrafield)^, length(extrafield));
-        ZipFileStream.Write(PChar(fileComment)^, length(fileComment));
-      end;
-    with EndOfCentralDirectory do
+  for i := 0 to High(Files) do
+    with Files[i] do
     begin
-      EndOfCentralDirSignature := $06054B50;
-      NumberOfThisDisk := 0;
-      NumberOfTheDiskWithTheStart := 0;
-      TotalNumberOfEntriesOnThisDisk := High(Files) + 1;
-      TotalNumberOfEntries := High(Files) + 1;
-      SizeOfTheCentralDirectory :=
-        ZipFileStream.Position - OffsetOfStartOfCentralDirectory;
-      ZipfileCommentLength := length(ZipFileComment);
+      CentralDirectory[i].RelativeOffsetOfLocalHeader :=
+        ZipFileStream.Position;
+      ZipFileStream.Write(LocalFileHeaderSignature, 4);
+      if (LocalFileHeaderSignature = ($04034B50)) then
+      begin
+        ZipFileStream.Write(CommonFileHeader, SizeOf(CommonFileHeader));
+        ZipFileStream.Write(PChar(filename)^,
+          CommonFileHeader.FilenameLength);
+        ZipFileStream.Write(PChar(extrafield)^,
+          CommonFileHeader.ExtraFieldLength);
+        ZipFileStream.Write(PChar(CompressedData)^,
+          CommonFileHeader.CompressedSize);
+      end;
     end;
-    ZipFileStream.Write(EndOfCentralDirectory, SizeOf(EndOfCentralDirectory));
-    ZipFileStream.Write(PChar(ZipFileComment)^, length(ZipFileComment));
-end;
 
+  EndOfCentralDirectory.OffsetOfStartOfCentralDirectory :=
+    ZipFileStream.Position;
+
+  for i := 0 to High(CentralDirectory) do
+    with CentralDirectory[i] do
+    begin
+      ZipFileStream.Write(CentralFileHeaderSignature, 4);
+      ZipFileStream.Write(VersionMadeBy, 2);
+      ZipFileStream.Write(CommonFileHeader, SizeOf(CommonFileHeader));
+      ZipFileStream.Write(FileCommentLength, 2);
+      ZipFileStream.Write(DiskNumberStart, 2);
+      ZipFileStream.Write(InternalFileAttributes, 2);
+      ZipFileStream.Write(ExternalFileAttributes, 4);
+      ZipFileStream.Write(RelativeOffsetOfLocalHeader, 4);
+      ZipFileStream.Write(PChar(filename)^, length(filename));
+      ZipFileStream.Write(PChar(extrafield)^, length(extrafield));
+      ZipFileStream.Write(PChar(fileComment)^, length(fileComment));
+    end;
+  with EndOfCentralDirectory do
+  begin
+    EndOfCentralDirSignature := $06054B50;
+    NumberOfThisDisk := 0;
+    NumberOfTheDiskWithTheStart := 0;
+    TotalNumberOfEntriesOnThisDisk := High(Files) + 1;
+    TotalNumberOfEntries := High(Files) + 1;
+    SizeOfTheCentralDirectory :=
+      ZipFileStream.Position - OffsetOfStartOfCentralDirectory;
+    ZipfileCommentLength := length(ZipFileComment);
+  end;
+  ZipFileStream.Write(EndOfCentralDirectory, SizeOf(EndOfCentralDirectory));
+  ZipFileStream.Write(PChar(ZipFileComment)^, length(ZipFileComment));
+end;
 
 procedure TZipFile.LoadFromStream(const ZipFileStream: TStream);
 var
@@ -179,7 +177,8 @@ begin
   repeat
     signature := 0;
     ZipFileStream.Read(signature, 4);
-    if   (ZipFileStream.Position =  ZipFileStream.Size) then exit;
+    if (ZipFileStream.Position = ZipFileStream.Size) then
+      exit;
   until signature = $04034B50;
   repeat
     begin
@@ -273,7 +272,8 @@ var
 begin
   i := 0;
   Result := False;
-  if (i < 0) or (i > High(Files)) then Exit;
+  if (i < 0) or (i > High(Files)) then
+    Exit;
   Aheader := chr(120) + chr(156);
   //manufacture a 2 byte header for zlib; 4 byte footer is not required.
   UncompressedStream := TStringStream.Create(Aheader + Files[i].CompressedData);
@@ -297,9 +297,10 @@ begin
   end;
 
   LoadedCRC32 := ZipCRC32(S);
-  if LoadedCRC32 <> Files[i].CommonFileHeader.Crc32 then Exit;
+  if LoadedCRC32 <> Files[i].CommonFileHeader.Crc32 then
+    Exit;
   OutFileStream.Write(PChar(S)^,
-        Files[i].CommonFileHeader.UncompressedSize);
+    Files[i].CommonFileHeader.UncompressedSize);
   Result := True;
 end;
 
@@ -526,4 +527,3 @@ begin
   result := result xor $FFFFFFFF;
 end;
 end.
-

@@ -36,9 +36,9 @@ type
 
     LinkClick: Boolean;
     LinkColor: TColor;
-    
+
     //display
-    FontName: String;
+    FontName: string;
     FontSize: Integer;
     ShowRightMargin: Boolean;
     RightMargin: Integer;
@@ -47,7 +47,7 @@ type
     ShowLineNumber: Boolean;
     GradientGutter: Boolean;
     //sintax
-    ActiveSintax: String;
+    ActiveSintax: string;
 
     //Formatter
       //Style
@@ -87,7 +87,7 @@ type
     CodeCompletion: Boolean;
     CodeParameters: Boolean;
     TooltipExpEval: Boolean;
-    TooltipSymbol : Boolean;
+    TooltipSymbol: Boolean;
     CodeDelay: Integer;
 
     CompListConstructor: TColor;
@@ -101,7 +101,7 @@ type
     CompListPreproc: TColor;
     CompListSel: TColor;
     CompListBg: TColor;
-    CodeTemplateFile: String;
+    CodeTemplateFile: string;
   end;
 
   TEnvironmentOptions = class
@@ -113,7 +113,7 @@ type
     OneClickOpenFile: Boolean;
     CheckForUpdates: Boolean;
     CreateBackupFiles: Boolean;
-    BackupFilesExt: String;
+    BackupFilesExt: string;
     AutoOpen: Integer;
     CreateLayoutFiles: Boolean;
     AskForDeleteFile: Boolean;
@@ -123,25 +123,25 @@ type
     Langs: TFalconLanguages;
     ShowSplashScreen: Boolean;
     LanguageID: Cardinal;
-    Theme: String;
+    Theme: string;
     //Files and Directories
     AlternativeConfFileLoaded: Boolean;
     //**********************
     AlternativeConfFile: Boolean;
-    ConfigurationFile: String;
-    UsersDefDir: String;
-    ProjectsDir: String;
-    TemplatesDir: String;
-    LanguageDir: String;
+    ConfigurationFile: string;
+    UsersDefDir: string;
+    ProjectsDir: string;
+    TemplatesDir: string;
+    LanguageDir: string;
     constructor Create;
     destructor Destroy; override;
   end;
 
   TCompilerOptions = class
   public
-    Path: String;//path of compiler
-    Version: String;//version of used compiler
-    ActiveConfiguration: String;
+    Path: string; //path of compiler
+    Version: string; //version of used compiler
+    ActiveConfiguration: string;
   end;
 
   TConfig = class
@@ -151,30 +151,30 @@ type
     Compiler: TCompilerOptions;
     constructor Create;
     destructor Destroy; override;
-    function LoadTemplates(TemplateDir: String): TStrings;
-    procedure Load(const FileName:string; Form: TForm);
-    procedure Save(const FileName:string; Form: TForm);
+    function LoadTemplates(TemplateDir: string): TStrings;
+    procedure Load(const FileName: string; Form: TForm);
+    procedure Save(const FileName: string; Form: TForm);
   end;
 
-procedure WriteIniFile(Const Section, Ident, Value: String);
-function ReadIniFile(Section, Ident, Default: String): String;
+procedure WriteIniFile(const Section, Ident, Value: string);
+function ReadIniFile(Section, Ident, Default: string): string;
 
 implementation
 
 uses UFrmMain, UUtils, ExecWait, UTemplates;
 
-procedure WriteIniFile(Const Section, Ident, Value: String);
+procedure WriteIniFile(const Section, Ident, Value: string);
 var
-  ini:TIniFile;
+  ini: TIniFile;
 begin
   ini := TIniFile.Create(FrmFalconMain.IniConfigFile);
   ini.WriteString(Section, Ident, Value);
   ini.Free;
 end;
 
-function ReadIniFile(Section, Ident, Default: String): String;
+function ReadIniFile(Section, Ident, Default: string): string;
 var
-  ini:TIniFile;
+  ini: TIniFile;
 begin
   ini := TIniFile.Create(FrmFalconMain.IniConfigFile);
   Result := ini.ReadString(Section, Ident, Default);
@@ -209,7 +209,7 @@ begin
   inherited Destroy;
 end;
 
-function TConfig.LoadTemplates(TemplateDir: String): TStrings;
+function TConfig.LoadTemplates(TemplateDir: string): TStrings;
 var
   List: TStrings;
 begin
@@ -218,7 +218,7 @@ begin
   Result := List;
 end;
 
-procedure TConfig.Load(const FileName:string; Form: TForm);
+procedure TConfig.Load(const FileName: string; Form: TForm);
 
   procedure SetDock(const CurrDock: Integer; Toolbar: TTBXToolbar;
     const pt: TPoint);
@@ -239,9 +239,9 @@ procedure TConfig.Load(const FileName:string; Form: TForm);
   end;
 
 var
-  ini:TIniFile;
+  ini: TIniFile;
   pt: TPoint;
-  Temp, TabOri: String;
+  Temp, TabOri: string;
 begin
   ini := TIniFile.Create(FileName);
   with Environment do
@@ -309,7 +309,6 @@ begin
     EnhancedHomeKey := ini.ReadBool('EditorOptions', 'EnhancedHomeKey', False);
     ShowLineChars := ini.ReadBool('EditorOptions', 'ShowLineChars', False);
 
-    
     MaxUndo := ini.ReadInteger('EditorOptions', 'MaxUndo', 1024);
     TabWidth := ini.ReadInteger('EditorOptions', 'TabWidth', 4);
     //------------------------------//
@@ -382,7 +381,7 @@ begin
     CodeCompletion := ini.ReadBool('EditorOptions', 'CodeCompletion', True);
     CodeParameters := ini.ReadBool('EditorOptions', 'CodeParameters', True);
     TooltipExpEval := ini.ReadBool('EditorOptions', 'TooltipExpEval', True);
-    TooltipSymbol  := ini.ReadBool('EditorOptions', 'TooltipSymbol', True);
+    TooltipSymbol := ini.ReadBool('EditorOptions', 'TooltipSymbol', True);
     CodeDelay := ini.ReadInteger('EditorOptions', 'CodeDelay', 3);
 
     CompListConstructor := StringToColor(ini.ReadString('EditorOptions', 'CompListConstructor', 'clGreen'));
@@ -397,7 +396,7 @@ begin
     CompListSel := StringToColor(ini.ReadString('EditorOptions', 'CompListSel', 'clHighlight'));
     CompListBg := StringToColor(ini.ReadString('EditorOptions', 'CompListBg', 'clWindow'));
 
-    CodeTemplateFile  := ini.ReadString('EditorOptions', 'CodeTemplateFile',
+    CodeTemplateFile := ini.ReadString('EditorOptions', 'CodeTemplateFile',
       TFrmFalconMain(Form).ConfigRoot + 'CustomAutoComplete.txt');
   end;
 
@@ -409,76 +408,76 @@ begin
 
   with TFrmFalconMain(Form) do
   begin
-    ProjectPanel.Width := ini.ReadInteger('CONFIG','SizePanelPW',260);
-    PanelOutline.Width := ini.ReadInteger('CONFIG','SizePanelOLW',160);
-    PageControlMessages.Height := ini.ReadInteger('CONFIG','SizePanelCH',160);
+    ProjectPanel.Width := ini.ReadInteger('CONFIG', 'SizePanelPW', 260);
+    PanelOutline.Width := ini.ReadInteger('CONFIG', 'SizePanelOLW', 160);
+    PageControlMessages.Height := ini.ReadInteger('CONFIG', 'SizePanelCH', 160);
     //** toolbars
-    DefaultBar.Visible := ini.ReadBool('TOOLBAR_DEFAULT','Visible', True);
+    DefaultBar.Visible := ini.ReadBool('TOOLBAR_DEFAULT', 'Visible', True);
     ToolbarCheck(0, DefaultBar.Visible);
-    pt.X := ini.ReadInteger('TOOLBAR_DEFAULT','X', 0);
-    pt.Y := ini.ReadInteger('TOOLBAR_DEFAULT','Y', 0);
-    SetDock(ini.ReadInteger('TOOLBAR_DEFAULT','Dock', 1), DefaultBar, pt);
-    DefaultBar.DockPos := ini.ReadInteger('TOOLBAR_DEFAULT','Pos', 0);
-    DefaultBar.DockRow := ini.ReadInteger('TOOLBAR_DEFAULT','Row', 1);
+    pt.X := ini.ReadInteger('TOOLBAR_DEFAULT', 'X', 0);
+    pt.Y := ini.ReadInteger('TOOLBAR_DEFAULT', 'Y', 0);
+    SetDock(ini.ReadInteger('TOOLBAR_DEFAULT', 'Dock', 1), DefaultBar, pt);
+    DefaultBar.DockPos := ini.ReadInteger('TOOLBAR_DEFAULT', 'Pos', 0);
+    DefaultBar.DockRow := ini.ReadInteger('TOOLBAR_DEFAULT', 'Row', 1);
 
-    EditBar.Visible := ini.ReadBool('TOOLBAR_EDIT','Visible', True);
+    EditBar.Visible := ini.ReadBool('TOOLBAR_EDIT', 'Visible', True);
     ToolbarCheck(1, EditBar.Visible);
-    pt.X := ini.ReadInteger('TOOLBAR_EDIT','X', 0);
-    pt.Y := ini.ReadInteger('TOOLBAR_EDIT','Y', 0);
-    SetDock(ini.ReadInteger('TOOLBAR_EDIT','Dock', 1), EditBar, pt);
-    EditBar.DockPos := ini.ReadInteger('TOOLBAR_EDIT','Pos', 143);
-    EditBar.DockRow := ini.ReadInteger('TOOLBAR_EDIT','Row', 1);
+    pt.X := ini.ReadInteger('TOOLBAR_EDIT', 'X', 0);
+    pt.Y := ini.ReadInteger('TOOLBAR_EDIT', 'Y', 0);
+    SetDock(ini.ReadInteger('TOOLBAR_EDIT', 'Dock', 1), EditBar, pt);
+    EditBar.DockPos := ini.ReadInteger('TOOLBAR_EDIT', 'Pos', 143);
+    EditBar.DockRow := ini.ReadInteger('TOOLBAR_EDIT', 'Row', 1);
 
-    SearchBar.Visible := ini.ReadBool('TOOLBAR_SEARCH','Visible', True);
+    SearchBar.Visible := ini.ReadBool('TOOLBAR_SEARCH', 'Visible', True);
     ToolbarCheck(2, SearchBar.Visible);
-    pt.X := ini.ReadInteger('TOOLBAR_SEARCH','X', 0);
-    pt.Y := ini.ReadInteger('TOOLBAR_SEARCH','Y', 0);
-    SetDock(ini.ReadInteger('TOOLBAR_SEARCH','Dock', 1), SearchBar, pt);
-    SearchBar.DockPos := ini.ReadInteger('TOOLBAR_SEARCH','Pos', 179);
-    SearchBar.DockRow := ini.ReadInteger('TOOLBAR_SEARCH','Row', 1);
+    pt.X := ini.ReadInteger('TOOLBAR_SEARCH', 'X', 0);
+    pt.Y := ini.ReadInteger('TOOLBAR_SEARCH', 'Y', 0);
+    SetDock(ini.ReadInteger('TOOLBAR_SEARCH', 'Dock', 1), SearchBar, pt);
+    SearchBar.DockPos := ini.ReadInteger('TOOLBAR_SEARCH', 'Pos', 179);
+    SearchBar.DockRow := ini.ReadInteger('TOOLBAR_SEARCH', 'Row', 1);
 
-    CompilerBar.Visible := ini.ReadBool('TOOLBAR_COMPILER','Visible', True);
+    CompilerBar.Visible := ini.ReadBool('TOOLBAR_COMPILER', 'Visible', True);
     ToolbarCheck(3, CompilerBar.Visible);
-    pt.X := ini.ReadInteger('TOOLBAR_COMPILER','X', 0);
-    pt.Y := ini.ReadInteger('TOOLBAR_COMPILER','Y', 0);
-    SetDock(ini.ReadInteger('TOOLBAR_COMPILER','Dock', 1), CompilerBar, pt);
-    CompilerBar.DockPos := ini.ReadInteger('TOOLBAR_COMPILER','Pos', 179);
-    CompilerBar.DockRow := ini.ReadInteger('TOOLBAR_COMPILER','Row', 1);
+    pt.X := ini.ReadInteger('TOOLBAR_COMPILER', 'X', 0);
+    pt.Y := ini.ReadInteger('TOOLBAR_COMPILER', 'Y', 0);
+    SetDock(ini.ReadInteger('TOOLBAR_COMPILER', 'Dock', 1), CompilerBar, pt);
+    CompilerBar.DockPos := ini.ReadInteger('TOOLBAR_COMPILER', 'Pos', 179);
+    CompilerBar.DockRow := ini.ReadInteger('TOOLBAR_COMPILER', 'Row', 1);
 
-    NavigatorBar.Visible := ini.ReadBool('TOOLBAR_NAVIGATOR','Visible', True);
+    NavigatorBar.Visible := ini.ReadBool('TOOLBAR_NAVIGATOR', 'Visible', True);
     ToolbarCheck(4, NavigatorBar.Visible);
-    pt.X := ini.ReadInteger('TOOLBAR_NAVIGATOR','X', 0);
-    pt.Y := ini.ReadInteger('TOOLBAR_NAVIGATOR','Y', 0);
-    SetDock(ini.ReadInteger('TOOLBAR_NAVIGATOR','Dock', 1), NavigatorBar, pt);
-    NavigatorBar.DockPos := ini.ReadInteger('TOOLBAR_NAVIGATOR','Pos', 179);
-    NavigatorBar.DockRow := ini.ReadInteger('TOOLBAR_NAVIGATOR','Row', 1);
+    pt.X := ini.ReadInteger('TOOLBAR_NAVIGATOR', 'X', 0);
+    pt.Y := ini.ReadInteger('TOOLBAR_NAVIGATOR', 'Y', 0);
+    SetDock(ini.ReadInteger('TOOLBAR_NAVIGATOR', 'Dock', 1), NavigatorBar, pt);
+    NavigatorBar.DockPos := ini.ReadInteger('TOOLBAR_NAVIGATOR', 'Pos', 179);
+    NavigatorBar.DockRow := ini.ReadInteger('TOOLBAR_NAVIGATOR', 'Row', 1);
 
-    ProjectBar.Visible := ini.ReadBool('TOOLBAR_PROJECT','Visible', True);
+    ProjectBar.Visible := ini.ReadBool('TOOLBAR_PROJECT', 'Visible', True);
     ToolbarCheck(5, ProjectBar.Visible);
-    pt.X := ini.ReadInteger('TOOLBAR_PROJECT','X', 0);
-    pt.Y := ini.ReadInteger('TOOLBAR_PROJECT','Y', 0);
-    SetDock(ini.ReadInteger('TOOLBAR_PROJECT','Dock', 1), ProjectBar, pt);
-    ProjectBar.DockPos := ini.ReadInteger('TOOLBAR_PROJECT','Pos', 395);
-    ProjectBar.DockRow := ini.ReadInteger('TOOLBAR_PROJECT','Row', 1);
+    pt.X := ini.ReadInteger('TOOLBAR_PROJECT', 'X', 0);
+    pt.Y := ini.ReadInteger('TOOLBAR_PROJECT', 'Y', 0);
+    SetDock(ini.ReadInteger('TOOLBAR_PROJECT', 'Dock', 1), ProjectBar, pt);
+    ProjectBar.DockPos := ini.ReadInteger('TOOLBAR_PROJECT', 'Pos', 395);
+    ProjectBar.DockRow := ini.ReadInteger('TOOLBAR_PROJECT', 'Row', 1);
 
-    HelpBar.Visible := ini.ReadBool('TOOLBAR_HELP','Visible', True);
+    HelpBar.Visible := ini.ReadBool('TOOLBAR_HELP', 'Visible', True);
     ToolbarCheck(6, HelpBar.Visible);
-    pt.X := ini.ReadInteger('TOOLBAR_HELP','X', 0);
-    pt.Y := ini.ReadInteger('TOOLBAR_HELP','Y', 0);
-    SetDock(ini.ReadInteger('TOOLBAR_HELP','Dock', 1), HelpBar, pt);
-    HelpBar.DockPos := ini.ReadInteger('TOOLBAR_HELP','Pos', 447);
-    HelpBar.DockRow := ini.ReadInteger('TOOLBAR_HELP','Row', 1);
+    pt.X := ini.ReadInteger('TOOLBAR_HELP', 'X', 0);
+    pt.Y := ini.ReadInteger('TOOLBAR_HELP', 'Y', 0);
+    SetDock(ini.ReadInteger('TOOLBAR_HELP', 'Dock', 1), HelpBar, pt);
+    HelpBar.DockPos := ini.ReadInteger('TOOLBAR_HELP', 'Pos', 447);
+    HelpBar.DockRow := ini.ReadInteger('TOOLBAR_HELP', 'Row', 1);
 
-    DebugBar.Visible := ini.ReadBool('TOOLBAR_DEBUG','Visible', True);
+    DebugBar.Visible := ini.ReadBool('TOOLBAR_DEBUG', 'Visible', True);
     ToolbarCheck(7, DebugBar.Visible);
-    pt.X := ini.ReadInteger('TOOLBAR_DEBUG','X', 0);
-    pt.Y := ini.ReadInteger('TOOLBAR_DEBUG','Y', 0);
-    SetDock(ini.ReadInteger('TOOLBAR_DEBUG','Dock', 1), DebugBar, pt);
-    DebugBar.DockPos := ini.ReadInteger('TOOLBAR_DEBUG','Pos', 467);
-    DebugBar.DockRow := ini.ReadInteger('TOOLBAR_DEBUG','Row', 1);
+    pt.X := ini.ReadInteger('TOOLBAR_DEBUG', 'X', 0);
+    pt.Y := ini.ReadInteger('TOOLBAR_DEBUG', 'Y', 0);
+    SetDock(ini.ReadInteger('TOOLBAR_DEBUG', 'Dock', 1), DebugBar, pt);
+    DebugBar.DockPos := ini.ReadInteger('TOOLBAR_DEBUG', 'Pos', 467);
+    DebugBar.DockRow := ini.ReadInteger('TOOLBAR_DEBUG', 'Row', 1);
 
     //Tab Orientation
-    TabOri := ini.ReadString('TABS','Orientation', 'Top');
+    TabOri := ini.ReadString('TABS', 'Orientation', 'Top');
     if CompareText(TabOri, 'bottom') = 0 then
     begin
       PageControlEditor.TabPosition := mtpBottom;
@@ -504,9 +503,9 @@ begin
   end;
 end;
 
-procedure TConfig.Save(const FileName:string; Form: TForm);
+procedure TConfig.Save(const FileName: string; Form: TForm);
 var
-  ini, oriini:TIniFile;
+  ini, oriini: TIniFile;
 
   function GetDock(Toolbar: TTBXToolbar): Integer;
   begin
@@ -528,72 +527,72 @@ begin
   ini := TIniFile.Create(FileName);
   with TFrmFalconMain(Form) do
   begin
-    ini.WriteInteger('CONFIG','SizePanelPW', ProjectPanel.Width);
-    ini.WriteInteger('CONFIG','SizePanelOLW', PanelOutline.Width);
-    ini.WriteInteger('CONFIG','SizePanelCH', PageControlMessages.Height);
+    ini.WriteInteger('CONFIG', 'SizePanelPW', ProjectPanel.Width);
+    ini.WriteInteger('CONFIG', 'SizePanelOLW', PanelOutline.Width);
+    ini.WriteInteger('CONFIG', 'SizePanelCH', PageControlMessages.Height);
 
     //** toolbars
-    ini.WriteBool('TOOLBAR_DEFAULT','Visible', DefaultBar.Visible);
-    ini.WriteInteger('TOOLBAR_DEFAULT','Dock', GetDock(DefaultBar));
-    ini.WriteInteger('TOOLBAR_DEFAULT','X', DefaultBar.FloatingPosition.X);
-    ini.WriteInteger('TOOLBAR_DEFAULT','Y', DefaultBar.FloatingPosition.Y);
-    ini.WriteInteger('TOOLBAR_DEFAULT','Pos', DefaultBar.DockPos);
-    ini.WriteInteger('TOOLBAR_DEFAULT','Row', DefaultBar.DockRow);
+    ini.WriteBool('TOOLBAR_DEFAULT', 'Visible', DefaultBar.Visible);
+    ini.WriteInteger('TOOLBAR_DEFAULT', 'Dock', GetDock(DefaultBar));
+    ini.WriteInteger('TOOLBAR_DEFAULT', 'X', DefaultBar.FloatingPosition.X);
+    ini.WriteInteger('TOOLBAR_DEFAULT', 'Y', DefaultBar.FloatingPosition.Y);
+    ini.WriteInteger('TOOLBAR_DEFAULT', 'Pos', DefaultBar.DockPos);
+    ini.WriteInteger('TOOLBAR_DEFAULT', 'Row', DefaultBar.DockRow);
 
-    ini.WriteBool('TOOLBAR_EDIT','Visible', EditBar.Visible);
-    ini.WriteInteger('TOOLBAR_EDIT','Dock', GetDock(EditBar));
-    ini.WriteInteger('TOOLBAR_EDIT','X', EditBar.FloatingPosition.X);
-    ini.WriteInteger('TOOLBAR_EDIT','Y', EditBar.FloatingPosition.Y);
-    ini.WriteInteger('TOOLBAR_EDIT','Pos', EditBar.DockPos);
-    ini.WriteInteger('TOOLBAR_EDIT','Row', EditBar.DockRow);
+    ini.WriteBool('TOOLBAR_EDIT', 'Visible', EditBar.Visible);
+    ini.WriteInteger('TOOLBAR_EDIT', 'Dock', GetDock(EditBar));
+    ini.WriteInteger('TOOLBAR_EDIT', 'X', EditBar.FloatingPosition.X);
+    ini.WriteInteger('TOOLBAR_EDIT', 'Y', EditBar.FloatingPosition.Y);
+    ini.WriteInteger('TOOLBAR_EDIT', 'Pos', EditBar.DockPos);
+    ini.WriteInteger('TOOLBAR_EDIT', 'Row', EditBar.DockRow);
 
-    ini.WriteBool('TOOLBAR_SEARCH','Visible', SearchBar.Visible);
-    ini.WriteInteger('TOOLBAR_SEARCH','Dock', GetDock(SearchBar));
-    ini.WriteInteger('TOOLBAR_SEARCH','X', SearchBar.FloatingPosition.X);
-    ini.WriteInteger('TOOLBAR_SEARCH','Y', SearchBar.FloatingPosition.Y);
-    ini.WriteInteger('TOOLBAR_SEARCH','Pos', SearchBar.DockPos);
-    ini.WriteInteger('TOOLBAR_SEARCH','Row', SearchBar.DockRow);
+    ini.WriteBool('TOOLBAR_SEARCH', 'Visible', SearchBar.Visible);
+    ini.WriteInteger('TOOLBAR_SEARCH', 'Dock', GetDock(SearchBar));
+    ini.WriteInteger('TOOLBAR_SEARCH', 'X', SearchBar.FloatingPosition.X);
+    ini.WriteInteger('TOOLBAR_SEARCH', 'Y', SearchBar.FloatingPosition.Y);
+    ini.WriteInteger('TOOLBAR_SEARCH', 'Pos', SearchBar.DockPos);
+    ini.WriteInteger('TOOLBAR_SEARCH', 'Row', SearchBar.DockRow);
 
-    ini.WriteBool('TOOLBAR_COMPILER','Visible', CompilerBar.Visible);
-    ini.WriteInteger('TOOLBAR_COMPILER','Dock', GetDock(CompilerBar));
-    ini.WriteInteger('TOOLBAR_COMPILER','X', CompilerBar.FloatingPosition.X);
-    ini.WriteInteger('TOOLBAR_COMPILER','Y', CompilerBar.FloatingPosition.Y);
-    ini.WriteInteger('TOOLBAR_COMPILER','Pos', CompilerBar.DockPos);
-    ini.WriteInteger('TOOLBAR_COMPILER','Row', CompilerBar.DockRow);
+    ini.WriteBool('TOOLBAR_COMPILER', 'Visible', CompilerBar.Visible);
+    ini.WriteInteger('TOOLBAR_COMPILER', 'Dock', GetDock(CompilerBar));
+    ini.WriteInteger('TOOLBAR_COMPILER', 'X', CompilerBar.FloatingPosition.X);
+    ini.WriteInteger('TOOLBAR_COMPILER', 'Y', CompilerBar.FloatingPosition.Y);
+    ini.WriteInteger('TOOLBAR_COMPILER', 'Pos', CompilerBar.DockPos);
+    ini.WriteInteger('TOOLBAR_COMPILER', 'Row', CompilerBar.DockRow);
 
-    ini.WriteBool('TOOLBAR_NAVIGATOR','Visible', NavigatorBar.Visible);
-    ini.WriteInteger('TOOLBAR_NAVIGATOR','Dock', GetDock(NavigatorBar));
-    ini.WriteInteger('TOOLBAR_NAVIGATOR','X', NavigatorBar.FloatingPosition.X);
-    ini.WriteInteger('TOOLBAR_NAVIGATOR','Y', NavigatorBar.FloatingPosition.Y);
-    ini.WriteInteger('TOOLBAR_NAVIGATOR','Pos', NavigatorBar.DockPos);
-    ini.WriteInteger('TOOLBAR_NAVIGATOR','Row', NavigatorBar.DockRow);
+    ini.WriteBool('TOOLBAR_NAVIGATOR', 'Visible', NavigatorBar.Visible);
+    ini.WriteInteger('TOOLBAR_NAVIGATOR', 'Dock', GetDock(NavigatorBar));
+    ini.WriteInteger('TOOLBAR_NAVIGATOR', 'X', NavigatorBar.FloatingPosition.X);
+    ini.WriteInteger('TOOLBAR_NAVIGATOR', 'Y', NavigatorBar.FloatingPosition.Y);
+    ini.WriteInteger('TOOLBAR_NAVIGATOR', 'Pos', NavigatorBar.DockPos);
+    ini.WriteInteger('TOOLBAR_NAVIGATOR', 'Row', NavigatorBar.DockRow);
 
-    ini.WriteBool('TOOLBAR_PROJECT','Visible', ProjectBar.Visible);
-    ini.WriteInteger('TOOLBAR_PROJECT','Dock', GetDock(ProjectBar));
-    ini.WriteInteger('TOOLBAR_PROJECT','X', ProjectBar.FloatingPosition.X);
-    ini.WriteInteger('TOOLBAR_PROJECT','Y', ProjectBar.FloatingPosition.Y);
-    ini.WriteInteger('TOOLBAR_PROJECT','Pos', ProjectBar.DockPos);
-    ini.WriteInteger('TOOLBAR_PROJECT','Row', ProjectBar.DockRow);
+    ini.WriteBool('TOOLBAR_PROJECT', 'Visible', ProjectBar.Visible);
+    ini.WriteInteger('TOOLBAR_PROJECT', 'Dock', GetDock(ProjectBar));
+    ini.WriteInteger('TOOLBAR_PROJECT', 'X', ProjectBar.FloatingPosition.X);
+    ini.WriteInteger('TOOLBAR_PROJECT', 'Y', ProjectBar.FloatingPosition.Y);
+    ini.WriteInteger('TOOLBAR_PROJECT', 'Pos', ProjectBar.DockPos);
+    ini.WriteInteger('TOOLBAR_PROJECT', 'Row', ProjectBar.DockRow);
 
-    ini.WriteBool('TOOLBAR_HELP','Visible', HelpBar.Visible);
-    ini.WriteInteger('TOOLBAR_HELP','Dock', GetDock(HelpBar));
-    ini.WriteInteger('TOOLBAR_HELP','X', HelpBar.FloatingPosition.X);
-    ini.WriteInteger('TOOLBAR_HELP','Y', HelpBar.FloatingPosition.Y);
-    ini.WriteInteger('TOOLBAR_HELP','Pos', HelpBar.DockPos);
-    ini.WriteInteger('TOOLBAR_HELP','Row', HelpBar.DockRow);
+    ini.WriteBool('TOOLBAR_HELP', 'Visible', HelpBar.Visible);
+    ini.WriteInteger('TOOLBAR_HELP', 'Dock', GetDock(HelpBar));
+    ini.WriteInteger('TOOLBAR_HELP', 'X', HelpBar.FloatingPosition.X);
+    ini.WriteInteger('TOOLBAR_HELP', 'Y', HelpBar.FloatingPosition.Y);
+    ini.WriteInteger('TOOLBAR_HELP', 'Pos', HelpBar.DockPos);
+    ini.WriteInteger('TOOLBAR_HELP', 'Row', HelpBar.DockRow);
 
-    ini.WriteBool('TOOLBAR_DEBUG','Visible', DebugBar.Visible);
-    ini.WriteInteger('TOOLBAR_DEBUG','Dock', GetDock(DebugBar));
-    ini.WriteInteger('TOOLBAR_DEBUG','X', DebugBar.FloatingPosition.X);
-    ini.WriteInteger('TOOLBAR_DEBUG','Y', DebugBar.FloatingPosition.Y);
-    ini.WriteInteger('TOOLBAR_DEBUG','Pos', DebugBar.DockPos);
-    ini.WriteInteger('TOOLBAR_DEBUG','Row', DebugBar.DockRow);
+    ini.WriteBool('TOOLBAR_DEBUG', 'Visible', DebugBar.Visible);
+    ini.WriteInteger('TOOLBAR_DEBUG', 'Dock', GetDock(DebugBar));
+    ini.WriteInteger('TOOLBAR_DEBUG', 'X', DebugBar.FloatingPosition.X);
+    ini.WriteInteger('TOOLBAR_DEBUG', 'Y', DebugBar.FloatingPosition.Y);
+    ini.WriteInteger('TOOLBAR_DEBUG', 'Pos', DebugBar.DockPos);
+    ini.WriteInteger('TOOLBAR_DEBUG', 'Row', DebugBar.DockRow);
 
     //Tab Orientation
     if PageControlEditor.TabPosition = mtpTop then
-      ini.WriteString('TABS','Orientation', 'Top')
+      ini.WriteString('TABS', 'Orientation', 'Top')
     else
-      ini.WriteString('TABS','Orientation', 'Bottom');
+      ini.WriteString('TABS', 'Orientation', 'Bottom');
   end;
   with Editor do
   begin

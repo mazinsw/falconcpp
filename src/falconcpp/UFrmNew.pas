@@ -64,7 +64,7 @@ var
   sheet: TProjectsSheet;
 begin
   List := TList.Create;
-  for I := FraProjs.PageControl.PageCount - 1 downto  0 do
+  for I := FraProjs.PageControl.PageCount - 1 downto 0 do
   begin
     sheet := TProjectsSheet(FraProjs.PageControl.Pages[I]);
     for J := sheet.ListView.Items.Count - 1 downto 0 do
@@ -78,7 +78,7 @@ begin
         List.Add(newitem);
         if Assigned(temp.ListImage) then
         begin
-          if Assigned(newitem.ListImage) then//replace image
+          if Assigned(newitem.ListImage) then //replace image
           begin
             FraProjs.ImageList.ReplaceMasked(Item.ImageIndex,
               newitem.ListImage, 0);
@@ -86,7 +86,7 @@ begin
         end
         else
         begin
-          if Assigned(newitem.ListImage) then//replace image
+          if Assigned(newitem.ListImage) then //replace image
           begin
             Item.ImageIndex := FraProjs.ImageList.AddMasked(newitem.ListImage,
               0);
@@ -130,12 +130,12 @@ begin
     end;
   end;
 
-  for I:= Templates.Count - 1 downto 0 do
+  for I := Templates.Count - 1 downto 0 do
   begin
     if List.IndexOf(Templates.Templates[I]) >= 0 then
       Continue;
     Item := FraProjs.GetListViewOfSheet(
-            Templates.Templates[I].Sheet).Items.Add;
+      Templates.Templates[I].Sheet).Items.Add;
 
     Item.Caption := Templates.Templates[I].Caption;
     if Assigned(Templates.Templates[I].ListImage) then
@@ -169,10 +169,10 @@ begin
   Bitmap.Free;
   FraProjs.Parent := PainelFra;
   FraProjs.LastItemIndex := -1;
-  for I:= 0 to Pred(FrmFalconMain.Templates.Count) do
+  for I := 0 to Pred(FrmFalconMain.Templates.Count) do
   begin
     Item := FraProjs.GetListViewOfSheet(
-            FrmFalconMain.Templates.Templates[I].Sheet).Items.Add;
+      FrmFalconMain.Templates.Templates[I].Sheet).Items.Add;
     Item.Caption := FrmFalconMain.Templates.Templates[I].Caption;
     if Assigned(FrmFalconMain.Templates.Templates[I].ListImage) then
       Item.ImageIndex := FraProjs.ImageList.AddMasked(
@@ -192,7 +192,7 @@ begin
   BtnCan.Caption := STR_FRM_PROP[15];
   //FraProj
   FraProjs.GrBoxDesc.Caption := STR_FRM_NEW_PROJ[5];
-  FraProjs.LblWidz.Caption :=  STR_FRM_NEW_PROJ[6];
+  FraProjs.LblWidz.Caption := STR_FRM_NEW_PROJ[6];
   //FraPrjOpt
   FraPrjOpt.GrbApp.Caption := STR_FRM_PROP[1];
   FraPrjOpt.ImgIcon.Hint := STR_FRM_PROP[9];
@@ -220,7 +220,7 @@ var
 begin
   Page := pwOpt;
   Template := TProjectsSheet(
-              FraProjs.PageControl.ActivePage).ListView.Selected.Data;
+    FraProjs.PageControl.ActivePage).ListView.Selected.Data;
   FraPrjOpt.Parent := PainelFra;
   ProjTemp := Template;
   if Assigned(Template) then
@@ -286,15 +286,15 @@ var
   Node: TTreeNode;
   NewPrj: TProjectProperty;
   NewFile, OwnerFile: TFileProperty;
-  FileName, SrcFileName, SrcDir, FolderName: String;
-  Optmz: String;
+  FileName, SrcFileName, SrcDir, FolderName: string;
+  Optmz: string;
   Template: TTemplate;
   Version: TVersionInfo;
   Ver: TVersion;
   I: Integer;
   FileText: TStrings;
   FileType: Integer;
-  AddLibs: String;
+  AddLibs: string;
   TemFiles: TTemplateFiles;
   DoOverr: Boolean;
   sheet: TProjectsSheet;
@@ -308,14 +308,17 @@ begin
   if (Page = pwProj) then
   begin
     sheet := TProjectsSheet(FraProjs.PageControl.ActivePage);
-    if not Assigned(sheet) then Exit;
-    if not Assigned(sheet.ListView.Selected) then Exit;
+    if not Assigned(sheet) then
+      Exit;
+    if not Assigned(sheet.ListView.Selected) then
+      Exit;
     Template := TTemplate(sheet.ListView.Selected.Data);
   end
   else
     Template := ProjTemp;
   AddLibs := '';
-  if not Assigned(Template) then Exit;
+  if not Assigned(Template) then
+    Exit;
   //set resources
   if Template.Resources.Count > 0 then
     NewPrj.TemplateResources := Template.Resources.CreateTemplateID;
@@ -336,10 +339,10 @@ begin
   NewPrj.AppType := Template.AppType;
   case Template.AppType of
     APPTYPE_GUI:
-    begin
-      AddLibs := '-mwindows ';
-      NewPrj.EnableTheme := True;
-    end;
+      begin
+        AddLibs := '-mwindows ';
+        NewPrj.EnableTheme := True;
+      end;
     APPTYPE_DLL: AddLibs := '-shared -Wl,--add-stdcall-alias ';
   end;
   NewPrj.Libs := AddLibs + Template.Libs;
@@ -362,7 +365,8 @@ begin
       Version.ProductVersion := FraPrjOpt.EditVer.Text;
       Ver := ParseVersion(FraPrjOpt.EditVer.Text);
       Version.Major := Ver.Major;
-      Version.Minor := Ver.Minor;;
+      Version.Minor := Ver.Minor;
+      ;
       Version.Release := Ver.Release;
       Version.Build := Ver.Build;
       Version.FileDescription := FraPrjOpt.EditDesc.Text;
@@ -371,9 +375,12 @@ begin
     FileName := FrmFalconMain.Config.Environment.ProjectsDir +
       ExtractName(FraPrjOpt.EditProjName.Text) + '.fpj';
     Optmz := '';
-    if FraPrjOpt.CHBShowWar.Checked then Optmz := '-Wall';
-    if FraPrjOpt.CHBMinSize.Checked then Optmz := Optmz + ' -s';
-    if FraPrjOpt.CHBMinSize.Checked then Optmz := Optmz + ' -O2';
+    if FraPrjOpt.CHBShowWar.Checked then
+      Optmz := '-Wall';
+    if FraPrjOpt.CHBMinSize.Checked then
+      Optmz := Optmz + ' -s';
+    if FraPrjOpt.CHBMinSize.Checked then
+      Optmz := Optmz + ' -O2';
     NewPrj.CompilerOptions := Trim(Optmz);
   end
   else
@@ -393,12 +400,12 @@ begin
       if Template.CppSourceFiles.Count > 0 then
         TemFiles := Template.CppSourceFiles;
     end;
-    for I:= 0 to Pred(TemFiles.Count) do
+    for I := 0 to Pred(TemFiles.Count) do
     begin
-      SrcFileName :=  ConvertSlashes(TemFiles.FileName[I]);
+      SrcFileName := ConvertSlashes(TemFiles.FileName[I]);
       FileType := GetFileType(SrcFileName);
       if (FileType = FILE_TYPE_C) and (NewPrj.CompilerType = COMPILER_CPP)
-         and DoOverr then
+        and DoOverr then
       begin
         SrcFileName := ChangeFileExt(SrcFileName, '.cpp');
         FileType := FILE_TYPE_CPP;
@@ -416,20 +423,17 @@ begin
         SrcDir := ExtractFilePath(SrcDir);
       end;
       //add file
-      NewFile := NewFileProperty(
-                                 FileType,
-                                 GetCompiler(FileType),
-                                 SrcFileName,
-                                 ExtractName(
-                                  SrcFileName),
-                                 ExtractFileExt(
-                                   SrcFileName),
-                                 '',
-                                 OwnerFile);
+      NewFile := NewSourceFile(FileType,
+        GetCompiler(FileType),
+        SrcFileName,
+        ExtractName(SrcFileName),
+        ExtractFileExt(SrcFileName),
+        '',
+        OwnerFile,
+        False, False, False);
       FileText := TemFiles.SourceFile[I];
       NewFile.Edit.Memo.Lines.Assign(FileText);
       FileText.Free;
-      NewFile.Modified := False;
     end;
   end;
   case NewPrj.AppType of
@@ -438,8 +442,7 @@ begin
   else
     NewPrj.Target := ExtractName(FileName) + '.exe';
   end;
-  NewPrj.Modified := False;
-  Node.Text := NewPrj.Caption;
+  Node.Text := NewPrj.Name;
   Node.Selected := True;
   Node.Focused := True;
   FrmFalconMain.IsLoading := False;

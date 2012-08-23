@@ -21,7 +21,7 @@ type
     PageControl: TModernPageControl;
     procedure ProjectListSelectItem(Sender: TObject; Item: TListItem;
       Selected: Boolean);
-    function GetListViewOfSheet(SheetCaption: String): TListView;
+    function GetListViewOfSheet(SheetCaption: string): TListView;
     procedure ProjectListDblClick(Sender: TObject);
     procedure ProjectListMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
@@ -43,12 +43,12 @@ uses UFrmNew, UTemplates, UFileProperty;
 
 {$R *.dfm}
 
-function TFraProjs.GetListViewOfSheet(SheetCaption: String): TListView;
+function TFraProjs.GetListViewOfSheet(SheetCaption: string): TListView;
 var
   I: Integer;
   NewPage: TProjectsSheet;
 begin
-  for I:= 0 to Pred(PageControl.PageCount) do
+  for I := 0 to Pred(PageControl.PageCount) do
   begin
     if (PageControl.Pages[I].Caption = SheetCaption) then
     begin
@@ -113,7 +113,8 @@ var
   Tmplt: TTemplate;
   ListV: TListView;
 begin
-  if not Assigned(Sender) then Exit;
+  if not Assigned(Sender) then
+    Exit;
   if (Sender is TListView) then
     Item := TListView(Sender).GetItemAt(X, Y)
   else
@@ -157,13 +158,14 @@ begin
             ImageProj.Picture.Icon := Tmplt.Icon
           else
             ImageProj.Picture.Icon.LoadFromStream(
-               TResourceStream.Create(HInstance, 'ICONFAL', RT_RCDATA));
+              TResourceStream.Create(HInstance, 'ICONFAL', RT_RCDATA));
         end;
       end;
     end
     else
     begin
-      if not Assigned(PageControl.ActivePage) then Exit;
+      if not Assigned(PageControl.ActivePage) then
+        Exit;
       ListV := TProjectsSheet(PageControl.ActivePage).ListView;
       if not (ListV.SelCount > 0) then
       begin
@@ -172,19 +174,18 @@ begin
         MemoCap.Clear;
         MemoDesc.Clear;
       end
-      else
-        if (LastItemIndex <> ListV.Selected.Index) then
-        begin
-          Tmplt := TTemplate(ListV.Selected.Data);
-          MemoCap.Text := Tmplt.Caption;
-          MemoDesc.Text := Tmplt.Description;
-          LastItemIndex := ListV.Selected.Index;
-          if Assigned(Tmplt.Icon) then
-            ImageProj.Picture.Icon := Tmplt.Icon
-          else
-            ImageProj.Picture.Icon.LoadFromStream(
-              TResourceStream.Create(HInstance, 'ICONFAL', RT_RCDATA));
-        end;
+      else if (LastItemIndex <> ListV.Selected.Index) then
+      begin
+        Tmplt := TTemplate(ListV.Selected.Data);
+        MemoCap.Text := Tmplt.Caption;
+        MemoDesc.Text := Tmplt.Description;
+        LastItemIndex := ListV.Selected.Index;
+        if Assigned(Tmplt.Icon) then
+          ImageProj.Picture.Icon := Tmplt.Icon
+        else
+          ImageProj.Picture.Icon.LoadFromStream(
+            TResourceStream.Create(HInstance, 'ICONFAL', RT_RCDATA));
+      end;
     end;
   end;
 end;

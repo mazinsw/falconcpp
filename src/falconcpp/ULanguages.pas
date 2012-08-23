@@ -8,9 +8,9 @@ uses
 
 const
   APS = '''';
-  
+
   MAX_MENUS = 8;
-  CONST_STR_MENUS: array[1..MAX_MENUS] of String = (
+  CONST_STR_MENUS: array[1..MAX_MENUS] of string = (
   //Top Menu
     '&File',
     '&Edit',
@@ -20,10 +20,10 @@ const
     '&Run',
     '&Tools',
     '&Help'
-  );
+    );
 
   MAX_MENU_FILE = 18;
-  CONST_STR_MENU_FILE: array[1..MAX_MENU_FILE] of String = (
+  CONST_STR_MENU_FILE: array[1..MAX_MENU_FILE] of string = (
   //File Menu
     '&New',
     '&Open...',
@@ -43,9 +43,9 @@ const
     '&Print',
     '',
     '&Exit'
-  );
+    );
   MAX_MENU_EDIT = 19;
-  CONST_STR_MENU_EDIT: array[1..MAX_MENU_EDIT] of String = (
+  CONST_STR_MENU_EDIT: array[1..MAX_MENU_EDIT] of string = (
   //Edit Menu
     'Undo',
     'Redo',
@@ -66,10 +66,10 @@ const
     'Unindent',
     '',
     'Format'
-  );
+    );
 
   MAX_MENU_SERH = 11;
-  CONST_STR_MENU_SERH: array[1..MAX_MENU_SERH] of String  = (
+  CONST_STR_MENU_SERH: array[1..MAX_MENU_SERH] of string = (
   //Search Menu
     'Find...',
     'Find Next',
@@ -82,10 +82,10 @@ const
     'Goto Previous Function',
     'Goto Next Function',
     'Goto Line Number...'
-  );
+    );
 
   MAX_MENU_VIEW = 11;
-  CONST_STR_MENU_VIEW: array[1..MAX_MENU_VIEW] of String  = (
+  CONST_STR_MENU_VIEW: array[1..MAX_MENU_VIEW] of string = (
   //View Menu
     'Project Manager',
     'Statusbar',
@@ -98,10 +98,10 @@ const
     'Full Screen',
     '',
     'Restore Default'
-  );
+    );
 
   MAX_MENU_PROJ = 6;
-  CONST_STR_MENU_PROJ: array[1..MAX_MENU_PROJ] of String = (
+  CONST_STR_MENU_PROJ: array[1..MAX_MENU_PROJ] of string = (
   //Project Menu
     'Add...',
     'Remove...',
@@ -109,10 +109,10 @@ const
     'Build',
     '',
     'Properties...'
-  );
+    );
 
   MAX_MENU_RUN = 10;
-  CONST_STR_MENU_RUN : array[1..MAX_MENU_RUN] of String = (
+  CONST_STR_MENU_RUN: array[1..MAX_MENU_RUN] of string = (
   //Run Menu
     'Run',
     'Compile',
@@ -124,10 +124,10 @@ const
     'Step Return',
     'Run to Cursor',
     'Stop'
-  );
+    );
 
   MAX_MENU_TOOL = 8;
-  CONST_STR_MENU_TOOL: array[1..MAX_MENU_TOOL] of String = (
+  CONST_STR_MENU_TOOL: array[1..MAX_MENU_TOOL] of string = (
   //Tools Menu
     'Environment Options...',
     'Compiler Options',
@@ -137,10 +137,10 @@ const
     'Package Creator...',
     '',
     'Packages'
-  );
+    );
 
   MAX_MENU_HELP = 6;
-  CONST_STR_MENU_HELP: array[1..MAX_MENU_HELP] of String = (
+  CONST_STR_MENU_HELP: array[1..MAX_MENU_HELP] of string = (
   //Help Menu
     'Falcon Help',
     'Tip of the Day...',
@@ -148,10 +148,10 @@ const
     'Update',
     '',
     'About...'
-  );
+    );
 
   MAX_NEW_MENU = 8;
-  CONST_STR_NEW_MENU: array[1..MAX_NEW_MENU] of String  = (
+  CONST_STR_NEW_MENU: array[1..MAX_NEW_MENU] of string = (
   //New From Menu File
     '&Project...',
     'C File',
@@ -161,18 +161,18 @@ const
     'Empty File',
     '',
     'Folder'
-  );
+    );
 
   MAX_IMPORT_MENU = 3;
-  CONST_STR_IMPORT_MENU: array[1..MAX_IMPORT_MENU] of String  = (
+  CONST_STR_IMPORT_MENU: array[1..MAX_IMPORT_MENU] of string = (
   //Import From Menu File
     'Dev-C++ Project',
     'Code::Blocks Project',
     'MS Visual C++ Project'
-  );
+    );
 
   MAX_VIEWTOOLBAR_MENU = 8;
-  CONST_STR_VIEWTOOLBAR_MENU: array[1..MAX_VIEWTOOLBAR_MENU] of String = (
+  CONST_STR_VIEWTOOLBAR_MENU: array[1..MAX_VIEWTOOLBAR_MENU] of string = (
     'Default Bar',
     'Edit Bar',
     'Search Bar',
@@ -181,10 +181,10 @@ const
     'Project Bar',
     'Help Bar',
     'Debug Bar'
-  );
+    );
 
   MAX_DEFAULTBAR = 6;
-  CONST_STR_DEFAULTBAR: array[1..MAX_DEFAULTBAR] of String = (
+  CONST_STR_DEFAULTBAR: array[1..MAX_DEFAULTBAR] of string = (
   //DefaultBar
     'New',
     'Open',
@@ -192,68 +192,68 @@ const
     '',
     'Save',
     'Save All'
-  );
+    );
 
   MAX_EDITBAR = 2;
-  CONST_STR_EDITBAR: array[1..MAX_EDITBAR] of String = (
+  CONST_STR_EDITBAR: array[1..MAX_EDITBAR] of string = (
   //EditBar
     'Undo',
     'Redo'
-  );
+    );
 
   MAX_NAVIGATORBAR = 5;
-  CONST_STR_NAVIGATORBAR: array[1..MAX_NAVIGATORBAR] of String = (
+  CONST_STR_NAVIGATORBAR: array[1..MAX_NAVIGATORBAR] of string = (
   //NavigatorBar
     'Previous Page',
     'Next Page',
     '',
     'Toggle Bookmarks',
     'Goto Bookmarks'
-  );
+    );
 
   MAX_COMPILERBAR = 5;
-  CONST_STR_COMPILERBAR: array[1..MAX_COMPILERBAR] of String = (
+  CONST_STR_COMPILERBAR: array[1..MAX_COMPILERBAR] of string = (
   //CompilerBar
     'Run',
     'Compile',
     'Execute',
     '',
     'Stop'
-  );
+    );
 
   MAX_HELPBAR = 2;
-  CONST_STR_HELPBAR: array[1..MAX_HELPBAR] of String = (
+  CONST_STR_HELPBAR: array[1..MAX_HELPBAR] of string = (
   //HelpBar
     'Help',
     'Context Help'
-  );
+    );
 
   MAX_PROJECTBAR = 2;
-  CONST_STR_PROJECTBAR: array[1..MAX_PROJECTBAR] of String = (
+  CONST_STR_PROJECTBAR: array[1..MAX_PROJECTBAR] of string = (
   //ProjectBar
     'New Project',
     'Properties'
-  );
+    );
 
   MAX_DEBUGBAR = 3;
-  CONST_STR_DEBUGBAR: array[1..MAX_DEBUGBAR] of String = (
+  CONST_STR_DEBUGBAR: array[1..MAX_DEBUGBAR] of string = (
   //DebugBar
     'Step Into',
     'Step Over',
     'Step Return'
-  );
+    );
 
   MAX_SEARCHBAR = 4;
-  CONST_STR_SEARCHBAR: array[1..MAX_SEARCHBAR] of String = (
+  CONST_STR_SEARCHBAR: array[1..MAX_SEARCHBAR] of string = (
   //SearchBar
     'Find',
     'Replace',
     '',
     'Goto Line Number'
-  );
+    );
 
   MAX_POPUP_PROJ = 11;
-  CONST_STR_POPUP_PROJ: array[1..MAX_POPUP_PROJ] of String  = (
+  CONST_STR_POPUP_PROJ: array[1..MAX_POPUP_PROJ] of string = (
   //PopupMenu from Project List
     '&New',
     '',
@@ -266,10 +266,10 @@ const
     'Delete from disk',
     '',
     'Property...'
-  );
+    );
 
   MAX_POPUP_EDITOR = 20;
-  CONST_STR_POPUP_EDITOR: array[1..MAX_POPUP_EDITOR] of String  = (
+  CONST_STR_POPUP_EDITOR: array[1..MAX_POPUP_EDITOR] of string = (
   //PopupMenu from Editor
     'Open declaration',
     '',
@@ -291,10 +291,10 @@ const
     'Goto Bookmarks',
     '',
     'Properties...'
-  );
+    );
 
   MAX_POPUP_TABS = 13;
-  CONST_STR_POPUP_TABS: array[1..MAX_POPUP_TABS] of String  = (
+  CONST_STR_POPUP_TABS: array[1..MAX_POPUP_TABS] of string = (
   //PopupMenu from PageControl
     '&Close',
     'Close &all',
@@ -309,10 +309,10 @@ const
     'Tabs at bottom',
     '',
     'Properties...'
-  );
+    );
 
   MAX_POPUP_MSGS = 7;
-  CONST_STR_POPUP_MSGS: array[1..MAX_POPUP_MSGS] of String  = (
+  CONST_STR_POPUP_MSGS: array[1..MAX_POPUP_MSGS] of string = (
   //PopupMenu from Messages
     'Copy',
     'Copy original message',
@@ -321,10 +321,10 @@ const
     '',
     'Goto line',
     'Clear'
-  );
-  
+    );
+
   MAX_FRM_MAIN = 50;
-  CONST_STR_FRM_MAIN: array[1..MAX_FRM_MAIN] of String  = (
+  CONST_STR_FRM_MAIN: array[1..MAX_FRM_MAIN] of string = (
     //Tabs Left
     'Projects',
     'Explorer',
@@ -379,12 +379,12 @@ const
     'Can''t import %s project!',
     '%s Project',
     'This file has been modified by another program.'#13 +
-      'Do you want to reload it?',
+    'Do you want to reload it?',
     'Variables'
-  );
+    );
 
   MAX_FRM_PROP = 70;
-  CONST_STR_FRM_PROP: array[1..MAX_FRM_PROP] of String  = (
+  CONST_STR_FRM_PROP: array[1..MAX_FRM_PROP] of string = (
     //Properties Form
     'Application',
     'Version Info',
@@ -463,10 +463,10 @@ const
     'Connect',
     'Select folder to include',
     'Edit selected'
-  );
+    );
 
   MAX_FRM_NEW_PROJ = 12;
-  CONST_STR_FRM_NEW_PROJ: array[1..MAX_FRM_NEW_PROJ] of String  = (
+  CONST_STR_FRM_NEW_PROJ: array[1..MAX_FRM_NEW_PROJ] of string = (
     //New Project Form
     'New Project',
     '< Back',
@@ -482,10 +482,10 @@ const
     'Version',
     'Product Name',
     'Name'
-  );
+    );
 
   MAX_FRM_FIND = 34;
-  CONST_STR_FRM_FIND: array[1..MAX_FRM_FIND] of String  = (
+  CONST_STR_FRM_FIND: array[1..MAX_FRM_FIND] of string = (
     //New Project Form
     'Find and replace',
     '&Find',
@@ -521,10 +521,10 @@ const
     'Stop',
     'Find ''%s'' in file ''%s''',
     'Found ''%s'' in line %d, column %d'
-  );
+    );
 
   MAX_FRM_EDITOR_OPT = 137;
-  CONST_STR_FRM_EDITOR_OPT: array[1..MAX_FRM_EDITOR_OPT] of String  = (
+  CONST_STR_FRM_EDITOR_OPT: array[1..MAX_FRM_EDITOR_OPT] of string = (
     'Editor Options',
   //General Sheet
     'General',
@@ -597,26 +597,26 @@ const
     //hints
     'Indent using tab characters.',
     'Indent ''class'' and ''struct'' blocks so that the blocks ''public:''' +
-      ', ''protected:'' and ''private:'' are indented. The struct blocks' +
-      ' are'#13'indented only if an access modifier is declared somewhere ' +
-      'in the struct. The entire block is indented. This option is '#13 +
-      'effective for C++ files only.',
+    ', ''protected:'' and ''private:'' are indented. The struct blocks' +
+    ' are'#13'indented only if an access modifier is declared somewhere ' +
+    'in the struct. The entire block is indented. This option is '#13 +
+    'effective for C++ files only.',
     'Indent ''switch'' blocks so that the ''case X:'' statements are ' +
-      'indented in the switch block. The entire case block is indented.',
+    'indented in the switch block. The entire case block is indented.',
     'Indent ''case X:'' blocks from the ''case X:'' headers. Case statements' +
-      ' not enclosed in blocks are NOT indented.',
+    ' not enclosed in blocks are NOT indented.',
     'Add extra indentation to namespace blocks.',
     'Add extra indentation to labels so they appear 1 indent less than the ' +
-      'current indentation, '#13'rather than being flushed to the left (the' +
-      ' default).',
+    'current indentation, '#13'rather than being flushed to the left (the' +
+    ' default).',
     'Indent multi-line preprocessor definitions ending with a backslash. ' +
-      'Should be used with --convert-tabs for proper results. '#13'Does a' +
-      ' pretty good job, but cannot perform miracles in obfuscated ' +
-      'preprocessor definitions. Without this option the '#13'preprocessor ' +
-      'statements remain unchanged.',
+    'Should be used with --convert-tabs for proper results. '#13'Does a' +
+    ' pretty good job, but cannot perform miracles in obfuscated ' +
+    'preprocessor definitions. Without this option the '#13'preprocessor ' +
+    'statements remain unchanged.',
     'Indent C++ comments beginning in column one. By default C++ comments ' +
-      'beginning in column one are not indented. '#13'This option will ' +
-      'allow the comments to be indented with the code.',
+    'beginning in column one are not indented. '#13'This option will ' +
+    'allow the comments to be indented with the code.',
     //Padding sheet
     'Padding',
     'Pad empty lines around header blocks (''if'', ''while'', ..)',
@@ -630,24 +630,24 @@ const
     'Fill empty lines with the whitespace of their previous lines',
     //hints
     'Pad empty lines around header blocks (e.g. ''if'', ''for'', ''while''...).',
-    'Pad empty lines around header blocks (e.g. ''if'', ''for'', ''while''...).'+
-      ' Treat closing header blocks (e.g. ''else'', ''catch'') as '#13 +
-      'stand-alone blocks.',
+    'Pad empty lines around header blocks (e.g. ''if'', ''for'', ''while''...).' +
+    ' Treat closing header blocks (e.g. ''else'', ''catch'') as '#13 +
+    'stand-alone blocks.',
     'Insert space padding around operators. Any end of line comments will ' +
-      'remain in the original column, if possible. '#13'Note that there is' +
-      ' no option to unpad. Once padded, they stay padded.',
+    'remain in the original column, if possible. '#13'Note that there is' +
+    ' no option to unpad. Once padded, they stay padded.',
     'Insert space padding around parenthesis on the outside only. Any end ' +
-      'of line comments will remain in the original column, '#13'if possible.',
+    'of line comments will remain in the original column, '#13'if possible.',
     'Insert space padding around parenthesis on the inside only. Any end of ' +
-      'line comments will remain in the original column, '#13'if possible.',
+    'line comments will remain in the original column, '#13'if possible.',
     'Insert space padding after paren headers only (e.g. ''if'', ''for'', ' +
-      '''while''...). Any end of line comments will remain in the '#13 +
-      'original column, if possible.',
+    '''while''...). Any end of line comments will remain in the '#13 +
+    'original column, if possible.',
     'Remove extra space padding around parenthesis on the inside and outside.' +
-      ' Any end of line comments will remain in the '#13'original column, ' +
-      'if possible.',
+    ' Any end of line comments will remain in the '#13'original column, ' +
+    'if possible.',
     'Delete empty lines within a function or method. Empty lines outside of ' +
-      'functions or methods are NOT deleted.',
+    'functions or methods are NOT deleted.',
     'Fill empty lines with the white space of the previous line.',
     //Formatting
     'Formatting',
@@ -662,46 +662,46 @@ const
     'Add one line brackets',
     'Don''t break one-line blocks',
     'Don''t break complex statements and multiple statements residing in a ' +
-      'single line',
+    'single line',
     'Convert TABs to spaces',
     //hints
     'When used with brackets=attach, brackets=linux, this breaks closing ' +
-      'headers (e.g. ''else'', ''catch'', ...) from their'#13'immediately ' +
-      'preceding closing brackets. Closing header brackets are always broken' +
-      ' with broken brackets, horstmann '#13'brackets, indented blocks, and ' +
-      'indented brackets.',
+    'headers (e.g. ''else'', ''catch'', ...) from their'#13'immediately ' +
+    'preceding closing brackets. Closing header brackets are always broken' +
+    ' with broken brackets, horstmann '#13'brackets, indented blocks, and ' +
+    'indented brackets.',
     'Break "else if" header combinations into separate lines. This option has' +
-      ' no effect if keep one line statements is used, the'#13'"else if" ' +
-      'statements will remain as they are.'#13'If this option is NOT used, ' +
-      '"else if" header combinations will be placed on a single line.',
+    ' no effect if keep one line statements is used, the'#13'"else if" ' +
+    'statements will remain as they are.'#13'If this option is NOT used, ' +
+    '"else if" header combinations will be placed on a single line.',
     'Add brackets to unbracketed one line conditional statements (e.g. ''if''' +
-      ''', ''for'', ''while''...). The statement must be on a single '#13 +
-      'line. The brackets will be added according to the currently requested ' +
-      'predefined style or bracket type. If no style or '#13'bracket type is ' +
-      'requested the brackets will be attached. If add one line brackets is ' +
-      'also used the result will be one line '#13'brackets.',
+    ''', ''for'', ''while''...). The statement must be on a single '#13 +
+    'line. The brackets will be added according to the currently requested ' +
+    'predefined style or bracket type. If no style or '#13'bracket type is ' +
+    'requested the brackets will be attached. If add one line brackets is ' +
+    'also used the result will be one line '#13'brackets.',
     'Add one line brackets to unbracketed one line conditional statements  ' +
-      '(e.g. ''if'', ''for'', ''while''...). The statement must be on'#13'a ' +
-      'single line. The option implies keep one line blocks and will not ' +
-      'break the one line blocks.',
+    '(e.g. ''if'', ''for'', ''while''...). The statement must be on'#13'a ' +
+    'single line. The option implies keep one line blocks and will not ' +
+    'break the one line blocks.',
     'Don''t break one-line blocks.',
     'Don''t break complex statements and multiple statements residing on a ' +
-      'single line.',
+    'single line.',
     'Converts tabs into spaces in the non-indentation part of the line. The ' +
-      'number of spaces inserted will maintain the spacing '#13'of the tab. ' +
-      'The current setting for spaces per tab is used. It may not produce ' +
-      'the expected results if convert-tabs is used'#13'when changing spaces' +
-      ' per tab. Tabs are not replaced in quotes.',
+    'number of spaces inserted will maintain the spacing '#13'of the tab. ' +
+    'The current setting for spaces per tab is used. It may not produce ' +
+    'the expected results if convert-tabs is used'#13'when changing spaces' +
+    ' per tab. Tabs are not replaced in quotes.',
     'Pointer align:',
     'None',
     'Type',
     'Middle',
     'Name',
     'Attach a pointer or reference operator (* or &) to either the variable' +
-      ' type (left) or variable name (right), or place it'#13'between the ' +
-      'type and name (middle). The spacing between the type and name will ' +
-      'be preserved, if possible. To format'#13'references separately use ' +
-      'the following align-reference option.',
+    ' type (left) or variable name (right), or place it'#13'between the ' +
+    'type and name (middle). The spacing between the type and name will ' +
+    'be preserved, if possible. To format'#13'references separately use ' +
+    'the following align-reference option.',
   //Code Resources
     'Code Resources',
     'Automatic features',
@@ -724,10 +724,10 @@ const
     'Custom Code Template File:',
     'Open',
     'Edit'
-  );
+    );
 
   MAX_FRM_ENV_OPT = 36;
-  CONST_STR_FRM_ENV_OPT: array[1..MAX_FRM_ENV_OPT] of String  = (
+  CONST_STR_FRM_ENV_OPT: array[1..MAX_FRM_ENV_OPT] of string = (
     'Environment Options',
     //General
     'General',
@@ -767,53 +767,53 @@ const
     'Select directory',
     'Restart application to apply changes',
     'Configuration files'
-  );
+    );
 
   MAX_FRM_CODE_TEMPL = 6;
-  CONST_STR_FRM_CODE_TEMPL: array[1..MAX_FRM_CODE_TEMPL] of String  = (
+  CONST_STR_FRM_CODE_TEMPL: array[1..MAX_FRM_CODE_TEMPL] of string = (
     'Templates',
     'Code',
     'Invalid Name!',
     'Name already exist',
     'Add Code Template',
     'Edit Code Template'
-  );
+    );
 
   MAX_FRM_PROMPT_CODE = 2;
-  CONST_STR_FRM_PROMPT_CODE: array[1..MAX_FRM_PROMPT_CODE] of String  = (
+  CONST_STR_FRM_PROMPT_CODE: array[1..MAX_FRM_PROMPT_CODE] of string = (
     'Name',
     'Description'
-  );
+    );
 
   MAX_FRM_ABOUT = 6;
-  CONST_STR_FRM_ABOUT: array[1..MAX_FRM_ABOUT] of String  = (
+  CONST_STR_FRM_ABOUT: array[1..MAX_FRM_ABOUT] of string = (
     'About',
     'Compatibility: %s',
     'Licence',
     'Developers',
     'Translators',
     'Testers'
-  );
+    );
 
   MAX_FRM_GOTOLINE = 2;
-  CONST_STR_FRM_GOTOLINE: array[1..MAX_FRM_GOTOLINE] of String  = (
+  CONST_STR_FRM_GOTOLINE: array[1..MAX_FRM_GOTOLINE] of string = (
     'Goto Line',
     'Line (%d - %d):'
-  );
+    );
 
   MAX_FRM_GOTOFUNC = 6;
-  CONST_STR_FRM_GOTOFUNC: array[1..MAX_FRM_GOTOFUNC] of String  = (
+  CONST_STR_FRM_GOTOFUNC: array[1..MAX_FRM_GOTOFUNC] of string = (
     'Goto Function',
     'Function name',
     'Name',
     'Return type',
     'Line',
     'File'
-  );
+    );
 
-  //Translate mingw messages  ' = 
+  //Translate mingw messages  ' =
   MAX_CMPMSG = 139;
-  CONST_STR_CMPMSG: array[1..MAX_CMPMSG] of String = (
+  CONST_STR_CMPMSG: array[1..MAX_CMPMSG] of string = (
     '%s: In function ''%s'':',
     '%s:%d: warning: implicit declaration of function ''%s''',
     '%s:%d: warning: assignment makes pointer from integer without a cast',
@@ -954,10 +954,10 @@ const
     '%s:%d: error: request for member ''%s'' in something not a structure or union',
     '%s:%d: error: conflicting types for ''%s''',
     '%s:%d: note: previous definition of ''%s'' was here'
-  );
+    );
 
   MAX_FRM_UPD = 25;
-  CONST_STR_FRM_UPD: array[1..MAX_FRM_UPD] of String = (
+  CONST_STR_FRM_UPD: array[1..MAX_FRM_UPD] of string = (
     'Application Update',
     'Looking for updates',
     '&Update',
@@ -983,23 +983,23 @@ const
     '&Ok',
     '&Cancel',
     'Installing...'
-  );
+    );
 
 type
   TLanguageProperty = class
     ID: Cardinal;
-    Name: String;
+      Name: string;
     ImageIndex: TImageIndex;
-    Version: String;
-    Translator: String;
-    Email: String;
+    Version: string;
+    Translator: string;
+    Email: string;
   end;
 
   TFalconLanguages = class
   private
     FList: TStrings;
     FDefault: Boolean;
-    FLangDir: String;
+    FLangDir: string;
     FCurrent: TLanguageProperty;
     procedure SetLangDefault(Value: Boolean);
     function GetItem(Index: Integer): TLanguageProperty;
@@ -1010,13 +1010,13 @@ type
     function Load: Boolean;
     constructor Create;
     destructor Destroy; override;
-    function UpdateLang(LangName: String): Boolean;
-    function GetLangByID(LangID: Word): String;
+    function UpdateLang(LangName: string): Boolean;
+    function GetLangByID(LangID: Word): string;
     function GetImageIndexByID(LangID: Word): Integer;
     property Count: Integer read GetCount;
     property Items[Index: Integer]: TLanguageProperty read GetItem;
   published
-    property LangDir: String read FLangDir write FLangDir;
+    property LangDir: string read FLangDir write FLangDir;
     property LangDefault: Boolean read FDefault write SetLangDefault;
     property Current: TLanguageProperty read FCurrent write FCurrent;
   end;
@@ -1024,46 +1024,46 @@ type
 var
   //STR_OTHERS: array[1..300] of String;
 
-  STR_MENUS: array[1..MAX_MENUS] of String;
-  STR_MENU_FILE: array[1..MAX_MENU_FILE] of String;
-  STR_MENU_EDIT: array[1..MAX_MENU_EDIT] of String;
-  STR_MENU_SERH: array[1..MAX_MENU_SERH] of String;
-  STR_MENU_VIEW: array[1..MAX_MENU_VIEW] of String;
-  STR_MENU_PROJ: array[1..MAX_MENU_PROJ] of String;
-  STR_MENU_RUN : array[1..MAX_MENU_RUN] of String;
-  STR_MENU_TOOL: array[1..MAX_MENU_TOOL] of String;
-  STR_MENU_HELP: array[1..MAX_MENU_HELP] of String;
-  STR_NEW_MENU: array[1..MAX_NEW_MENU] of String;
-  STR_IMPORT_MENU: array[1..MAX_IMPORT_MENU] of String;
-  STR_VIEWTOOLBAR_MENU: array[1..MAX_VIEWTOOLBAR_MENU] of String;
+  STR_MENUS: array[1..MAX_MENUS] of string;
+  STR_MENU_FILE: array[1..MAX_MENU_FILE] of string;
+  STR_MENU_EDIT: array[1..MAX_MENU_EDIT] of string;
+  STR_MENU_SERH: array[1..MAX_MENU_SERH] of string;
+  STR_MENU_VIEW: array[1..MAX_MENU_VIEW] of string;
+  STR_MENU_PROJ: array[1..MAX_MENU_PROJ] of string;
+  STR_MENU_RUN: array[1..MAX_MENU_RUN] of string;
+  STR_MENU_TOOL: array[1..MAX_MENU_TOOL] of string;
+  STR_MENU_HELP: array[1..MAX_MENU_HELP] of string;
+  STR_NEW_MENU: array[1..MAX_NEW_MENU] of string;
+  STR_IMPORT_MENU: array[1..MAX_IMPORT_MENU] of string;
+  STR_VIEWTOOLBAR_MENU: array[1..MAX_VIEWTOOLBAR_MENU] of string;
 
-  STR_DEFAULTBAR: array[1..MAX_DEFAULTBAR] of String;
-  STR_EDITBAR: array[1..MAX_EDITBAR] of String;
-  STR_SEARCHBAR: array[1..MAX_SEARCHBAR] of String;
-  STR_COMPILERBAR: array[1..MAX_COMPILERBAR] of String;
-  STR_NAVIGATORBAR: array[1..MAX_NAVIGATORBAR] of String;
-  STR_PROJECTBAR: array[1..MAX_PROJECTBAR] of String;
-  STR_HELPBAR: array[1..MAX_HELPBAR] of String;
-  STR_DEBUGBAR: array[1..MAX_DEBUGBAR] of String;
+  STR_DEFAULTBAR: array[1..MAX_DEFAULTBAR] of string;
+  STR_EDITBAR: array[1..MAX_EDITBAR] of string;
+  STR_SEARCHBAR: array[1..MAX_SEARCHBAR] of string;
+  STR_COMPILERBAR: array[1..MAX_COMPILERBAR] of string;
+  STR_NAVIGATORBAR: array[1..MAX_NAVIGATORBAR] of string;
+  STR_PROJECTBAR: array[1..MAX_PROJECTBAR] of string;
+  STR_HELPBAR: array[1..MAX_HELPBAR] of string;
+  STR_DEBUGBAR: array[1..MAX_DEBUGBAR] of string;
 
-  STR_POPUP_PROJ: array[1..MAX_POPUP_PROJ] of String;
-  STR_POPUP_EDITOR: array[1..MAX_POPUP_EDITOR] of String;
-  STR_POPUP_TABS: array[1..MAX_POPUP_TABS] of String;
-  STR_POPUP_MSGS: array[1..MAX_POPUP_MSGS] of String;
+  STR_POPUP_PROJ: array[1..MAX_POPUP_PROJ] of string;
+  STR_POPUP_EDITOR: array[1..MAX_POPUP_EDITOR] of string;
+  STR_POPUP_TABS: array[1..MAX_POPUP_TABS] of string;
+  STR_POPUP_MSGS: array[1..MAX_POPUP_MSGS] of string;
 
-  STR_FRM_MAIN: array[1..MAX_FRM_MAIN] of String;
-  STR_FRM_PROP: array[1..MAX_FRM_PROP] of String;
-  STR_FRM_NEW_PROJ: array[1..MAX_FRM_NEW_PROJ] of String;
-  STR_CMPMSG: array[1..MAX_CMPMSG] of String;
-  STR_FRM_UPD: array[1..MAX_FRM_UPD] of String;
-  STR_FRM_FIND: array[1..MAX_FRM_FIND] of String;
-  STR_FRM_EDITOR_OPT: array[1..MAX_FRM_EDITOR_OPT] of String;
-  STR_FRM_ENV_OPT: array[1..MAX_FRM_ENV_OPT] of String;
-  STR_FRM_CODE_TEMPL: array[1..MAX_FRM_CODE_TEMPL] of String;
-  STR_FRM_PROMPT_CODE: array[1..MAX_FRM_PROMPT_CODE] of String;
-  STR_FRM_ABOUT: array[1..MAX_FRM_ABOUT] of String;
-  STR_FRM_GOTOLINE: array[1..MAX_FRM_GOTOLINE] of String;
-  STR_FRM_GOTOFUNC: array[1..MAX_FRM_GOTOFUNC] of String;
+  STR_FRM_MAIN: array[1..MAX_FRM_MAIN] of string;
+  STR_FRM_PROP: array[1..MAX_FRM_PROP] of string;
+  STR_FRM_NEW_PROJ: array[1..MAX_FRM_NEW_PROJ] of string;
+  STR_CMPMSG: array[1..MAX_CMPMSG] of string;
+  STR_FRM_UPD: array[1..MAX_FRM_UPD] of string;
+  STR_FRM_FIND: array[1..MAX_FRM_FIND] of string;
+  STR_FRM_EDITOR_OPT: array[1..MAX_FRM_EDITOR_OPT] of string;
+  STR_FRM_ENV_OPT: array[1..MAX_FRM_ENV_OPT] of string;
+  STR_FRM_CODE_TEMPL: array[1..MAX_FRM_CODE_TEMPL] of string;
+  STR_FRM_PROMPT_CODE: array[1..MAX_FRM_PROMPT_CODE] of string;
+  STR_FRM_ABOUT: array[1..MAX_FRM_ABOUT] of string;
+  STR_FRM_GOTOLINE: array[1..MAX_FRM_GOTOLINE] of string;
+  STR_FRM_GOTOFUNC: array[1..MAX_FRM_GOTOFUNC] of string;
 
 implementation
 
@@ -1090,7 +1090,7 @@ destructor TFalconLanguages.Destroy;
 begin
   Clear;
   if FList.Count = 1 then
-    FList.Objects[0].Free;//English
+    FList.Objects[0].Free; //English
   FList.Free;
   inherited Destroy;
 end;
@@ -1100,12 +1100,12 @@ begin
   Result := nil;
   if (Index < 0) or (Index >= FList.Count) then
     Exit;
-  Result :=  TLanguageProperty(FList.Objects[Index]);
+  Result := TLanguageProperty(FList.Objects[Index]);
 end;
 
 function TFalconLanguages.GetCount: Integer;
 begin
-  Result :=  FList.Count;
+  Result := FList.Count;
 end;
 
 procedure TFalconLanguages.Clear;
@@ -1153,7 +1153,6 @@ begin
     //sub menu toolars
     for I := 1 to MAX_VIEWTOOLBAR_MENU do
       STR_VIEWTOOLBAR_MENU[I] := CONST_STR_VIEWTOOLBAR_MENU[I];
-
 
     for I := 1 to MAX_DEFAULTBAR do
       STR_DEFAULTBAR[I] := CONST_STR_DEFAULTBAR[I];
@@ -1213,13 +1212,13 @@ begin
   FDefault := Value;
 end;
 
-function TFalconLanguages.GetLangByID(LangID: Word): String;
+function TFalconLanguages.GetLangByID(LangID: Word): string;
 var
   LangItem: TLanguageProperty;
   I: Integer;
 begin
   Result := '';
-  for I:= 0 to Pred(FList.Count) do
+  for I := 0 to Pred(FList.Count) do
   begin
     LangItem := TLanguageProperty(FList.Objects[I]);
     if (LangItem.ID = LangID) then
@@ -1236,7 +1235,7 @@ var
   I: Integer;
 begin
   Result := -1;
-  for I:= 0 to Pred(FList.Count) do
+  for I := 0 to Pred(FList.Count) do
   begin
     LangItem := TLanguageProperty(FList.Objects[I]);
     if (LangItem.ID = LangID) then
@@ -1251,7 +1250,7 @@ function TFalconLanguages.Load: Boolean;
 var
   Files: TStrings;
   LangItem: TLanguageProperty;
-  Temp: String;
+  Temp: string;
   I: Integer;
   SaveID: Cardinal;
   ini: TIniFile;
@@ -1260,7 +1259,7 @@ begin
   SaveID := FCurrent.ID;
   Clear;
   FindFiles(LangDir + '*.lng', Files);
-  for I:= 0 to Pred(Files.Count) do
+  for I := 0 to Pred(Files.Count) do
   begin
     Temp := LangDir + Files.Strings[I];
     ini := TIniFile.Create(Temp);
@@ -1295,14 +1294,14 @@ begin
   FrmFalconMain.UpdateLangNow;
 end;
 
-function TFalconLanguages.UpdateLang(LangName: String): Boolean;
+function TFalconLanguages.UpdateLang(LangName: string): Boolean;
 var
   LangProp: TLanguageProperty;
-  Temp: String;
+  Temp: string;
   I: Integer;
   ini: TIniFile;
 
-  function ReadStr(const Ident: Integer; const Default: String): String;
+  function ReadStr(const Ident: Integer; const Default: string): string;
   begin
     Result := ini.ReadString('FALCON', IntToStr(Ident), Default);
   end;
@@ -1310,7 +1309,7 @@ var
 begin
   Result := False;
   Temp := '';
-  for I:= 0 to Pred(FList.Count) do
+  for I := 0 to Pred(FList.Count) do
   begin
     LangProp := TLanguageProperty(FList.Objects[I]);
     if (LangProp.Name = LangName) then
@@ -1336,90 +1335,90 @@ begin
   //init
   for I := 1 to MAX_MENUS do //1
     STR_MENUS[I] := ReadStr(I, CONST_STR_MENUS[I]);
-  for I := 1 to MAX_MENU_FILE do//109
+  for I := 1 to MAX_MENU_FILE do //109
     STR_MENU_FILE[I] := ReadStr(I + 108, CONST_STR_MENU_FILE[I]);
-  for I := 1 to MAX_MENU_EDIT do//221
+  for I := 1 to MAX_MENU_EDIT do //221
     STR_MENU_EDIT[I] := ReadStr(I + 220, CONST_STR_MENU_EDIT[I]);
-  for I := 1 to MAX_MENU_SERH do//334
+  for I := 1 to MAX_MENU_SERH do //334
     STR_MENU_SERH[I] := ReadStr(I + 333, CONST_STR_MENU_SERH[I]);
-  for I := 1 to MAX_MENU_VIEW do//391
+  for I := 1 to MAX_MENU_VIEW do //391
     STR_MENU_VIEW[I] := ReadStr(I + 390, CONST_STR_MENU_VIEW[I]);
-  for I := 1 to MAX_MENU_PROJ do//435
+  for I := 1 to MAX_MENU_PROJ do //435
     STR_MENU_PROJ[I] := ReadStr(I + 434, CONST_STR_MENU_PROJ[I]);
-  for I := 1 to MAX_MENU_RUN do//541
+  for I := 1 to MAX_MENU_RUN do //541
     STR_MENU_RUN[I] := ReadStr(I + 540, CONST_STR_MENU_RUN[I]);
-  for I := 1 to MAX_MENU_TOOL do//646
+  for I := 1 to MAX_MENU_TOOL do //646
     STR_MENU_TOOL[I] := ReadStr(I + 645, CONST_STR_MENU_TOOL[I]);
-  for I := 1 to MAX_MENU_HELP do//854
+  for I := 1 to MAX_MENU_HELP do //854
     STR_MENU_HELP[I] := ReadStr(I + 853, CONST_STR_MENU_HELP[I]);
 
-  for I := 1 to MAX_NEW_MENU do//959
+  for I := 1 to MAX_NEW_MENU do //959
     STR_NEW_MENU[I] := ReadStr(I + 958, CONST_STR_NEW_MENU[I]);
-  for I := 1 to MAX_IMPORT_MENU do//970
+  for I := 1 to MAX_IMPORT_MENU do //970
     STR_IMPORT_MENU[I] := ReadStr(I + 969, CONST_STR_IMPORT_MENU[I]);
 
   //sub menu toolars
-  for I := 1 to MAX_VIEWTOOLBAR_MENU do//978
+  for I := 1 to MAX_VIEWTOOLBAR_MENU do //978
     STR_VIEWTOOLBAR_MENU[I] := ReadStr(I + 977, CONST_STR_VIEWTOOLBAR_MENU[I]);
 
-    for I := 1 to MAX_DEFAULTBAR do//1067
-      STR_DEFAULTBAR[I] := ReadStr(I + 1066, CONST_STR_DEFAULTBAR[I]);
-    for I := 1 to MAX_EDITBAR do//1080
-      STR_EDITBAR[I] := ReadStr(I + 1079, CONST_STR_EDITBAR[I]);
-    for I := 1 to MAX_SEARCHBAR do//1138
-      STR_SEARCHBAR[I] := ReadStr(I + 1137, CONST_STR_SEARCHBAR[I]);
-    for I := 1 to MAX_COMPILERBAR do//1098
-      STR_COMPILERBAR[I] := ReadStr(I + 1097, CONST_STR_COMPILERBAR[I]);
-    for I := 1 to MAX_NAVIGATORBAR do//1089
-      STR_NAVIGATORBAR[I] := ReadStr(I + 1088, CONST_STR_NAVIGATORBAR[I]);
-    for I := 1 to MAX_PROJECTBAR do//1119
-      STR_PROJECTBAR[I] := ReadStr(I + 1118, CONST_STR_PROJECTBAR[I]);
-    for I := 1 to MAX_HELPBAR do//1110
-      STR_HELPBAR[I] := ReadStr(I + 1109, CONST_STR_HELPBAR[I]);
-    for I := 1 to MAX_DEBUGBAR do//1128
-      STR_DEBUGBAR[I] := ReadStr(I + 1127, CONST_STR_DEBUGBAR[I]);
+  for I := 1 to MAX_DEFAULTBAR do //1067
+    STR_DEFAULTBAR[I] := ReadStr(I + 1066, CONST_STR_DEFAULTBAR[I]);
+  for I := 1 to MAX_EDITBAR do //1080
+    STR_EDITBAR[I] := ReadStr(I + 1079, CONST_STR_EDITBAR[I]);
+  for I := 1 to MAX_SEARCHBAR do //1138
+    STR_SEARCHBAR[I] := ReadStr(I + 1137, CONST_STR_SEARCHBAR[I]);
+  for I := 1 to MAX_COMPILERBAR do //1098
+    STR_COMPILERBAR[I] := ReadStr(I + 1097, CONST_STR_COMPILERBAR[I]);
+  for I := 1 to MAX_NAVIGATORBAR do //1089
+    STR_NAVIGATORBAR[I] := ReadStr(I + 1088, CONST_STR_NAVIGATORBAR[I]);
+  for I := 1 to MAX_PROJECTBAR do //1119
+    STR_PROJECTBAR[I] := ReadStr(I + 1118, CONST_STR_PROJECTBAR[I]);
+  for I := 1 to MAX_HELPBAR do //1110
+    STR_HELPBAR[I] := ReadStr(I + 1109, CONST_STR_HELPBAR[I]);
+  for I := 1 to MAX_DEBUGBAR do //1128
+    STR_DEBUGBAR[I] := ReadStr(I + 1127, CONST_STR_DEBUGBAR[I]);
 
-  for I := 1 to MAX_POPUP_PROJ do//1181
+  for I := 1 to MAX_POPUP_PROJ do //1181
     STR_POPUP_PROJ[I] := ReadStr(I + 1180, CONST_STR_POPUP_PROJ[I]);
-  for I := 1 to MAX_POPUP_EDITOR do//1291
+  for I := 1 to MAX_POPUP_EDITOR do //1291
     STR_POPUP_EDITOR[I] := ReadStr(I + 1290, CONST_STR_POPUP_EDITOR[I]);
-  for I := 1 to MAX_POPUP_TABS do//1351
+  for I := 1 to MAX_POPUP_TABS do //1351
     STR_POPUP_TABS[I] := ReadStr(I + 1350, CONST_STR_POPUP_TABS[I]);
-  for I := 1 to MAX_POPUP_MSGS do//1375
+  for I := 1 to MAX_POPUP_MSGS do //1375
     STR_POPUP_MSGS[I] := ReadStr(I + 1374, CONST_STR_POPUP_MSGS[I]);
 
-  for I := 1 to MAX_FRM_MAIN do//1405
+  for I := 1 to MAX_FRM_MAIN do //1405
     STR_FRM_MAIN[I] := ReadStr(I + 1404, CONST_STR_FRM_MAIN[I]);
   STR_FRM_MAIN[49] := StringReplace(STR_FRM_MAIN[49], '\n', #13, [rfReplaceAll]);
 
-  for I := 1 to MAX_FRM_PROP do//1528
+  for I := 1 to MAX_FRM_PROP do //1528
     STR_FRM_PROP[I] := ReadStr(I + 1527, CONST_STR_FRM_PROP[I]);
-  for I := 1 to MAX_FRM_NEW_PROJ do//1673
+  for I := 1 to MAX_FRM_NEW_PROJ do //1673
     STR_FRM_NEW_PROJ[I] := ReadStr(I + 1672, CONST_STR_FRM_NEW_PROJ[I]);
-  for I := 1 to MAX_CMPMSG do//1785
+  for I := 1 to MAX_CMPMSG do //1785
     STR_CMPMSG[I] := ReadStr(I + 1784, CONST_STR_CMPMSG[I]);
-  for I := 1 to MAX_FRM_UPD do//4001
+  for I := 1 to MAX_FRM_UPD do //4001
     STR_FRM_UPD[I] := ReadStr(I + 4000, CONST_STR_FRM_UPD[I]);
-  for I := 1 to MAX_FRM_FIND do//4201
+  for I := 1 to MAX_FRM_FIND do //4201
     STR_FRM_FIND[I] := ReadStr(I + 4200, CONST_STR_FRM_FIND[I]);
   STR_FRM_FIND[30] := StringReplace(STR_FRM_FIND[30], '\n', #13, [rfReplaceAll]);
-  for I := 1 to MAX_FRM_EDITOR_OPT do//4333
+  for I := 1 to MAX_FRM_EDITOR_OPT do //4333
   begin
     STR_FRM_EDITOR_OPT[I] := ReadStr(I + 4332, CONST_STR_FRM_EDITOR_OPT[I]);
     STR_FRM_EDITOR_OPT[I] := StringReplace(STR_FRM_EDITOR_OPT[I], '\n', #13,
       [rfReplaceAll]);
   end;
-  for I := 1 to MAX_FRM_ENV_OPT do//4569
+  for I := 1 to MAX_FRM_ENV_OPT do //4569
     STR_FRM_ENV_OPT[I] := ReadStr(I + 4568, CONST_STR_FRM_ENV_OPT[I]);
-  for I := 1 to MAX_FRM_CODE_TEMPL do//4704
+  for I := 1 to MAX_FRM_CODE_TEMPL do //4704
     STR_FRM_CODE_TEMPL[I] := ReadStr(I + 4703, CONST_STR_FRM_CODE_TEMPL[I]);
-  for I := 1 to MAX_FRM_PROMPT_CODE do//4808
+  for I := 1 to MAX_FRM_PROMPT_CODE do //4808
     STR_FRM_PROMPT_CODE[I] := ReadStr(I + 4807, CONST_STR_FRM_PROMPT_CODE[I]);
-  for I := 1 to MAX_FRM_ABOUT do//4909
+  for I := 1 to MAX_FRM_ABOUT do //4909
     STR_FRM_ABOUT[I] := ReadStr(I + 4908, CONST_STR_FRM_ABOUT[I]);
-  for I := 1 to MAX_FRM_GOTOLINE do//5015
+  for I := 1 to MAX_FRM_GOTOLINE do //5015
     STR_FRM_GOTOLINE[I] := ReadStr(I + 5014, CONST_STR_FRM_GOTOLINE[I]);
-  for I := 1 to MAX_FRM_GOTOFUNC do//5117
+  for I := 1 to MAX_FRM_GOTOFUNC do //5117
     STR_FRM_GOTOFUNC[I] := ReadStr(I + 5116, CONST_STR_FRM_GOTOFUNC[I]);
   //end
   ini.Free;

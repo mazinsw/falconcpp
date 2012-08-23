@@ -14,7 +14,7 @@ type
     DebugParser: TDebugParser;
     FFocusDelay: Integer;
     fptr: PChar;
-    FValue: String;
+    FValue: string;
     FActivated: Boolean;
     FWindowMode: Boolean;
     FLastActive: Cardinal;
@@ -45,7 +45,7 @@ type
     property ImageList: TImageList write SetImageList;
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    procedure UpdateHint(const S: String; X, Y: Integer; Token: TTokenClass);
+    procedure UpdateHint(const S: string; X, Y: Integer; Token: TTokenClass);
     procedure Cancel;
   end;
 
@@ -186,8 +186,10 @@ begin
     Rect.Top := Screen.DesktopHeight - Height;
   if Rect.Left + Width > Screen.DesktopWidth then
     Rect.Left := Screen.DesktopWidth - Width;
-  if Rect.Left < Screen.DesktopLeft then Rect.Left := Screen.DesktopLeft;
-  if Rect.Bottom < Screen.DesktopTop then Rect.Bottom := Screen.DesktopTop;
+  if Rect.Left < Screen.DesktopLeft then
+    Rect.Left := Screen.DesktopLeft;
+  if Rect.Bottom < Screen.DesktopTop then
+    Rect.Bottom := Screen.DesktopTop;
   SetWindowPos(Handle, HWND_TOPMOST, Rect.Left, Rect.Top, Width, Height,
     SWP_NOACTIVATE);
 end;
@@ -212,11 +214,10 @@ begin
         SystemParametersInfo(SPI_GETTOOLTIPFADE, 0, @Animate, 0);
         if Animate then
           Style := atBlend
+        else if Mouse.CursorPos.Y > Rect.Top then
+          Style := atSlideNeg
         else
-          if Mouse.CursorPos.Y > Rect.Top then
-            Style := atSlideNeg
-          else
-            Style := atSlidePos;
+          Style := atSlidePos;
         AnimateWindowProc(Handle, 100, AnimationStyle[Style] or AW_SLIDE);
       end;
     end;
@@ -231,7 +232,7 @@ begin
   FActivated := True;
 end;
 
-procedure THintTree.UpdateHint(const S: String; X, Y: Integer;
+procedure THintTree.UpdateHint(const S: string; X, Y: Integer;
   Token: TTokenClass);
 var
   R, ItemRect: TRect;

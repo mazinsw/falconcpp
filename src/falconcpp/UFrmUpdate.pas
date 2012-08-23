@@ -27,12 +27,12 @@ type
     procedure BtnCancelClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure BtnUpdateClick(Sender: TObject);
-    procedure Load(UpdateXML: String);
+    procedure Load(UpdateXML: string);
   private
     { Private declarations }
   public
     { Public declarations }
-    XMLFile: String;
+    XMLFile: string;
   end;
 
 var
@@ -51,9 +51,9 @@ begin
   BtnUpdate.Caption := STR_FRM_UPD[3];
 end;
 
-procedure TFrmUpdate.Load(UpdateXML: String);
+procedure TFrmUpdate.Load(UpdateXML: string);
 
-  function GetTagProperty(Node: IXMLNode; Tag, Attribute: String): String;
+  function GetTagProperty(Node: IXMLNode; Tag, Attribute: string): string;
   var
     Temp: IXMLNode;
   begin
@@ -89,16 +89,17 @@ begin
   SiteVersion := ParseVersion(Node.Attributes['Version']);
   LblAction.Caption := STR_FRM_UPD[20];
   LblDesc.Caption := Format(STR_FRM_UPD[21], [
-  VersionToStr(SiteVersion)]);
+    VersionToStr(SiteVersion)]);
   NodeFiles := Node.ChildNodes.FindNode('File');
   if (NodeFiles.Attributes['Name'] = 'Falcon.exe') then
   begin
     Desc := TStringList.Create;
     Desc.Text := NodeFiles.Text;
-    for I:= 0 to Pred(Desc.Count) do
+    for I := 0 to Pred(Desc.Count) do
       Desc.Strings[I] := Trim(Desc.Strings[I]);
-    for I:= Pred(Desc.Count) downto 0 do
-      if Length(Desc.Strings[I]) = 0 then Desc.Delete(I);
+    for I := Pred(Desc.Count) downto 0 do
+      if Length(Desc.Strings[I]) = 0 then
+        Desc.Delete(I);
     MemoChanges.Text := Desc.Text;
     Desc.Free;
     LblChanges.Show;

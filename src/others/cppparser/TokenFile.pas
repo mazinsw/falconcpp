@@ -14,21 +14,21 @@ type
     tpmParseAndSave,
     tpmParseAndLoadRecursive,
     tpmLoadParsedRecursive
-  );
+    );
 
-  TProgressEvent = procedure(Sender: TObject; TokenFile: TTokenFile; const FileName: String; Current,
-      Total: Integer; Parsed: Boolean; Method: TTokenParseMethod) of object;
+  TProgressEvent = procedure(Sender: TObject; TokenFile: TTokenFile; const FileName: string; Current,
+    Total: Integer; Parsed: Boolean; Method: TTokenParseMethod) of object;
 
   TFileObject = class
     ID: Pointer;
-    FileName: String;
-    Text: String;
+    FileName: string;
+    Text: string;
   end;
 
   TTokenFile = class
   private
-    FFileName: String;
-    FParsedFileName: String;
+    FFileName: string;
+    FParsedFileName: string;
     FStaticFile: Boolean;
     FFileDate: TDateTime;
     FParsedFileDate: TDateTime;
@@ -48,8 +48,8 @@ type
     constructor Create(AOwner: TTokenFiles); overload;
     procedure CreateLists;
     destructor Destroy; override;
-    function SaveToFile(const ParsedFileName: String): Boolean;
-    function LoadFromFile(const FileName, ParsedFileName: String): Boolean;
+    function SaveToFile(const ParsedFileName: string): Boolean;
+    function LoadFromFile(const FileName, ParsedFileName: string): Boolean;
     procedure Assign(AObject: TObject);
     procedure AssignProperty(AObject: TObject);
     procedure Clear;
@@ -59,7 +59,7 @@ type
       SelStart: Integer = 0): Boolean;
     function GetNextFunction(var Token: TTokenClass;
       SelStart: Integer = 0): Boolean;
-    function GetBaseType(const S: String; var Item: TTokenClass;
+    function GetBaseType(const S: string; var Item: TTokenClass;
       SelStart: Integer; ListAll: TStrings = nil;
       AllFunctions: Boolean = False): Boolean;
 
@@ -69,20 +69,20 @@ type
     function GetTokenAt(var scopeToken: TTokenClass;
       SelStart: Integer; SelLine: Integer = 0): Boolean;
 
-    function SearchToken(const S: String; var Item: TTokenClass;
+    function SearchToken(const S: string; var Item: TTokenClass;
       SelStart: Integer; AdvanceAfterSelStart: Boolean;
       Mode: TTokenSearchMode): Boolean;
-    function SearchSource(const S: String; var Item: TTokenClass;
+    function SearchSource(const S: string; var Item: TTokenClass;
       NotAtSelStart: Integer; AdvanceAfterSelStart: Boolean = False;
       ListAll: TStrings = nil; AllFunctions: Boolean = False): Boolean;
 
-    function LoadHeader(const ParsedFileName: String;
+    function LoadHeader(const ParsedFileName: string;
       var Header: TSimpleFileToken): Boolean;
-    property FileName: String read FFileName write FFileName;
+    property FileName: string read FFileName write FFileName;
     property StaticFile: Boolean read FStaticFile write FStaticFile;
     property Modified: Boolean read FModified;
     property Data: Pointer read FData write FData;
-    property ParsedFileName: String read FParsedFileName write FParsedFileName;
+    property ParsedFileName: string read FParsedFileName write FParsedFileName;
     property ParsedFileDate: TDateTime read FParsedFileDate write FParsedFileDate;
     property FileDate: TDateTime read FFileDate write FFileDate;
     property Includes: TTokenClass read FIncludeList write FIncludeList;
@@ -108,31 +108,31 @@ type
     procedure Put(Index: Integer; Value: TTokenFile);
     function Get(Index: Integer): TTokenFile;
     procedure SetPathList(Value: TStrings);
-    
-    function ParseRecursiveAux(const FileName: String; FilesParsed: Integer;
+
+    function ParseRecursiveAux(const FileName: string; FilesParsed: Integer;
       fProgressEvent: TProgressEvent): Integer;
     function LoadRecursiveAux(const FileName, BaseDir, FromBaseDir,
-      Extension: String; FilesParsed: Integer; fProgressEvent: TProgressEvent): Integer;
+      Extension: string; FilesParsed: Integer; fProgressEvent: TProgressEvent): Integer;
 
       //search
-    function SearchSourceRecursive(const S: String;
+    function SearchSourceRecursive(const S: string;
       TokenFile: TTokenFile; var TokenFileItem: TTokenFile; var Item: TTokenClass;
-      FindedList: TStrings; SelStart: Integer = 0;ListAll: TStrings = nil;
+      FindedList: TStrings; SelStart: Integer = 0; ListAll: TStrings = nil;
       AllFunctions: Boolean = False): Boolean;
-    function GetBaseTypeRecursive(const S: String;
+    function GetBaseTypeRecursive(const S: string;
       SelStart: Integer; TokenFile: TTokenFile; var TokenFileItem: TTokenFile;
       var Token: TTokenClass; FindedList: TStrings; ListAll: TStrings;
       AllFunctions: Boolean): Boolean;
-    function SearchTokenRecursive(const S: String; TokenFile: TTokenFile;
+    function SearchTokenRecursive(const S: string; TokenFile: TTokenFile;
       var TokenFileItem: TTokenFile; var Token: TTokenClass; Mode: TTokenSearchMode;
       FindedList: TStrings; SelStart: Integer): Boolean;
     function InvalidOrFinded(var Index: Integer;
-      const FilePath: String; IncludeToken: TTokenClass;
+      const FilePath: string; IncludeToken: TTokenClass;
       FindedList: TStrings): Boolean;
     procedure FillCompletionListRecursive(InsertList,
       ShowList: TStrings; TokenFile: TTokenFile; IncludedList: TStrings;
       CompletionColors: TCompletionColors);
-    function SearchTreeTokenRecursive(const Fields: String;
+    function SearchTreeTokenRecursive(const Fields: string;
       TokenFile: TTokenFile; var TokenFileItem: TTokenFile; var Token: TTokenClass;
       Mode: TTokenSearchMode; FindedList: TStrings; SelStart: Integer): Boolean;
 
@@ -156,17 +156,17 @@ type
     property Busy: Boolean read fBusy;
 
     function ParseAndSaveFiles(FileList: TStrings;
-      const BaseDir, DestBaseDir, Extension: String): Boolean; overload;
+      const BaseDir, DestBaseDir, Extension: string): Boolean; overload;
 
     function ParseAndSaveFiles(FileList: TStrings;
-      const BaseDir, DestBaseDir, Extension: String; fStartEvent: TNotifyEvent;
+      const BaseDir, DestBaseDir, Extension: string; fStartEvent: TNotifyEvent;
       fProgressEvent: TProgressEvent; fFinishEvent: TNotifyEvent): Boolean; overload;
 
     function LoadRecursive(const FileName, BaseDir, FromBaseDir,
-      Extension: String): Integer; overload;
+      Extension: string): Integer; overload;
 
     function LoadRecursive(const FileName, BaseDir, FromBaseDir,
-      Extension: String; fStartEvent: TNotifyEvent; fProgressEvent: TProgressEvent;
+      Extension: string; fStartEvent: TNotifyEvent; fProgressEvent: TProgressEvent;
       fFinishEvent: TNotifyEvent): Integer; overload;
 
     function ParseLoad(FileList: TStrings): Boolean; overload;
@@ -174,44 +174,44 @@ type
     function ParseLoad(FileList: TStrings; fStartEvent: TNotifyEvent;
       fProgressEvent: TProgressEvent; fFinishEvent: TNotifyEvent): Boolean; overload;
 
-    function ParseRecursive(const FileName: String): Integer; overload;
-    function ParseRecursive(const FileName: String; fStartEvent: TNotifyEvent;
+    function ParseRecursive(const FileName: string): Integer; overload;
+    function ParseRecursive(const FileName: string; fStartEvent: TNotifyEvent;
       fProgressEvent: TProgressEvent; fFinishEvent: TNotifyEvent): Integer; overload;
 
     procedure Cancel;
 
     //search file and update
-    function RemoveWithIncludes(const FileName: String): Integer;
-    function IndexOfByFileName(FileName: String; ID: Pointer = nil): Integer;
-    function IndexOfByParsedFileName(const ParsedFileName: String): Integer;
+    function RemoveWithIncludes(const FileName: string): Integer;
+    function IndexOfByFileName(FileName: string): Integer;
+    function IndexOfByParsedFileName(const ParsedFileName: string): Integer;
 
     //search token
     function GetAllTokensOfScope(SelStart: Integer; TokenFile: TTokenFile;
       List: TStrings; var thisToken: TTokenClass): Boolean;
-    function SearchClassSource(const S: String; Token: TTokenClass;
+    function SearchClassSource(const S: string; Token: TTokenClass;
       TokenFile: TTokenFile; var TokenFileItem: TTokenFile; var Item: TTokenClass;
       ListAll: TStrings = nil; AllFunctions: Boolean = False;
       AllowScope: TScopeClassState = []): Boolean;
-    function SearchSource(const S: String; TokenFile: TTokenFile;
+    function SearchSource(const S: string; TokenFile: TTokenFile;
       var TokenFileItem: TTokenFile; var Item: TTokenClass;
       SelStart: Integer = 0; ListAll: TStrings = nil;
       AllFunctions: Boolean = False): Boolean;
-    function GetFieldsBaseType(const S, Fields: String;
+    function GetFieldsBaseType(const S, Fields: string;
       SelStart: Integer; TokenFile: TTokenFile; var TokenFileItem: TTokenFile;
-      var Token: TTokenClass; CodeCompletion: Boolean = False): Boolean;
-    function GetBaseType(const S: String; SelStart: Integer;
+      var Token: TTokenClass): Boolean;
+    function GetBaseType(const S: string; SelStart: Integer;
       TokenFile: TTokenFile; var TokenFileItem: TTokenFile;
       var Token: TTokenClass; ListAll: TStrings = nil;
       AllFunctions: Boolean = False): Boolean;
-    function GetFieldsBaseParams(const S, Fields: String;
+    function GetFieldsBaseParams(const S, Fields: string;
       SelStart: Integer; TokenFile: TTokenFile; ParamsList: TStrings): Boolean;
-    function SearchToken(const S: String; TokenFile: TTokenFile;
+    function SearchToken(const S: string; TokenFile: TTokenFile;
       var TokenFileItem: TTokenFile; var Token: TTokenClass; Mode: TTokenSearchMode;
       SelStart: Integer): Boolean;
-    function SearchTreeToken(const Fields: String; TokenFile: TTokenFile;
+    function SearchTreeToken(const Fields: string; TokenFile: TTokenFile;
       var TokenFileItem: TTokenFile; var Token: TTokenClass; Mode: TTokenSearchMode;
       SelStart: Integer): Boolean;
-    function FindDeclaration(const S: String; TokenFile: TTokenFile;
+    function FindDeclaration(const Input, Fields: string; TokenFile: TTokenFile;
       var TokenFileItem: TTokenFile; var Item: TTokenClass;
       SelStart, SelLine: Integer): Boolean;
 
@@ -226,7 +226,6 @@ type
     constructor Create;
     destructor Destroy; override;
   end;
-
 
 procedure FillCompletion(InsertList, ShowList: TStrings; Token: TTokenClass;
   SelStart: Integer; CompletionColors: TCompletionColors;
@@ -298,7 +297,7 @@ var
   Buffer: array[0..4095] of Char;
   Item: TTokenClass;
 begin
-  for I:= 0 to Count - 1 do
+  for I := 0 to Count - 1 do
   begin
     Item := TTokenClass.Create(ParentList);
     Item.Owner := Self;
@@ -327,15 +326,17 @@ begin
   Result := True;
 end;
 
-function TTokenFile.LoadHeader(const ParsedFileName: String;
-      var Header: TSimpleFileToken): Boolean;
+function TTokenFile.LoadHeader(const ParsedFileName: string;
+  var Header: TSimpleFileToken): Boolean;
 var
   Handle: Integer;
 begin
   Result := False;
-  if not FileExists(ParsedFileName) then Exit;
+  if not FileExists(ParsedFileName) then
+    Exit;
   Handle := FileOpen(ParsedFileName, fmOpenRead);
-  if Handle = 0 then Exit;
+  if Handle = 0 then
+    Exit;
 
   FileRead(Handle, Header, SizeOf(TSimpleFileToken));
   if not CompareMem(Pointer(@Header.Sign), PChar(TokenList.Sign),
@@ -348,7 +349,7 @@ begin
   Result := True;
 end;
 
-function TTokenFile.LoadFromFile(const FileName, ParsedFileName: String): Boolean;
+function TTokenFile.LoadFromFile(const FileName, ParsedFileName: string): Boolean;
 var
   Handle, I: Integer;
   Header: TSimpleFileToken;
@@ -357,9 +358,11 @@ var
   TkList: TTokenClass;
 begin
   Result := False;
-  if not FileExists(ParsedFileName) then Exit;
+  if not FileExists(ParsedFileName) then
+    Exit;
   Handle := FileOpen(ParsedFileName, fmOpenRead);
-  if Handle = 0 then Exit;
+  if Handle = 0 then
+    Exit;
   if FileExists(FileName) then
     FileDate := FileDateTime(FileName);
 
@@ -377,7 +380,7 @@ begin
   FFileName := FileName;
   FParsedFileName := ParsedFileName;
   TkList := nil;
-  for I:= 0 to Header.Count - 1 do
+  for I := 0 to Header.Count - 1 do
   begin
     FileRead(Handle, TokenRec.Count, SizeOf(Word));
     FileRead(Handle, TokenRec.Line, SizeOf(Integer));
@@ -393,7 +396,7 @@ begin
     FileRead(Handle, Buffer, TokenRec.Len2);
     Buffer[TokenRec.Len2] := #0;
     TokenRec.Flag := StrPas(Buffer);
-    
+
     case TokenRec.Token of
       tkIncludeList: TkList := FIncludeList;
       tkDefineList: TkList := FDefineList;
@@ -434,18 +437,19 @@ begin
   TokenRec.Len2 := Length(ItemList.Flag);
   FileWrite(Handle, TokenRec.Len2, SizeOf(Word));
   FileWrite(Handle, PChar(ItemList.Flag)^, TokenRec.Len2);
-  for I:= 0 to ItemList.Count - 1 do
+  for I := 0 to ItemList.Count - 1 do
     SaveToFileRecurse(Handle, ItemList.Items[I]);
 end;
 
-function TTokenFile.SaveToFile(const ParsedFileName: String): Boolean;
+function TTokenFile.SaveToFile(const ParsedFileName: string): Boolean;
 var
   Handle: Integer;
   Header: TSimpleFileToken;
 begin
   Result := False;
   Handle := FileCreate(ParsedFileName);
-  if Handle = 0 then Exit;
+  if Handle = 0 then
+    Exit;
   Move(TokenList.Sign, Header.Sign, Sizeof(Header.Sign));
   Header.Count := 5;
   Header.DateOfFile := FileDate;
@@ -464,8 +468,10 @@ procedure TTokenFile.Assign(AObject: TObject);
 var
   NewFile: TTokenFile;
 begin
-  if not Assigned(AObject) then Exit;
-  if not (AObject is TTokenFile) then Exit;
+  if not Assigned(AObject) then
+    Exit;
+  if not (AObject is TTokenFile) then
+    Exit;
   NewFile := TTokenFile(AObject);
   FData := NewFile.Data;
   FFileName := NewFile.FFileName;
@@ -487,8 +493,10 @@ procedure TTokenFile.AssignProperty(AObject: TObject);
 var
   NewFile: TTokenFile;
 begin
-  if not Assigned(AObject) then Exit;
-  if not (AObject is TTokenFile) then Exit;
+  if not Assigned(AObject) then
+    Exit;
+  if not (AObject is TTokenFile) then
+    Exit;
   NewFile := TTokenFile(AObject);
   FFileName := NewFile.FFileName;
   FParsedFileName := NewFile.FParsedFileName;
@@ -509,18 +517,19 @@ begin
   VarConsts.Clear;
 end;
 
-function TTokenFile.GetBaseType(const S: String; var Item: TTokenClass;
+function TTokenFile.GetBaseType(const S: string; var Item: TTokenClass;
   SelStart: Integer; ListAll: TStrings; AllFunctions: Boolean): Boolean;
 var
   Prior: TTokenClass;
-  TypeName: String;
+  TypeName: string;
 begin
   Result := True;
   //var.field.field
   if FDefineList.SearchSource(S, Item, SelStart) then
   begin
     TypeName := GetFirstWord(Item.Flag);
-    if (TypeName = '') or (StringIn(TypeName, ReservedTypes)) then Exit;
+    if (TypeName = '') or (StringIn(TypeName, ReservedTypes)) then
+      Exit;
     if GetBaseType(TypeName, Prior, Item.SelStart, ListAll, AllFunctions) then
       Item := Prior;
     Exit;
@@ -528,61 +537,72 @@ begin
   if FVarConstList.SearchSource(S, Item, SelStart) then
   begin
     TypeName := GetFirstWord(Item.Flag);
-    if (TypeName = '') or (StringIn(TypeName, ReservedTypes)) then Exit;
+    if (TypeName = '') or (StringIn(TypeName, ReservedTypes)) then
+      Exit;
     if GetBaseType(TypeName, Prior, Item.SelStart, ListAll, AllFunctions) then
       Item := Prior;
     Exit;
   end;
   //var.function().blabla
-  if FFuncObjList.SearchSource(S, Item, SelStart, False, ListAll, AllFunctions) then Exit;
-  if FTreeObjList.SearchSource(S, Item, SelStart) then Exit;
+  if FFuncObjList.SearchSource(S, Item, SelStart, False, ListAll, AllFunctions) then
+    Exit;
+  if FTreeObjList.SearchSource(S, Item, SelStart) then
+    Exit;
   Result := False;
 end;
 
-function TTokenFile.SearchToken(const S: String; var Item: TTokenClass;
+function TTokenFile.SearchToken(const S: string; var Item: TTokenClass;
   SelStart: Integer; AdvanceAfterSelStart: Boolean; Mode: TTokenSearchMode): Boolean;
 
   function HasOneToken(aCheck, aMode: TTokenSearchMode): Boolean;
   begin
     Result := not ((aCheck - aMode) = aMode) or (aMode = []);
   end;
-  
+
 begin
   Result := True;
   if HasOneToken([tkClass, tkStruct, tkTypeStruct, tkTypedef,
     tkTypedefProto, tkEnum, tkUnion, tkNamespace], Mode) then
     if FTreeObjList.SearchToken(S, Item, SelStart,
-      AdvanceAfterSelStart, Mode) then Exit;
+      AdvanceAfterSelStart, Mode) then
+      Exit;
   if HasOneToken([tkVariable, tkForward], Mode) then
     if FVarConstList.SearchToken(S, Item, SelStart,
-      AdvanceAfterSelStart, Mode) then Exit;
+      AdvanceAfterSelStart, Mode) then
+      Exit;
   if HasOneToken([tkPrototype, tkFunction], Mode) then
     if FFuncObjList.SearchToken(S, Item, SelStart, AdvanceAfterSelStart,
-      Mode) then Exit;
+      Mode) then
+      Exit;
   if HasOneToken([tkInclude], Mode) then
     if FIncludeList.SearchToken(S, Item, SelStart, AdvanceAfterSelStart,
-      Mode) then Exit;
+      Mode) then
+      Exit;
   if HasOneToken([tkDefine], Mode) then
     if FDefineList.SearchToken(S, Item, SelStart, AdvanceAfterSelStart,
-      Mode) then Exit;
+      Mode) then
+      Exit;
   Result := False;
 end;
 
-function TTokenFile.SearchSource(const S: String; var Item: TTokenClass;
+function TTokenFile.SearchSource(const S: string; var Item: TTokenClass;
   NotAtSelStart: Integer; AdvanceAfterSelStart: Boolean; ListAll: TStrings;
   AllFunctions: Boolean): Boolean;
 begin
   Result := True;
-  if FVarConstList.SearchSource(S, Item, NotAtSelStart, AdvanceAfterSelStart) then Exit;
+  if FVarConstList.SearchSource(S, Item, NotAtSelStart, AdvanceAfterSelStart) then
+    Exit;
   if FFuncObjList.SearchSource(S, Item, NotAtSelStart, AdvanceAfterSelStart,
-    ListAll, AllFunctions) then Exit;
+    ListAll, AllFunctions) then
+    Exit;
   if FTreeObjList.SearchSource(S, Item, NotAtSelStart, AdvanceAfterSelStart,
-    ListAll, AllFunctions) then Exit;
-  if FDefineList.SearchSource(S, Item, NotAtSelStart, AdvanceAfterSelStart) then Exit;
+    ListAll, AllFunctions) then
+    Exit;
+  if FDefineList.SearchSource(S, Item, NotAtSelStart, AdvanceAfterSelStart) then
+    Exit;
   //if FIncludeList.SearchSource(S, Item, NotAtSelStart, AdvanceAfterSelStart) then Exit;
   Result := False;
 end;
-
 
 function TTokenFile.GetScopeAt(var scopeToken: TTokenClass;
   SelStart: Integer): Boolean;
@@ -690,6 +710,7 @@ begin
 end;
 
 //parse functions
+
 function TTokenFiles.ParseLoad(FileList: TStrings): Boolean;
 begin
   Result := ParseLoad(FileList, fOnStart, fOnProgress, fOnFinish);
@@ -703,7 +724,7 @@ var
   Text: TStringList;
   ParserOk: Boolean;
   FileObj: TFileObject;
-  S: String;
+  S: string;
 begin
   fCancel := False;
   fBusy := True;
@@ -715,12 +736,13 @@ begin
   while FileList.Count > 0 do
   begin
     ParserOk := False;
-    if fCancel then Break;
+    if fCancel then
+      Break;
     S := FileList.Strings[0];
     TokenFile := nil;
     if S <> '-' then
     begin
-      if FileExists(S) and (IndexOfByFileName(S, FileList.Objects[0]) < 0) then
+      if FileExists(S) and (IndexOfByFileName(S) < 0) then
       begin
         TokenFile := TTokenFile.Create(Self);
         TokenFile.FileName := S;
@@ -740,7 +762,7 @@ begin
     begin
       FileObj := TFileObject(FileList.Objects[0]);
       S := FileObj.FileName;
-      if IndexOfByFileName(S, FileObj.ID) < 0 then
+      if IndexOfByFileName(S) < 0 then
       begin
         TokenFile := TTokenFile.Create(Self);
         TokenFile.FileName := S;
@@ -771,18 +793,21 @@ begin
   fBusy := False;
 end;
 
-function TTokenFiles.ParseRecursiveAux(const FileName: String;
+function TTokenFiles.ParseRecursiveAux(const FileName: string;
   FilesParsed: Integer; fProgressEvent: TProgressEvent): Integer;
 var
   I: Integer;
   TokenFile: TTokenFile;
   Text: TStringList;
-  PathOnly, NewFileName: String;
+  PathOnly, NewFileName: string;
 begin
   Result := FilesParsed;
-  if not FileExists(FileName) then Exit;
-  if IndexOfByFileName(FileName) >= 0 then Exit;
-  if fCancel then Exit;
+  if not FileExists(FileName) then
+    Exit;
+  if IndexOfByFileName(FileName) >= 0 then
+    Exit;
+  if fCancel then
+    Exit;
   Text := TStringList.Create;
   TokenFile := TTokenFile.Create(Self);
   TokenFile.FileName := FileName;
@@ -797,23 +822,25 @@ begin
   Add(TokenFile);
   Inc(Result);
   if Assigned(fProgressEvent) then
-     fProgressEvent(Self, TokenFile, FileName, Result, Result, True, fMethod);
+    fProgressEvent(Self, TokenFile, FileName, Result, Result, True, fMethod);
   PathOnly := ExtractFilePath(FileName);
   for I := 0 to TokenFile.Includes.Count - 1 do
   begin
     NewFileName := PathOnly + ConvertSlashes(TokenFile.Includes.Items[I].Name);
-    if (IndexOfByFileName(NewFileName) >= 0) then Continue;
-    if fCancel then Exit;
+    if (IndexOfByFileName(NewFileName) >= 0) then
+      Continue;
+    if fCancel then
+      Exit;
     Result := ParseRecursiveAux(NewFileName, Result, fProgressEvent);
   end;
 end;
 
-function TTokenFiles.ParseRecursive(const FileName: String): Integer;
+function TTokenFiles.ParseRecursive(const FileName: string): Integer;
 begin
   Result := ParseRecursive(FileName, fOnStart, fOnProgress, fOnFinish);
 end;
 
-function TTokenFiles.ParseRecursive(const FileName: String;
+function TTokenFiles.ParseRecursive(const FileName: string;
   fStartEvent: TNotifyEvent; fProgressEvent: TProgressEvent;
   fFinishEvent: TNotifyEvent): Integer;
 begin
@@ -829,21 +856,24 @@ begin
 end;
 
 function TTokenFiles.LoadRecursiveAux(const FileName, BaseDir, FromBaseDir,
-  Extension: String; FilesParsed: Integer; fProgressEvent: TProgressEvent): Integer;
+  Extension: string; FilesParsed: Integer; fProgressEvent: TProgressEvent): Integer;
 var
   I: Integer;
   TokenFile: TTokenFile;
-  FromName, DirFrom, DirBase, NewLoadName: String;
+  FromName, DirFrom, DirBase, NewLoadName: string;
 begin
   Result := FilesParsed;
-  if IndexOfByFileName(FileName) >= 0 then Exit;
-  if fCancel then Exit;
+  if IndexOfByFileName(FileName) >= 0 then
+    Exit;
+  if fCancel then
+    Exit;
   DirFrom := IncludeTrailingPathDelimiter(FromBaseDir);
   DirFrom := DirFrom + ExtractRelativePath(BaseDir, ExtractFilePath(FileName));
   DirFrom := IncludeTrailingPathDelimiter(DirFrom);
   FromName := DirFrom + ExtractFileName(FileName);
   FromName := ChangeFileExt(FromName, Extension);
-  if not FileExists(FromName) then Exit;
+  if not FileExists(FromName) then
+    Exit;
   TokenFile := TTokenFile.Create(Self);
   if not TokenFile.LoadFromFile(FileName, FromName) then
   begin
@@ -858,27 +888,29 @@ begin
   Add(TokenFile);
   Inc(Result);
   if Assigned(fProgressEvent) then
-     fProgressEvent(Self, TokenFile, FileName, Result, Result, True, fMethod);
+    fProgressEvent(Self, TokenFile, FileName, Result, Result, True, fMethod);
   DirBase := ExtractFilePath(FileName);
   for I := 0 to TokenFile.Includes.Count - 1 do
   begin
     NewLoadName := DirBase + ConvertSlashes(TokenFile.Includes.Items[I].Name);
-    if (IndexOfByFileName(NewLoadName) >= 0) then Continue;
-    if fCancel then Exit;
+    if (IndexOfByFileName(NewLoadName) >= 0) then
+      Continue;
+    if fCancel then
+      Exit;
     Result := LoadRecursiveAux(NewLoadName, BaseDir, FromBaseDir, Extension,
       Result, fProgressEvent);
   end;
 end;
 
 function TTokenFiles.LoadRecursive(const FileName, BaseDir, FromBaseDir,
-  Extension: String): Integer;
+  Extension: string): Integer;
 begin
   Result := LoadRecursive(FileName, BaseDir, FromBaseDir, Extension, fOnStart,
     fOnProgress, fOnFinish);
 end;
 
 function TTokenFiles.LoadRecursive(const FileName, BaseDir, FromBaseDir,
-  Extension: String; fStartEvent: TNotifyEvent; fProgressEvent: TProgressEvent;
+  Extension: string; fStartEvent: TNotifyEvent; fProgressEvent: TProgressEvent;
   fFinishEvent: TNotifyEvent): Integer;
 begin
   fCancel := False;
@@ -894,21 +926,21 @@ begin
 end;
 
 function TTokenFiles.ParseAndSaveFiles(FileList: TStrings;
-  const BaseDir, DestBaseDir, Extension: String): Boolean;
+  const BaseDir, DestBaseDir, Extension: string): Boolean;
 begin
   Result := ParseAndSaveFiles(FileList, BaseDir, DestBaseDir, Extension,
-      fOnStart, fOnProgress, fOnFinish);
+    fOnStart, fOnProgress, fOnFinish);
 end;
 
 function TTokenFiles.ParseAndSaveFiles(FileList: TStrings; const BaseDir, DestBaseDir,
-  Extension: String; fStartEvent: TNotifyEvent; fProgressEvent: TProgressEvent;
+  Extension: string; fStartEvent: TNotifyEvent; fProgressEvent: TProgressEvent;
   fFinishEvent: TNotifyEvent): Boolean;
 var
   I: Integer;
   TokenFile: TTokenFile;
   Text: TStringList;
   ParserOk, CanParse: Boolean;
-  DestName, DirDest: String;
+  DestName, DirDest: string;
   Header: TSimpleFileToken;
 begin
   fCancel := False;
@@ -917,10 +949,11 @@ begin
   if Assigned(fStartEvent) then
     fStartEvent(Self);
   Text := TStringList.Create;
-  for I:= 0 to FileList.Count - 1 do
+  for I := 0 to FileList.Count - 1 do
   begin
     ParserOk := False;
-    if fCancel then Break;
+    if fCancel then
+      Break;
     DestName := FileList.Strings[I];
     if FileExists(FileList.Strings[I]) then
     begin
@@ -973,7 +1006,8 @@ end;
 
 procedure TTokenFiles.ParserProgress(Sender: TObject; Current, Total: Integer);
 begin
-  if fCancel then fParser.Cancel;
+  if fCancel then
+    fParser.Cancel;
 end;
 
 //List manipulation
@@ -986,7 +1020,7 @@ end;
 function TTokenFiles.Remove(Item: TTokenFile): Integer;
 begin
   Result := IndexOf(Item);
-  if Result >= 0then
+  if Result >= 0 then
     Delete(Result);
 end;
 
@@ -1000,7 +1034,7 @@ procedure TTokenFiles.Clear;
 var
   I: Integer;
 begin
-  for I:= 0 to FList.Count - 1 do
+  for I := 0 to FList.Count - 1 do
     TTokenFile(FList.Items[I]).Free;
   FList.Clear;
 end;
@@ -1016,14 +1050,13 @@ begin
   Result := FList.IndexOf(Item);
 end;
 
-function TTokenFiles.IndexOfByFileName(FileName: String; ID: Pointer = nil): Integer;
+function TTokenFiles.IndexOfByFileName(FileName: string): Integer;
 var
   I: Integer;
 begin
-  for I:= 0 to Count - 1 do
+  for I := 0 to Count - 1 do
   begin
-    if (CompareText(FileName, Items[I].FileName) = 0) and
-       ((Items[I].Data = nil) or (ID = nil) or (Items[I].Data = ID))  then
+    if (CompareText(FileName, Items[I].FileName) = 0) then
     begin
       Result := I;
       Exit;
@@ -1032,11 +1065,11 @@ begin
   Result := -1;
 end;
 
-function TTokenFiles.IndexOfByParsedFileName(const ParsedFileName: String): Integer;
+function TTokenFiles.IndexOfByParsedFileName(const ParsedFileName: string): Integer;
 var
   I: Integer;
 begin
-  for I:= 0 to Count - 1 do
+  for I := 0 to Count - 1 do
   begin
     if CompareText(ParsedFileName, Items[I].ParsedFileName) = 0 then
     begin
@@ -1047,7 +1080,7 @@ begin
   Result := -1;
 end;
 
-function TTokenFiles.RemoveWithIncludes(const FileName: String): Integer;
+function TTokenFiles.RemoveWithIncludes(const FileName: string): Integer;
 begin
   Result := 0;
   //....
@@ -1060,7 +1093,7 @@ function TTokenFiles.GetAllTokensOfScope(SelStart: Integer;
 var
   token, Scope: TTokenClass;
   AllScope: Boolean;
-  Fields: String;
+  Fields: string;
 begin
   Result := False;
   thisToken := nil;
@@ -1094,7 +1127,7 @@ begin
       Fields := Token.Name + '::' + Fields;
     end;
     AllScope := SearchTreeToken(Fields, TokenFile,
-        TokenFile, Token, [tkClass, tkNamespace], Token.SelStart);
+      TokenFile, Token, [tkClass, tkNamespace], Token.SelStart);
   end;
   if AllScope then
   begin
@@ -1105,14 +1138,13 @@ begin
   Result := True;
 end;
 
-
-function TTokenFiles.SearchSourceRecursive(const S: String;
+function TTokenFiles.SearchSourceRecursive(const S: string;
   TokenFile: TTokenFile; var TokenFileItem: TTokenFile; var Item: TTokenClass;
   FindedList: TStrings; SelStart: Integer; ListAll: TStrings;
   AllFunctions: Boolean): Boolean;
 var
   I, Index: Integer;
-  FilePath: String;
+  FilePath: string;
 begin
   //search in this file
   Result := TokenFile.SearchSource(S, Item, SelStart, False, ListAll, AllFunctions);
@@ -1133,14 +1165,14 @@ begin
       FindedList) then
       Continue;
     if SearchSourceRecursive(S, Items[Index], TokenFileItem,
-                  Item, FindedList, 0, ListAll, AllFunctions) then
+      Item, FindedList, 0, ListAll, AllFunctions) then
       Result := True;
     if Result and not AllFunctions then
       Break;
   end;
 end;
 
-function TTokenFiles.SearchClassSource(const S: String; Token: TTokenClass;
+function TTokenFiles.SearchClassSource(const S: string; Token: TTokenClass;
   TokenFile: TTokenFile; var TokenFileItem: TTokenFile; var Item: TTokenClass;
   ListAll: TStrings; AllFunctions: Boolean;
   AllowScope: TScopeClassState): Boolean;
@@ -1148,7 +1180,7 @@ function TTokenFiles.SearchClassSource(const S: String; Token: TTokenClass;
   function SearchClassSourceRecursive(TokenItem: TTokenFile;
     aToken: TTokenClass; aAllowScope, DenyScope: TScopeClassState): Boolean;
   var
-    SearchClass: String;
+    SearchClass: string;
     scopeToken: TTokenClass;
     fromScope: TScopeClass;
     List: TStrings;
@@ -1227,17 +1259,16 @@ begin
   DenyScope := [];
   if not (AllowScope = []) then
     DenyScope := [scPrivate, scProtected];
-  Result := SearchClassSourceRecursive(TokenFile, Token, []{AllowScope},
-    DenyScope);
+  Result := SearchClassSourceRecursive(TokenFile, Token, AllowScope, DenyScope);
 end;
 
-function TTokenFiles.SearchSource(const S: String; TokenFile: TTokenFile;
+function TTokenFiles.SearchSource(const S: string; TokenFile: TTokenFile;
   var TokenFileItem: TTokenFile; var Item: TTokenClass; SelStart: Integer;
   ListAll: TStrings; AllFunctions: Boolean): Boolean;
 var
   FindedList: TStrings;
   AllScope: Boolean;
-  Fields: String;
+  Fields: string;
   Scope, Token: TTokenClass;
 begin
   //get current object in location
@@ -1276,7 +1307,7 @@ begin
         Fields := Token.Name + '::' + Fields;
       end;
       AllScope := SearchTreeToken(Fields, TokenFile,
-          TokenFileItem, Token, [tkClass, tkNamespace], Token.SelStart);
+        TokenFileItem, Token, [tkClass, tkNamespace], Token.SelStart);
     end;
     //search on class, struct
     if AllScope then
@@ -1312,12 +1343,12 @@ begin
   FindedList.Free;
 end;
 
-function TTokenFiles.SearchTokenRecursive(const S: String; TokenFile: TTokenFile;
+function TTokenFiles.SearchTokenRecursive(const S: string; TokenFile: TTokenFile;
   var TokenFileItem: TTokenFile; var Token: TTokenClass; Mode: TTokenSearchMode;
   FindedList: TStrings; SelStart: Integer): Boolean;
 var
   I, Index: Integer;
-  FilePath: String;
+  FilePath: string;
 begin
   Result := TokenFile.SearchToken(S, Token, SelStart, False, Mode);
   if Result then
@@ -1336,16 +1367,17 @@ begin
       FindedList) then
       Continue;
     Result := SearchTokenRecursive(S, Items[Index], TokenFileItem,
-                  Token, Mode, FindedList, 0);
-    if Result then Break;
+      Token, Mode, FindedList, 0);
+    if Result then
+      Break;
   end;
 end;
 
 function TTokenFiles.InvalidOrFinded(var Index: Integer;
-  const FilePath: String; IncludeToken: TTokenClass;
+  const FilePath: string; IncludeToken: TTokenClass;
   FindedList: TStrings): Boolean;
 var
-  FindName: String;
+  FindName: string;
 begin
   //file environment #include <stdio.h>
   if IncludeToken.Flag = 'S' then
@@ -1374,7 +1406,7 @@ begin
   Result := (Index < 0) or (FindedList.IndexOf(FindName) >= 0);
 end;
 
-function TTokenFiles.SearchToken(const S: String; TokenFile: TTokenFile;
+function TTokenFiles.SearchToken(const S: string; TokenFile: TTokenFile;
   var TokenFileItem: TTokenFile; var Token: TTokenClass; Mode: TTokenSearchMode;
   SelStart: Integer): Boolean;
 var
@@ -1386,13 +1418,13 @@ begin
   FindedList.Free;
 end;
 
-function TTokenFiles.SearchTreeTokenRecursive(const Fields: String;
+function TTokenFiles.SearchTreeTokenRecursive(const Fields: string;
   TokenFile: TTokenFile; var TokenFileItem: TTokenFile; var Token: TTokenClass;
   Mode: TTokenSearchMode; FindedList: TStrings; SelStart: Integer): Boolean;
 var
   List: TStrings;
   I, Index: Integer;
-  FilePath: String;
+  FilePath: string;
 begin
   Result := False;
   List := TStringList.Create;
@@ -1429,13 +1461,13 @@ begin
       FindedList) then
       Continue;
     Result := SearchTreeTokenRecursive(Fields, Items[Index], TokenFileItem,
-                  Token, Mode, FindedList, 0);
+      Token, Mode, FindedList, 0);
     if Result then
       Break;
   end;
 end;
 
-function TTokenFiles.SearchTreeToken(const Fields: String; TokenFile: TTokenFile;
+function TTokenFiles.SearchTreeToken(const Fields: string; TokenFile: TTokenFile;
   var TokenFileItem: TTokenFile; var Token: TTokenClass; Mode: TTokenSearchMode;
   SelStart: Integer): Boolean;
 var
@@ -1450,51 +1482,92 @@ begin
   FindedList.Free;
 end;
 
-function TTokenFiles.FindDeclaration(const S: String; TokenFile: TTokenFile;
+function TTokenFiles.FindDeclaration(const Input, Fields: string; TokenFile: TTokenFile;
   var TokenFileItem: TTokenFile; var Item: TTokenClass;
   SelStart, SelLine: Integer): Boolean;
 var
-  FindedList: TStrings;
+  S, AllFields, FirstInput: string;
+  AllowScope: TScopeClassState;
+  Scope, SaveScope, saveItem: TTokenClass;
+  saveTokenFileItem: TTokenFile;
+  AllScope: Boolean;
 begin
-  FindedList := TStringList.Create;
-  Result :=  False;
-  //ignore var in function params
-  if TokenFile.GetTokenAt(Item, SelStart) then
+  AllFields := Fields;
+  if TokenFile.GetScopeAt(Item, SelStart) then
   begin
-       //item is a struct or class and not have an Ancestor
-    if ((Item.Token in [tkStruct, tkClass]) and (Item.Flag = '')) or
-       //item is a variable in function params
-       ((Item.Token in [tkVariable]) and (Item.Level > 0) and
-       Assigned(Item.Parent) and (Item.Parent.Token = tkParams)) or
-       //invalid object
-       (Item.Token in [tkInclude]) then
+    if (Item.Token in [tkNamespace]) then
     begin
-      FindedList.Free;
-      Exit;
+      AllFields := Item.Name + '::' + AllFields;
+      while Assigned(Item.Parent) and (Item.Parent.Token in [tkNamespace]) do
+      begin
+        Item := Item.Parent;
+        AllFields := Item.Name + '::' + AllFields;
+      end;
     end;
-    ShowMessage('Valid Declaration: ' + Item.Name + ' : ' + Item.Flag);
-    //TODO process here
-    FindedList.Free;
-    Result :=  True;
+    if (AllFields <> '') and SearchTreeToken(AllFields, TokenFile,
+      TokenFileItem, Item, [tkClass, tkNamespace], Item.SelStart) then
+    begin
+      if (Input <> '') and Item.SearchSource(Input, Item) then
+      begin
+        //finded
+        Result := True;
+        Exit;
+      end;
+    end;
+  end;
+
+  S := AllFields;
+  //AllFields := AllFields + Input;
+  FirstInput := GetFirstWord(AllFields); //enum fields and functions class
+    //search base type and list fields and functions of struct, union or class
+
+  if (S <> '') and GetFieldsBaseType(FirstInput, AllFields,
+    SelStart, TokenFile, TokenFileItem, Item) then
+  begin
+
+    AllowScope := [];
+    if TokenFile.GetScopeAt(Scope, SelStart) then
+    begin
+      SaveScope := Scope;
+      Scope := GetTokenByName(Scope, 'Scope', tkScope);
+      AllScope := Assigned(Scope) and (Scope.Flag = Item.Name);
+      if not AllScope then
+      begin
+        SaveScope := SaveScope.Parent;
+        if Assigned(SaveScope) and (SaveScope.Token = tkScopeClass) then
+          SaveScope := SaveScope.Parent;
+        if Assigned(SaveScope) and (SaveScope.Name = Item.Name) then
+          AllScope := True;
+      end;
+    end
+    else
+      AllScope := Pos('::', Fields) > 0;
+    if not AllScope then
+      AllowScope := AllowScope + [scPublic];
+    saveItem := Item;
+    saveTokenFileItem := TokenFileItem;
+    Result := SearchClassSource(Input, saveItem, saveTokenFileItem, TokenFileItem, Item, nil,
+      False, AllowScope);
+    Exit;
+  end
+  else if (S = '') and SearchSource(GetFirstWord(AllFields + Input), TokenFile,
+    TokenFileItem, Item, SelStart) then
+  begin
+    //finded
+    Result := True;
     Exit;
   end;
-
-  if SearchSource(S, TokenFile, TokenFileItem, Item, SelStart) then
-  begin
-    ShowMessage('SearchSource Valid Declaration: ' + Item.Name + ' : ' + Item.Flag);
-    Result :=  True;
-  end;
-  FindedList.Free;
+  Result := False;
 end;
 
-function TTokenFiles.GetBaseTypeRecursive(const S: String;
+function TTokenFiles.GetBaseTypeRecursive(const S: string;
   SelStart: Integer; TokenFile: TTokenFile; var TokenFileItem: TTokenFile;
   var Token: TTokenClass; FindedList: TStrings; ListAll: TStrings;
   AllFunctions: Boolean): Boolean;
 var
   Index, I: Integer;
-  FilePath: String;
-  LastWord: String;
+  FilePath: string;
+  LastWord: string;
 begin
   LastWord := S;
   Result := False;
@@ -1508,8 +1581,10 @@ begin
         Exit;
       LastWord := GetVarType(Token.Flag);
       if (Token.Token = tkDefine) then
-        if IsNumber(LastWord) then Exit;
-      if SelStart = Token.SelStart then Break;
+        if IsNumber(LastWord) then
+          Exit;
+      if SelStart = Token.SelStart then
+        Break;
       SelStart := Token.SelStart;
     end
     else
@@ -1520,7 +1595,8 @@ begin
 
   //Skip token haven't a Ancestor type
   if not (Token.Token in [tkDefine, tkVariable, tkTypeStruct, tkTypeUnion,
-      tkTypedef, tkPrototype, tkFunction]) then Exit;
+    tkTypedef, tkPrototype, tkFunction]) then
+    Exit;
 
   //searched filepath
   FilePath := ExtractFilePath(TokenFile.FileName);
@@ -1536,12 +1612,13 @@ begin
     begin
       Result := True;
       if not (Token.Token in [tkDefine, tkVariable, tkTypeStruct, tkTypeUnion,
-        tkTypedef, tkPrototype, tkFunction]) then Break;
+        tkTypedef, tkPrototype, tkFunction]) then
+        Break;
     end;
   end;
 end;
 
-function TTokenFiles.GetBaseType(const S: String; SelStart: Integer;
+function TTokenFiles.GetBaseType(const S: string; SelStart: Integer;
   TokenFile: TTokenFile; var TokenFileItem: TTokenFile;
   var Token: TTokenClass; ListAll: TStrings; AllFunctions: Boolean): Boolean;
 var
@@ -1570,7 +1647,7 @@ procedure TTokenFiles.FillCompletionClass(InsertList, ShowList: TStrings;
     Token: TTokenClass; aAllowScope, DenyScope: TScopeClassState;
     TokenList: TTokenList);
   var
-    SearchClass: String;
+    SearchClass: string;
     List: TStrings;
     I: Integer;
   begin
@@ -1637,9 +1714,9 @@ begin
   TokenList.Free;
 end;
 
-function TTokenFiles.GetFieldsBaseType(const S, Fields: String;
+function TTokenFiles.GetFieldsBaseType(const S, Fields: string;
   SelStart: Integer; TokenFile: TTokenFile; var TokenFileItem: TTokenFile;
-  var Token: TTokenClass; CodeCompletion: Boolean): Boolean;
+  var Token: TTokenClass): Boolean;
 var
   List: TStrings;
   I: Integer;
@@ -1655,7 +1732,7 @@ begin
     if (Token.Token in [tkVariable, tkFunction, tkPrototype, tkDefine]) then
     begin
       if not GetBaseType(GetVarType(Token.Flag), Token.SelStart,
-            TokenFileItem, TokenFileItem, Token) then
+        TokenFileItem, TokenFileItem, Token) then
       begin
         Result := List.Count = 0;
         List.Free;
@@ -1666,7 +1743,7 @@ begin
   if (Token.Token in [tkTypedef]) and (Pos('struct', Token.Flag) > 0) then
   begin
     GetBaseType(GetVarType(Token.Flag), 0,
-            TokenFile, TokenFileItem, Token);
+      TokenFile, TokenFileItem, Token);
   end;
   for I := 0 to List.Count - 1 do
   begin
@@ -1684,7 +1761,7 @@ begin
       end;
       //last parameter and get tree for completion
       // var.field()->
-      if (I = List.Count - 1) and CodeCompletion and
+      if (I = List.Count - 1) and
         (not StringIn(GetVarType(Token.Flag), ReservedTypes) and
         not GetBaseType(GetVarType(Token.Flag), 0, TokenFileItem,
         TokenFileItem, Token)) then
@@ -1720,7 +1797,7 @@ begin
       end;
       //last parameter and get tree for completion
       // var.field()->
-      if (I = List.Count - 1) and CodeCompletion and
+      if (I = List.Count - 1) and
         (not StringIn(GetVarType(Token.Flag), ReservedTypes) and
         not GetBaseType(GetVarType(Token.Flag), 0, TokenFileItem,
         TokenFileItem, Token)) then
@@ -1752,7 +1829,7 @@ begin
   Result := True;
 end;
 
-function TTokenFiles.GetFieldsBaseParams(const S, Fields: String;
+function TTokenFiles.GetFieldsBaseParams(const S, Fields: string;
   SelStart: Integer; TokenFile: TTokenFile; ParamsList: TStrings): Boolean;
 var
   List: TStrings;
@@ -1774,7 +1851,7 @@ begin
     end;
     //Search for constructor
     if Result and (Token.Token in [tkClass, tkTypeStruct, tkStruct, tkUnion,
-        tkTypeUnion]) then
+      tkTypeUnion]) then
     begin
       if not SearchClassSource(S, Token, TokenFileItem,
         TokenFileItem, Token, ParamsList, True) then
@@ -1795,13 +1872,13 @@ begin
     Exit;
   end;
   if (S <> 'this') then
-  begin    //prototype var(); or var.bla or func()->bla
+  begin //prototype var(); or var.bla or func()->bla
     if ((Token.Token in [tkVariable, tkFunction, tkDefine]) and (List.Count > 0))
-     or ((Token.Token in [tkVariable, tkDefine]) and (List.Count = 0)) then
+      or ((Token.Token in [tkVariable, tkDefine]) and (List.Count = 0)) then
     begin
       //search for variable or return type
       if not GetBaseType(GetVarType(Token.Flag), Token.SelStart,
-            TokenFileItem, TokenFileItem, Token, ParamsList, List.Count = 0) then
+        TokenFileItem, TokenFileItem, Token, ParamsList, List.Count = 0) then
       begin
         List.Free;
         Exit;
@@ -1811,7 +1888,7 @@ begin
   for I := 0 to List.Count - 1 do
   begin
     if (Token.Token in [tkClass, tkTypeStruct, tkStruct, tkUnion,
-        tkTypeUnion]) then
+      tkTypeUnion]) then
     begin
       if (I = List.Count - 1) then
       begin
@@ -1856,7 +1933,7 @@ begin
         end
         //base of type of var is an prototype and last fild
         else if (Token.Token in [tkTypedefProto]) and (I = List.Count - 1) then
-            ParamsList.AddObject('', Token)
+          ParamsList.AddObject('', Token)
         else
           Result := False;
         if not Result then
@@ -1887,7 +1964,7 @@ begin
       end
       //base of type of var or function is an prototype and last fild
       else if (Token.Token in [tkTypedefProto]) and (I = List.Count - 1) then
-          ParamsList.AddObject('', Token)
+        ParamsList.AddObject('', Token)
       //base of type of var is class, struct or union
       else if Token.Token in [tkClass, tkTypeStruct, tkStruct, tkUnion,
         tkTypeUnion] then
@@ -1919,7 +1996,7 @@ procedure TTokenFiles.FillCompletionListRecursive(InsertList,
   IncludedList: TStrings; CompletionColors: TCompletionColors);
 var
   I, Index: Integer;
-  FilePath: String;
+  FilePath: string;
 begin
   FillCompletion(InsertList, ShowList, TokenFile.VarConsts, -1, CompletionColors);
   FillCompletion(InsertList, ShowList, TokenFile.FuncObjs, -1, CompletionColors);
@@ -1937,7 +2014,7 @@ begin
       IncludedList) then
       Continue;
     FillCompletionListRecursive(InsertList, ShowList, Items[Index],
-     IncludedList, CompletionColors);
+      IncludedList, CompletionColors);
   end;
 end;
 
@@ -1947,7 +2024,7 @@ procedure TTokenFiles.FillCompletionList(InsertList,
 var
   IncludedList: TStrings;
   I, Index: Integer;
-  FilePath: String;
+  FilePath: string;
 begin
 
   IncludedList := TStringList.Create;
@@ -1967,7 +2044,7 @@ begin
       IncludedList) then
       Continue;
     FillCompletionListRecursive(InsertList, ShowList, Items[Index],
-     IncludedList, CompletionColors);
+      IncludedList, CompletionColors);
   end;
 
   IncludedList.Free;
@@ -1980,14 +2057,15 @@ var
   NewToken, Scope: TTokenClass;
   ShowClassFunction: Boolean;
 begin
-  for I:= 0 to Token.Count - 1 do
+  for I := 0 to Token.Count - 1 do
   begin
-    if (SelStart >= 0) and (Token.Items[I].SelStart > SelStart) then Exit;
+    if (SelStart >= 0) and (Token.Items[I].SelStart > SelStart) then
+      Exit;
     ShowClassFunction := True;
     if not (Token.Items[I].Token in [tkEnumItem, tkEnum, tkTypeEnum]) then
     begin
       if (Token.Items[I].Token in [tkScope, tkUsing]) or
-         ((Token.Items[I].Level > 0) and not IncludeParams) then
+        ((Token.Items[I].Level > 0) and not IncludeParams) then
         Continue;
       if Token.Items[I].Token in [tkFunction, tkConstructor, tkDestructor] then
       begin
@@ -2001,7 +2079,7 @@ begin
     if not (Token.Items[I].Token in [tkParams]) and ShowClassFunction then
     begin
       NewToken := TTokenClass.Create;
-      NewToken.Assign(Token.Items[I]);//copy
+      NewToken.Assign(Token.Items[I]); //copy
       if Assigned(InsertList) then
         InsertList.AddObject(CompletionInsertItem(NewToken), NewToken);
       if Assigned(ShowList) then
@@ -2010,9 +2088,10 @@ begin
         [tkStruct, tkTypedef, tkClass, tkUnion, tkScopeClass] then
         Continue;
     end
-    else if not IncludeParams then Continue;
+    else if not IncludeParams then
+      Continue;
     case Token.Items[I].Token of
-      {tkClass, }tkFunction{, tkStruct}, tkParams, tkEnum, tkTypeEnum:
+      {tkClass, }tkFunction {, tkStruct}, tkParams, tkEnum, tkTypeEnum:
         FillCompletion(InsertList, ShowList, Token.Items[I], SelStart,
           CompletionColors, IncludeParams);
     end;

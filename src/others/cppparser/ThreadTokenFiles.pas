@@ -10,7 +10,7 @@ type
   private
     { Private declarations }
     fTokenFile: TTokenFile;
-    fProgsFileName: String;
+    fProgsFileName: string;
     fCurrent: Integer;
     fTotal: Integer;
     fParsed: Boolean;
@@ -22,18 +22,18 @@ type
     fCancel: Boolean;
     fTokenFiles: TTokenFiles;
     fFileList: TStrings;
-    fFileName: String;
-    fBaseDir: String;
-    fDestBaseDir: String;
-    fFromBaseDir: String;
-    fExtension: String;
+    fFileName: string;
+    fBaseDir: string;
+    fDestBaseDir: string;
+    fFromBaseDir: string;
+    fExtension: string;
     FBusy: Boolean;
     procedure DoStart;
     procedure DoProgress;
     procedure DoFinish;
     procedure ParserStart(Sender: TObject);
     procedure ParserProgress(Sender: TObject; TokenFile: TTokenFile;
-      const FileName: String; Current, Total: Integer; Parsed: Boolean;
+      const FileName: string; Current, Total: Integer; Parsed: Boolean;
       Method: TTokenParseMethod);
     procedure ParserFinish(Sender: TObject);
   protected
@@ -42,11 +42,11 @@ type
     constructor Create;
     destructor Destroy; override;
     procedure Start(TokenFiles: TTokenFiles; FileList: TStrings;
-      const BaseDir, DestBaseDir, Extension: String);
+      const BaseDir, DestBaseDir, Extension: string);
     procedure ParseLoad(TokenFiles: TTokenFiles; FileList: TStrings);
-    procedure ParseRecursive(TokenFiles: TTokenFiles; const FileName: String);
+    procedure ParseRecursive(TokenFiles: TTokenFiles; const FileName: string);
     procedure LoadRecursive(TokenFiles: TTokenFiles; const FileName, BaseDir,
-      FromBaseDir, Extension: String);
+      FromBaseDir, Extension: string);
     procedure Cancel;
     function AddFiles(FileList: TStrings): Boolean;
     property Busy: Boolean read FBusy;
@@ -64,29 +64,29 @@ begin
   FBusy := True;
   case fMethod of
     tpmLoadParsedRecursive:
-    begin
-      fTokenFiles.LoadRecursive(fFileName, fBaseDir, fFromBaseDir, fExtension,
-        ParserStart, ParserProgress, ParserFinish);
-      fFileList.Clear;
-    end;
+      begin
+        fTokenFiles.LoadRecursive(fFileName, fBaseDir, fFromBaseDir, fExtension,
+          ParserStart, ParserProgress, ParserFinish);
+        fFileList.Clear;
+      end;
     tpmParseAndSave:
-    begin
-      fTokenFiles.ParseAndSaveFiles(fFileList, fBaseDir, fDestBaseDir, fExtension,
-        ParserStart, ParserProgress, ParserFinish);
-      fFileList.Clear;
-    end;
+      begin
+        fTokenFiles.ParseAndSaveFiles(fFileList, fBaseDir, fDestBaseDir, fExtension,
+          ParserStart, ParserProgress, ParserFinish);
+        fFileList.Clear;
+      end;
     tpmParseAndLoad:
-    begin
-      fTokenFiles.ParseLoad(fFileList,
-        ParserStart, ParserProgress, ParserFinish);
-      fFileList.Clear;
-    end;
+      begin
+        fTokenFiles.ParseLoad(fFileList,
+          ParserStart, ParserProgress, ParserFinish);
+        fFileList.Clear;
+      end;
     tpmParseAndLoadRecursive:
-    begin
-      fTokenFiles.ParseRecursive(fFileName,
-        ParserStart, ParserProgress, ParserFinish);
-      fFileList.Clear;
-    end;
+      begin
+        fTokenFiles.ParseRecursive(fFileName,
+          ParserStart, ParserProgress, ParserFinish);
+        fFileList.Clear;
+      end;
   else
     DoFinish;
   end;
@@ -105,7 +105,7 @@ begin
 end;
 
 procedure TThreadTokenFiles.Start(TokenFiles: TTokenFiles; FileList: TStrings;
-      const BaseDir, DestBaseDir, Extension: String);
+  const BaseDir, DestBaseDir, Extension: string);
 begin
   fTokenFiles := TokenFiles;
   fFileList.Assign(FileList);
@@ -126,7 +126,7 @@ begin
 end;
 
 procedure TThreadTokenFiles.ParseRecursive(TokenFiles: TTokenFiles;
-  const FileName: String);
+  const FileName: string);
 begin
   fTokenFiles := TokenFiles;
   fFileName := FileName;
@@ -135,7 +135,7 @@ begin
 end;
 
 procedure TThreadTokenFiles.LoadRecursive(TokenFiles: TTokenFiles;
-  const FileName, BaseDir, FromBaseDir, Extension: String);
+  const FileName, BaseDir, FromBaseDir, Extension: string);
 begin
   fTokenFiles := TokenFiles;
   fFileName := FileName;
@@ -149,7 +149,8 @@ end;
 function TThreadTokenFiles.AddFiles(FileList: TStrings): Boolean;
 begin
   Result := False;
-  if not Busy then Exit;
+  if not Busy then
+    Exit;
   fFileList.AddStrings(FileList);
   Result := True;
 end;
@@ -186,7 +187,7 @@ begin
 end;
 
 procedure TThreadTokenFiles.ParserProgress(Sender: TObject; TokenFile: TTokenFile;
-  const FileName: String; Current, Total: Integer; Parsed: Boolean;
+  const FileName: string; Current, Total: Integer; Parsed: Boolean;
   Method: TTokenParseMethod);
 begin
   fTokenFile := TokenFile;
@@ -202,6 +203,5 @@ procedure TThreadTokenFiles.ParserFinish(Sender: TObject);
 begin
   Synchronize(DoFinish);
 end;
-
 
 end.

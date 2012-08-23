@@ -42,7 +42,7 @@ type
     tkScope,
     tkScopeClass,
     tkUsing
-  );
+    );
 
   TTokenSearchMode = set of TTkType;
 
@@ -58,27 +58,27 @@ type
   PTokenRecList = ^PTokenRec;
   TTokenRec = packed record
     Count: Word; //quantity of Child
-    Line:  Integer; //Line of word
+    Line: Integer; //Line of word
     Start: Integer; //Start of word in file
     SelLen: Word; //Length of Selection
     Level: Word;
     ScopeStart: Integer;
     ScopeEnd: Integer;
     Token: TTkType; //Type of Object
-    Len1 : Word; //Length of Name
-    Name : String;
-    Len2 : Word; //Length of Flag
-    Flag : String;
+    Len1: Word; //Length of Name
+    Name: string;
+    Len2: Word; //Length of Flag
+    Flag: string;
     Items: PTokenRecList; //Child objects
   end;
 
   TSimpleFileToken = packed record
-    Sign: array[0..6] of Char;//signature: FCP 1.0 -- Falcon C++ Parser version 1.0
-    Count: Word;      //quantity files parsed (TTokenFile)
+    Sign: array[0..6] of Char; //signature: FCP 1.0 -- Falcon C++ Parser version 1.0
+    Count: Word; //quantity files parsed (TTokenFile)
     DateOfFile: TDateTime;
   end;
 
-  TTokenClass = class;//forward
+  TTokenClass = class; //forward
 
   TTokenClass = class
   private
@@ -89,8 +89,8 @@ type
     FSelLength: Integer;
     FSelStart: Integer;
     FToken: TTkType;
-    FName: String;
-    FFlag: String;
+    FName: string;
+    FFlag: string;
     FLevel: Integer;
     FData: Pointer;
     function Get(Index: Integer): TTokenClass;
@@ -109,14 +109,14 @@ type
     //procedure LoadFromTokenRec(TokenRec: PTokenRec);
     destructor Destroy; override;
     function Add(Item: TTokenClass): Integer;
-    procedure Fill( SelLine: Integer;
-                    SelLength: Integer;
-                    SelStart: Integer;
-                    Level: Integer;
-                    Token: TTkType;
-                    Name: String;
-                    Flag: String
-                   );
+    procedure Fill(SelLine: Integer;
+      SelLength: Integer;
+      SelStart: Integer;
+      Level: Integer;
+      Token: TTkType;
+      Name: string;
+      Flag: string
+      );
     procedure Clear;
     function Count: Integer;
     procedure Delete(Index: Integer);
@@ -132,10 +132,10 @@ type
     function GetNextFunction(var Token: TTokenClass;
       SelStart: Integer = 0): Boolean;
     function Copy: TTokenClass;
-    function SearchToken(const S: String; var Item: TTokenClass;
+    function SearchToken(const S: string; var Item: TTokenClass;
       NotAtSelStart: Integer = 0; AdvanceAfterSelStart: Boolean = False;
       Mode: TTokenSearchMode = []): Boolean;
-    function SearchSource(const S: String; var Item: TTokenClass;
+    function SearchSource(const S: string; var Item: TTokenClass;
       NotAtSelStart: Integer = 0; AdvanceAfterSelStart: Boolean = False;
       ListAll: TStrings = nil; AllFunctions: Boolean = False): Boolean;
     property Items[Index: Integer]: TTokenClass read Get write Put;
@@ -146,8 +146,8 @@ type
     property SelLength: Integer read FSelLength write FSelLength;
     property SelStart: Integer read FSelStart write FSelStart;
     property Token: TTkType read FToken write FToken;
-    property Name: String read FName write FName;
-    property Flag: String read FFlag write FFlag;
+    property Name: string read FName write FName;
+    property Flag: string read FFlag write FFlag;
     property Level: Integer read FLevel write FLevel;
     property Data: Pointer read FData write FData;
   end;
@@ -177,7 +177,6 @@ type
   procedure SaveToken(const FileName: String; Token: PTokenRec);
   function LoadToken(const FileName: String): PTokenRec;
 
-
   procedure SaveFileParsedToken(const FileName: String;
                                 FileDate: TDateTime;
                                 Token: array of PTokenRec);
@@ -187,6 +186,7 @@ implementation
 uses SysUtils, TokenUtils;
 
 {TTokenClass}
+
 constructor TTokenClass.Create(Parent: TTokenClass);
 begin
   inherited Create;
@@ -229,7 +229,7 @@ begin
   NewObj.FData := ACopy.FData;
   NewObj.FOwner := ACopy.FOwner;
   Ato.Add(NewObj);
-  for I:= 0 to ACopy.Count - 1 do
+  for I := 0 to ACopy.Count - 1 do
     AssignRecursive(NewObj, ACopy.Items[I], NewObj);
 end;
 
@@ -239,8 +239,10 @@ var
   I: Integer;
 begin
   NewObj := TTokenClass(AObject);
-  if not Assigned(NewObj) then Exit;
-  if not (NewObj is TTokenClass) then Exit;
+  if not Assigned(NewObj) then
+    Exit;
+  if not (NewObj is TTokenClass) then
+    Exit;
   Clear;
   FParent := NewObj.FParent;
   FOwner := NewObj.FOwner;
@@ -252,7 +254,7 @@ begin
   FFlag := NewObj.FFlag;
   FLevel := NewObj.FLevel;
   FData := NewObj.FData;
-  for I:= 0 to NewObj.Count - 1 do
+  for I := 0 to NewObj.Count - 1 do
     AssignRecursive(Self, NewObj.Items[I], Self);
 end;
 
@@ -261,8 +263,10 @@ var
   NewObj: TTokenClass;
 begin
   NewObj := TTokenClass(AObject);
-  if not Assigned(NewObj) then Exit;
-  if not (NewObj is TTokenClass) then Exit;
+  if not Assigned(NewObj) then
+    Exit;
+  if not (NewObj is TTokenClass) then
+    Exit;
   FOwner := NewObj.FOwner;
   FSelLine := NewObj.FSelLine;
   FSelLength := NewObj.FSelLength;
@@ -292,36 +296,36 @@ begin
   Result := FList.Add(Item);
 end;
 
-procedure TTokenClass.Fill( SelLine: Integer;
-                            SelLength: Integer;
-                            SelStart: Integer;
-                            Level: Integer;
-                            Token: TTkType;
-                            Name: String;
-                            Flag: String
-                           );
+procedure TTokenClass.Fill(SelLine: Integer;
+  SelLength: Integer;
+  SelStart: Integer;
+  Level: Integer;
+  Token: TTkType;
+  Name: string;
+  Flag: string
+  );
 begin
-   FSelLine := SelLine;
-   FSelLength := SelLength;
-   FSelStart := SelStart;
-   FToken := Token;
-   FName := Name;
-   FFlag := Flag;
-   FLevel := Level;
+  FSelLine := SelLine;
+  FSelLength := SelLength;
+  FSelStart := SelStart;
+  FToken := Token;
+  FName := Name;
+  FFlag := Flag;
+  FLevel := Level;
 end;
 
 procedure TTokenClass.Clear;
 var
   I: Integer;
 begin
-  for I:= 0 to FList.Count - 1 do
+  for I := 0 to FList.Count - 1 do
     TTokenClass(FList.Items[I]).Free;
   FList.Clear;
 end;
 
 function TTokenClass.Count: Integer;
 begin
-   Result := FList.Count;
+  Result := FList.Count;
 end;
 
 procedure TTokenClass.Delete(Index: Integer);
@@ -357,11 +361,11 @@ begin
       Exit;
     if (Items[I].Token in [tkClass, tkStruct, tkFunction, tkConstructor,
       tkDestructor, tkNamespace, tkUnion, tkEnum, tkTypeEnum, tkTypeStruct,
-      tkTypeUnion]) then
+        tkTypeUnion]) then
     begin
       scope := GetTokenByName(Items[I], 'Scope', tkScope);
       if assigned(scope) and (SelStart >= scope.SelStart) and
-         (SelStart <= (scope.SelStart + scope.SelLength)) then
+        (SelStart <= (scope.SelStart + scope.SelLength)) then
       begin
         scopeToken := Items[I];
         Result := True;
@@ -397,8 +401,8 @@ begin
     if not (Items[I].Token in [tkScopeClass, tkScope]) then
     begin
       if ((SelStart >= Items[I].SelStart) and
-         (SelStart <= (Items[I].SelStart + Items[I].SelLength))) or
-         ((SelLine > 0) and (Items[I].SelLine = SelLine) and not Result) then
+        (SelStart <= (Items[I].SelStart + Items[I].SelLength))) or
+        ((SelLine > 0) and (Items[I].SelLine = SelLine) and not Result) then
       begin
         scopeToken := Items[I];
         Result := True;
@@ -452,14 +456,14 @@ begin
   Result.Assign(Self);
 end;
 
-function TTokenClass.SearchToken(const S: String; var Item: TTokenClass;
+function TTokenClass.SearchToken(const S: string; var Item: TTokenClass;
   NotAtSelStart: Integer; AdvanceAfterSelStart: Boolean;
   Mode: TTokenSearchMode): Boolean;
 var
   I: Integer;
 begin
   Result := False;
-  for I:= 0 to Count - 1 do
+  for I := 0 to Count - 1 do
   begin
     if (NotAtSelStart > 0) and (NotAtSelStart >= Items[I].FSelStart) and
       (NotAtSelStart <= (Items[I].FSelStart + Items[I].FSelLength)) then
@@ -485,25 +489,25 @@ begin
   end;
 end;
 
-function TTokenClass.SearchSource(const S: String; var Item: TTokenClass;
+function TTokenClass.SearchSource(const S: string; var Item: TTokenClass;
   NotAtSelStart: Integer; AdvanceAfterSelStart: Boolean; ListAll: TStrings;
   AllFunctions: Boolean): Boolean;
 var
   I: Integer;
 begin
   Result := False;
-  for I:= 0 to Count - 1 do
+  for I := 0 to Count - 1 do
   begin
     if (NotAtSelStart > 0) and (NotAtSelStart >= Items[I].FSelStart) and
       (NotAtSelStart <= (Items[I].FSelStart + Items[I].FSelLength)) then
     begin
-      if not AdvanceAfterSelStart and (Items[I].Token <> tkScope)  then
+      if not AdvanceAfterSelStart and (Items[I].Token <> tkScope) then
         Exit;
       Continue;
     end;
     if (S = Items[I].Name) and (not (Items[I].Token in
-        [tkConstructor, tkDestructor]) or (Assigned(Items[I].Parent) and
-        (Items[I].Parent.Token = tkScopeClass))) then
+      [tkConstructor, tkDestructor]) or (Assigned(Items[I].Parent) and
+      (Items[I].Parent.Token = tkScopeClass))) then
     begin
       Item := Items[I];
       Result := True;
@@ -525,7 +529,6 @@ begin
     end;
   end;
 end;
-
 
 function TTokenClass.GetPreviousFunction(var Token: TTokenClass;
   SelStart: Integer): Boolean;
@@ -608,7 +611,7 @@ function TTokenList.Exist(Item: TTokenClass): Boolean;
 var
   I: Integer;
   Token: TTokenClass;
-  S1, S2: String;
+  S1, S2: string;
 begin
   Result := True;
   if Item.Token in [tkFunction, tkPrototype, tkConstructor, tkDestructor] then
@@ -735,7 +738,7 @@ begin
   end;
 end;
 
-procedure SaveToken(const FileName: String; Token: PTokenRec); 
+procedure SaveToken(const FileName: String; Token: PTokenRec);
 var
   Handle: Integer;
   Count: Word;
@@ -859,4 +862,3 @@ begin
 end; }
 
 end.
-

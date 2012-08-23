@@ -6,14 +6,14 @@ uses
   TokenList, SysUtils, Classes, TokenConst, TokenFile, Dialogs;
 
 //make hint
-function GetFuncScope(Token: TTokenClass): String;
-function GetFuncProto(Token: TTokenClass; GenName: Boolean = False): String;
-function GetFuncProtoTypes(Token: TTokenClass): String;
-procedure GetStringsFields(const S: String; List: TStrings;
+function GetFuncScope(Token: TTokenClass): string;
+function GetFuncProto(Token: TTokenClass; GenName: Boolean = False): string;
+function GetFuncProtoTypes(Token: TTokenClass): string;
+procedure GetStringsFields(const S: string; List: TStrings;
   IgnoreFirst: Boolean = True);
-function GetTreeHierarchy(Token: TTokenClass): String;
-function MakeTokenHint(Token: TTokenClass; const FileName: String): String;
-function MakeTokenParamsHint(Token: TTokenClass): String;
+function GetTreeHierarchy(Token: TTokenClass): string;
+function MakeTokenHint(Token: TTokenClass; const FileName: string): string;
+function MakeTokenParamsHint(Token: TTokenClass): string;
 //completion list
 procedure FillCompletionTree(InsertList, ShowList: TStrings; Token: TTokenClass;
   SelStart: Integer; CompletionColors: TCompletionColors;
@@ -22,47 +22,47 @@ procedure FillCompletionTreeNoRepeat(InsertList, ShowList: TStrings; Token: TTok
   SelStart: Integer; CompletionColors: TCompletionColors; TokenList: TTokenList;
   ScopeClass: TScopeClassState = []; IncludeParams: Boolean = False;
   UseList: Boolean = False);
-function CompletionShowItem(Token: TTokenClass; CompletionColors: TCompletionColors): String;
-function CompletionInsertItem(Token: TTokenClass): String;
+function CompletionShowItem(Token: TTokenClass; CompletionColors: TCompletionColors): string;
+function CompletionInsertItem(Token: TTokenClass): string;
 
 //params
-function CommaCountAt(const S: String; Init: Integer): Integer;
-function CountCommas(const S: String): Integer;
-function GetParamsBefore(const S: String; Index: Integer): String;
-function GetActiveParams(const S: String; Index: Integer): String;
-function GetParamsAfter(const S: String; Index: Integer): String;
+function CommaCountAt(const S: string; Init: Integer): Integer;
+function CountCommas(const S: string): Integer;
+function GetParamsBefore(const S: string; Index: Integer): string;
+function GetActiveParams(const S: string; Index: Integer): string;
+function GetParamsAfter(const S: string; Index: Integer): string;
 
 //strings
-function GetFirstWord(const S: String): String;
-function GetAfterWord(const S: String): String;
-procedure GetDescendants(const S: String; List: TStrings; scope: TScopeClass);
-function GetLastWord(const S: String; AllowScope: Boolean = False): String;
-function GetPriorWord(const S: String): String;
-function GetVarType(const S: String): String;
-function Trim(Left: Char; const S: String; Rigth: Char): String; overload;
-function StringToScopeClass(const S: String): TScopeClass;
-function StringIn(const S: String; List: Array of String): Boolean;
-function CountWords(const S: String): Integer;
+function GetFirstWord(const S: string): string;
+function GetAfterWord(const S: string): string;
+procedure GetDescendants(const S: string; List: TStrings; scope: TScopeClass);
+function GetLastWord(const S: string; AllowScope: Boolean = False): string;
+function GetPriorWord(const S: string): string;
+function GetVarType(const S: string): string;
+function Trim(Left: Char; const S: string; Rigth: Char): string; overload;
+function StringToScopeClass(const S: string): TScopeClass;
+function StringIn(const S: string; List: array of string): Boolean;
+function CountWords(const S: string): Integer;
 
-function GetTokenByName(Token: TTokenClass; const Name: String;
+function GetTokenByName(Token: TTokenClass; const Name: string;
   tokenType: TTkType): TTokenClass;
 
 //others
-function HasTODO(const S: String): Boolean;
+function HasTODO(const S: string): Boolean;
 procedure GenerateFunctions(TokenFile: TTokenFile; Source: TStrings;
   StartLine: Integer);
 procedure GenerateFunctionPrototype(TokenFile: TTokenFile; Source: TStrings;
   StartLine: Integer; AddNameParams: Boolean = True);
 function GetTokenImageIndex(Token: TTokenClass; Images: array of Integer): Integer;
 function FileDateTime(const FileName: string): TDateTime;
-function IsNumber(const S: String): Boolean;
-function ScopeInState(const S: String; ScopeClass: TScopeClassState): Boolean;
-function ConvertSlashes(const Path: String): String;
-function GetFirstOpenBrace(const S: String; QuoteChar: Char;
+function IsNumber(const S: string): Boolean;
+function ScopeInState(const S: string; ScopeClass: TScopeClassState): Boolean;
+function ConvertSlashes(const Path: string): string;
+function GetFirstOpenBrace(const S: string; QuoteChar: Char;
   var SelStart: Integer): Boolean;
-function ParseFields(const Text: String; SelStart: Integer;
-  var S, Fields: String; var InputError: Boolean): Boolean;
-function GetNextValidChar(const Text: String; SelStart: Integer): Char;
+function ParseFields(const Text: string; SelStart: Integer;
+  var S, Fields: string; var InputError: Boolean): Boolean;
+function GetNextValidChar(const Text: string; SelStart: Integer): Char;
 
 implementation
 
@@ -74,7 +74,7 @@ end;
 procedure InsertFunction(func: TTokenClass; Source: TStrings;
   var StartLine: Integer; Indentation: Integer; JavaStyle: Boolean);
 var
-  S, FuncImp, IndentStr, Scope, RetValue: String;
+  S, FuncImp, IndentStr, Scope, RetValue: string;
 begin
   if not (func.Token in [tkFunction, tkPrototype, tkConstructor,
     tkDestructor]) then
@@ -83,7 +83,7 @@ begin
   S := func.Name + '(' + GetFuncProto(func, True) + ')';
   IndentStr := StringOfChar(' ', Indentation * func.Level);
   if Assigned(func.Parent) and Assigned(func.Parent.Parent) and
-     (func.Parent.Parent.Token = tkClass) then
+    (func.Parent.Parent.Token = tkClass) then
   begin
     IndentStr := StringOfChar(' ', Indentation * (func.Level - 2));
     if func.Token in [tkDestructor] then
@@ -128,7 +128,7 @@ procedure GenerateFunctions(TokenFile: TTokenFile; Source: TStrings;
   procedure GenerateGroup(Item: TTokenClass; var InsertLine: Integer;
     Indentation: Integer);
   var
-    IndentStr: String;
+    IndentStr: string;
     I: Integer;
   begin
     IndentStr := StringOfChar(' ', Indentation * Item.Level);
@@ -136,7 +136,7 @@ procedure GenerateFunctions(TokenFile: TTokenFile; Source: TStrings;
     begin
       Source.Insert(InsertLine, IndentStr + 'namespace ' + Item.Name);
       Inc(InsertLine);
-      Source.Insert(InsertLine, IndentStr +'{');
+      Source.Insert(InsertLine, IndentStr + '{');
       Inc(InsertLine);
     end;
     for I := 0 to Item.Count - 1 do
@@ -160,7 +160,7 @@ procedure GenerateFunctions(TokenFile: TTokenFile; Source: TStrings;
     end;
     if Item.Token = tkNamespace then
     begin
-      Source.Insert(InsertLine, IndentStr +'}');
+      Source.Insert(InsertLine, IndentStr + '}');
       Inc(InsertLine);
     end;
   end;
@@ -194,7 +194,7 @@ procedure GenerateFunctionPrototype(TokenFile: TTokenFile; Source: TStrings;
 var
   I: Integer;
   Scope, SearchItem, Item: TTokenClass;
-  S, FuncImp, Indentation, LastClass, Tilde: String;
+  S, FuncImp, Indentation, LastClass, Tilde: string;
   InsertLine: Integer;
   PrototypeList: TStrings;
   HasClass: Boolean;
@@ -209,15 +209,15 @@ begin
   for I := 0 to Item.Count - 1 do
   begin
     if (Item.Items[I].Token in [tkPrototype]) or
-       ((Item.Items[I].Token in [tkFunction]) and
-        (Pos('static', Item.Items[I].Flag) > 0)) then
+      ((Item.Items[I].Token in [tkFunction]) and
+      (Pos('static', Item.Items[I].Flag) > 0)) then
     begin
       S := Item.Items[I].Name + GetFuncProtoTypes(Item.Items[I]);
       PrototypeList.AddObject(S, Item.Items[I]);
       Continue;
     end;
     if ((Item.Items[I].Token in [tkFunction, tkConstructor, tkDestructor]) and
-        (Pos('static', Item.Items[I].Flag) = 0)) then
+      (Pos('static', Item.Items[I].Flag) = 0)) then
     begin
       S := GetFuncProtoTypes(Item.Items[I]);
       if PrototypeList.IndexOf(S) >= 0 then
@@ -227,7 +227,7 @@ begin
       //  Continue;
       if (Scope.Flag <> '') and not
         TokenFile.SearchToken(Scope.Flag, SearchItem, Scope.SelStart,
-          False, [tkClass]) then
+        False, [tkClass]) then
       begin
         if HasClass and (LastClass <> Scope.Flag) then
         begin
@@ -286,113 +286,113 @@ end;
 function GetTokenImageIndex(Token: TTokenClass; Images: array of Integer): Integer;
 begin
   case Token.Token of
-    tkIncludeList : Result := 0;
-    tkDefineList  : Result := 2;
-    tkTreeObjList : Result := 13;
-    tkVarConsList : Result := 4;
-    tkFuncProList : Result := 8;
-    tkClass       :
-    begin
-      Result := 14;
-    end;
-    tkFunction    :
-    begin
-      if Assigned(Token.Parent) and (Token.Parent.Token = tkScopeClass) then
+    tkIncludeList: Result := 0;
+    tkDefineList: Result := 2;
+    tkTreeObjList: Result := 13;
+    tkVarConsList: Result := 4;
+    tkFuncProList: Result := 8;
+    tkClass:
       begin
-        if Token.Parent.Name = 'private' then
-          Result := 10
-        else if Token.Parent.Name = 'protected' then
-          Result := 11
+        Result := 14;
+      end;
+    tkFunction:
+      begin
+        if Assigned(Token.Parent) and (Token.Parent.Token = tkScopeClass) then
+        begin
+          if Token.Parent.Name = 'private' then
+            Result := 10
+          else if Token.Parent.Name = 'protected' then
+            Result := 11
+          else
+            Result := 9;
+        end
         else
           Result := 9;
-      end
-      else
-        Result := 9;
-    end;
-    tkPrototype   :
-    begin
-      if Assigned(Token.Parent) and (Token.Parent.Token = tkScopeClass) then
+      end;
+    tkPrototype:
       begin
-        if Token.Parent.Name = 'private' then
-          Result := 10
-        else if Token.Parent.Name = 'protected' then
-          Result := 11
+        if Assigned(Token.Parent) and (Token.Parent.Token = tkScopeClass) then
+        begin
+          if Token.Parent.Name = 'private' then
+            Result := 10
+          else if Token.Parent.Name = 'protected' then
+            Result := 11
+          else
+            Result := 12;
+        end
         else
           Result := 12;
-      end
-      else
-        Result := 12;
-    end;
-    tkInclude     :
-    begin
-      Result := 1;
-    end;
-    tkDefine      :
-    begin
-      Result := 3;
-    end;
-    tkVariable    :
-    begin
-      if Assigned(Token.Parent) and (Token.Parent.Token = tkScopeClass) then
+      end;
+    tkInclude:
       begin
-        if Token.Parent.Name = 'private' then
-          Result := 6
-        else if Token.Parent.Name = 'protected' then
-          Result := 7
+        Result := 1;
+      end;
+    tkDefine:
+      begin
+        Result := 3;
+      end;
+    tkVariable:
+      begin
+        if Assigned(Token.Parent) and (Token.Parent.Token = tkScopeClass) then
+        begin
+          if Token.Parent.Name = 'private' then
+            Result := 6
+          else if Token.Parent.Name = 'protected' then
+            Result := 7
+          else
+            Result := 5;
+        end
         else
           Result := 5;
-      end
-      else
-        Result := 5;
-    end;
-    tkTypedef     :
-    begin
-      Result := 19;
-    end;
+      end;
+    tkTypedef:
+      begin
+        Result := 19;
+      end;
     tkTypedefProto:
-    begin
-      Result := 24;
-    end;
-    tkStruct      :
-    begin
-      Result := 15;
-    end;
-    tkTypeStruct  :
-    begin
-      Result := 20;
-    end;
-    tkEnum        :
-    begin
-      Result := 17;
-    end;
-    tkTypeEnum    :
-    begin
-      Result := 22;
-    end;
-    tkEnumItem    :
-    begin
-      Result := 23;
-    end;
-    tkUnion       :
-    begin
-      Result := 16;
-    end;
-    tkTypeUnion   :
-    begin
-      Result := 21;
-    end;
-    tkNamespace   :
-    begin
-      Result := 18;
-    end;
-    tkConstructor :
-    begin
-      Result := 25;
-    end;
-    tkDestructor :
-    begin
-      Result := 26;
-    end;
+      begin
+        Result := 24;
+      end;
+    tkStruct:
+      begin
+        Result := 15;
+      end;
+    tkTypeStruct:
+      begin
+        Result := 20;
+      end;
+    tkEnum:
+      begin
+        Result := 17;
+      end;
+    tkTypeEnum:
+      begin
+        Result := 22;
+      end;
+    tkEnumItem:
+      begin
+        Result := 23;
+      end;
+    tkUnion:
+      begin
+        Result := 16;
+      end;
+    tkTypeUnion:
+      begin
+        Result := 21;
+      end;
+    tkNamespace:
+      begin
+        Result := 18;
+      end;
+    tkConstructor:
+      begin
+        Result := 25;
+      end;
+    tkDestructor:
+      begin
+        Result := 26;
+      end;
   else
     Result := 0;
   end;
@@ -401,7 +401,7 @@ begin
     Result := Images[Result];
 end;
 
-function GetFuncScope(Token: TTokenClass): String;
+function GetFuncScope(Token: TTokenClass): string;
 var
   Scope: TTokenClass;
 begin
@@ -418,11 +418,11 @@ begin
   Result := Result;
 end;
 
-function GetFuncProto(Token: TTokenClass; GenName:Boolean): String;
+function GetFuncProto(Token: TTokenClass; GenName: Boolean): string;
 var
   I, X, VarNum, Len: Integer;
   Params: TTokenClass;
-  TypeName, Vector, Sep, ParamName: String;
+  TypeName, Vector, Sep, ParamName: string;
 begin
   Result := '';
   Sep := '';
@@ -431,8 +431,9 @@ begin
     tkConstructor, tkDestructor]) then
     Exit;
   Params := GetTokenByName(Token, 'Params', tkParams);
-  if not Assigned(Params) then Exit;
-  for I:= 0 to Params.Count - 1 do
+  if not Assigned(Params) then
+    Exit;
+  for I := 0 to Params.Count - 1 do
   begin
     TypeName := Params.Items[I].Flag;
     X := Pos('[', TypeName);
@@ -455,7 +456,7 @@ begin
   Result := Trim(Result);
 end;
 
-function HasTODO(const S: String): Boolean;
+function HasTODO(const S: string): Boolean;
 const
   TodoStr = 'TODO';
 var
@@ -481,11 +482,11 @@ begin
   end;
 end;
 
-function GetFuncProtoTypes(Token: TTokenClass): String;
+function GetFuncProtoTypes(Token: TTokenClass): string;
 var
   I, X, Len: Integer;
   Params: TTokenClass;
-  TypeName, Vector, Sep: String;
+  TypeName, Vector, Sep: string;
 begin
   Result := '';
   Sep := '';
@@ -493,8 +494,9 @@ begin
     tkDestructor]) then
     Exit;
   Params := GetTokenByName(Token, 'Params', tkParams);
-  if not Assigned(Params) then Exit;
-  for I:= 0 to Params.Count - 1 do
+  if not Assigned(Params) then
+    Exit;
+  for I := 0 to Params.Count - 1 do
   begin
     TypeName := Params.Items[I].Flag;
     X := Pos('[', TypeName);
@@ -510,7 +512,7 @@ begin
   Result := '(' + Trim(Result) + ')';
 end;
 
-function ScopeInState(const S: String; ScopeClass: TScopeClassState): Boolean;
+function ScopeInState(const S: string; ScopeClass: TScopeClassState): Boolean;
 begin
   Result := False;
   if S = 'private' then
@@ -526,7 +528,7 @@ procedure FillCompletionTree(InsertList, ShowList: TStrings; Token: TTokenClass;
   ScopeClass: TScopeClassState; IncludeParams: Boolean);
 begin
   FillCompletionTreeNoRepeat(InsertList, ShowList, Token, SelStart,
-    CompletionColors, nil, ScopeClass,  IncludeParams, False);
+    CompletionColors, nil, ScopeClass, IncludeParams, False);
 end;
 
 procedure FillCompletionTreeNoRepeat(InsertList, ShowList: TStrings; Token: TTokenClass;
@@ -536,13 +538,14 @@ var
   I: Integer;
   NewToken: TTokenClass;
 begin
-  for I:= 0 to Token.Count - 1 do
+  for I := 0 to Token.Count - 1 do
   begin
-    if (SelStart >= 0) and (Token.Items[I].SelStart > SelStart) then Exit;
+    if (SelStart >= 0) and (Token.Items[I].SelStart > SelStart) then
+      Exit;
     if (Token.Items[I].Token in [tkScope]) or
       ((Token.Items[I].Token in [tkParams]) and not IncludeParams) then
     begin
-       Continue;
+      Continue;
     end;
 
     if not (Token.Items[I].Token in [tkParams, tkScopeClass]) then
@@ -553,7 +556,7 @@ begin
           Continue;
       end;
       NewToken := TTokenClass.Create;
-      NewToken.Assign(Token.Items[I]);//copy
+      NewToken.Assign(Token.Items[I]); //copy
       if UseList and Assigned(TokenList) then
         TokenList.Add(NewToken);
       if Assigned(InsertList) then
@@ -566,14 +569,14 @@ begin
     if Token.Items[I].Token = tkScopeClass then
     begin
       if not ScopeInState(Token.Items[I].Name, ScopeClass) and
-         not (ScopeClass = []) then
+        not (ScopeClass = []) then
         Continue;
     end;
     case Token.Items[I].Token of
       tkClass, tkFunction, tkConstructor, tkDestructor, tkStruct, tkUnion,
         tkEnum, tkTypeStruct, tkTypeUnion, tkTypeEnum, tkParams,
         tkScopeClass, tkNamespace:
-          FillCompletionTreeNoRepeat(InsertList, ShowList,
+        FillCompletionTreeNoRepeat(InsertList, ShowList,
           Token.Items[I], SelStart, CompletionColors, TokenList,
           ScopeClass, IncludeParams, UseList);
     end;
@@ -581,164 +584,164 @@ begin
 end;
 
 function CompletionShowItem(Token: TTokenClass;
-  CompletionColors: TCompletionColors): String;
+  CompletionColors: TCompletionColors): string;
 var
-  TypeName, Params, S: String;
+  TypeName, Params, S: string;
   I, IEnd, Len: Integer;
 begin
   Result := '';
   case Token.Token of
     tkClass:
-    begin
-      if Length(Token.Flag) > 0 then
-        Result := CompletionColors[Token.Token] + Token.Name +
-          '\style{-B} : class(' + GetLastWord(Token.Flag) + ');'
-      else
-        Result := CompletionColors[Token.Token] + Token.Name +
-          '\style{-B} : class;';
-    end;
+      begin
+        if Length(Token.Flag) > 0 then
+          Result := CompletionColors[Token.Token] + Token.Name +
+            '\style{-B} : class(' + GetLastWord(Token.Flag) + ');'
+        else
+          Result := CompletionColors[Token.Token] + Token.Name +
+            '\style{-B} : class;';
+      end;
     tkFunction, tkPrototype:
-    begin
-      S := GetFuncProto(Token);
-      Result := CompletionColors[Token.Token] + Token.Name + '\style{-B}' +
-        '\color{clMaroon}(\color{clBlack}' + S +
-        '\color{clMaroon})\color{clBlue} : \color{clBlack}' + Token.Flag + ';';
-    end;
+      begin
+        S := GetFuncProto(Token);
+        Result := CompletionColors[Token.Token] + Token.Name + '\style{-B}' +
+          '\color{clMaroon}(\color{clBlack}' + S +
+          '\color{clMaroon})\color{clBlue} : \color{clBlack}' + Token.Flag + ';';
+      end;
     tkConstructor:
-    begin
-      S := GetFuncProto(Token);
-      Result := CompletionColors[Token.Token] + Token.Name + '\style{-B}' +
-        '\color{clMaroon}(\color{clBlack}' + S +
-        '\color{clMaroon});';
-    end;
+      begin
+        S := GetFuncProto(Token);
+        Result := CompletionColors[Token.Token] + Token.Name + '\style{-B}' +
+          '\color{clMaroon}(\color{clBlack}' + S +
+          '\color{clMaroon});';
+      end;
     tkDestructor:
-    begin
-      S := GetFuncProto(Token);
-      Result := CompletionColors[Token.Token] + Token.Name + '\style{-B}' +
-        '\color{clMaroon}(\color{clBlack}' + S +
-        '\color{clMaroon});';
-    end;
+      begin
+        S := GetFuncProto(Token);
+        Result := CompletionColors[Token.Token] + Token.Name + '\style{-B}' +
+          '\color{clMaroon}(\color{clBlack}' + S +
+          '\color{clMaroon});';
+      end;
     tkDefine:
-    begin
-      if Length(Token.Flag) > 0 then
-        Result := CompletionColors[Token.Token] + Token.Name +
-          '\style{-B} : ' + Trim(Token.Flag)  + ';'
-      else
-        Result := CompletionColors[Token.Token] + Token.Name + '\style{-B};';
-    end;
+      begin
+        if Length(Token.Flag) > 0 then
+          Result := CompletionColors[Token.Token] + Token.Name +
+            '\style{-B} : ' + Trim(Token.Flag) + ';'
+        else
+          Result := CompletionColors[Token.Token] + Token.Name + '\style{-B};';
+      end;
     tkVariable:
-    begin
-      I := Pos('[', Token.Flag);
-      Len := Length(Token.Flag);
-      TypeName := Token.Flag;
-      Params := '';
-      if I > 0 then
       begin
-        Params := Copy(Token.Flag, I, Len - I + 1);
-        TypeName := Copy(Token.Flag, 1, I - 1);
-        I := Length(Params);
-        if Length(Params) > 2 then
+        I := Pos('[', Token.Flag);
+        Len := Length(Token.Flag);
+        TypeName := Token.Flag;
+        Params := '';
+        if I > 0 then
         begin
-          Params := Copy(Params, 2, I - 2);
-          Params := '\color{clMaroon}[\color{clGreen}' + Params + '\color{clMaroon}]\color{clBlack}';
+          Params := Copy(Token.Flag, I, Len - I + 1);
+          TypeName := Copy(Token.Flag, 1, I - 1);
+          I := Length(Params);
+          if Length(Params) > 2 then
+          begin
+            Params := Copy(Params, 2, I - 2);
+            Params := '\color{clMaroon}[\color{clGreen}' + Params + '\color{clMaroon}]\color{clBlack}';
+          end;
         end;
-      end;
 
-      S := CompletionColors[Token.Token];
-      if GetFirstWord(TypeName) = 'const' then
-      begin
-        S := CompletionColors[TTkType(17)];
-        TypeName := GetAfterWord(TypeName);
+        S := CompletionColors[Token.Token];
+        if GetFirstWord(TypeName) = 'const' then
+        begin
+          S := CompletionColors[TTkType(17)];
+          TypeName := GetAfterWord(TypeName);
+        end;
+        Result := S + Token.Name + '\style{-B}' + Params + ' : ' + TypeName + ';';
       end;
-      Result := S + Token.Name + '\style{-B}' + Params + ' : ' + TypeName + ';';
-    end;
     tkTypedef, tkTypeStruct, tkTypeUnion, tkTypeEnum:
-    begin
-      S := ';';
-      if Length(Token.Flag) > 0 then
-        S := ' : ' + Token.Flag + ';';
-      Result := CompletionColors[Token.Token] + Token.Name  + '\style{-B}' + S;
-    end;
+      begin
+        S := ';';
+        if Length(Token.Flag) > 0 then
+          S := ' : ' + Token.Flag + ';';
+        Result := CompletionColors[Token.Token] + Token.Name + '\style{-B}' + S;
+      end;
     tkTypedefProto:
-    begin
-      S := GetFuncProto(Token);
-      I := Pos('(', Token.Flag);
-      IEnd := Pos(')', Token.Flag);
-      Len := IEnd - I - 1;
-      Params := Copy(Token.Flag, I + 1, Len);
-      I := Pos(':', Token.Flag);
-      TypeName := Copy(Token.Flag, I + 1, Length(Token.Flag) - I);
-      Result := CompletionColors[Token.Token] + Token.Name + '\style{-B}' +
-        '\color{clMaroon}(\color{clBlack}' + Params +
-        '\color{clMaroon})(\color{clBlack}' + S +
-        '\color{clMaroon})\color{clBlue} : \color{clBlack}' + TypeName + ';';
-    end;
+      begin
+        S := GetFuncProto(Token);
+        I := Pos('(', Token.Flag);
+        IEnd := Pos(')', Token.Flag);
+        Len := IEnd - I - 1;
+        Params := Copy(Token.Flag, I + 1, Len);
+        I := Pos(':', Token.Flag);
+        TypeName := Copy(Token.Flag, I + 1, Length(Token.Flag) - I);
+        Result := CompletionColors[Token.Token] + Token.Name + '\style{-B}' +
+          '\color{clMaroon}(\color{clBlack}' + Params +
+          '\color{clMaroon})(\color{clBlack}' + S +
+          '\color{clMaroon})\color{clBlue} : \color{clBlack}' + TypeName + ';';
+      end;
     tkStruct:
-    begin
-      Result := CompletionColors[Token.Token] + Token.Name +
-        '\style{-B} : struct;';
-    end;
+      begin
+        Result := CompletionColors[Token.Token] + Token.Name +
+          '\style{-B} : struct;';
+      end;
     tkEnum:
-    begin
-      Result := CompletionColors[Token.Token] + Token.Name +
-        '\style{-B} : enum;';
-    end;
+      begin
+        Result := CompletionColors[Token.Token] + Token.Name +
+          '\style{-B} : enum;';
+      end;
     tkUnion:
-    begin
-      Result := CompletionColors[Token.Token] + Token.Name +
-        '\style{-B} : union;';
-    end;
+      begin
+        Result := CompletionColors[Token.Token] + Token.Name +
+          '\style{-B} : union;';
+      end;
     tkNamespace:
-    begin
-      Result := CompletionColors[Token.Token] + Token.Name +
-        '\style{-B};';
-    end;
+      begin
+        Result := CompletionColors[Token.Token] + Token.Name +
+          '\style{-B};';
+      end;
     tkEnumItem:
-    begin
-      S := ';';
-      if Length(Token.Flag) > 0 then
-        S := ' : ' + Token.Flag + ';';
-      Result := CompletionColors[TTkType(17)] + Token.Name + '\style{-B}' + S;
-    end;
+      begin
+        S := ';';
+        if Length(Token.Flag) > 0 then
+          S := ' : ' + Token.Flag + ';';
+        Result := CompletionColors[TTkType(17)] + Token.Name + '\style{-B}' + S;
+      end;
     tkUnknow: Result := CompletionColors[Token.Token] +
-      Token.Name  + '\style{-B}' + ' : ' + Token.Flag + ';';
+      Token.Name + '\style{-B}' + ' : ' + Token.Flag + ';';
     tkForward:
-    begin
-      if Token.Flag = 'struct' then
-        Result := CompletionColors[tkStruct] + Token.Name + '\style{-B} : struct;'
-      else
-        Result := CompletionColors[tkClass] + Token.Name + '\style{-B} : class;';
-    end;
+      begin
+        if Token.Flag = 'struct' then
+          Result := CompletionColors[tkStruct] + Token.Name + '\style{-B} : struct;'
+        else
+          Result := CompletionColors[tkClass] + Token.Name + '\style{-B} : class;';
+      end;
   end;
 end;
 
-function CompletionInsertItem(Token: TTokenClass): String;
+function CompletionInsertItem(Token: TTokenClass): string;
 begin
   Result := Token.Name;
   case Token.Token of
-    tkFunction, tkConstructor, tkDestructor, tkPrototype ,tkVariable, tkClass,
-    tkDefine, tkTypedefProto, tkTypedef,
-    tkTypeStruct, tkTypeUnion, tkStruct, tkEnum, tkNamespace,
-    tkUnion, tkUnknow: Result := Token.Name;
+    tkFunction, tkConstructor, tkDestructor, tkPrototype, tkVariable, tkClass,
+      tkDefine, tkTypedefProto, tkTypedef,
+      tkTypeStruct, tkTypeUnion, tkStruct, tkEnum, tkNamespace,
+      tkUnion, tkUnknow: Result := Token.Name;
   end;
 end;
 
-function GetTreeHierarchy(Token: TTokenClass): String;
+function GetTreeHierarchy(Token: TTokenClass): string;
 var
   Next: TTokenClass;
-  Separator: String;
+  Separator: string;
 begin
   Result := '';
   Separator := '.';
   Next := Token;
-  {while} if Assigned(Next.Parent) and not (Next.Parent.Token in [tkIncludeList,
-                                       tkDefineList, tkTreeObjList,
-                                       tkVarConsList, tkFuncProList,
-                                       tkFunction, tkConstructor, tkDestructor,
-                                       tkRoot, tkParams, tkScope{?}]) {do} then
+  {while}if Assigned(Next.Parent) and not (Next.Parent.Token in [tkIncludeList,
+    tkDefineList, tkTreeObjList,
+      tkVarConsList, tkFuncProList,
+      tkFunction, tkConstructor, tkDestructor,
+      tkRoot, tkParams, tkScope {?}]) {do} then
   begin
     Next := Next.Parent;
-    if (Next.Token = tkScopeClass) and  Assigned(Next.Parent) then
+    if (Next.Token = tkScopeClass) and Assigned(Next.Parent) then
     begin
       Separator := '::';
       Next := Next.Parent;
@@ -747,10 +750,10 @@ begin
   end;
 end;
 
-procedure GetStringsFields(const S: String; List: TStrings;
+procedure GetStringsFields(const S: string; List: TStrings;
   IgnoreFirst: Boolean = True);
 var
-  Field: String;
+  Field: string;
   ptr: PChar;
 begin
   ptr := PChar(S);
@@ -762,7 +765,7 @@ begin
       Field := Field + ptr^;
       Inc(ptr);
     end;
-    if ptr^  = '.' then
+    if ptr^ = '.' then
       Inc(ptr)
     else if (ptr^ = '-') and ((ptr + 1)^ = '>') then
       Inc(ptr, 2)
@@ -792,114 +795,117 @@ begin
       Field := Field + ptr^;
     Inc(ptr);
   end;
-  if Length(Field) > 0 then List.Add(Field);
+  if Length(Field) > 0 then
+    List.Add(Field);
 end;
 
-function MakeTokenHint(Token: TTokenClass; const FileName: String): String;
+function MakeTokenHint(Token: TTokenClass; const FileName: string): string;
 var
-  NameOnly, TypeName, Params, S, Hierarchy: String;
+  NameOnly, TypeName, Params, S, Hierarchy: string;
   I, IEnd, Len: Integer;
 begin
   Result := '';
   case Token.Token of
     tkClass:
-    begin
-      if Length(Token.Flag) > 0 then
-        Result := TokenHintPrev[Token.Token] + ' ' + Token.Name + ' : ' + Token.Flag//get ancestor
-      else
-        Result := TokenHintPrev[Token.Token] + ' ' + Token.Name;//get ancestor
-    end;
-    tkFunction, tkPrototype, tkConstructor, tkDestructor:
-    begin
-      S := GetFuncProto(Token);
-      Hierarchy := GetTreeHierarchy(Token);
-      Result := TokenHintPrev[Token.Token] + ' ' + Hierarchy + Token.Name + '(' + S + '): ' + Token.Flag;
-    end;
-    tkDefine:
-    begin
-      if Length(Token.Flag) > 0 then
-        Result := TokenHintPrev[Token.Token] + ' ' + Token.Name + ': ' + Token.Flag
-      else
-        Result := TokenHintPrev[Token.Token] + ' ' + Token.Name;
-    end;
-    tkVariable:
-    begin
-      I := Pos('[', Token.Flag);
-      Len := Length(Token.Flag);
-      TypeName := Token.Flag;
-      Params := '';
-      if I > 0 then
       begin
-        Params := Copy(Token.Flag, I, Len - I + 1);
-        TypeName := Copy(Token.Flag, 1, I - 1);
+        if Length(Token.Flag) > 0 then
+          Result := TokenHintPrev[Token.Token] + ' ' + Token.Name + ' : ' + Token.Flag //get ancestor
+        else
+          Result := TokenHintPrev[Token.Token] + ' ' + Token.Name; //get ancestor
       end;
-      Hierarchy := GetTreeHierarchy(Token);
-      Result := TokenHintPrev[Token.Token] + ' ' + TypeName + ' ' + Hierarchy +
-        Token.Name + Params;
-    end;
+    tkFunction, tkPrototype, tkConstructor, tkDestructor:
+      begin
+        S := GetFuncProto(Token);
+        Hierarchy := GetTreeHierarchy(Token);
+        Result := TokenHintPrev[Token.Token] + ' ' + Hierarchy + Token.Name + '(' + S + '): ' + Token.Flag;
+      end;
+    tkDefine:
+      begin
+        if Length(Token.Flag) > 0 then
+          Result := TokenHintPrev[Token.Token] + ' ' + Token.Name + ': ' + Token.Flag
+        else
+          Result := TokenHintPrev[Token.Token] + ' ' + Token.Name;
+      end;
+    tkVariable:
+      begin
+        I := Pos('[', Token.Flag);
+        Len := Length(Token.Flag);
+        TypeName := Token.Flag;
+        Params := '';
+        if I > 0 then
+        begin
+          Params := Copy(Token.Flag, I, Len - I + 1);
+          TypeName := Copy(Token.Flag, 1, I - 1);
+        end;
+        Hierarchy := GetTreeHierarchy(Token);
+        Result := TokenHintPrev[Token.Token] + ' ' + TypeName + ' ' + Hierarchy +
+          Token.Name + Params;
+      end;
     tkEnum, tkEnumItem,
-    tkStruct, tkUnion, tkTypeStruct, tkTypeUnion,
-    tkTypeEnum:
-    begin
-      Hierarchy := GetTreeHierarchy(Token);
-      Params := '';
-      if Length(Token.Flag) > 0 then
-        Params := ': ' + Token.Flag;
-      Result := TokenHintPrev[Token.Token] + ' ' + Hierarchy + Token.Name + Params;
-    end;
+      tkStruct, tkUnion, tkTypeStruct, tkTypeUnion,
+      tkTypeEnum:
+      begin
+        Hierarchy := GetTreeHierarchy(Token);
+        Params := '';
+        if Length(Token.Flag) > 0 then
+          Params := ': ' + Token.Flag;
+        Result := TokenHintPrev[Token.Token] + ' ' + Hierarchy + Token.Name + Params;
+      end;
     tkTypedef, tkNamespace:
       Result := TokenHintPrev[Token.Token] + ' ' + Token.Name;
     tkTypedefProto:
-    begin
-      S := GetFuncProto(Token);
-      Hierarchy := GetTreeHierarchy(Token);
-      I := Pos('(', Token.Flag);
-      IEnd := Pos(')', Token.Flag);
-      Len := IEnd - I - 1;
-      Params := Copy(Token.Flag, I + 1, Len);
-      I := Pos(':', Token.Flag);
-      TypeName := Copy(Token.Flag, I + 1, Length(Token.Flag) - I);
-      Result := TokenHintPrev[Token.Token] + ' ' + Hierarchy + Token.Name + '('
-        + Params + ')(' + S + '): ' + TypeName;
-    end;
-    tkUnknow:;
+      begin
+        S := GetFuncProto(Token);
+        Hierarchy := GetTreeHierarchy(Token);
+        I := Pos('(', Token.Flag);
+        IEnd := Pos(')', Token.Flag);
+        Len := IEnd - I - 1;
+        Params := Copy(Token.Flag, I + 1, Len);
+        I := Pos(':', Token.Flag);
+        TypeName := Copy(Token.Flag, I + 1, Length(Token.Flag) - I);
+        Result := TokenHintPrev[Token.Token] + ' ' + Hierarchy + Token.Name + '('
+          + Params + ')(' + S + '): ' + TypeName;
+      end;
+    tkUnknow: ;
     tkForward:
-    begin
-      if Token.Flag = 'struct' then
-        Result := TokenHintPrev[tkStruct] + ' ' + Token.Name
-      else
-        Result := TokenHintPrev[tkClass] + ' ' + Token.Name;
-    end;
+      begin
+        if Token.Flag = 'struct' then
+          Result := TokenHintPrev[tkStruct] + ' ' + Token.Name
+        else
+          Result := TokenHintPrev[tkClass] + ' ' + Token.Name;
+      end;
   end;
   NameOnly := ExtractFileName(FileName);
   Result := Result + ' - ' + NameOnly + '(' + IntToStr(Token.SelLine) + ')';
 end;
 
-function MakeTokenParamsHint(Token: TTokenClass): String;
+function MakeTokenParamsHint(Token: TTokenClass): string;
 var
-  Params: String;
+  Params: string;
   I, IEnd, Len: Integer;
 begin
   Result := '';
   case Token.Token of
     tkFunction, tkPrototype, tkConstructor, tkTypedefProto:
-    begin
-      Result := GetFuncProto(Token);
-    end;
+      begin
+        Result := GetFuncProto(Token);
+      end;
     tkDefine:
-    begin
-      I := Pos('(', Token.Flag);
-      if I = 0 then Exit;
-      IEnd := Pos(')', Token.Flag);
-      if IEnd = 0 then Exit;
-      Len := IEnd - I - 1;
-      Params := Copy(Token.Flag, I + 1, Len);
-      Result := Params;
-    end;
+      begin
+        I := Pos('(', Token.Flag);
+        if I = 0 then
+          Exit;
+        IEnd := Pos(')', Token.Flag);
+        if IEnd = 0 then
+          Exit;
+        Len := IEnd - I - 1;
+        Params := Copy(Token.Flag, I + 1, Len);
+        Result := Params;
+      end;
   end;
 end;
 
-function CommaCountAt(const S: String; Init: Integer): Integer;
+function CommaCountAt(const S: string; Init: Integer): Integer;
 var
   ptr: PChar;
   Current, PairCount: Integer;
@@ -913,89 +919,98 @@ begin
     case ptr^ of
       '(': Inc(PairCount);
       ')': Dec(PairCount);
-      ',': if PairCount = 0 then Inc(Result);
+      ',': if PairCount = 0 then
+          Inc(Result);
       '/':
-      begin
-        if (ptr + 1)^ = '*' then
         begin
-          Inc(ptr);
-          Inc(Current);
-          repeat
-            Inc(ptr);
-            Inc(Current);
-          until (ptr^ = #0) or ((ptr^ = '*') and ((ptr + 1)^ = '/')) or (Current >= Init);
-          if ptr^ = '*' then
+          if (ptr + 1)^ = '*' then
           begin
             Inc(ptr);
             Inc(Current);
-            if ptr^ = #0 then Break;
+            repeat
+              Inc(ptr);
+              Inc(Current);
+            until (ptr^ = #0) or ((ptr^ = '*') and ((ptr + 1)^ = '/')) or (Current >= Init);
+            if ptr^ = '*' then
+            begin
+              Inc(ptr);
+              Inc(Current);
+              if ptr^ = #0 then
+                Break;
+            end;
+          end
+          else if (ptr + 1)^ = '/' then
+          begin
+            repeat
+              Inc(ptr);
+              Inc(Current);
+            until (ptr^ in [#0, #10]) or (Current >= Init);
           end;
-        end
-        else if (ptr + 1)^ = '/' then
+        end;
+      '"':
         begin
           repeat
             Inc(ptr);
             Inc(Current);
-          until (ptr^ in [#0, #10]) or (Current >= Init);
+          until (ptr^ = #0) or (Current >= Init) or (ptr^ = '"');
+          if ptr^ = #0 then
+            Break;
         end;
-      end;
-      '"':
-      begin
-        repeat
-          Inc(ptr);
-          Inc(Current);
-        until (ptr^ = #0) or (Current >= Init) or (ptr^ = '"');
-        if ptr^ = #0 then Break;
-      end;
       '''':
-      begin
-        repeat
-          Inc(ptr);
-          Inc(Current);
-        until (ptr^ = #0) or (Current >= Init) or (ptr^ = '''');
-        if ptr^ = #0 then Break;
-      end;
+        begin
+          repeat
+            Inc(ptr);
+            Inc(Current);
+          until (ptr^ = #0) or (Current >= Init) or (ptr^ = '''');
+          if ptr^ = #0 then
+            Break;
+        end;
     end;
     Inc(ptr);
     Inc(Current);
   end;
 end;
 
-function CountCommas(const S: String): Integer;
+function CountCommas(const S: string): Integer;
 var
- I: Integer;
+  I: Integer;
 begin
   Result := 0;
-  for I:= 1 to Length(S) do
-    if S[I] = ',' then Inc(Result);
+  for I := 1 to Length(S) do
+    if S[I] = ',' then
+      Inc(Result);
 end;
 
-function GetParamsBefore(const S: String; Index: Integer): String;
+function GetParamsBefore(const S: string; Index: Integer): string;
 var
- I, Current, Len: Integer;
+  I, Current, Len: Integer;
 begin
   Result := '';
   Current := 0;
   Len := Length(S);
   for I := 1 to Len do
   begin
-    if Current = Index then Break;
-    if S[I] = ',' then Inc(Current);
+    if Current = Index then
+      Break;
+    if S[I] = ',' then
+      Inc(Current);
   end;
   Result := Copy(S, 1, I - 1);
 end;
 
-function GetActiveParams(const S: String; Index: Integer): String;
+function GetActiveParams(const S: string; Index: Integer): string;
 var
- I, Current, Len: Integer;
+  I, Current, Len: Integer;
 begin
   Result := '';
   Current := 0;
   Len := Length(S);
   for I := 1 to Len do
   begin
-    if Current = Index then Break;
-    if S[I] = ',' then Inc(Current);
+    if Current = Index then
+      Break;
+    if S[I] = ',' then
+      Inc(Current);
   end;
   Result := Copy(S, I, Len - I + 1);
   Len := Pos(',', Result);
@@ -1003,22 +1018,25 @@ begin
     Result := Copy(S, I, Len);
 end;
 
-function GetParamsAfter(const S: String; Index: Integer): String;
+function GetParamsAfter(const S: string; Index: Integer): string;
 var
- I, Current, Len: Integer;
+  I, Current, Len: Integer;
 begin
   Result := '';
   Current := 0;
   Len := Length(S);
   for I := 1 to Len do
   begin
-    if S[I] = ',' then Inc(Current);
-    if Current > Index then Break;
+    if S[I] = ',' then
+      Inc(Current);
+    if Current > Index then
+      Break;
   end;
-  if I < Len then Result := Copy(S, I + 1, Len - I);
+  if I < Len then
+    Result := Copy(S, I + 1, Len - I);
 end;
 
-function GetFirstWord(const S: String): String;
+function GetFirstWord(const S: string): string;
 var
   Len, RLen, I: Integer;
 begin
@@ -1026,20 +1044,20 @@ begin
   RLen := 0;
   I := 1;
   Len := Length(S);
-  while(I <= Len) do
+  while (I <= Len) do
   begin
-    if(RLen > 0) and not (S[I] in LetterChars+DigitChars) then
-       Break
-    else if (S[I] in LetterChars+DigitChars) then
+    if (RLen > 0) and not (S[I] in LetterChars + DigitChars) then
+      Break
+    else if (S[I] in LetterChars + DigitChars) then
     begin
-       Result := Result + S[I];
-       Inc(RLen);
+      Result := Result + S[I];
+      Inc(RLen);
     end;
     Inc(I);
   end;
 end;
 
-function GetAfterWord(const S: String): String;
+function GetAfterWord(const S: string): string;
 var
   Len, RLen, I: Integer;
 begin
@@ -1047,20 +1065,20 @@ begin
   RLen := 0;
   I := 1;
   Len := Length(S);
-  while(I <= Len) do
+  while (I <= Len) do
   begin
-    if(RLen > 0) and not (S[I] in LetterChars+DigitChars) then
-       Break
-    else if (S[I] in LetterChars+DigitChars) then
-       Inc(RLen);
+    if (RLen > 0) and not (S[I] in LetterChars + DigitChars) then
+      Break
+    else if (S[I] in LetterChars + DigitChars) then
+      Inc(RLen);
     Inc(I);
   end;
   Result := Trim(Copy(S, I, Len - I + 1));
 end;
 
-procedure GetDescendants(const S: String; List: TStrings; scope: TScopeClass);
+procedure GetDescendants(const S: string; List: TStrings; scope: TScopeClass);
 var
-  sc, Temp, ancs: String;
+  sc, Temp, ancs: string;
 begin
   List.Clear;
   Temp := S;
@@ -1090,7 +1108,8 @@ begin
 end;
 
 //strings
-function GetLastWord(const S: String; AllowScope: Boolean): String;
+
+function GetLastWord(const S: string; AllowScope: Boolean): string;
 var
   Len, RLen: Integer;
   Chars: set of Char;
@@ -1098,23 +1117,23 @@ begin
   Result := '';
   RLen := 0;
   Len := Length(S);
-  Chars := LetterChars+DigitChars;
+  Chars := LetterChars + DigitChars;
   if AllowScope then
     Chars := Chars + [':'];
-  while(Len > 0) do
+  while (Len > 0) do
   begin
-    if(RLen > 0) and not (S[Len] in Chars) then
-       Break
+    if (RLen > 0) and not (S[Len] in Chars) then
+      Break
     else if (S[Len] in Chars) then
     begin
-       Result := S[Len] + Result;
-       Inc(RLen);
+      Result := S[Len] + Result;
+      Inc(RLen);
     end;
     Dec(Len);
   end;
 end;
 
-function Trim(Left: Char; const S: String; Rigth: Char): String; overload;
+function Trim(Left: Char; const S: string; Rigth: Char): string; overload;
 var
   Len: Integer;
 begin
@@ -1132,34 +1151,35 @@ begin
   end;
 end;
 
-function GetPriorWord(const S: String): String;
+function GetPriorWord(const S: string): string;
 var
   Len, RLen: Integer;
 begin
   RLen := 0;
   Len := Length(S);
-  while(Len > 0) do
+  while (Len > 0) do
   begin
-    if(RLen > 0) and not (S[Len] in LetterChars+DigitChars) then
-       Break
-    else if (S[Len] in LetterChars+DigitChars) then
-       Inc(RLen);
+    if (RLen > 0) and not (S[Len] in LetterChars + DigitChars) then
+      Break
+    else if (S[Len] in LetterChars + DigitChars) then
+      Inc(RLen);
     Dec(Len);
   end;
   Result := Trim(Copy(S, 1, Len));
 end;
 
-function GetVarType(const S: String): String;
+function GetVarType(const S: string): string;
 var
   I: Integer;
 begin
   Result := S;
   I := Pos('[', Result);
-  if I > 0 then Result := Copy(Result, 1, I - 1);
-  Result := GetLastWord(Result, True); 
+  if I > 0 then
+    Result := Copy(Result, 1, I - 1);
+  Result := GetLastWord(Result, True);
 end;
 
-function StringToScopeClass(const S: String): TScopeClass;
+function StringToScopeClass(const S: string): TScopeClass;
 begin
   Result := scPrivate;
   if S = 'protected' then
@@ -1168,17 +1188,18 @@ begin
     Result := scPublic;
 end;
 
-function StringIn(const S: String; List: Array of String): Boolean;
+function StringIn(const S: string; List: array of string): Boolean;
 var
   I: Integer;
 begin
   Result := True;
-  for I:= Low(List) to High(List) do
-    if List[I] = S then Exit;
+  for I := Low(List) to High(List) do
+    if List[I] = S then
+      Exit;
   Result := False;
 end;
 
-function CountWords(const S: String): Integer;
+function CountWords(const S: string): Integer;
 var
   Len, RLen, I: Integer;
 begin
@@ -1186,24 +1207,24 @@ begin
   RLen := 0;
   I := 1;
   Len := Length(S);
-  while(I <= Len) do
+  while (I <= Len) do
   begin
-    if(RLen > 0) and not (S[I] in LetterChars+DigitChars) then
+    if (RLen > 0) and not (S[I] in LetterChars + DigitChars) then
     begin
-       RLen := 0;
-       Inc(Result);
+      RLen := 0;
+      Inc(Result);
     end
-    else if (S[I] in LetterChars+DigitChars) then
+    else if (S[I] in LetterChars + DigitChars) then
     begin
-       Inc(RLen);
+      Inc(RLen);
     end;
     Inc(I);
   end;
-  if (Len > 0) and (S[Len] in LetterChars+DigitChars) then
+  if (Len > 0) and (S[Len] in LetterChars + DigitChars) then
     Inc(Result);
 end;
 
-function GetTokenByName(Token: TTokenClass; const Name: String;
+function GetTokenByName(Token: TTokenClass; const Name: string;
   tokenType: TTkType): TTokenClass;
 var
   I: integer;
@@ -1219,24 +1240,27 @@ begin
   end;
 end;
 
-function IsNumber(const S: String): Boolean;
+function IsNumber(const S: string): Boolean;
 var
   ptr: PChar;
 begin
   ptr := PChar(S);
   Result := False;
-  if not (ptr^ in DigitChars+['b']) then Exit;
+  if not (ptr^ in DigitChars + ['b']) then
+    Exit;
   Inc(ptr);
-  if ptr^ in ['x', 'X'] then Inc(ptr);
-  while (ptr^ <> #0) and (ptr^ in DigitChars+HexChars+['L']) do
+  if ptr^ in ['x', 'X'] then
+    Inc(ptr);
+  while (ptr^ <> #0) and (ptr^ in DigitChars + HexChars + ['L']) do
   begin
     Result := True;
     Inc(ptr);
   end;
-  if ptr^ <> #0 then Result := False;
+  if ptr^ <> #0 then
+    Result := False;
 end;
 
-function IsValidName(const S: String): Boolean;
+function IsValidName(const S: string): Boolean;
 var
   ptr: PChar;
 begin
@@ -1244,7 +1268,7 @@ begin
   Result := False;
   if not (ptr^ in LetterChars) then
     Exit;
-  while (ptr^ <> #0) and (ptr^ in LetterChars+DigitChars) do
+  while (ptr^ <> #0) and (ptr^ in LetterChars + DigitChars) do
     Inc(ptr);
   Result := ptr^ = #0;
 end;
@@ -1256,7 +1280,7 @@ begin
   while (ptr >= init) and (ptr^ <> #10) and ((ptr^ <> '"') or
     (((ptr - 1)^ = '\') and (ptr^ = '"'))) do
     Dec(ptr);
-  Result := (ptr^  = '"');
+  Result := (ptr^ = '"');
 end;
 
 function SkipSingleQuotesInv(const init: PChar; var ptr: PChar): Boolean;
@@ -1266,7 +1290,7 @@ begin
   while (ptr >= init) and ((ptr^ <> '''') or (((ptr - 1)^ = '\') and
     (ptr^ = ''''))) do
     Dec(ptr);
-  Result := (ptr^  = '''');
+  Result := (ptr^ = '''');
 end;
 
 function SkipMultlineCommentInv(const init: PChar; var ptr: PChar): Boolean;
@@ -1314,47 +1338,47 @@ begin
   Result := pair_count = 0;
 end;
 
-function GetNextValidChar(const Text: String; SelStart: Integer): Char;
+function GetNextValidChar(const Text: string; SelStart: Integer): Char;
 var
   ptr, init: PChar;
 begin
   init := PChar(Text);
   ptr := init + SelStart;
-  while (ptr^ <> #0) and (ptr^ in LetterChars+DigitChars) do
+  while (ptr^ <> #0) and (ptr^ in LetterChars + DigitChars) do
     Inc(ptr);
   repeat
     case ptr^ of
       '/':
-      if ((ptr + 1)^ = '*') then
-      begin
-        Inc(ptr, 2);
-        while (ptr^ <> #0) and not ((ptr^ = '*') and ((ptr + 1)^ = '/')) do
-          Inc(ptr);
-        if ptr^ = '*' then
-          Inc(ptr);
-      end
-      else if ((ptr + 1)^ = '/') then
-      begin
-        while not (ptr^ in [#0]+LineChars) do
-          Inc(ptr);
-      end
-      else
-        Break;
+        if ((ptr + 1)^ = '*') then
+        begin
+          Inc(ptr, 2);
+          while (ptr^ <> #0) and not ((ptr^ = '*') and ((ptr + 1)^ = '/')) do
+            Inc(ptr);
+          if ptr^ = '*' then
+            Inc(ptr);
+        end
+        else if ((ptr + 1)^ = '/') then
+        begin
+          while not (ptr^ in [#0] + LineChars) do
+            Inc(ptr);
+        end
+        else
+          Break;
     else
-      if not (ptr^ in LineChars+SpaceChars) then
+      if not (ptr^ in LineChars + SpaceChars) then
         Break;
     end;
     Inc(ptr);
-  until (ptr^ = #0) or not (ptr^ in ['/']+LineChars+SpaceChars);
+  until (ptr^ = #0) or not (ptr^ in ['/'] + LineChars + SpaceChars);
   Result := ptr^;
 end;
 
-function ParseFields(const Text: String; SelStart: Integer;
-  var S, Fields: String; var InputError: Boolean): Boolean;
+function ParseFields(const Text: string; SelStart: Integer;
+  var S, Fields: string; var InputError: Boolean): Boolean;
 var
   ptr, init: PChar;
   skipSpace: Boolean;
-  str, field, sep, _fields: String;
+  str, field, sep, _fields: string;
 begin
   Result := False;
   InputError := False;
@@ -1362,25 +1386,25 @@ begin
   ptr := init + SelStart;
   str := '';
   skipSpace := False;
-  if (ptr^ in LetterChars+DigitChars) then
+  if (ptr^ in LetterChars + DigitChars) then
   begin
     skipSpace := True;
     //get string after selstart
     repeat
       str := str + ptr^;
       Inc(ptr);
-    until (ptr^ = #0) or not (ptr^ in LetterChars+DigitChars);
+    until (ptr^ = #0) or not (ptr^ in LetterChars + DigitChars);
   end;
   ptr := init + SelStart - 1;
   //get string before selstart
-  while not skipSpace and (ptr >= init) and (ptr^ in LineChars+SpaceChars) do
-      Dec(ptr);                                  //comment
-  if (ptr^ in LetterChars+DigitChars) then
+  while not skipSpace and (ptr >= init) and (ptr^ in LineChars + SpaceChars) do
+    Dec(ptr); //comment
+  if (ptr^ in LetterChars + DigitChars) then
   begin
     repeat
       str := ptr^ + str;
       Dec(ptr);
-    until (ptr < init) or not (ptr^ in LetterChars+DigitChars);
+    until (ptr < init) or not (ptr^ in LetterChars + DigitChars);
   end;
   if (ptr < init) then
   begin
@@ -1401,11 +1425,11 @@ begin
     repeat
       case ptr^ of
         '.':
-        begin
-          sep := ptr^ + sep;
-          Dec(ptr);
-          Break;
-        end;
+          begin
+            sep := ptr^ + sep;
+            Dec(ptr);
+            Break;
+          end;
         ':':
           if (ptr = init) or ((ptr - 1)^ <> ':') then
             Break
@@ -1433,7 +1457,7 @@ begin
           if (ptr > init) and ((ptr - 1)^ = '*') then
             SkipMultlineCommentInv(init, ptr);
       else
-        if not (ptr^ in LineChars+SpaceChars) then
+        if not (ptr^ in LineChars + SpaceChars) then
           Break;
       end;
       Dec(ptr);
@@ -1442,14 +1466,14 @@ begin
       ((field <> '') and (sep = '')) then
       Break;
     //skipspace
-    while (ptr >= init) and (ptr^ in LineChars+SpaceChars) do
-      Dec(ptr);                                       //comment
-    if not (ptr^ in LetterChars+DigitChars+[')', ']', '/']) then
+    while (ptr >= init) and (ptr^ in LineChars + SpaceChars) do
+      Dec(ptr); //comment
+    if not (ptr^ in LetterChars + DigitChars + [')', ']', '/']) then
     begin
       if sep <> '' then
       begin
         if sep <> '::' then
-          InputError := True;//;.blabla
+          InputError := True; //;.blabla
         Exit; //error ?->blabla
       end
       else
@@ -1461,19 +1485,19 @@ begin
         ')': SkipInvPair(init, ptr, '(', ')');
         ']': SkipInvPair(init, ptr, '[', ']');
         '/':
-        if (ptr = init) or ((ptr - 1)^ <> '*') then
-          SkipMultlineCommentInv(init, ptr)
+          if (ptr = init) or ((ptr - 1)^ <> '*') then
+            SkipMultlineCommentInv(init, ptr)
+          else
+          begin
+            if sep <> '::' then
+              InputError := True; //;.blabla
+            Exit; //syntax error     /->blabla /.blabla /::blabla
+          end
         else
-        begin
-          if sep <> '::' then
-            InputError := True;//;.blabla
-          Exit;//syntax error     /->blabla /.blabla /::blabla
-        end
-      else
-        field := ptr^ + field;
+          field := ptr^ + field;
       end;
       Dec(ptr);
-    until (ptr < init) or not (ptr^ in LetterChars+DigitChars);
+    until (ptr < init) or not (ptr^ in LetterChars + DigitChars);
     if field <> '' then
       _fields := field + sep + _fields;
   until false;
@@ -1485,7 +1509,7 @@ begin
   end;
 end;
 
-function GetFirstOpenBrace(const S: String; QuoteChar: Char;
+function GetFirstOpenBrace(const S: string; QuoteChar: Char;
   var SelStart: Integer): Boolean;
 var
   init, ptr, skip: PChar;
@@ -1495,12 +1519,12 @@ begin
   ptr := init + SelStart;
   if (ptr^ in ['(', ')', ';', '{', '}']) and (QuoteChar = #0) then
     Dec(ptr);
-  if QuoteChar =  '"' then
+  if QuoteChar = '"' then
   begin
     if SkipStringInv(init, ptr) then
       Dec(ptr);
   end
-  else if QuoteChar =  '''' then
+  else if QuoteChar = '''' then
   begin
     if SkipSingleQuotesInv(init, ptr) then
       Dec(ptr);
@@ -1516,7 +1540,8 @@ begin
         '"': SkipStringInv(init, ptr);
         '''': SkipSingleQuotesInv(init, ptr);
         ';', '{', '}': Exit;
-      else ;
+      else
+        ;
       end;
       Dec(ptr);
     end;
@@ -1524,7 +1549,7 @@ begin
     if ptr^ <> '(' then
       Exit;
     Dec(skip);
-    while (skip >= init) and (skip^ in LineChars+SpaceChars) do
+    while (skip >= init) and (skip^ in LineChars + SpaceChars) do
     begin
       Dec(skip);
       case skip^ of
@@ -1533,7 +1558,7 @@ begin
             SkipMultlineCommentInv(init, skip);
       end;
     end;
-    if skip^ in LetterChars+DigitChars then
+    if skip^ in LetterChars + DigitChars then
       Break;
     ptr := skip;
   until ptr <= init;
@@ -1543,14 +1568,14 @@ begin
   Result := True;
 end;
 
-function ConvertSlashes(const Path: String): String;
+function ConvertSlashes(const Path: string): string;
 var
   i: Integer;
 begin
   Result := Path;
   for i := 1 to Length(Result) do
-      if Result[i] = '/' then
-          Result[i] := '\';
+    if Result[i] = '/' then
+      Result[i] := '\';
 end;
 
 end.

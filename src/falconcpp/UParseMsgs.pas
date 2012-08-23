@@ -7,34 +7,34 @@ uses
 
 type
   TMessageItemType = (mitCompiler, mitGoto, mitFound);
-  
+
   TMessageItem = class
   public
     MsgType: TMessageItemType;
-    FileName: String;
+    FileName: string;
     Line: Integer;
     Col: Integer;
     EndCol: Integer;
-    Msg: String;
-    OriMsg: String;
-    Selec: String;
+    Msg: string;
+    OriMsg: string;
+    Selec: string;
     Icon: Integer;
     constructor Create;
-    function GetPosXY: String;
+    function GetPosXY: string;
   end;
 
-function GetNumberOfOutLine(Line: String): String;
-function StringBetween(S, BeginDlm,EndDlm: String; ResAll: Boolean = True):string;
-function StringBetweenDelPrior(Var S:String; BeginDlm,EndDlm: String):string;
-function AddStr(const text: String; var Strout: String): Integer;
-function GetLine(Str: String; Index: Integer): String;
-function CountLine(Str: String): Integer;
-function GetTypes(afmt: String): String;
+function GetNumberOfOutLine(Line: string): string;
+function StringBetween(S, BeginDlm, EndDlm: string; ResAll: Boolean = True): string;
+function StringBetweenDelPrior(var S: string; BeginDlm, EndDlm: string): string;
+function AddStr(const text: string; var Strout: string): Integer;
+function GetLine(Str: string; Index: Integer): string;
+function CountLine(Str: string): Integer;
+function GetTypes(afmt: string): string;
 function ParseResult(Value: TStrings): TStrings;
-function ResolveUnixFileName(const Str: String): String;
-function IsCompatible(const fmt, src: String): Boolean;
-function sscanf(const fmt, src: String; const params: array of Pointer): Boolean;
-function sscanfs(const fmt, src: String; var str_out: String): Boolean;
+function ResolveUnixFileName(const Str: string): string;
+function IsCompatible(const fmt, src: string): Boolean;
+function sscanf(const fmt, src: string; const params: array of Pointer): Boolean;
+function sscanfs(const fmt, src: string; var str_out: string): Boolean;
 
 implementation
 
@@ -51,15 +51,16 @@ begin
   Msg := '';
 end;
 
-function TMessageItem.GetPosXY: String;
+function TMessageItem.GetPosXY: string;
 begin
   Result := '';
-  if (Line > 0) then Result :=  IntToStr(Line);
+  if (Line > 0) then
+    Result := IntToStr(Line);
   if (Line > 0) and (Col > 0) then
-    Result :=  Result + ': ' + IntToStr(Col);
+    Result := Result + ': ' + IntToStr(Col);
 end;
 
-function GetNumberOfOutLine(Line: String): String;
+function GetNumberOfOutLine(Line: string): string;
 var
   I: Integer;
 begin
@@ -70,22 +71,22 @@ begin
     Result := '';
 end;
 
-function StringBetweenDelPrior(Var S:String; BeginDlm,EndDlm: String):string;
+function StringBetweenDelPrior(var S: string; BeginDlm, EndDlm: string): string;
 var
-  i:integer;
-  str:string;
+  i: integer;
+  str: string;
 begin
   str := S;
-  i := Pos(BeginDlm,str);
+  i := Pos(BeginDlm, str);
   if (i > 0) then
   begin
-    str := Copy(str,i + length(BeginDlm),length(str) - i);
+    str := Copy(str, i + length(BeginDlm), length(str) - i);
     S := str;
-    i := Pos(EndDlm,str);
+    i := Pos(EndDlm, str);
     if (i > 0) then
     begin
-      str := Copy(str,1,i - 1);
-      Delete(S,1,i - 1);
+      str := Copy(str, 1, i - 1);
+      Delete(S, 1, i - 1);
     end
     else
       str := '';
@@ -95,23 +96,25 @@ begin
   Result := str;
 end;
 
-function StringBetween(S, BeginDlm,EndDlm: String;
-  ResAll: Boolean = True):string;
+function StringBetween(S, BeginDlm, EndDlm: string;
+  ResAll: Boolean = True): string;
 var
-  i:integer;
-  str:string;
+  i: integer;
+  str: string;
 begin
   str := S;
-  i := Pos(BeginDlm,str);
+  i := Pos(BeginDlm, str);
   if (i > 0) or ResAll then
   begin
-    if (i = 0) then I := 1;
-    str := Copy(str,i + length(BeginDlm),length(str) - i);
-    i := Pos(EndDlm,str);
+    if (i = 0) then
+      I := 1;
+    str := Copy(str, i + length(BeginDlm), length(str) - i);
+    i := Pos(EndDlm, str);
     if (i > 0) or ResAll then
     begin
-      if (i = 0) then i := length(str);
-      str := Copy(str,1,i - 1);
+      if (i = 0) then
+        i := length(str);
+      str := Copy(str, 1, i - 1);
     end
     else
       str := '';
@@ -121,7 +124,7 @@ begin
   Result := str;
 end;
 
-function AddStr(const text: String; var Strout: String): Integer;
+function AddStr(const text: string; var Strout: string): Integer;
 begin
   if (Length(Strout) > 0) then
     Strout := Strout + #13 + text
@@ -130,9 +133,9 @@ begin
   Result := CountLine(Strout) - 1;
 end;
 
-function GetLine(Str: String; Index: Integer): String;
+function GetLine(Str: string; Index: Integer): string;
 var
-  Line: String;
+  Line: string;
   I: Integer;
 begin
   Line := '';
@@ -148,11 +151,12 @@ begin
     end;
     Inc(I);
   end;
-  if (I = Index) then Line := Str;
+  if (I = Index) then
+    Line := Str;
   Result := Line;
 end;
 
-function CountLine(Str: String): Integer;
+function CountLine(Str: string): Integer;
 begin
   Result := 0;
   while (Pos(#13, Str) > 0) do
@@ -160,33 +164,38 @@ begin
     Delete(Str, 1, Pos(#13, Str));
     Inc(Result);
   end;
-  if Length(Str) > 0 then Inc(Result);
+  if Length(Str) > 0 then
+    Inc(Result);
 end;
 
-function GetTypes(afmt: String): String;
+function GetTypes(afmt: string): string;
 var
   I: Integer;
   Symb: array[0..1] of Char;
-  Res: String;
+  Res: string;
 begin
   Res := '';
-  for I:= 1 to Length(afmt) do
+  for I := 1 to Length(afmt) do
     if (I < Length(afmt)) then
     begin
       Symb[0] := afmt[I];
       Symb[1] := afmt[I + 1];
-      if CompareStr(Symb, '%s') = 0 then Res := Res + 's';
-      if CompareStr(Symb, '%c') = 0 then Res := Res + 'c';
-      if CompareStr(Symb, '%d') = 0 then Res := Res + 'd';
-      if CompareStr(Symb, '%f') = 0 then Res := Res + 'f';
+      if CompareStr(Symb, '%s') = 0 then
+        Res := Res + 's';
+      if CompareStr(Symb, '%c') = 0 then
+        Res := Res + 'c';
+      if CompareStr(Symb, '%d') = 0 then
+        Res := Res + 'd';
+      if CompareStr(Symb, '%f') = 0 then
+        Res := Res + 'f';
     end;
   Result := Res;
 end;
 
-function ExistLineNumber(const fmt: String): Boolean;
+function ExistLineNumber(const fmt: string): Boolean;
 var
   X, Y: Integer;
-  types: String;
+  types: string;
 begin
   Result := False;
   types := GetTypes(fmt);
@@ -203,10 +212,10 @@ begin
     end;
 end;
 
-function ExistColNumber(const fmt: String): Boolean;
+function ExistColNumber(const fmt: string): Boolean;
 var
   X, Y, Z: Integer;
-  types: String;
+  types: string;
 begin
   Result := False;
   types := GetTypes(fmt);
@@ -229,7 +238,7 @@ begin
   end;
 end;
 
-function ExistCol(const line: String; var col: String): Boolean;
+function ExistCol(const line: string; var col: string): Boolean;
 var
   X, Y: Integer;
 begin
@@ -250,10 +259,10 @@ begin
   end;
 end;
 
-function ResolveUnixFileName(const Str: String): String;
+function ResolveUnixFileName(const Str: string): string;
 var
   I, Y: Integer;
-  Nm, rest: String;
+  Nm, rest: string;
 begin
   I := Pos(':\', Str);
   if (I = 2) then
@@ -276,23 +285,26 @@ begin
     Result := Str;
 end;
 
-function IsCompatible(const fmt, src: String): Boolean;
+function IsCompatible(const fmt, src: string): Boolean;
 var
-  Consts, Values: String;
-  Temp, Str, Types: String;
+  Consts, Values: string;
+  Temp, Str, Types: string;
   I: Integer;
 begin
   Temp := fmt;
   Result := False;
-  if (Length(fmt) < 2) or (Length(src) = 0) then Exit;
+  if (Length(fmt) < 2) or (Length(src) = 0) then
+    Exit;
   Types := GetTypes(fmt);
-  for I:= 1 to Length(types) do
+  for I := 1 to Length(types) do
     Temp := StringReplace(Temp, '%' + types[I], #13, [rfReplaceAll]);
-  if Temp[Length(Temp)] = #13 then Delete(Temp, Length(Temp), 1);
-  if Temp[1] = #13 then Delete(Temp, 1, 1);
+  if Temp[Length(Temp)] = #13 then
+    Delete(Temp, Length(Temp), 1);
+  if Temp[1] = #13 then
+    Delete(Temp, 1, 1);
   Consts := Temp;
   Temp := src;
-  for I:= 0 to Pred(CountLine(Consts)) do
+  for I := 0 to Pred(CountLine(Consts)) do
   begin
     Str := GetLine(Consts, I);
     if (Pos(Str, Temp) > 0) then
@@ -301,14 +313,15 @@ begin
       Exit;
   end;
   Values := Temp;
-  if (CountLine(Values) <> Length(Types)) then Exit;
+  if (CountLine(Values) <> Length(Types)) then
+    Exit;
   Result := True;
 end;
 
-function sscanf(const fmt, src: String; const params: array of Pointer): Boolean;
+function sscanf(const fmt, src: string; const params: array of Pointer): Boolean;
 var
-  Consts, Values: String;
-  Temp, Str, Types: String;
+  Consts, Values: string;
+  Temp, Str, Types: string;
   I: Integer;
   //results
   StrResPtr: PString;
@@ -318,15 +331,18 @@ var
 begin
   Temp := fmt;
   Result := False;
-  if (Length(fmt) < 2) or (Length(src) = 0) then Exit;
+  if (Length(fmt) < 2) or (Length(src) = 0) then
+    Exit;
   Types := GetTypes(fmt);
-  for I:= 1 to Length(types) do
+  for I := 1 to Length(types) do
     Temp := StringReplace(Temp, '%' + types[I], #13, [rfReplaceAll]);
-  if Temp[Length(Temp)] = #13 then Delete(Temp, Length(Temp), 1);
-  if Temp[1] = #13 then Delete(Temp, 1, 1);
+  if Temp[Length(Temp)] = #13 then
+    Delete(Temp, Length(Temp), 1);
+  if Temp[1] = #13 then
+    Delete(Temp, 1, 1);
   Consts := Temp;
   Temp := src;
-  for I:= 0 to Pred(CountLine(Consts)) do
+  for I := 0 to Pred(CountLine(Consts)) do
   begin
     Str := GetLine(Consts, I);
     if (Pos(Str, Temp) > 0) then
@@ -335,46 +351,49 @@ begin
       Exit;
   end;
   Values := Temp;
-  if (CountLine(Values) <> Length(Types)) then Exit;
-  for I:= 0 to High(params) do
+  if (CountLine(Values) <> Length(Types)) then
+    Exit;
+  for I := 0 to High(params) do
   begin
     case Types[I + 1] of
       's':
-      begin
-        StrResPtr := params[I];
-        StrResPtr^ := GetLine(Values, I);
-      end;
+        begin
+          StrResPtr := params[I];
+          StrResPtr^ := GetLine(Values, I);
+        end;
       'c':
-      begin
-        CharResPtr := params[I];
-        CharResPtr^ := GetLine(Values, I)[1];
-      end;
+        begin
+          CharResPtr := params[I];
+          CharResPtr^ := GetLine(Values, I)[1];
+        end;
       'd':
-      begin
-        IntResPtr := params[I];
-        IntResPtr^ := StrToIntDef(GetLine(Values, I), 0);
-      end;
+        begin
+          IntResPtr := params[I];
+          IntResPtr^ := StrToIntDef(GetLine(Values, I), 0);
+        end;
       'f':
-      begin
-        FloatResPtr := params[I];
-        FloatResPtr^ := StrToFloatDef(GetLine(Values, I), 0);
-      end;
+        begin
+          FloatResPtr := params[I];
+          FloatResPtr^ := StrToFloatDef(GetLine(Values, I), 0);
+        end;
     end;
   end;
   Result := True;
 end;
 
-function CanOrder(const Str: String; var order: String): Boolean;
+function CanOrder(const Str: string; var order: string): Boolean;
 var
   I: Integer;
-  temp: String;
+  temp: string;
 begin
   Result := False;
   I := Pos('ORDER{', UpperCase(Str));
-  if I = 0 then Exit;
+  if I = 0 then
+    Exit;
   temp := Copy(str, I + 6, length(str));
   I := Pos('}', temp);
-  if I = 0 then Exit;
+  if I = 0 then
+    Exit;
   temp := Copy(temp, 1, I - 1);
   temp := StringReplace(temp, ',', #13, [rfReplaceAll]);
   if CountLine(temp) > 0 then
@@ -384,40 +403,40 @@ begin
   end;
 end;
 
-function prinfts(const fmt, src: String): String;
+function prinfts(const fmt, src: string): string;
 
-  function ReplaceAtPos(const str, substr, replacestr: String;
-    var newstr: String; pos: Integer = 1): Integer;
+  function ReplaceAtPos(const str, substr, replacestr: string;
+    var newstr: string; pos: Integer = 1): Integer;
   var
     index: Integer;
   begin
-     newstr := str;
-     index := PosEx(substr, newstr, pos);
-     Delete(newstr, index, Length(substr));
-     Insert(replacestr, newstr, index);
-     Result := index + Length(replacestr);
+    newstr := str;
+    index := PosEx(substr, newstr, pos);
+    Delete(newstr, index, Length(substr));
+    Insert(replacestr, newstr, index);
+    Result := index + Length(replacestr);
   end;
 
 var
-  types, Res: String;
+  types, Res: string;
   I, Y, index: Integer;
 begin
   Res := fmt;
   index := 1;
   types := GetTypes(fmt);
   Y := CountLine(src);
-  for I:= 1 to Length(types) do
+  for I := 1 to Length(types) do
   begin
     if (Y >= I) then
-      index := ReplaceAtPos(Res, '%'+types[I], GetLine(src, I - 1), Res, index);
+      index := ReplaceAtPos(Res, '%' + types[I], GetLine(src, I - 1), Res, index);
   end;
   Result := Res;
 end;
 
-function print_in_order(const fmt, src, order: String): String;
+function print_in_order(const fmt, src, order: string): string;
 var
   Ordr, src_count, order_count, I: Integer;
-  new_src, new_fmt: String;
+  new_src, new_fmt: string;
 begin
   new_src := '';
   order_count := CountLine(order);
@@ -426,20 +445,21 @@ begin
   new_fmt := Copy(fmt, I + 6, Length(fmt));
   I := Pos('}', new_fmt);
   new_fmt := Copy(new_fmt, I + 1, length(new_fmt));
-  for I:= 0 to Pred(order_count) do
+  for I := 0 to Pred(order_count) do
   begin
     Ordr := StrToIntDef(GetLine(order, I), 0);
     if (Ordr > 0) and (Ordr <= src_count) then
       AddStr(GetLine(src, Ordr - 1), new_src);
   end;
-  if Length(new_src) = 0 then new_src := src;
+  if Length(new_src) = 0 then
+    new_src := src;
   Result := prinfts(new_fmt, new_src);
 end;
 
-function RemoveInfor(const str: String): String;
+function RemoveInfor(const str: string): string;
 var
   I: Integer;
-  Res: String;
+  Res: string;
 begin
   Res := str;
   I := Pos(': error: ', str);
@@ -470,24 +490,27 @@ begin
   Result := Trim(Res);
 end;
 
-function sscanfs(const fmt, src: String; var str_out: String): Boolean;
+function sscanfs(const fmt, src: string; var str_out: string): Boolean;
 var
-  Consts, Values: String;
-  Temp, Str, Types: String;
+  Consts, Values: string;
+  Temp, Str, Types: string;
   I: Integer;
 begin
   Temp := fmt;
   str_out := '';
   Result := False;
-  if (Length(fmt) < 2) or (Length(src) = 0) then Exit;
+  if (Length(fmt) < 2) or (Length(src) = 0) then
+    Exit;
   Types := GetTypes(fmt);
-  for I:= 1 to Length(types) do
+  for I := 1 to Length(types) do
     Temp := StringReplace(Temp, '%' + types[I], #13, [rfReplaceAll]);
-  if Temp[Length(Temp)] = #13 then Delete(Temp, Length(Temp), 1);
-  if Temp[1] = #13 then Delete(Temp, 1, 1);
+  if Temp[Length(Temp)] = #13 then
+    Delete(Temp, Length(Temp), 1);
+  if Temp[1] = #13 then
+    Delete(Temp, 1, 1);
   Consts := Temp;
   Temp := src;
-  for I:= 0 to Pred(CountLine(Consts)) do
+  for I := 0 to Pred(CountLine(Consts)) do
   begin
     Str := GetLine(Consts, I);
     if (Pos(Str, Temp) > 0) then
@@ -496,31 +519,31 @@ begin
       Exit;
   end;
   Values := Temp;
-  for I:= 1 to Length(Types) do
+  for I := 1 to Length(Types) do
     AddStr(GetLine(Values, I - 1), str_out);
   Result := True;
 end;
 
 function ParseResult(Value: TStrings): TStrings;
 
-  function IsNumber(Str: String): Boolean;
+  function IsNumber(Str: string): Boolean;
   var
     I: Integer;
   begin
     Result := True;
-    for I:= 1 to Length(Str) do
-      if not(Str[I] in ['0'..'9', '.']) then
+    for I := 1 to Length(Str) do
+      if not (Str[I] in ['0'..'9', '.']) then
       begin
         Result := False;
       end;
   end;
 
-  function HasNextLine(Str: String): Integer;
+  function HasNextLine(Str: string): Integer;
   var
     I, Count: Integer;
   begin
     Count := 0;
-    for I:= 1 to Length(Str) do
+    for I := 1 to Length(Str) do
     begin
       if Str[I] in ['(', '[', '{'] then
       begin
@@ -551,7 +574,7 @@ const
 var
   Temp: TStrings;
   Msg: TMessageItem;
-  SLn, Params, fmt, order, OriMsg, Capt: String;
+  SLn, Params, fmt, order, OriMsg, Capt: string;
   I, X: Integer;
   Cont, Translated: Boolean;
 begin
@@ -559,13 +582,13 @@ begin
   //** parse results**//
   Cont := False;
   Capt := FrmFalconMain.Caption;
-  for I:= 0 to Pred(Value.Count) do
+  for I := 0 to Pred(Value.Count) do
   begin
     if FrmFalconMain.CompilationStopped then
       Break;
     if (Value.Count > 500) then
       FrmFalconMain.Caption :=
-        Format('Falcon C++ ['+STR_FRM_MAIN[42]+']', [I + 1, Value.Count]);
+        Format('Falcon C++ [' + STR_FRM_MAIN[42] + ']', [I + 1, Value.Count]);
     Application.ProcessMessages;
     if Cont then
     begin

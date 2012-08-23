@@ -13,11 +13,11 @@ type
     FIndex: Integer;
     FWatchType: TWatchType;
     FInitialized: Boolean;
-    FValue: String;
+    FValue: string;
     FSelLine: Integer;
     FSelStart: Integer;
     FSelLength: Integer;
-    FName: String;
+    FName: string;
     FToken: TTokenClass;
   public
     property Index: Integer read FIndex write FIndex;
@@ -26,8 +26,8 @@ type
     property SelLine: Integer read FSelLine write FSelLine;
     property SelStart: Integer read FSelStart write FSelStart;
     property SelLength: Integer read FSelLength write FSelLength;
-    property Name: String read FName write FName;
-    property Value: String read FValue write FValue;
+    property Name: string read FName write FName;
+    property Value: string read FValue write FValue;
     property Token: TTokenClass read FToken write FToken;
   end;
 
@@ -35,12 +35,12 @@ type
   private
     FID: Integer;
     FWatchType: TWatchType;
-    FName: String;
+    FName: string;
   public
     constructor Create;
     property ID: Integer read FID write FID;
     property WatchType: TWatchType read FWatchType write FWatchType;
-    property Name: String read FName write FName;
+    property Name: string read FName write FName;
   end;
 
   TDebugWatchList = class
@@ -52,21 +52,22 @@ type
     destructor Destroy; override;
     procedure Clear;
     function Count: Integer;
-    function GetIndex(const Name: String): Integer; overload;
+    function GetIndex(const Name: string): Integer; overload;
     function GetIndex(ID: Integer): Integer; overload;
-    function WatchExists(const Name: String): Boolean;
+    function WatchExists(const Name: string): Boolean;
     property Items[Index: Integer]: TDebugWatch read Get;
-    function GetWatchID(const Name: String): Integer;
+    function GetWatchID(const Name: string): Integer;
     function AddWatch(ID: Integer; WatchType: TWatchType;
-      const Name: String): Boolean;
-    function DeleteWatch(const Name: String): Boolean; overload;
+      const Name: string): Boolean;
+    function DeleteWatch(const Name: string): Boolean; overload;
     function DeleteWatch(ID: Integer): Boolean; overload;
-    function UpdateID(const Name: String; ID: Integer): Integer;
+    function UpdateID(const Name: string; ID: Integer): Integer;
   end;
 
 implementation
 
 {TDebugWatch}
+
 constructor TDebugWatch.Create;
 begin
   inherited Create;
@@ -108,7 +109,7 @@ begin
   Result := TDebugWatch(FList.Items[Index]);
 end;
 
-function TDebugWatchList.GetWatchID(const Name: String): Integer;
+function TDebugWatchList.GetWatchID(const Name: string): Integer;
 var
   Index: Integer;
 begin
@@ -119,13 +120,13 @@ begin
   Result := Items[Index].ID;
 end;
 
-function TDebugWatchList.WatchExists(const Name: String): Boolean;
+function TDebugWatchList.WatchExists(const Name: string): Boolean;
 begin
   Result := GetWatchID(Name) > 0;
 end;
 
 function TDebugWatchList.AddWatch(ID: Integer; WatchType: TWatchType;
-  const Name: String): Boolean;
+  const Name: string): Boolean;
 var
   I, PrevIndex: Integer;
   Watch: TDebugWatch;
@@ -154,7 +155,7 @@ begin
   Result := True;
 end;
 
-function TDebugWatchList.DeleteWatch(const Name: String): Boolean;
+function TDebugWatchList.DeleteWatch(const Name: string): Boolean;
 var
   Index: Integer;
 begin
@@ -180,7 +181,7 @@ begin
   Result := True;
 end;
 
-function TDebugWatchList.GetIndex(const Name: String): Integer;
+function TDebugWatchList.GetIndex(const Name: string): Integer;
 var
   I: Integer;
 begin
@@ -206,13 +207,13 @@ begin
       Result := I;
       Exit;
     end;
-    if Items[I].ID > ID  then
+    if Items[I].ID > ID then
       Break;
   end;
   Result := -1;
 end;
 
-function TDebugWatchList.UpdateID(const Name: String; ID: Integer): Integer;
+function TDebugWatchList.UpdateID(const Name: string; ID: Integer): Integer;
 begin
   Result := GetIndex(Name);
   if Result > 0 then

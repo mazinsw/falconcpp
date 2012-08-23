@@ -55,11 +55,11 @@ type
   TCustomBZip2Stream = class(TStream)
   private
     FStrm: TStream;
-  {$IFDEF LFS}
+{$IFDEF LFS}
     FStrmPos: Int64;
-  {$ELSE}
+{$ELSE}
     FStrmPos: Integer;
-  {$ENDIF}
+{$ENDIF}
     FOnProgress: TNotifyEvent;
     FBZRec: TBZStreamRec;
     FBuffer: array[Word] of Char;
@@ -92,7 +92,6 @@ type
   written to the output stream.  This is useful for updating a progress
   indicator when you are writing a large chunk of data to the compression
   stream in a single call.}
-
 
   TBlockSize100k = (bs1, bs2, bs3, bs4, bs5, bs6, bs7, bs8, bs9);
 
@@ -150,7 +149,6 @@ type
        OutBytes = number of bytes in OutBuf   }
 procedure BZCompressBuf(const InBuf: Pointer; InBytes: Integer;
   out OutBuf: Pointer; out OutBytes: Integer);
-
 
 { DecompressBuf decompresses data, buffer to buffer, in one call.
    In: InBuf = ptr to compressed data
@@ -369,7 +367,6 @@ function BZ2_bzDecompressEnd(var strm: TBZStreamRec): Integer; stdcall; external
 function BZ2_bzBuffToBuffDecompress(dest: Pointer; var destLen: Integer; source: Pointer;
   sourceLen, small, verbosity: Integer): Integer; stdcall; external;
 
-
 function bzip2AllocMem(AppData: Pointer; Items, Size: Integer): Pointer; cdecl;
 begin
   GetMem(Result, Items * Size);
@@ -427,7 +424,7 @@ begin
         Inc(OutBytes, 256);
         ReallocMem(OutBuf, OutBytes);
         strm.next_out := PChar(Integer(OutBuf)
-			       + (Integer(strm.next_out) - Integer(P)));
+          + (Integer(strm.next_out) - Integer(P)));
         strm.avail_out := 256;
       end;
     finally
@@ -496,9 +493,9 @@ end;
 
 procedure TCustomBZip2Stream.Progress(Sender: TObject);
 begin
-  if Assigned(FOnProgress) then FOnProgress(Sender);
+  if Assigned(FOnProgress) then
+    FOnProgress(Sender);
 end; { TCustomBZip2Stream }
-
 
 // TBZCompressionStream
 
@@ -517,7 +514,8 @@ begin
   FBZRec.next_in := nil;
   FBZRec.avail_in := 0;
   try
-    if FStrm.Position <> FStrmPos then FStrm.Position := FStrmPos;
+    if FStrm.Position <> FStrmPos then
+      FStrm.Position := FStrmPos;
     while (CCheck(BZ2_bzCompress(FBZRec, BZ_FINISH)) <> BZ_STREAM_END)
       and (FBZRec.avail_out = 0) do
     begin
@@ -542,7 +540,8 @@ function TBZCompressionStream.Write(const Buffer; Count: Longint): Longint;
 begin
   FBZRec.next_in := @Buffer;
   FBZRec.avail_in := Count;
-  if FStrm.Position <> FStrmPos then FStrm.Position := FStrmPos;
+  if FStrm.Position <> FStrmPos then
+    FStrm.Position := FStrmPos;
   while (FBZRec.avail_in > 0) do
   begin
     CCheck(BZ2_bzCompress(FBZRec, BZ_RUN));
@@ -567,15 +566,17 @@ begin
 end; { TBZCompressionStream }
 
 {$IFDEF LFS}
+
 function TBZCompressionStream.Seek(const Offset: Int64; Origin: TSeekOrigin): Int64;
 var
-  conv64 : TULargeInteger;
+  conv64: TULargeInteger;
 begin
-  if (Offset = 0) and (Origin = soCurrent) then begin
-    conv64.LowPart  := FBZRec.total_in_lo32;
+  if (Offset = 0) and (Origin = soCurrent) then
+  begin
+    conv64.LowPart := FBZRec.total_in_lo32;
     conv64.HighPart := FBZRec.total_in_hi32;
     Result := conv64.QuadPart
-    end
+  end
   else
     raise EBZCompressionError.Create('Invalid stream operation');
 end; { TBZCompressionStream }
@@ -584,14 +585,14 @@ end; { TBZCompressionStream }
 function TBZCompressionStream.GetCompressionRate: Single;
 {$IFDEF LFS}
 var
-  conv64In : TULargeInteger;
+  conv64In: TULargeInteger;
   conv64Out: TULargeInteger;
 {$ENDIF}
 begin
 {$IFDEF LFS}
-  conv64In.LowPart   := FBZRec.total_in_lo32;
-  conv64In.HighPart  := FBZRec.total_in_hi32;
-  conv64Out.LowPart  := FBZRec.total_out_lo32;
+  conv64In.LowPart := FBZRec.total_in_lo32;
+  conv64In.HighPart := FBZRec.total_in_hi32;
+  conv64Out.LowPart := FBZRec.total_out_lo32;
   conv64Out.HighPart := FBZRec.total_out_hi32;
 
   if conv64In.QuadPart = 0 then
@@ -626,7 +627,8 @@ function TBZDecompressionStream.Read(var Buffer; Count: Longint): Longint;
 begin
   FBZRec.next_out := @Buffer;
   FBZRec.avail_out := Count;
-  if FStrm.Position <> FStrmPos then FStrm.Position := FStrmPos;
+  if FStrm.Position <> FStrmPos then
+    FStrm.Position := FStrmPos;
   while (FBZRec.avail_out > 0) do
   begin
     if FBZRec.avail_in = 0 then
@@ -668,7 +670,8 @@ begin
   else if ((Offset >= 0) and (Origin = soFromCurrent)) or
     (((Offset - FBZRec.total_out_lo32) > 0) and (Origin = soFromBeginning)) then
   begin
-    if Origin = soFromBeginning then Dec(Offset, FBZRec.total_out_lo32);
+    if Origin = soFromBeginning then
+      Dec(Offset, FBZRec.total_out_lo32);
     if Offset > 0 then
     begin
       for I := 1 to Offset div sizeof(Buf) do
@@ -682,14 +685,15 @@ begin
 end; { TBZDecompressionStream }
 
 {$IFDEF LFS}
+
 function TBZDecompressionStream.Seek(const Offset: Int64; Origin: TSeekOrigin): Int64;
 var
-  I     : Integer;
-  Buf   : array[0..4095] of Char;
+  I: Integer;
+  Buf: array[0..4095] of Char;
   conv64: TULargeInteger;
   NewOff: Int64;
 begin
-  conv64.LowPart  := FBZRec.total_out_lo32;
+  conv64.LowPart := FBZRec.total_out_lo32;
   conv64.HighPart := FBZRec.total_out_hi32;
 
   if (Offset = 0) and (Origin = soBeginning) then
@@ -705,7 +709,8 @@ begin
     (((Offset - conv64.QuadPart) > 0) and (Origin = soBeginning)) then
   begin
     NewOff := Offset;
-    if Origin = soBeginning then Dec(NewOff, conv64.QuadPart);
+    if Origin = soBeginning then
+      Dec(NewOff, conv64.QuadPart);
     if NewOff > 0 then
     begin
       for I := 1 to NewOff div sizeof(Buf) do

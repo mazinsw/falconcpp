@@ -8,9 +8,9 @@ uses
   SynEditHighlighter, SynHighlighterCpp;
 
 const
-  FontStyleNames: array[TFontStyle] of String = (
-      'Bold', 'Italic', 'Underline', 'StrikeOut'
-  );
+  FontStyleNames: array[TFontStyle] of string = (
+    'Bold', 'Italic', 'Underline', 'StrikeOut'
+    );
 
 type
   TSintaxType = class;
@@ -34,7 +34,7 @@ type
     property Items[Index: Integer]: TSintax read Get write Put;
     procedure Delete(Index: Integer);
     function IndexOf(Item: TSintax): Integer;
-    function IndexOfName(const S: String): Integer;
+    function IndexOfName(const S: string): Integer;
     procedure Insert(Index: Integer; Item: TSintax);
     function Selected: TSintax;
     procedure Clear;
@@ -43,39 +43,39 @@ type
 
   TSintax = class(TObject)
   private
-    FName: String;
+    FName: string;
     FList: TList;
     FReadOnly: Boolean;
     FChanged: Boolean;
     function Get(Index: Integer): TSintaxType;
     procedure Put(Index: Integer; Item: TSintaxType);
-    procedure AddSintaxType(Name: String; Foreground: TColor;
+    procedure AddSintaxType(Name: string; Foreground: TColor;
       Background: TColor = clNone; Style: TFontStyles = []);
   public
     constructor Create; overload;
-    constructor Create(const AName, S: String); overload;
+    constructor Create(const AName, S: string); overload;
     destructor Destroy; override;
     procedure Assign(Source: TSintax);
     function Add(Item: TSintaxType): Integer;
-    function GetType(Name: String; var Item: TSintaxType): Boolean;
+    function GetType(Name: string; var Item: TSintaxType): Boolean;
     property Items[Index: Integer]: TSintaxType read Get write Put;
     procedure Delete(Index: Integer);
     function IndexOf(Item: TSintaxType): Integer;
-    function GetSintaxString: String;
-    procedure SetSintaxString(const S: String);
+    function GetSintaxString: string;
+    procedure SetSintaxString(const S: string);
     procedure Insert(Index: Integer; Item: TSintaxType);
-    procedure UpdateEditor(Editor: TSynMemo; AttributeName: String = '');
+    procedure UpdateEditor(Editor: TSynMemo; AttributeName: string = '');
     procedure UpdateHighlight(Highlight: TSynCustomHighlighter;
-      AttributeName: String = '');
+      AttributeName: string = '');
     procedure Clear;
     function Count: Integer;
-    property Name: String read FName write FName;
+    property Name: string read FName write FName;
     property Changed: Boolean read FChanged write FChanged;
     property ReadOnly: Boolean read FReadOnly write FReadOnly;
   end;
 
   TSintaxType = class(TObject)
-    Name: String;
+    Name: string;
     Foreground: TColor;
     Background: TColor;
     Style: TFontStyles;
@@ -294,7 +294,8 @@ end;
 
 procedure TSintax.Put(Index: Integer; Item: TSintaxType);
 begin
-  if Item = Items[Index] then Exit;
+  if Item = Items[Index] then
+    Exit;
   Items[Index].Free;
   FList.Items[Index] := Item;
 end;
@@ -312,7 +313,7 @@ begin
   FChanged := False;
 end;
 
-constructor TSintax.Create(const AName, S: String);
+constructor TSintax.Create(const AName, S: string);
 begin
   inherited Create;
   FList := TList.Create;
@@ -329,9 +330,9 @@ begin
   inherited Destroy;
 end;
 
-function TSintax.GetSintaxString: String;
+function TSintax.GetSintaxString: string;
 
-  function GetFontStyle(Style: TFontStyles): String;
+  function GetFontStyle(Style: TFontStyles): string;
   var
     I: Integer;
   begin
@@ -344,12 +345,15 @@ function TSintax.GetSintaxString: String;
     end;
     if fsItalic in Style then
     begin
-      if I > 0 then Result := Result + ','; Inc(I);
+      if I > 0 then
+        Result := Result + ',';
+      Inc(I);
       Result := Result + FontStyleNames[fsItalic];
     end;
     if fsUnderline in Style then
     begin
-      if I > 0 then Result := Result + ',';
+      if I > 0 then
+        Result := Result + ',';
       Result := Result + FontStyleNames[fsUnderline];
     end;
     Result := Result + ']';
@@ -359,12 +363,12 @@ var
 begin
   Result := '';
   if Count > 0 then
-    Result := '{' + Items[0].Name + '('+ ColorToString(Items[0].Foreground) +
+    Result := '{' + Items[0].Name + '(' + ColorToString(Items[0].Foreground) +
       ',' + ColorToString(Items[0].Background) + ',' +
       GetFontStyle(Items[0].Style) + ')';
   for I := 1 to Count - 1 do
   begin
-    Result := Result + ';' + Items[I].Name + '('+
+    Result := Result + ';' + Items[I].Name + '(' +
       ColorToString(Items[I].Foreground) + ',' +
       ColorToString(Items[I].Background) + ',' +
       GetFontStyle(Items[I].Style) + ')';
@@ -373,9 +377,9 @@ begin
     Result := Result + '}';
 end;
 
-procedure TSintax.SetSintaxString(const S: String);
+procedure TSintax.SetSintaxString(const S: string);
 
-  function GetFontStyleFromString(const StyleString: String): TFontStyles;
+  function GetFontStyleFromString(const StyleString: string): TFontStyles;
   var
     Style: TFontStyles;
     SL: TStringList;
@@ -398,7 +402,7 @@ procedure TSintax.SetSintaxString(const S: String);
   end;
 
 var
-  Current, All, StxName: String;
+  Current, All, StxName: string;
   Style: TFontStyles;
   C1, C2: TColor;
   L: TStringList;
@@ -414,17 +418,20 @@ begin
   begin
     Current := L.Strings[I];
     J := Pos('(', Current);
-    if J = 0 then Continue;
-    StxName := Copy(Current, 1, J - 1);//Name
+    if J = 0 then
+      Continue;
+    StxName := Copy(Current, 1, J - 1); //Name
     Current := Trim('(', Copy(Current, J, Length(Current) - J), ')');
     J := Pos(',', Current);
-    if J = 0 then Continue;
-    C1 := StringToColor(Copy(Current, 1, J - 1));//Foreground
+    if J = 0 then
+      Continue;
+    C1 := StringToColor(Copy(Current, 1, J - 1)); //Foreground
     Current := Copy(Current, J + 1, Length(Current) - J);
 
     J := Pos(',', Current);
-    if J = 0 then Continue;
-    C2 := StringToColor(Copy(Current, 1, J - 1));//Background
+    if J = 0 then
+      Continue;
+    C2 := StringToColor(Copy(Current, 1, J - 1)); //Background
     Current := Copy(Current, J + 1, Length(Current) - J);
     Style := GetFontStyleFromString(Current);
     AddSintaxType(StxName, C1, C2, Style);
@@ -432,7 +439,7 @@ begin
   L.Free;
 end;
 
-procedure TSintax.AddSintaxType(Name: String; Foreground: TColor;
+procedure TSintax.AddSintaxType(Name: string; Foreground: TColor;
   Background: TColor = clNone; Style: TFontStyles = []);
 var
   StxTpy: TSintaxType;
@@ -449,20 +456,21 @@ procedure TSintax.Assign(Source: TSintax);
 var
   I: Integer;
 begin
-  if not Assigned(Source) then Exit;
+  if not Assigned(Source) then
+    Exit;
   Name := Source.Name;
   ReadOnly := Source.ReadOnly;
   Changed := Source.Changed;
   Clear;
   for I := 0 to Pred(Source.Count) do
     AddSintaxType(Source.Items[I].Name,
-                  Source.Items[I].Foreground,
-                  Source.Items[I].Background,
-                  Source.Items[I].Style);
+      Source.Items[I].Foreground,
+      Source.Items[I].Background,
+      Source.Items[I].Style);
 end;
 
 procedure TSintax.UpdateHighlight(Highlight: TSynCustomHighlighter;
-  AttributeName: String = '');
+  AttributeName: string = '');
 var
   I: Integer;
   st: TSintaxType;
@@ -470,7 +478,8 @@ begin
   if Length(AttributeName) > 0 then
   begin
     for I := 0 to Pred(Highlight.AttrCount) do
-      if Highlight.Attribute[I].Name = AttributeName then Break;
+      if Highlight.Attribute[I].Name = AttributeName then
+        Break;
     if GetType(AttributeName, st) and (I >= 0) then
     begin
       Highlight.Attribute[I].Foreground := st.Foreground;
@@ -479,7 +488,7 @@ begin
     end;
     Exit;
   end;
-  
+
   for I := 0 to Pred(Highlight.AttrCount) do
     if GetType(Highlight.Attribute[I].Name, st) then
     begin
@@ -487,10 +496,10 @@ begin
       Highlight.Attribute[I].Background := st.Background;
       Highlight.Attribute[I].Style := st.Style;
     end;
-  
+
 end;
 
-procedure TSintax.UpdateEditor(Editor: TSynMemo; AttributeName: String = '');
+procedure TSintax.UpdateEditor(Editor: TSynMemo; AttributeName: string = '');
 var
   I: Integer;
   st: TSintaxType;
@@ -502,22 +511,22 @@ begin
       I := IndexOf(st);
       case I of
         13:
-        begin
-          Editor.Gutter.Color := st.Background;
-          Editor.Gutter.GradientEndColor := st.Background;
-          Editor.Gutter.Font.Color := st.Foreground;
-          Editor.Gutter.Font.Style := st.Style;
-        end;
+          begin
+            Editor.Gutter.Color := st.Background;
+            Editor.Gutter.GradientEndColor := st.Background;
+            Editor.Gutter.Font.Color := st.Foreground;
+            Editor.Gutter.Font.Style := st.Style;
+          end;
         14:
-        begin
-          Editor.SelectedColor.Background := st.Background;
-          Editor.SelectedColor.Foreground := st.Background;
-        end;
+          begin
+            Editor.SelectedColor.Background := st.Background;
+            Editor.SelectedColor.Foreground := st.Background;
+          end;
       end;
     end;
     Exit;
   end;
-  
+
   if GetType('Gutter', st) then
   begin
     Editor.Gutter.Color := st.Background;
@@ -537,7 +546,7 @@ begin
   Result := FList.Add(Item);
 end;
 
-function TSintax.GetType(Name: String; var Item: TSintaxType): Boolean;
+function TSintax.GetType(Name: string; var Item: TSintaxType): Boolean;
 var
   I: Integer;
 begin
@@ -583,7 +592,8 @@ end;
 
 procedure TSintaxList.Put(Index: Integer; Item: TSintax);
 begin
-  if Item = Items[Index] then Exit;
+  if Item = Items[Index] then
+    Exit;
   Items[Index].Free;
   FList.Items[Index] := Item;
 end;
@@ -728,7 +738,7 @@ begin
   Result := FList.IndexOf(Item);
 end;
 
-function TSintaxList.IndexOfName(const S: String): Integer;
+function TSintaxList.IndexOfName(const S: string): Integer;
 var
   I: integer;
 begin
@@ -1195,7 +1205,8 @@ begin
   if ActiveSintax.GetType('Gutter', st) then
   begin
     I := ActiveSintax.IndexOf(st);
-    if I < 0 then Exit;
+    if I < 0 then
+      Exit;
     ListBoxType.ItemIndex := I;
     ListBoxType.Selected[I] := True;
     ListBoxTypeClick(Self);
@@ -1205,7 +1216,7 @@ end;
 procedure TFrmEditorOptions.SynPrevMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
-  S, AttrName: String;
+  S, AttrName: string;
   bc: TBufferCoord;
   attr: TSynHighlighterAttributes;
   st: TSintaxType;
@@ -1213,7 +1224,8 @@ var
 begin
   bc := SynPrev.DisplayToBufferPos(SynPrev.PixelsToRowColumn(X, Y));
   if X <= (SynPrev.Gutter.Width + SynPrev.Gutter.RightOffset -
-           SynPrev.Gutter.LeftOffset) then Exit;
+    SynPrev.Gutter.LeftOffset) then
+    Exit;
   if bc.Line = 10 then
   begin
     AttrName := 'Selection';
@@ -1229,15 +1241,15 @@ begin
   if ActiveSintax.GetType(AttrName, st) then
   begin
     I := ActiveSintax.IndexOf(st);
-    if I < 0 then Exit;
+    if I < 0 then
+      Exit;
     //SynPrev.Cursor := crIBeam;
     ListBoxType.ItemIndex := I;
     ListBoxType.Selected[I] := True;
     ListBoxTypeClick(Self);
-  end{
+  end {
   else
     SynPrev.Cursor := crArrow};
-
 
 end;
 
@@ -1264,8 +1276,10 @@ begin
   ListBoxType.Items.Clear;
   for I := 0 to Pred(ActiveSintax.Count) do
     ListBoxType.Items.Add(ActiveSintax.Items[I].Name);
-  if ActiveSintax.Count = 0 then Exit;
-  if Last >= ActiveSintax.Count then Last := 0;
+  if ActiveSintax.Count = 0 then
+    Exit;
+  if Last >= ActiveSintax.Count then
+    Last := 0;
 
   StxTpy := ActiveSintax.Items[Last];
   ListBoxType.ItemIndex := Last;
@@ -1284,7 +1298,8 @@ procedure TFrmEditorOptions.ListBoxTypeClick(Sender: TObject);
 var
   StxTpy: TSintaxType;
 begin
-  if ListBoxType.ItemIndex = Last then Exit;
+  if ListBoxType.ItemIndex = Last then
+    Exit;
   Last := ListBoxType.ItemIndex;
   StxTpy := ActiveSintax.Items[Last];
   Loading := True;
@@ -1301,11 +1316,12 @@ end;
 procedure TFrmEditorOptions.StyleChangeClick(Sender: TObject);
 var
   NewStyle: TFontStyles;
-  AttrName, NewName: String;
+  AttrName, NewName: string;
   I: Integer;
   st: TSintaxType;
 begin
-  if Loading then Exit;
+  if Loading then
+    Exit;
   NewStyle := [];
   if ChbBold.Checked then
     NewStyle := NewStyle + [fsBold];
@@ -1314,12 +1330,14 @@ begin
   if ChbUnderl.Checked then
     NewStyle := NewStyle + [fsUnderline];
 
-  if (ListBoxType.ItemIndex < 0) then Exit;
+  if (ListBoxType.ItemIndex < 0) then
+    Exit;
   AttrName := ListBoxType.Items[ListBoxType.ItemIndex];
 
   if ActiveSintax.GetType(AttrName, st) then
   begin
-    if st.Style = NewStyle then Exit;
+    if st.Style = NewStyle then
+      Exit;
     st.Style := NewStyle;
   end;
   BtnSave.Enabled := True;
@@ -1354,17 +1372,19 @@ end;
 
 procedure TFrmEditorOptions.ColorChange(Sender: TObject);
 var
-  AttrName, NewName: String;
+  AttrName, NewName: string;
   I: Integer;
   st: TSintaxType;
 begin
-  if (ListBoxType.ItemIndex < 0) then Exit;
-    AttrName := ListBoxType.Items[ListBoxType.ItemIndex];
+  if (ListBoxType.ItemIndex < 0) then
+    Exit;
+  AttrName := ListBoxType.Items[ListBoxType.ItemIndex];
 
   if ActiveSintax.GetType(AttrName, st) then
   begin
     if (st.Foreground = ClbFore.Selected) and
-       (st.Background = ClbBack.Selected) then Exit;
+      (st.Background = ClbBack.Selected) then
+      Exit;
     st.Foreground := ClbFore.Selected;
     st.Background := ClbBack.Selected;
   end;
@@ -1403,7 +1423,7 @@ procedure TFrmEditorOptions.BtnSaveClick(Sender: TObject);
 var
   stx: TSintax;
   Index: Integer;
-  S: String;
+  S: string;
 begin
   ActiveSintax.Changed := False;
   BtnSave.Enabled := False;
@@ -1433,7 +1453,8 @@ var
 begin
   Equals := False;
   Index := CbDefSin.ItemIndex;
-  if (Index < 0) or ActiveSintax.ReadOnly then Exit;
+  if (Index < 0) or ActiveSintax.ReadOnly then
+    Exit;
   with FrmFalconMain do
   begin
     SintaxList.Delete(Index);
@@ -1464,16 +1485,18 @@ end;
 
 procedure TFrmEditorOptions.OptionsChange;
 begin
-  if Loading then Exit;
+  if Loading then
+    Exit;
   //-----------------------------//
   BtnApply.Enabled := True;
 end;
 
 procedure TFrmEditorOptions.CboEditFontSelect(Sender: TObject);
 var
-  S: String;
+  S: string;
 begin
-  if CboEditFont.ItemIndex < 0 then Exit;
+  if CboEditFont.ItemIndex < 0 then
+    Exit;
   PanelTest.Font.Name := CboEditFont.Text;
   S := CboSize.Text;
   CboSize.Clear;
@@ -1499,7 +1522,8 @@ var
 begin
   if Line = 10 then
   begin
-    if not ActiveSintax.GetType('Selection', st) then Exit;
+    if not ActiveSintax.GetType('Selection', st) then
+      Exit;
     Special := True;
     FG := st.Foreground;
     BG := st.Background;
@@ -1536,10 +1560,10 @@ end;
 
 procedure TFrmEditorOptions.TrackBarCodeResChange(Sender: TObject);
 var
- S: String;
+  S: string;
 begin
   S := Format(STR_FRM_EDITOR_OPT[123] + ' ' +
-    STR_FRM_EDITOR_OPT[124], [(TrackBarCodeRes.Position + 1)/10]);
+    STR_FRM_EDITOR_OPT[124], [(TrackBarCodeRes.Position + 1) / 10]);
   S := StringReplace(S, ',', '.', [rfReplaceAll]);
   TimerNormalDelay.Enabled := False;
   TimerNormalDelay.Enabled := True;
@@ -1582,8 +1606,8 @@ end;
 
 procedure TFrmEditorOptions.EditCodeTemplateChange(Sender: TObject);
 begin
- BtnEditCodeTemplate.Enabled := FileExists(EditCodeTemplate.Text);
- OptionsChange;
+  BtnEditCodeTemplate.Enabled := FileExists(EditCodeTemplate.Text);
+  OptionsChange;
 end;
 
 procedure TFrmEditorOptions.Button1Click(Sender: TObject);
@@ -1659,106 +1683,106 @@ begin
   end;
   case RadioGroupFormatterStyles.ItemIndex of
     0: // ansi
-    begin
-      formatter.Style := fsALLMAN;
-      formatter.BracketFormat := bfBreakMode;
-      formatter.Properties[aspIndentNamespace] := True;
-      formatter.Properties[aspSingleStatements] := True;
-      formatter.Properties[aspBreakOneLineBlocks] := True;
-    end;
+      begin
+        formatter.Style := fsALLMAN;
+        formatter.BracketFormat := bfBreakMode;
+        formatter.Properties[aspIndentNamespace] := True;
+        formatter.Properties[aspSingleStatements] := True;
+        formatter.Properties[aspBreakOneLineBlocks] := True;
+      end;
     1: // K&R
-    begin
-      formatter.Style := fsKR;
-      formatter.BracketFormat := bfAtatch;
-      formatter.Properties[aspIndentNamespace] := True;
-      formatter.Properties[aspSingleStatements] := True;
-      formatter.Properties[aspBreakOneLineBlocks] := True;
-    end;
+      begin
+        formatter.Style := fsKR;
+        formatter.BracketFormat := bfAtatch;
+        formatter.Properties[aspIndentNamespace] := True;
+        formatter.Properties[aspSingleStatements] := True;
+        formatter.Properties[aspBreakOneLineBlocks] := True;
+      end;
     2: //Linux
-    begin
-      formatter.Style := fsLINUX;
-      formatter.TabWidth := 8;
-      formatter.SpaceWidth := 8;
-      formatter.BracketFormat := bfBDAC;
-      formatter.Properties[aspIndentNamespace] := True;
-      formatter.Properties[aspSingleStatements] := True;
-      formatter.Properties[aspBreakOneLineBlocks] := True;
-    end;
+      begin
+        formatter.Style := fsLINUX;
+        formatter.TabWidth := 8;
+        formatter.SpaceWidth := 8;
+        formatter.BracketFormat := bfBDAC;
+        formatter.Properties[aspIndentNamespace] := True;
+        formatter.Properties[aspSingleStatements] := True;
+        formatter.Properties[aspBreakOneLineBlocks] := True;
+      end;
     3: //GNU
-    begin
-      formatter.Style := fsGNU;
-      formatter.TabWidth := 2;
-      formatter.SpaceWidth := 2;
-      formatter.BracketFormat := bfBreakMode;
-      formatter.Properties[aspIndentBlock] := True;
-      formatter.Properties[aspIndentNamespace] := True;
-      formatter.Properties[aspSingleStatements] := True;
-      formatter.Properties[aspBreakOneLineBlocks] := True;
-    end;
+      begin
+        formatter.Style := fsGNU;
+        formatter.TabWidth := 2;
+        formatter.SpaceWidth := 2;
+        formatter.BracketFormat := bfBreakMode;
+        formatter.Properties[aspIndentBlock] := True;
+        formatter.Properties[aspIndentNamespace] := True;
+        formatter.Properties[aspSingleStatements] := True;
+        formatter.Properties[aspBreakOneLineBlocks] := True;
+      end;
     4: //java
-    begin
-      formatter.Style := fsJAVA;
-      formatter.BracketFormat := bfAtatch;
-      formatter.Properties[aspSingleStatements] := True;
-      formatter.Properties[aspBreakOneLineBlocks] := True;
-    end;
+      begin
+        formatter.Style := fsJAVA;
+        formatter.BracketFormat := bfAtatch;
+        formatter.Properties[aspSingleStatements] := True;
+        formatter.Properties[aspBreakOneLineBlocks] := True;
+      end;
     5: //custom
-    begin
-      formatter.Style := fsNONE;
-      formatter.TabWidth := StrToIntDef(CboTabWdt.Text, 4);
-      formatter.SpaceWidth := StrToIntDef(CboTabWdt.Text, 4);
-      
+      begin
+        formatter.Style := fsNONE;
+        formatter.TabWidth := StrToIntDef(CboTabWdt.Text, 4);
+        formatter.SpaceWidth := StrToIntDef(CboTabWdt.Text, 4);
+
       //Indentation
-      formatter.ForceUsingTabs := CheckBoxForceUsingTabs.Checked;
-      formatter.Properties[aspIndentClass] := CheckBoxIndentClasses.Checked;
-      formatter.Properties[aspIndentSwitch] := CheckBoxIndentSwitches.Checked;
-      formatter.Properties[aspIndentCase] := CheckBoxIndentCase.Checked;
-      formatter.Properties[aspIndentBracket] := CheckBoxIndentBrackets.Checked;
-      formatter.Properties[aspIndentBlock] := CheckBoxIndentBlocks.Checked;
-      formatter.Properties[aspIndentNamespace] := CheckBoxIndentNamespaces.Checked;
-      formatter.Properties[aspIndentLabels] := CheckBoxIndentLabels.Checked;
-      formatter.Properties[aspIndentMultLinePreprocessor] := CheckBoxIndentMultLinePreprocessor.Checked;
-      formatter.Properties[aspIndentCol1Comments] :=
-        CheckBoxIndentSingleLineComments.Checked;
+        formatter.ForceUsingTabs := CheckBoxForceUsingTabs.Checked;
+        formatter.Properties[aspIndentClass] := CheckBoxIndentClasses.Checked;
+        formatter.Properties[aspIndentSwitch] := CheckBoxIndentSwitches.Checked;
+        formatter.Properties[aspIndentCase] := CheckBoxIndentCase.Checked;
+        formatter.Properties[aspIndentBracket] := CheckBoxIndentBrackets.Checked;
+        formatter.Properties[aspIndentBlock] := CheckBoxIndentBlocks.Checked;
+        formatter.Properties[aspIndentNamespace] := CheckBoxIndentNamespaces.Checked;
+        formatter.Properties[aspIndentLabels] := CheckBoxIndentLabels.Checked;
+        formatter.Properties[aspIndentMultLinePreprocessor] := CheckBoxIndentMultLinePreprocessor.Checked;
+        formatter.Properties[aspIndentCol1Comments] :=
+          CheckBoxIndentSingleLineComments.Checked;
 
       //Padding
-      formatter.Properties[aspBreakBlocks] := CheckBoxPadEmptyLines.Checked;
-      formatter.Properties[aspBreakClosingHeaderBlocks] := CheckBoxBreakClosingHeaderBlocks.Checked;
-      formatter.Properties[aspOperatorPadding] := CheckBoxInsertSpacePaddingOperators.Checked;
-      formatter.Properties[aspParensOutsidePadding] := CheckBoxInsertSpacePaddingParenthesisOutside.Checked;
-      formatter.Properties[aspParensInsidePadding] := CheckBoxInsertSpacePaddingParenthesisInside.Checked;
-      formatter.Properties[aspParensHeaderPadding] := CheckBoxParenthesisHeaderPadding.Checked;
-      formatter.Properties[aspParensUnPadding] := CheckBoxRemoveExtraSpace.Checked;
-      formatter.Properties[aspDeleteEmptyLines] := CheckBoxDeleteEmptyLines.Checked;
-      formatter.Properties[aspFillEmptyLines] := CheckBoxFillEmptyLines.Checked;
+        formatter.Properties[aspBreakBlocks] := CheckBoxPadEmptyLines.Checked;
+        formatter.Properties[aspBreakClosingHeaderBlocks] := CheckBoxBreakClosingHeaderBlocks.Checked;
+        formatter.Properties[aspOperatorPadding] := CheckBoxInsertSpacePaddingOperators.Checked;
+        formatter.Properties[aspParensOutsidePadding] := CheckBoxInsertSpacePaddingParenthesisOutside.Checked;
+        formatter.Properties[aspParensInsidePadding] := CheckBoxInsertSpacePaddingParenthesisInside.Checked;
+        formatter.Properties[aspParensHeaderPadding] := CheckBoxParenthesisHeaderPadding.Checked;
+        formatter.Properties[aspParensUnPadding] := CheckBoxRemoveExtraSpace.Checked;
+        formatter.Properties[aspDeleteEmptyLines] := CheckBoxDeleteEmptyLines.Checked;
+        formatter.Properties[aspFillEmptyLines] := CheckBoxFillEmptyLines.Checked;
 
       //Formatting
-      case ComboBoxBracketStyle.ItemIndex of
-        1: formatter.BracketFormat := bfBreakMode;//Break
-        2: formatter.BracketFormat := bfAtatch;//Attach
-        3: formatter.BracketFormat := bfBDAC;//Linux
+        case ComboBoxBracketStyle.ItemIndex of
+          1: formatter.BracketFormat := bfBreakMode; //Break
+          2: formatter.BracketFormat := bfAtatch; //Attach
+          3: formatter.BracketFormat := bfBDAC; //Linux
         //TODO 4: formatter.BracketFormat := bfRunIn;//?
         //TODO 5: formatter.BracketFormat := bfStroustrup;//?
-      else
+        else
         //None
-        formatter.BracketFormat := bfNone;
+          formatter.BracketFormat := bfNone;
+        end;
+        if (ComboBoxBracketStyle.ItemIndex < 2) then //Does not work
+          formatter.Properties[aspBreakClosingHeaderBrackets] := CheckBoxBreakClosingHeadersBrackets.Checked;
+        formatter.Properties[aspBreakElseIfs] := CheckBoxBreakElseIf.Checked;
+        formatter.Properties[aspAddBrackets] := CheckBoxAddBrackets.Checked;
+        formatter.Properties[aspAddOneLineBrackets] := CheckBoxAddOneLineBrackets.Checked;
+        formatter.Properties[aspBreakOneLineBlocks] := not CheckBoxDontBreakOneLineBlocks.Checked;
+        formatter.Properties[aspSingleStatements] := CheckBoxDontBreakComplex.Checked;
+        formatter.Properties[aspTabSpaceConversion] := CheckBoxConvToSpaces.Checked;
+        case ComboBoxPointerAlign.ItemIndex of
+          1: formatter.PointerAlign := paType;
+          2: formatter.PointerAlign := paMiddle;
+          3: formatter.PointerAlign := paName;
+        else
+          formatter.PointerAlign := paNone;
+        end;
       end;
-      if (ComboBoxBracketStyle.ItemIndex < 2) then//Does not work
-        formatter.Properties[aspBreakClosingHeaderBrackets] := CheckBoxBreakClosingHeadersBrackets.Checked;
-      formatter.Properties[aspBreakElseIfs] := CheckBoxBreakElseIf.Checked;
-      formatter.Properties[aspAddBrackets] := CheckBoxAddBrackets.Checked;
-      formatter.Properties[aspAddOneLineBrackets] := CheckBoxAddOneLineBrackets.Checked;
-      formatter.Properties[aspBreakOneLineBlocks] := not CheckBoxDontBreakOneLineBlocks.Checked;
-      formatter.Properties[aspSingleStatements] := CheckBoxDontBreakComplex.Checked;
-      formatter.Properties[aspTabSpaceConversion] := CheckBoxConvToSpaces.Checked;
-      case ComboBoxPointerAlign.ItemIndex of
-        1: formatter.PointerAlign := paType;
-        2: formatter.PointerAlign := paMiddle;
-        3: formatter.PointerAlign := paName;
-      else
-        formatter.PointerAlign := paNone;
-      end;
-    end;
   end;
   caret := SynMemoSample.CaretXY;
   topLine := SynMemoSample.TopLine;

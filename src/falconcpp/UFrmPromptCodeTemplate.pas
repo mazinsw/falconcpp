@@ -7,8 +7,8 @@ uses
   Dialogs, StdCtrls;
 
 type
-  TOkButtonEvent = procedure(Sender: TObject; const Name, Description: String;
-    Data: Pointer; var Abort: Boolean) of Object;
+  TOkButtonEvent = procedure(Sender: TObject; const Name, Description: string;
+    Data: Pointer; var Abort: Boolean) of object;
   TFrmPromptCodeTemplate = class(TForm)
     GroupBox1: TGroupBox;
     Label1: TLabel;
@@ -27,7 +27,7 @@ type
   private
     { Private declarations }
     fOnOkButtonClick: TOkButtonEvent;
-    fData: Pointer; 
+    fData: Pointer;
   protected
     procedure CreateParams(var Params: TCreateParams); override;
   public
@@ -38,7 +38,7 @@ type
 var
   FrmPromptCodeTemplate: TFrmPromptCodeTemplate;
 
-function PromptDialog(ParentWindow: HWND; const Caption: String; var Name, Description: String;
+function PromptDialog(ParentWindow: HWND; const Caption: string; var Name, Description: string;
   Data: Pointer; OkButtonEvent: TOkButtonEvent = nil): Boolean;
 
 implementation
@@ -47,7 +47,7 @@ uses ULanguages;
 
 {$R *.dfm}
 
-function PromptDialog(ParentWindow: HWND; const Caption: String; var Name, Description: String;
+function PromptDialog(ParentWindow: HWND; const Caption: string; var Name, Description: string;
   Data: Pointer; OkButtonEvent: TOkButtonEvent = nil): Boolean;
 begin
   Result := False;
@@ -118,7 +118,7 @@ end;
 
 procedure TFrmPromptCodeTemplate.FormDestroy(Sender: TObject);
 begin
- FrmPromptCodeTemplate := nil;
+  FrmPromptCodeTemplate := nil;
 end;
 
 procedure TFrmPromptCodeTemplate.BtnCancelClick(Sender: TObject);

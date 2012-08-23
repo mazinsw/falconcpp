@@ -62,11 +62,11 @@ var
   Item: TListItem;
 begin
   Files := proj.GetFiles;
-  for I:= 0 to Pred(Files.Count) do
+  for I := 0 to Pred(Files.Count) do
   begin
     Item := FileList.Items.Add;
-    Item.Caption := TFileProperty(Files.Objects[I]).Caption;
-    Item.SubItems.Add(TFileProperty(Files.Objects[I]).GetCompleteFileName);
+    Item.Caption := TFileProperty(Files.Objects[I]).Name;
+    Item.SubItems.Add(TFileProperty(Files.Objects[I]).FileName);
     Item.ImageIndex := TFileProperty(Files.Objects[I]).Node.ImageIndex;
     Item.Data := Files.Objects[I];
   end;
@@ -97,7 +97,8 @@ end;
 procedure TFrmRemove.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-  if Key = VK_ESCAPE then Close;
+  if Key = VK_ESCAPE then
+    Close;
 end;
 
 end.

@@ -112,10 +112,10 @@ end;
 
 procedure TFrmEnvOptions.OptionsChange;
 begin
-  if Loading then Exit;
+  if Loading then
+    Exit;
   BtnApply.Enabled := True;
 end;
-
 
 procedure TFrmEnvOptions.ReloadLanguages;
 var
@@ -247,7 +247,7 @@ end;
 
 procedure TFrmEnvOptions.BtnChooseDirClick(Sender: TObject);
 var
-  Dir, Title, Base: String;
+  Dir, Title, Base: string;
 begin
   Base := EditUsersDefDir.Text;
   case TComponent(Sender).Tag of
@@ -259,7 +259,7 @@ begin
     Title := STR_FRM_ENV_OPT[34];
   end;
   case TComponent(Sender).Tag of
-    0: Dir := Base;//EditUsersDefDir.Text;
+    0: Dir := Base; //EditUsersDefDir.Text;
     1: Dir := Base + EditTemplatesDir.Text;
     2: Dir := Base + EditLangDir.Text;
     3: Dir := EditProjDir.Text;
@@ -273,12 +273,12 @@ begin
   Dir := IncludeTrailingPathDelimiter(Dir);
   case TComponent(Sender).Tag of
     0:
-    begin
-      EditUsersDefDir.Text := Dir;
-      BtnViewHelpDir.Enabled := DirectoryExists(EditUsersDefDir.Text + 'Help\');
-      BtnViewExamplesDir.Enabled := DirectoryExists(EditUsersDefDir.Text +
-        'Examples\');
-    end;
+      begin
+        EditUsersDefDir.Text := Dir;
+        BtnViewHelpDir.Enabled := DirectoryExists(EditUsersDefDir.Text + 'Help\');
+        BtnViewExamplesDir.Enabled := DirectoryExists(EditUsersDefDir.Text +
+          'Examples\');
+      end;
     1: EditTemplatesDir.Text := ExtractRelativePath(Base, Dir);
     2: EditLangDir.Text := ExtractRelativePath(Base, Dir);
     3: EditProjDir.Text := Dir;
@@ -287,7 +287,7 @@ end;
 
 procedure TFrmEnvOptions.BtnViewDirClick(Sender: TObject);
 var
-  Dir, Base: String;
+  Dir, Base: string;
 begin
   Base := EditUsersDefDir.Text;
   case TComponent(Sender).Tag of
@@ -323,7 +323,7 @@ end;
 procedure TFrmEnvOptions.BtnApplyClick(Sender: TObject);
 var
   Lang: TLanguageItem;
-  OldTheme, OldTemplatesDir, OldLanguageDir: String;
+  OldTheme, OldTemplatesDir, OldLanguageDir: string;
   OldLangID: Cardinal;
   EmptyTemplate: TTemplate;
   msg: TMessage;
@@ -381,7 +381,7 @@ begin
       ProjectsDir := IncludeTrailingPathDelimiter(EditProjDir.Text);
     OldTemplatesDir := TemplatesDir;
     if DirectoryExists(EditTemplatesDir.Text) or
-       DirectoryExists(UsersDefDir + EditTemplatesDir.Text) then
+      DirectoryExists(UsersDefDir + EditTemplatesDir.Text) then
     begin
       if (ExtractFileDrive(EditTemplatesDir.Text) = '') and
         DirectoryExists(UsersDefDir + EditTemplatesDir.Text) then
@@ -392,7 +392,7 @@ begin
     TemplatesDir := IncludeTrailingPathDelimiter(TemplatesDir);
     OldLanguageDir := LanguageDir;
     if DirectoryExists(EditLangDir.Text) or
-       DirectoryExists(UsersDefDir + EditLangDir.Text) then
+      DirectoryExists(UsersDefDir + EditLangDir.Text) then
     begin
       if (ExtractFileDrive(EditLangDir.Text) = '') and
         DirectoryExists(UsersDefDir + EditLangDir.Text) then

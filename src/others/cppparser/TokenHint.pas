@@ -54,56 +54,56 @@ type
     procedure Paint; override;
   public
     constructor Create(AOwner: TComponent); override;
-    procedure UpdateHint(const S: String; X, Y: Integer);
+    procedure UpdateHint(const S: string; X, Y: Integer); virtual;
   end;
 
 implementation
 
 uses Math;
 
-procedure DrawTransparentBitmap(DC: HDC; hBmp : HBITMAP ;xStart: integer;
-  yStart, xOffSet, yOffSet, width, height: integer; cTransparentColor : COLORREF);
+procedure DrawTransparentBitmap(DC: HDC; hBmp: HBITMAP; xStart: integer;
+  yStart, xOffSet, yOffSet, width, height: integer; cTransparentColor: COLORREF);
 var
-  bm:                                                  BITMAP;
-  cColor:                                              COLORREF;
-  bmAndBack, bmAndObject, bmAndMem, bmSave:            HBITMAP;
-  bmBackOld, bmObjectOld, bmMemOld, bmSaveOld:        HBITMAP;
-  hdcMem, hdcBack, hdcObject, hdcTemp, hdcSave:        HDC;
-  ptSize:                                              TPOINT;
-  
+  bm: BITMAP;
+  cColor: COLORREF;
+  bmAndBack, bmAndObject, bmAndMem, bmSave: HBITMAP;
+  bmBackOld, bmObjectOld, bmMemOld, bmSaveOld: HBITMAP;
+  hdcMem, hdcBack, hdcObject, hdcTemp, hdcSave: HDC;
+  ptSize: TPOINT;
+
 begin
   hdcTemp := CreateCompatibleDC(dc);
-  SelectObject(hdcTemp, hBmp);  // Select the bitmap
+  SelectObject(hdcTemp, hBmp); // Select the bitmap
 
   GetObject(hBmp, sizeof(BITMAP), @bm);
   ptSize.x := width; //bm.bmWidth;            // Get width of bitmap
   ptSize.y := height; //bm.bmHeight;          // Get height of bitmap
-  DPtoLP(hdcTemp, ptSize, 1);        // Convert from device
+  DPtoLP(hdcTemp, ptSize, 1); // Convert from device
                                       // to logical points
 
   // Create some DCs to hold temporary data.
-  hdcBack  := CreateCompatibleDC(dc);
+  hdcBack := CreateCompatibleDC(dc);
   hdcObject := CreateCompatibleDC(dc);
-  hdcMem    := CreateCompatibleDC(dc);
-  hdcSave  := CreateCompatibleDC(dc);
+  hdcMem := CreateCompatibleDC(dc);
+  hdcSave := CreateCompatibleDC(dc);
 
   // Create a bitmap for each DC. DCs are required for a number of
   // GDI functions.
 
   // Monochrome DC
-  bmAndBack  := CreateBitmap(ptSize.x, ptSize.y, 1, 1, nil);
+  bmAndBack := CreateBitmap(ptSize.x, ptSize.y, 1, 1, nil);
 
   // Monochrome DC
   bmAndObject := CreateBitmap(ptSize.x, ptSize.y, 1, 1, nil);
 
-  bmAndMem    := CreateCompatibleBitmap(dc, ptSize.x, ptSize.y);
-  bmSave      := CreateCompatibleBitmap(dc, ptSize.x, ptSize.y);
+  bmAndMem := CreateCompatibleBitmap(dc, ptSize.x, ptSize.y);
+  bmSave := CreateCompatibleBitmap(dc, ptSize.x, ptSize.y);
 
   // Each DC must select a bitmap object to store pixel data.
-  bmBackOld  := SelectObject(hdcBack, bmAndBack);
+  bmBackOld := SelectObject(hdcBack, bmAndBack);
   bmObjectOld := SelectObject(hdcObject, bmAndObject);
-  bmMemOld    := SelectObject(hdcMem, bmAndMem);
-  bmSaveOld  := SelectObject(hdcSave, bmSave);
+  bmMemOld := SelectObject(hdcMem, bmAndMem);
+  bmSaveOld := SelectObject(hdcSave, bmSave);
 
   // Set proper mapping mode.
   SetMapMode(hdcTemp, GetMapMode(dc));
@@ -118,7 +118,7 @@ begin
   // Create the object mask for the bitmap by performing a BitBlt
   // from the source bitmap to a monochrome bitmap.
   BitBlt(hdcObject, 0, 0, ptSize.x, ptSize.y, hdcTemp, xOffSet, yOffSet,
-          SRCCOPY);
+    SRCCOPY);
 
   // Set the background color of the source DC back to the original
   // color.
@@ -126,11 +126,11 @@ begin
 
   // Create the inverse of the object mask.
   BitBlt(hdcBack, 0, 0, ptSize.x, ptSize.y, hdcObject, 0, 0,
-          NOTSRCCOPY);
+    NOTSRCCOPY);
 
   // Copy the background of the main DC to the destination.
   BitBlt(hdcMem, 0, 0, ptSize.x, ptSize.y, dc, xStart, yStart,
-          SRCCOPY);
+    SRCCOPY);
 
   // Mask out the places where the bitmap will be placed.
   BitBlt(hdcMem, 0, 0, ptSize.x, ptSize.y, hdcObject, 0, 0, SRCAND);
@@ -178,10 +178,10 @@ begin
       for j := 0 to Height - 1 do
       begin
         PixelColor := ColorToRGB(Canvas.Pixels[i, j]);
-        Red        := PixelColor;
-        Green      := PixelColor shr 8;
-        Blue       := PixelColor shr 16;
-        Grayshade  := Round(0.3 * Red + 0.6 * Green + 0.1 * Blue) + 127;
+        Red := PixelColor;
+        Green := PixelColor shr 8;
+        Blue := PixelColor shr 16;
+        Grayshade := Round(0.3 * Red + 0.6 * Green + 0.1 * Blue) + 127;
         if RGB(Red, Green, Blue) <> ColorMask then
           Canvas.Pixels[i, j] := RGB(Grayshade, Grayshade, Grayshade);
       end;
@@ -213,7 +213,8 @@ end;
 procedure TTokenHintBase.ActivateHint(Rect: TRect; const AHint: string);
 begin
   inherited;
-  if not FActivated then Show;
+  if not FActivated then
+    Show;
   FActivated := True;
 end;
 
@@ -242,18 +243,19 @@ begin
 end;
 
 {TTokenHintParams}
+
 constructor TTokenHintParams.Create(AOwner: TComponent);
 const
   BmpArrowUp: array[0..3] of TPoint = (
-    (X:2; Y:6;),
-    (X:7; Y:11),
-    (X:8; Y:11),
-    (X:13; Y:6));
+    (X: 2; Y: 6; ),
+    (X: 7; Y: 11),
+    (X: 8; Y: 11),
+    (X: 13; Y: 6));
   BmpArrowDown: array[0..3] of TPoint = (
-    (X:23; Y:6;),
-    (X:24; Y:6),
-    (X:29; Y:11),
-    (X:18; Y:11));
+    (X: 23; Y: 6; ),
+    (X: 24; Y: 6),
+    (X: 29; Y: 11),
+    (X: 18; Y: 11));
 begin
   inherited Create(AOwner);
   FItemIndex := 0;
@@ -305,7 +307,7 @@ end;
 
 procedure TTokenHintParams.Paint;
 var
-  S, S1, S2, S3: String;
+  S, S1, S2, S3: string;
   R: TRect;
   I, hintHeight, cLeft, TempIndex: Integer;
   penColor: TColor;
@@ -433,7 +435,7 @@ begin
     FItemIndex := FParams.Count - 1;
   CalcDist := 30;
   hintWidth := 0;
-  hintHeight := 2;//border, include bottom line
+  hintHeight := 2; //border, include bottom line
   for I := 0 to FParams.Count - 1 do
   begin
     hintWidth := Max(Canvas.TextWidth(FParams.Strings[I]), hintWidth);
@@ -442,10 +444,10 @@ begin
       Inc(hintHeight, Canvas.TextHeight(FParams.Strings[I]) + 5);
   end;
   if (FParams.Count > FMaxCount) and (FParams.Count > 1) then
-    Inc(hintWidth, FBitmap.Width + 4);//updown list
-  Dec(hintHeight, 1);//last line
+    Inc(hintWidth, FBitmap.Width + 4); //updown list
+  Dec(hintHeight, 1); //last line
   Dec(Y, hintHeight);
-  R := Rect(X, Y, hintWidth + X  + CalcDist, Y + hintHeight);
+  R := Rect(X, Y, hintWidth + X + CalcDist, Y + hintHeight);
   FIndex := Index;
   if FActivated then
   begin
@@ -454,8 +456,10 @@ begin
       R.Top := Screen.DesktopHeight - Height;
     if R.Left + Width > Screen.DesktopWidth then
       R.Left := Screen.DesktopWidth - Width;
-    if R.Left < Screen.DesktopLeft then R.Left := Screen.DesktopLeft;
-    if R.Bottom < Screen.DesktopTop then R.Bottom := Screen.DesktopTop;
+    if R.Left < Screen.DesktopLeft then
+      R.Left := Screen.DesktopLeft;
+    if R.Bottom < Screen.DesktopTop then
+      R.Bottom := Screen.DesktopTop;
     SetWindowPos(Handle, HWND_TOPMOST, R.Left, R.Top, Width, Height,
       SWP_NOACTIVATE);
     Show;
@@ -487,11 +491,11 @@ begin
   inherited;
 end;
 
-procedure TTokenHintTip.UpdateHint(const S: String; X, Y: Integer);
+procedure TTokenHintTip.UpdateHint(const S: string; X, Y: Integer);
 var
   R: TRect;
 begin
-  R := Rect(X, Y, Canvas.TextWidth(S) + X  + 10, Canvas.TextHeight(S) + Y + 2);
+  R := Rect(X, Y, Canvas.TextWidth(S) + X + 10, Canvas.TextHeight(S) + Y + 2);
   if FActivated then
   begin
     Caption := S;
@@ -501,8 +505,10 @@ begin
       R.Top := Screen.DesktopHeight - Height;
     if R.Left + Width > Screen.DesktopWidth then
       R.Left := Screen.DesktopWidth - Width;
-    if R.Left < Screen.DesktopLeft then R.Left := Screen.DesktopLeft;
-    if R.Bottom < Screen.DesktopTop then R.Bottom := Screen.DesktopTop;
+    if R.Left < Screen.DesktopLeft then
+      R.Left := Screen.DesktopLeft;
+    if R.Bottom < Screen.DesktopTop then
+      R.Bottom := Screen.DesktopTop;
     SetWindowPos(Handle, HWND_TOPMOST, R.Left, R.Top, Width, Height,
       SWP_NOACTIVATE);
   end
@@ -511,3 +517,4 @@ begin
 end;
 
 end.
+

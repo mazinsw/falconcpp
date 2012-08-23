@@ -11,32 +11,32 @@ uses
 type
   TToolMenuItem = class(TTBXItem)
   private
-    FStrCommand: String;
-    FEnableCmd: String;
+    FStrCommand: string;
+    FEnableCmd: string;
     FToolsID: Integer;
   public
     function ExecuteCommand: Boolean;
   published
-    property StrCommand: String read FStrCommand write FStrCommand;
-    property EnableCommand: String read FEnableCmd write FEnableCmd;
+    property StrCommand: string read FStrCommand write FStrCommand;
+    property EnableCommand: string read FEnableCmd write FEnableCmd;
     property ToolID: Integer read FToolsID write FToolsID;
   end;
 
 const
   NEW_LN = #13 + #10;
 
-function GetIdent(Column: Integer):string;
+function GetIdent(Column: Integer): string;
 procedure CreateStdTools;
-function CreateRootMenuTool(Caption: String;
-  RootMenu:TTBXSubmenuItem = nil): TTBXSubmenuItem;
+function CreateRootMenuTool(Caption: string;
+  RootMenu: TTBXSubmenuItem = nil): TTBXSubmenuItem;
 function CreateMenuTool(RootMenu: TTBXSubmenuItem; Caption, StrCmd,
-  EnableCmd: String): TToolMenuItem;
+  EnableCmd: string): TToolMenuItem;
 
 implementation
 
 uses UFrmMain, SynEdit, UUtils;
 
-function GetIdent(Column: Integer):string;
+function GetIdent(Column: Integer): string;
 begin
   Result := '';
   while (Column > 0) do
@@ -46,8 +46,8 @@ begin
   end;
 end;
 
-function CreateRootMenuTool(Caption: String;
-  RootMenu:TTBXSubmenuItem = nil): TTBXSubmenuItem;
+function CreateRootMenuTool(Caption: string;
+  RootMenu: TTBXSubmenuItem = nil): TTBXSubmenuItem;
 var
   RtMenu: TTBXSubmenuItem;
 begin
@@ -60,7 +60,7 @@ begin
 end;
 
 function CreateMenuTool(RootMenu: TTBXSubmenuItem; Caption,
-  StrCmd, EnableCmd: String): TToolMenuItem;
+  StrCmd, EnableCmd: string): TToolMenuItem;
 var
   MTools: TToolMenuItem;
 begin
@@ -107,7 +107,7 @@ const
   SCHAR = 'É∂Ö∑†µ∆«à“ä‘Çêå◊çﬁ°÷‰Âì‚ï„¢‡ÅöñÍ£ÈóÎáÄ§•¶ß¯˚˝¸©∏Òˆ´¨Û';
   NCHAR = '‚¬‡¿·¡„√Í Ë»È…ÓŒÏÃÌÕı’Ù‘Ú“Û”¸‹˚€˙⁄˘ŸÁ«Ò—™∫∞π≤≥Æ©±˜Ωºæ';
 var
-  SelText, Temp, Ident: String;
+  SelText, Temp, Ident: string;
   Memo: TSynMemo;
   Line, Column, I, J: Integer;
   FileProp: TFileProperty;
@@ -132,30 +132,29 @@ begin
         Memo.SelText := IntToStr(StrToIntDef(
           StringReplace(SelText, '0x', '$', []), 0));
     4:
-    begin
-      Temp := Memo.SelText;
-      for I:=1 to Length(Temp) do
       begin
-        for J:= 1 to Length(NCHAR) do
-          if(Temp[I] = NCHAR[J])then
-            Temp[I] := SCHAR[J];
+        Temp := Memo.SelText;
+        for I := 1 to Length(Temp) do
+        begin
+          for J := 1 to Length(NCHAR) do
+            if (Temp[I] = NCHAR[J]) then
+              Temp[I] := SCHAR[J];
+        end;
+        Memo.SelText := Temp;
       end;
-      Memo.SelText := Temp;
-    end;
     5: Memo.SelText := DateTimeToStr(Now);
     9:
-    begin
-      Temp := StringReplace(FileProp.Caption, '.', '_', [rfReplaceAll]);
-      Temp := StringReplace(Temp, ' ', '_', [rfReplaceAll]);
-      Temp := UpperCase(Temp);
-      Memo.Text := '#ifndef _' + Temp + '_' + #13 + '#define _' + Temp + '_' +
-        #13 + Memo.Text + #13 + '#endif';
-      Memo.GotoLineAndCenter(Line + 2);
-    end;
+      begin
+        Temp := StringReplace(FileProp.Name, '.', '_', [rfReplaceAll]);
+        Temp := StringReplace(Temp, ' ', '_', [rfReplaceAll]);
+        Temp := UpperCase(Temp);
+        Memo.Text := '#ifndef _' + Temp + '_' + #13 + '#define _' + Temp + '_' +
+          #13 + Memo.Text + #13 + '#endif';
+        Memo.GotoLineAndCenter(Line + 2);
+      end;
   else
     //exec user functions
   end;
 end;
 
 end.
- 

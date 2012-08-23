@@ -66,10 +66,12 @@ var
   Ms: TMemoryStream;
 begin
   Result := False;
-  if (ParamCount = 0) then Exit;
+  if (ParamCount = 0) then
+    Exit;
 
   Handle := FindWindow('TFrmFalconMain', nil);
-  if (Handle = 0) then Exit;
+  if (Handle = 0) then
+    Exit;
   AppHandle := FindWindow('TApplication', 'Falcon C++');
   ForceForegroundWindow(Handle);
   if (AppHandle > 0) and IsIconic(AppHandle) then
@@ -78,8 +80,8 @@ begin
   SendDT.ClassNamed := 'TFrmFalconMain';
   SendDT.SendType := stSend;
   List := TStringList.Create;
-  Ms:= TMemoryStream.Create;
-  for I:= 1 to ParamCount do
+  Ms := TMemoryStream.Create;
+  for I := 1 to ParamCount do
   begin
     List.Add(ParamStr(I));
   end;
@@ -91,11 +93,12 @@ begin
   Result := True;
 end;
 
-
 begin
-  if OpenWithOther then Exit;
+  if OpenWithOther then
+    Exit;
   Application.Initialize;
   Application.Title := 'Falcon C++';
   Application.CreateForm(TFrmFalconMain, FrmFalconMain);
   Application.Run;
 end.
+

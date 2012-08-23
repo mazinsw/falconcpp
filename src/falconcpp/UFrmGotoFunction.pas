@@ -37,7 +37,7 @@ type
   public
     { Public declarations }
     procedure Fill(List: TStrings);
-    procedure Match(const S: String);
+    procedure Match(const S: string);
     procedure UpdateLangNow;
   end;
 
@@ -49,7 +49,6 @@ implementation
 uses UFrmMain, TokenList, TokenFile, TokenUtils, UFileProperty, ULanguages;
 
 {$R *.dfm}
-
 
 procedure TFormGotoFunction.CreateParams(var Params: TCreateParams);
 begin
@@ -115,7 +114,7 @@ begin
     SelectItem(0);
 end;
 
-procedure TFormGotoFunction.Match(const S: String);
+procedure TFormGotoFunction.Match(const S: string);
 var
   I: Integer;
   Item: TListItem;
@@ -286,7 +285,7 @@ begin
     Exit;
   Item := ListViewFunctions.Items.Item[Index];
   Token := TTokenClass(Item.Data);
-  Token :=  GetTokenByName(Token, 'Scope', tkScope);
+  Token := GetTokenByName(Token, 'Scope', tkScope);
   if Assigned(Token) and Assigned(Token.Owner) and
     Assigned(TTokenFile(Token.Owner).Data) then
   begin

@@ -9,29 +9,29 @@ uses
   ShellAPI, Forms;
 
 const
-  MAKEFILE_MSG: array[0..3] of String = (
-  'Can' + #39 +'t Build MakeFile',
-  'Build sucess!',
-  'Can' + #39 +'t Build MakeFile, Unknow Error',
-  'Can' + #39 +'t Build MakeFile, Imposible save file');
-  OSCurrentKey: array [Boolean] of String =
+  MAKEFILE_MSG: array[0..3] of string = (
+    'Can' + #39 + 't Build MakeFile',
+    'Build sucess!',
+    'Can' + #39 + 't Build MakeFile, Unknow Error',
+    'Can' + #39 + 't Build MakeFile, Imposible save file');
+  OSCurrentKey: array[Boolean] of string =
   ('Software\Microsoft\Windows\CurrentVersion',
-  'Software\Microsoft\Windows NT\CurrentVersion');
+    'Software\Microsoft\Windows NT\CurrentVersion');
   CSIDL_COMMON_APPDATA = $0023;
   Ident = '        ';
   NewLine = #13 + #10;
   TwoParms = NewLine + Ident;
   FALCON_URL_UPDATE = 'https://downloads.sourceforge.net/project/falconcpp/' +
     'Update/Update.xml';
-  {$EXTERNALSYM PBS_MARQUEE}
+{$EXTERNALSYM PBS_MARQUEE}
   PBS_MARQUEE = $0008;
-  {$EXTERNALSYM PBM_SETMARQUEE}
-  PBM_SETMARQUEE = WM_USER+10;
+{$EXTERNALSYM PBM_SETMARQUEE}
+  PBM_SETMARQUEE = WM_USER + 10;
 
 type
   TLanguageItem = class
     ID: Cardinal;
-    Name: String;
+      Name: string;
     ImageIndex: TImageIndex;
   end;
 
@@ -43,84 +43,84 @@ type
   end;
 
   pRGBALine = ^TRGBALine;
-	TRGBALine = Array[Word] of TRGBQuad;
+  TRGBALine = array[Word] of TRGBQuad;
 
 type
   TExecuteFileOption = (
     eoHide,
     eoWait,
     eoElevate
-  );
+    );
   TExecuteFileOptions = set of TExecuteFileOption;
 
-function GetTickTime(ticks: Cardinal; fmt: String): String;
-procedure GetNameAndVersion(const S: String; var aName, aVersion: String);
-procedure SearchCompilers(List: TStrings; var PathCompiler: String);
+function GetTickTime(ticks: Cardinal; fmt: string): string;
+procedure GetNameAndVersion(const S: string; var aName, aVersion: string);
+procedure SearchCompilers(List: TStrings; var PathCompiler: string);
 function ExecuteFile(Handle: HWND; const Filename, Paramaters,
-  Directory: String; Options: TExecuteFileOptions): Integer;
+  Directory: string; Options: TExecuteFileOptions): Integer;
 procedure LoadFontNames(List: TStrings);
-procedure LoadFontSize(FontName: String; List: TStrings);
+procedure LoadFontSize(FontName: string; List: TStrings);
 procedure BitmapToAlpha(bmp: TBitmap; Color: TColor = clFuchsia);
-function IconToBitmap(const Icon: TIcon):TBitmap;
-Function GetFileVersionA(FileName: String): TVersion;
-function ParseVersion(Version: String): TVersion;
+function IconToBitmap(const Icon: TIcon): TBitmap;
+function GetFileVersionA(FileName: string): TVersion;
+function ParseVersion(Version: string): TVersion;
 function CompareVersion(Ver1, Ver2: TVersion): Integer;
-function VersionToStr(Version: TVersion): String;
-function CanUpdate(UpdateXML: String): Boolean;
-function GetUserFolderPath(nFolder: Integer = CSIDL_PERSONAL): String;
-function GetTempDirectory: String;
+function VersionToStr(Version: TVersion): string;
+function CanUpdate(UpdateXML: string): Boolean;
+function GetUserFolderPath(nFolder: Integer = CSIDL_PERSONAL): string;
+function GetTempDirectory: string;
 procedure SetProgsType(PrgsBar: TProgressBar; Infinity: Boolean);
 function UserIsAdmin: Boolean;
 function ForceForegroundWindow(hwnd: THandle): Boolean;
 function GetCompiler(FileType: Integer): Integer;
-function GetFileType(AFileName: String): Integer;
-function Divide64(HEXText: String): String;
-function Union64(const HEXText: String): String;
-function StreamToString(Value: TStream): String;
-function StringToStream(Text: String; Value: TStream): Integer;
+function GetFileType(AFileName: string): Integer;
+function Divide64(HEXText: string): string;
+function Union64(const HEXText: string): string;
+function StreamToString(Value: TStream): string;
+function StringToStream(Text: string; Value: TStream): Integer;
 function FileDateTime(const FileName: string): TDateTime;
-function CreateSourceFolder(const Name: String;
+function CreateSourceFolder(const Name: string;
   Parent: TFileProperty): TFileProperty;
-function NewFileProperty(FileType, Compiler: Integer; FirstName, BaseName,
-  Ext, FileName: String; OwnerFile: TFileProperty; IsFileProp: Boolean = True;
-  AutoExpand: Boolean = True): TFileProperty;
+function NewSourceFile(FileType, Compiler: Integer; FirstName, BaseName,
+  Ext, FileName: string; OwnerFile: TFileProperty; UseFileName, References,
+  Expand: Boolean): TFileProperty;
 function BrowseDialog(Handle: HWND; const Title: string;
-  var Directory: String): Boolean;
-function HumanToBool(Resp: String): Boolean;
-function BoolToHuman(Question: Boolean): String;
-function GetFullFileName(Name: String): String;
+  var Directory: string): Boolean;
+function HumanToBool(Resp: string): Boolean;
+function BoolToHuman(Question: Boolean): string;
+function GetFullFileName(Name: string): string;
 function DoubleQuotedStr(const S: string): string;
 
 function EditorGotoXY(Memo: TSynMemo; X, Y: Integer): Boolean;
-function SearchFileProperty(FileName: String;
+function SearchFileProperty(FileName: string;
   var FileProp: TFileProperty): Boolean;
-function OpenFile(FileName: String):TProjectProperty;
-function RemoveOption(const S, Options: String): String;
+function OpenFile(FileName: string): TProjectProperty;
+function RemoveOption(const S, Options: string): string;
 function DeleteResourceFiles(List: TStrings): Boolean;
 procedure ProjectPopupMenuItens(ItemNew, ItemNewPro, ItemNewC, ItemNewCPP,
   ItemNewH, ItemNewRC, ItemNewEmp, ItemNewFol, ItemEdit, ItemOpen, ItemDel,
   ItemRen, ItemProp: Boolean);
 function IsNT: Boolean;
-function GetAppTypeByName(AppType: String): Integer;
-function GetCurrentUserName: String;
-function GetCompanyName: String;
+function GetAppTypeByName(AppType: string): Integer;
+function GetCurrentUserName: string;
+function GetCompanyName: string;
 function GetLanguagesList: TStrings;
-function GetLanguageName(LangID: Word): String;
+function GetLanguageName(LangID: Word): string;
 function IsForeground(Handle: HWND): Boolean;
-function IsSubMenu(Value: String): Boolean;
-function GetSubMenu(Value: String): String;
-function FindFiles(Search: String; Finded:TStrings): Boolean; overload;
-function FindFiles(const PathName, FileName : String; List: TStrings): Boolean; overload;
+function IsSubMenu(Value: string): Boolean;
+function GetSubMenu(Value: string): string;
+function FindFiles(Search: string; Finded: TStrings): Boolean; overload;
+function FindFiles(const PathName, FileName: string; List: TStrings): Boolean; overload;
 procedure GetRowColFromCharIndex(SelStart: Integer; Lines: TStrings;
   var Line, Column: Integer);
-function DOSFileName(FileName: String): String;
-function NextFileName(FirstName, Ext: String; Node: TTreeNode): String;
-function NextProjectName(FirstName, Ext: String; Nodes: TTreeNodes): String;
-function RemoveFileExt(const FileName: String):String;
-function ExtractName(const FileName: String):String;
-function GetFilesByExt(Extension: String; List: TStrings): String;
-procedure SelectFilesByExt(Extensions: array of String; List, OutList: TStrings);
-function IsNumber(Str: String): Boolean;
+function DOSFileName(FileName: string): string;
+function NextFileName(FirstName, Ext: string; Node: TTreeNode): string;
+function NextProjectName(FirstName, Ext: string; Nodes: TTreeNodes): string;
+function RemoveFileExt(const FileName: string): string;
+function ExtractName(const FileName: string): string;
+function GetFilesByExt(Extension: string; List: TStrings): string;
+procedure SelectFilesByExt(Extensions: array of string; List, OutList: TStrings);
+function IsNumber(Str: string): Boolean;
 
 implementation
 
@@ -133,21 +133,23 @@ uses UTemplates, UFrmMain, ULanguages, UConfig;
    adds a font to the list if it is of the Modern font family
    i.e. any font that is monospaced (same as delphi)
 *)
+
 function EnumFontFamilyProc(LogFont: PEnumLogFont; var TextMetric: PNewTextMetric;
-    FontType: integer; LParam: integer): integer; stdcall;
+  FontType: integer; LParam: integer): integer; stdcall;
 begin
   if LogFont.elfLogFont.lfPitchAndFamily and FF_MODERN = FF_MODERN then
-   TStrings(LParam).Add(LogFont.elfLogFont.lfFaceName);
-  result:= -1;
+    TStrings(LParam).Add(LogFont.elfLogFont.lfFaceName);
+  result := -1;
 end;
 
 // Fills combobox with font names.
 // editor and gutter both use same fonts
+
 procedure LoadFontNames(List: TStrings);
 var
- DC: HDC;
+  DC: HDC;
 begin
-  DC:= GetDC(0);
+  DC := GetDC(0);
   EnumFontFamilies(DC, nil, @EnumFontFamilyProc, Integer(List));
   ReleaseDC(0, DC);
 end;
@@ -157,37 +159,38 @@ end;
   adds font sizes to list.  if font is not a RASTER then
   uses default font sizes (7..30)
 *)
+
 function EnumFontSizeProc(LogFont: PEnumLogFont; var TextMetric: PNewTextMetric;
-    FontType: integer; LParam: integer): integer; stdcall;
+  FontType: integer; LParam: integer): integer; stdcall;
 var
- size: string;
+  size: string;
 begin
-  result:= 1;
+  result := 1;
   if FontType and RASTER_FONTTYPE = RASTER_FONTTYPE then
   begin
-    Size:= inttostr(LogFont.elfLogFont.lfHeight *72 div LOGPIXELSY);
+    Size := inttostr(LogFont.elfLogFont.lfHeight * 72 div LOGPIXELSY);
     if TStrings(LParam).IndexOf(Size) = -1 then
       TStrings(LParam).Add(Size);
   end
   else
   begin
-    result:= 0;
+    result := 0;
   end;
 end;
 
-procedure LoadFontSize(FontName: String; List: TStrings);
+procedure LoadFontSize(FontName: string; List: TStrings);
 var
- DC: HDC;
+  DC: HDC;
 begin
-  DC:= GetDC(0);
+  DC := GetDC(0);
   EnumFontFamilies(DC, PChar(FontName), @EnumFontSizeProc, Integer(List));
   ReleaseDC(0, DC);
 end;
 
-function GetTickTime(ticks: Cardinal; fmt: String): String;
+function GetTickTime(ticks: Cardinal; fmt: string): string;
 var
-  milli, sec{, min, hou^}: Cardinal;
-  S: String;
+  milli, sec {, min, hou^}: Cardinal;
+  S: string;
 begin
   milli := ticks mod 1000;
   ticks := ticks div 1000;
@@ -196,21 +199,21 @@ begin
 //  min := ticks mod 60;
 //  ticks := ticks div 60;
 //  hour := ticks mod 60;
-  S := Format('%.3f', [milli/1000]);
+  S := Format('%.3f', [milli / 1000]);
   S := Copy(S, Pos(',', S) + 1, MaxInt);
   Result := Format('%d.%s', [sec, S]);
   //Result := Format(fmt, [hour, min, sec, milli]);
 end;
 
-procedure GetNameAndVersion(const S: String; var aName, aVersion: String);
+procedure GetNameAndVersion(const S: string; var aName, aVersion: string);
 var
   ptr, init: PChar;
-  line: String;
+  line: string;
 begin
   ptr := PChar(S);
   aName := '';
   aVersion := '';
-  line:= '';
+  line := '';
   while not (ptr^ in [#0, #10]) do
   begin
     line := line + ptr^;
@@ -241,9 +244,9 @@ begin
   end;
 end;
 
-procedure SearchCompilers(List: TStrings; var PathCompiler: String);
+procedure SearchCompilers(List: TStrings; var PathCompiler: string);
 var
-  path, ProgFiles: String;
+  path, ProgFiles: string;
 begin
   List.Clear;
   //find compilers
@@ -319,9 +322,9 @@ begin
       for x := 0 to Pred(bmp.Width) do
       begin
         CurrCl := RGB(ColorSL^[x].rgbRed,
-                      ColorSL^[x].rgbGreen,
-                      ColorSL^[x].rgbBlue);
-        if(CurrCl = Color) then
+          ColorSL^[x].rgbGreen,
+          ColorSL^[x].rgbBlue);
+        if (CurrCl = Color) then
         begin
           ColorSL^[x].rgbRed := 0;
           ColorSL^[x].rgbGreen := 0;
@@ -335,14 +338,14 @@ begin
   end;
 end;
 
-function IconToBitmap(const Icon: TIcon):TBitmap;
+function IconToBitmap(const Icon: TIcon): TBitmap;
 
-  function GetBitmap(const Icon: TIcon):TBitmap;
+  function GetBitmap(const Icon: TIcon): TBitmap;
   var
     IcoInfo: TIconInfo;
   begin
     Result := nil;
-    if NOT GetIconInfo(Icon.Handle, IcoInfo) then
+    if not GetIconInfo(Icon.Handle, IcoInfo) then
       Exit;
     Result := TBitmap.Create;
     Result.Handle := IcoInfo.hbmColor;
@@ -370,7 +373,7 @@ begin
       begin
         ColorSL := Result.Scanline[y];
         for x := 0 to Pred(Result.Width) do
-            ColorSL^[x].rgbReserved := 0;
+          ColorSL^[x].rgbReserved := 0;
       end;
       Result.Canvas.Draw((48 - bmp.Width) div 2, (48 - bmp.Height) div 2, bmp);
       bmp.Free;
@@ -380,43 +383,43 @@ begin
   end;
 end;
 
-Function GetFileVersionA(FileName: String): TVersion;
+function GetFileVersionA(FileName: string): TVersion;
 type
   PFFI = ^vs_FixedFileInfo;
 var
-  F       : PFFI;
-  Handle  : Dword;
-  Len     : Longint;
-  Data    : Pchar;
-  Buffer  : Pointer;
-  Tamanho : Dword;
+  F: PFFI;
+  Handle: Dword;
+  Len: Longint;
+  Data: Pchar;
+  Buffer: Pointer;
+  Tamanho: Dword;
   Parquivo: Pchar;
 begin
-  Result.Major:= 0;
-  Result.Minor:= 0;
-  Result.Release:= 0;
-  Result.Build:= 0;
+  Result.Major := 0;
+  Result.Minor := 0;
+  Result.Release := 0;
+  Result.Build := 0;
   Parquivo := StrAlloc(Length(FileName) + 1);
   StrPcopy(Parquivo, FileName);
   Len := GetFileVersionInfoSize(Parquivo, Handle);
   if Len > 0 then
   begin
-    Data:=StrAlloc(Len+1);
-    if GetFileVersionInfo(Parquivo,Handle,Len,Data) then
+    Data := StrAlloc(Len + 1);
+    if GetFileVersionInfo(Parquivo, Handle, Len, Data) then
     begin
-      VerQueryValue(Data, '',Buffer,Tamanho);
+      VerQueryValue(Data, '', Buffer, Tamanho);
       F := PFFI(Buffer);
-      Result.Major:= HiWord(F^.dwFileVersionMs);
-      Result.Minor:= LoWord(F^.dwFileVersionMs);
-      Result.Release:= HiWord(F^.dwFileVersionLs);
-      Result.Build:= Loword(F^.dwFileVersionLs);
+      Result.Major := HiWord(F^.dwFileVersionMs);
+      Result.Minor := LoWord(F^.dwFileVersionMs);
+      Result.Release := HiWord(F^.dwFileVersionLs);
+      Result.Build := Loword(F^.dwFileVersionLs);
     end;
     StrDispose(Data);
   end;
   StrDispose(Parquivo);
 end;
 
-function ParseVersion(Version: String): TVersion;
+function ParseVersion(Version: string): TVersion;
 var
   v1, v2, v3, v4: Integer;
 begin
@@ -436,14 +439,14 @@ begin
   end;
 end;
 
-function VersionToStr(Version: TVersion): String;
+function VersionToStr(Version: TVersion): string;
 begin
   Result := Format('%d.%d.%d.%d', [
-            Version.Major,
-            Version.Minor,
-            Version.Release,
-            Version.Build
-            ]);
+    Version.Major,
+      Version.Minor,
+      Version.Release,
+      Version.Build
+      ]);
 end;
 
 function CompareVersion(Ver1, Ver2: TVersion): Integer;
@@ -461,43 +464,41 @@ begin
   begin
     if Ver1.Major < Ver2.Major then
       ExitFunction(-1)
+    else if Ver1.Minor > Ver2.Minor then
+      ExitFunction(1)
     else
-      if Ver1.Minor > Ver2.Minor then
+    begin
+      if Ver1.Minor < Ver2.Minor then
+        ExitFunction(-1)
+      else if Ver1.Release > Ver2.Release then
         ExitFunction(1)
       else
       begin
-        if Ver1.Minor < Ver2.Minor then
+        if Ver1.Release < Ver2.Release then
           ExitFunction(-1)
+        else if Ver1.Build > Ver2.Build then
+          ExitFunction(1)
         else
-          if Ver1.Release > Ver2.Release then
-            ExitFunction(1)
+        begin
+          if Ver1.Build < Ver2.Build then
+            ExitFunction(-1)
           else
-          begin
-            if Ver1.Release < Ver2.Release then
-              ExitFunction(-1)
-            else
-              if Ver1.Build > Ver2.Build then
-                ExitFunction(1)
-              else
-              begin
-                if Ver1.Build < Ver2.Build then
-                  ExitFunction(-1)
-                else
-                  ExitFunction(0);
-              end;
-          end;
+            ExitFunction(0);
+        end;
       end;
+    end;
   end;
 end;
 
-function CanUpdate(UpdateXML: String): Boolean;
+function CanUpdate(UpdateXML: string): Boolean;
 var
   XMLDoc: TXMLDocument;
   Node, FalconNode: IXMLNode;
   SiteVersion: TVersion;
 begin
   Result := False;
-  if not FileExists(UpdateXML) then Exit;
+  if not FileExists(UpdateXML) then
+    Exit;
   XMLDoc := TXMLDocument.Create(FrmFalconMain);
   try
     XMLDoc.LoadFromFile(UpdateXML);
@@ -517,7 +518,7 @@ begin
   XMLDoc.Free;
 end;
 
-function GetUserFolderPath(nFolder: Integer = CSIDL_PERSONAL): String;
+function GetUserFolderPath(nFolder: Integer = CSIDL_PERSONAL): string;
 var
   Buf: PChar;
 begin
@@ -530,7 +531,7 @@ begin
     Result := IncludeTrailingPathDelimiter(Result);
 end;
 
-function GetTempDirectory: String;
+function GetTempDirectory: string;
 var
   TempDir: array[0..255] of Char;
 begin
@@ -554,13 +555,13 @@ begin
   end;
 end;
 
-function IsNumber(Str: String): Boolean;
+function IsNumber(Str: string): Boolean;
 var
   I: Integer;
 begin
   Result := Length(Str) > 0;
-  for I:=1 to Length(Str) do
-    if not(Str[I] in ['0'..'9', '.']) then
+  for I := 1 to Length(Str) do
+    if not (Str[I] in ['0'..'9', '.']) then
     begin
       Result := False;
       Exit;
@@ -577,13 +578,13 @@ var
   bSuccess: BOOL;
 const
   SECURITY_NT_AUTHORITY: TSIDIdentifierAuthority =
-    (Value: (0, 0, 0, 0, 0, 5));
+  (Value: (0, 0, 0, 0, 0, 5));
   SECURITY_BUILTIN_DOMAIN_RID = $00000020;
   DOMAIN_ALIAS_RID_ADMINS = $00000220;
 begin
   Result := False;
   bSuccess := OpenThreadToken(GetCurrentThread, TOKEN_QUERY, True,
-              hAccessToken);
+    hAccessToken);
   if not bSuccess then
   begin
     if GetLastError = ERROR_NO_TOKEN then
@@ -594,21 +595,21 @@ begin
   begin
     GetMem(ptgGroups, 1024);
     bSuccess := GetTokenInformation(hAccessToken, TokenGroups,
-    ptgGroups, 1024, dwInfoBufferSize);
+      ptgGroups, 1024, dwInfoBufferSize);
     CloseHandle(hAccessToken);
     if bSuccess then
     begin
       AllocateAndInitializeSid(SECURITY_NT_AUTHORITY, 2,
         SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS,
         0, 0, 0, 0, 0, 0, psidAdministrators);
-      {$R-}
+{$R-}
       for x := 0 to ptgGroups.GroupCount - 1 do
         if EqualSid(psidAdministrators, ptgGroups.Groups[x].Sid) then
         begin
           Result := True;
           Break;
         end;
-      {$R+}
+{$R+}
       FreeSid(psidAdministrators);
     end;
     FreeMem(ptgGroups);
@@ -624,9 +625,11 @@ var
   ThisThreadID: DWORD;
   timeout: DWORD;
 begin
-  if IsIconic(hwnd) then ShowWindow(hwnd, SW_RESTORE);
+  if IsIconic(hwnd) then
+    ShowWindow(hwnd, SW_RESTORE);
 
-  if GetForegroundWindow = hwnd then Result := True
+  if GetForegroundWindow = hwnd then
+    Result := True
   else
   begin
     // Windows 98/2000 doesn't want to foreground a window when some other
@@ -672,7 +675,7 @@ begin
   end;
 end; { ForceForegroundWindow }
 
-function GetLanguageName(LangID: Word): String;
+function GetLanguageName(LangID: Word): string;
 var
   Name: array[0..255] of char;
 begin
@@ -690,7 +693,7 @@ var
   I: Integer;
 begin
   List := TStringList.Create;
-  for I:= 0 to Pred(Languages.Count) do
+  for I := 0 to Pred(Languages.Count) do
   begin
     LangItem := TLanguageItem.Create;
     LangItem.ID := Languages.LocaleID[I];
@@ -733,7 +736,7 @@ begin
   Result := Win32Platform = VER_PLATFORM_WIN32_NT;
 end;
 
-function GetAppTypeByName(AppType: String): Integer;
+function GetAppTypeByName(AppType: string): Integer;
 begin
   AppType := UpperCase(AppType);
   if (AppType = 'CONSOLE') then
@@ -752,7 +755,7 @@ begin
     Result := APPTYPE_CONSOLE;
 end;
 
-function GetCurrentUserName: String;
+function GetCurrentUserName: string;
 var
   reg: TRegistry;
 begin
@@ -763,7 +766,7 @@ begin
   reg.free;
 end;
 
-function GetCompanyName: String;
+function GetCompanyName: string;
 var
   reg: TRegistry;
 begin
@@ -799,7 +802,7 @@ begin
 end;
 
 function ExecuteFile(Handle: HWND; const Filename, Paramaters,
-  Directory: String; Options: TExecuteFileOptions): Integer;
+  Directory: string; Options: TExecuteFileOptions): Integer;
 var
   ShellExecuteInfo: TShellExecuteInfo;
   ExitCode: DWORD;
@@ -836,7 +839,7 @@ begin
     GetExitCodeProcess(ShellExecuteInfo.hProcess, ExitCode);
 
     while (ExitCode = STILL_ACTIVE) and
-          (not Application.Terminated) do
+      (not Application.Terminated) do
     begin
       sleep(50);
 
@@ -852,12 +855,12 @@ begin
   Result := GetForegroundWindow = Handle;
 end;
 
-function IsSubMenu(Value: String): Boolean;
+function IsSubMenu(Value: string): Boolean;
 begin
   Result := (Pos('SubMenu(', Value) > 0);
 end;
 
-function GetSubMenu(Value: String): String;
+function GetSubMenu(Value: string): string;
 var
   I: Integer;
 begin
@@ -866,33 +869,33 @@ begin
   Result := Copy(Value, I, Pos(')', Value) - I);
 end;
 
-function FindFiles(Search: String; Finded:TStrings): Boolean;
+function FindFiles(Search: string; Finded: TStrings): Boolean;
 var
-  searchResult : TSearchRec;
+  searchResult: TSearchRec;
 begin
   Result := false;
   if FindFirst(Search, faAnyFile, searchResult) = 0 then
   begin
     Result := True;
     repeat
-        Finded.add(searchResult.Name);
+      Finded.add(searchResult.Name);
     until FindNext(searchResult) <> 0;
     FindClose(searchResult);
   end;
 end;
 
-function FindFiles(const PathName, FileName : String; List: TStrings): Boolean;
+function FindFiles(const PathName, FileName: string; List: TStrings): Boolean;
 var
-  SearchRec : TSearchRec;
-  Path : string;
+  SearchRec: TSearchRec;
+  Path: string;
 begin
   Result := False;
   Path := IncludeTrailingPathDelimiter(PathName);
   if FindFirst(Path + FileName, faAnyFile - faDirectory, SearchRec) = 0 then
   begin
     repeat
-        Result := True;
-        List.add(Path + SearchRec.Name);
+      Result := True;
+      List.add(Path + SearchRec.Name);
     until FindNext(SearchRec) <> 0;
     FindClose(SearchRec);
   end;
@@ -900,7 +903,7 @@ begin
   begin
     repeat
       if ((SearchRec.Attr and faDirectory) <> 0) and
-         (SearchRec.Name <> '..') and (SearchRec.Name <> '.') then
+        (SearchRec.Name <> '..') and (SearchRec.Name <> '.') then
       begin
         Result := FindFiles(Path + SearchRec.Name, FileName, List) or Result;
       end;
@@ -909,26 +912,28 @@ begin
   end;
 end;
 
-function InStrCmp(const S: String; Strings: array of String;
+function InStrCmp(const S: string; Strings: array of string;
   const UseCase: Boolean = False): Boolean;
 var
   I: Integer;
 begin
   Result := True;
-  for I:= Low(Strings) to High(Strings) do
+  for I := Low(Strings) to High(Strings) do
   begin
     if UseCase then
     begin
-      if CompareStr(S, Strings[I]) = 0 then Exit;
+      if CompareStr(S, Strings[I]) = 0 then
+        Exit;
     end
-    else if CompareText(S, Strings[I]) = 0 then Exit;
+    else if CompareText(S, Strings[I]) = 0 then
+      Exit;
   end;
   Result := False;
 end;
 
-function GetFileType(AFileName: String): Integer;
+function GetFileType(AFileName: string): Integer;
 var
-  Ext: String;
+  Ext: string;
 begin
   Result := FILE_TYPE_UNKNOW;
   Ext := ExtractFileExt(AFileName);
@@ -956,7 +961,7 @@ begin
   end;
 end;
 
-function StringToStream(Text: String; Value: TStream): Integer;
+function StringToStream(Text: string; Value: TStream): Integer;
 var
   Stream: TMemoryStream;
   Pos: Integer;
@@ -985,7 +990,7 @@ begin
     Result := 0;
 end;
 
-function StreamToString(Value: TStream): String;
+function StreamToString(Value: TStream): string;
 var
   Text: string;
   Stream: TMemoryStream;
@@ -1014,7 +1019,7 @@ begin
   Result := Text;
 end;
 
-function Union64(const HEXText: String): String;
+function Union64(const HEXText: string): string;
 var
   ptr, pres: PChar;
 begin
@@ -1035,29 +1040,29 @@ begin
   Result := StrPas(PChar(Result));
 end;
 
-function Divide64(HEXText: String): String;
+function Divide64(HEXText: string): string;
 var
   I, C, Rest: Integer;
-  Ret: String;
+  Ret: string;
 begin
   Ret := '';
   C := Length(HEXText) div 64;
   Rest := Length(HEXText) mod 64;
-  for I:= 0 to Pred(C) do
+  for I := 0 to Pred(C) do
   begin
-    Ret := Ret + TwoParms + Copy(HEXText, I*64 + 1, 64);
-   end;
+    Ret := Ret + TwoParms + Copy(HEXText, I * 64 + 1, 64);
+  end;
   if (Rest > 0) then
     Ret := Ret + TwoParms + Copy(HEXText, Length(HEXText) - Rest + 1, Rest);
   Result := Ret + NewLine + '    ';
 end;
 
 function FileDateTime(const FileName: string): TDateTime;
-begin 
+begin
   Result := FileDateToDateTime(FileAge(FileName));
 end;
 
-function CreateSourceFolder(const Name: String;
+function CreateSourceFolder(const Name: string;
   Parent: TFileProperty): TFileProperty;
 var
   Node: TTreeNode;
@@ -1074,24 +1079,23 @@ begin
   Result.FileType := FILE_TYPE_FOLDER;
   Result.Project := Parent.Project;
   Result.FileName := Name;
-  Parent.Project.Modified := True;
   Parent.Node.Expanded := True;
 end;
 
-function NewFileProperty(FileType, Compiler: Integer; FirstName, BaseName,
-  Ext, FileName: String; OwnerFile: TFileProperty; IsFileProp: Boolean;
-  AutoExpand: Boolean): TFileProperty;
+function NewSourceFile(FileType, Compiler: Integer; FirstName, BaseName,
+  Ext, FileName: string; OwnerFile: TFileProperty; UseFileName: Boolean;
+  References, Expand: Boolean): TFileProperty;
 var
   Node: TTreeNode;
   NewPrj, Proj: TProjectProperty;
   NewFile: TFileProperty;
-  AName: String;
+  AName: string;
 
   function NewProject: TFileProperty;
   begin
     with FrmFalconMain do
     begin
-      if IsFileProp then
+      if not UseFileName then
       begin
         if FileType = FILE_TYPE_PROJECT then
           AName := NextProjectName(STR_FRM_MAIN[23], Ext, TreeViewProjects.Items)
@@ -1105,7 +1109,7 @@ var
       NewPrj.Project := NewPrj;
       NewPrj.FileType := FileType;
       NewPrj.CompilerType := Compiler;
-      if IsFileProp then
+      if not UseFileName then
       begin
         NewPrj.FileName := Config.Environment.ProjectsDir + AName;
         if (NewPrj.FileType = FILE_TYPE_RC) then
@@ -1124,7 +1128,7 @@ var
 begin
   with FrmFalconMain do
   begin
-    if Assigned(OwnerFile) and IsFileProp then
+    if Assigned(OwnerFile) then
     begin
       if (OwnerFile is TProjectProperty) then
       begin
@@ -1141,7 +1145,7 @@ begin
       end
       else
       begin
-        if (OwnerFile.FileType <> FILE_TYPE_FOLDER ) then
+        if (OwnerFile.FileType <> FILE_TYPE_FOLDER) then
         begin
           if not Assigned(OwnerFile.Node.Parent) then
           begin
@@ -1156,11 +1160,10 @@ begin
       Node := TreeViewProjects.Items.AddChild(OwnerFile.Node, AName);
       NewFile := TFileProperty.Create(PageControlEditor, Node);
       NewFile.Project := Proj;
-      Proj.Modified := True;
       NewFile.FileName := AName;
       NewFile.FileType := FileType;
       Node.Data := NewFile;
-      if AutoExpand or (OwnerFile.FileType = FILE_TYPE_PROJECT) then
+      if Expand or (OwnerFile.FileType = FILE_TYPE_PROJECT) then
         OwnerFile.Node.Expanded := True;
       Result := NewFile;
     end
@@ -1177,16 +1180,17 @@ begin
 end;
 
 function BrowseDialog(Handle: HWND; const Title: string;
-  var Directory: String): Boolean;
+  var Directory: string): Boolean;
 var
-  lpItemID : PItemIDList;
-  BrowseInfo : TBrowseInfo;
-  DisplayName : array[0..MAX_PATH] of char;
-  TempPath : array[0..MAX_PATH] of char;
+  lpItemID: PItemIDList;
+  BrowseInfo: TBrowseInfo;
+  DisplayName: array[0..MAX_PATH] of char;
+  TempPath: array[0..MAX_PATH] of char;
 begin
   Result := False;
   FillChar(BrowseInfo, sizeof(TBrowseInfo), #0);
-  with BrowseInfo do begin
+  with BrowseInfo do
+  begin
 
     hwndOwner := Handle;
     pszDisplayName := @DisplayName;
@@ -1208,7 +1212,7 @@ begin
   end;
 end;
 
-function HumanToBool(Resp: String): Boolean;
+function HumanToBool(Resp: string): Boolean;
 begin
   if (CompareText(Resp, 'YES') = 0) or (Resp = '1') then
     Result := True
@@ -1216,7 +1220,7 @@ begin
     Result := False;
 end;
 
-function BoolToHuman(Question: Boolean): String;
+function BoolToHuman(Question: Boolean): string;
 begin
   if Question then
     Result := 'Yes'
@@ -1224,9 +1228,9 @@ begin
     Result := 'No';
 end;
 
-function GetFullFileName(Name: String): String;
+function GetFullFileName(Name: string): string;
 var
-  MinGWPath: String;
+  MinGWPath: string;
 begin
   MinGWPath := GetEnvironmentVariable('MINGW_PATH');
   Result := MinGWPath + '\bin\' + Name;
@@ -1244,7 +1248,7 @@ begin
   Result := (Memo.DisplayX = X) and (Memo.DisplayY = Y);
 end;
 
-function SearchFileProperty(FileName: String;
+function SearchFileProperty(FileName: string;
   var FileProp: TFileProperty): Boolean;
 var
   ActFile: TFileProperty;
@@ -1252,11 +1256,11 @@ var
   Node: TTreeNode;
 begin
   Result := False;
-  for I:= 0 to Pred(FrmFalconMain.TreeViewProjects.Items.Count) do
+  for I := 0 to Pred(FrmFalconMain.TreeViewProjects.Items.Count) do
   begin
     Node := FrmFalconMain.TreeViewProjects.Items.Item[I];
     ActFile := TFileProperty(Node.Data);
-    if CompareText(ActFile.GetCompleteFileName, FileName) = 0 then
+    if CompareText(ActFile.FileName, FileName) = 0 then
     begin
       Result := True;
       FileProp := ActFile;
@@ -1265,40 +1269,39 @@ begin
   end;
 end;
 
-function OpenFile(FileName: String):TProjectProperty;
+function OpenFile(FileName: string): TProjectProperty;
 var
   ProjProp: TProjectProperty;
   FileType: Integer;
 begin
   FileType := GetFileType(FileName);
-  ProjProp := TProjectProperty(NewFileProperty(FileType,
-    GetCompiler(FileType),'','','',FileName, nil, False));
+  ProjProp := TProjectProperty(NewSourceFile(FileType,
+    GetCompiler(FileType), '', '', '', FileName, nil, True, False, False));
   ProjProp.Saved := True;
-  ProjProp.DateOfFile :=  FileDateTime(ProjProp.FileName);
+  ProjProp.DateOfFile := FileDateTime(ProjProp.FileName);
 
   if (ProjProp.FileType <> FILE_TYPE_PROJECT) then
   begin
     if (FileType = FILE_TYPE_RC) then
-      ProjProp.Target := RemoveFileExt(ProjProp.Caption) + '.res'
+      ProjProp.Target := RemoveFileExt(ProjProp.Name) + '.res'
     else
     begin
       if (ProjProp.FileType <> FILE_TYPE_PROJECT) then
       begin
-        ProjProp.Target := RemoveFileExt(ProjProp.Caption) + '.exe';
+        ProjProp.Target := RemoveFileExt(ProjProp.Name) + '.exe';
         ProjProp.AppType := APPTYPE_CONSOLE;
         ProjProp.CompilerOptions := '-Wall -s -O2';
       end;
     end;
   end
   else
-    ProjProp.LoadFromFile(ProjProp.GetCompleteFileName);
-  ProjProp.Modified := False;
+    ProjProp.LoadFromFile(ProjProp.FileName);
   if ProjProp.FileType = FILE_TYPE_PROJECT then
     ProjProp.LoadLayout;
   Result := ProjProp;
 end;
 
-function RemoveOption(const S, Options: String): String;
+function RemoveOption(const S, Options: string): string;
 begin
   Result := StringReplace(Options, S, '', [rfReplaceAll]);
 end;
@@ -1306,10 +1309,10 @@ end;
 function DeleteResourceFiles(List: TStrings): Boolean;
 var
   I: Integer;
-  Ext: String;
+  Ext: string;
 begin
   Result := False;
-  for I:= Pred(List.Count) downto 0 do
+  for I := Pred(List.Count) downto 0 do
   begin
     Ext := ExtractFileExt(List.Strings[I]);
     if CompareText(Ext, '.RC') = 0 then
@@ -1320,11 +1323,11 @@ begin
   end;
 end;
 
-function NextProjectName(FirstName, Ext: String; Nodes: TTreeNodes): String;
+function NextProjectName(FirstName, Ext: string; Nodes: TTreeNodes): string;
 
-  function ExistName(FileName: String): Boolean;
+  function ExistName(FileName: string): Boolean;
   var
-    Caption: String;
+    Caption: string;
     Node: TTreeNode;
   begin
     Result := False;
@@ -1342,7 +1345,7 @@ function NextProjectName(FirstName, Ext: String; Nodes: TTreeNodes): String;
   end;
 
 var
-  FileName: String;
+  FileName: string;
   X: Integer;
 begin
   if not ExistName(FirstName + Ext) then
@@ -1360,17 +1363,17 @@ begin
   Result := FileName;
 end;
 
-function NextFileName(FirstName, Ext: String; Node: TTreeNode): String;
+function NextFileName(FirstName, Ext: string; Node: TTreeNode): string;
 
-  function ExistName(FileName: String): Boolean;
+  function ExistName(FileName: string): Boolean;
   var
     I: Integer;
-    Caption: String;
+    Caption: string;
   begin
     Result := False;
-    for I:= 0 to Pred(Node.Count) do
+    for I := 0 to Pred(Node.Count) do
     begin
-      Caption := TFileProperty(Node[I].Data).Caption;
+      Caption := TFileProperty(Node[I].Data).Name;
       if (Caption = FileName) then
       begin
         Result := True;
@@ -1380,7 +1383,7 @@ function NextFileName(FirstName, Ext: String; Node: TTreeNode): String;
   end;
 
 var
-  FileName: String;
+  FileName: string;
   X: Integer;
 begin
   if not ExistName(FirstName + Ext) then
@@ -1422,7 +1425,7 @@ begin
   Line := y + 1;
 end;
 
-function DOSFileName(FileName: String): String;
+function DOSFileName(FileName: string): string;
 begin
   if Pos(' ', FileName) > 0 then
     Result := ExtractShortPathName(FileName)
@@ -1430,27 +1433,27 @@ begin
     Result := FileName;
 end;
 
-function RemoveFileExt(const FileName: String):String;
+function RemoveFileExt(const FileName: string): string;
 begin
   Result := ChangeFileExt(FileName, '');
 end;
 
-function ExtractName(const FileName: String):String;
+function ExtractName(const FileName: string): string;
 begin
   Result := ExtractFileName(RemoveFileExt(FileName));
 end;
 
-procedure TransformToRelativePath(BaseName: String; Files: TStrings);
+procedure TransformToRelativePath(BaseName: string; Files: TStrings);
 var
   I: Integer;
 begin
-  for I:= 0 to Pred(Files.Count) do
+  for I := 0 to Pred(Files.Count) do
   begin
     Files.Strings[I] := ExtractRelativePath(BaseName, Files.Strings[I]);
   end;
 end;
 
-function GetFilesByExt(Extension: String; List: TStrings): String;
+function GetFilesByExt(Extension: string; List: TStrings): string;
 var
   OutList: TStrings;
 begin
@@ -1460,15 +1463,16 @@ begin
   OutList.Free;
 end;
 
-function ConvertAnsiToOem(const S: String): String;
+function ConvertAnsiToOem(const S: string): string;
 begin
   Result := '';
-  if Length(s) = 0 then Exit;
+  if Length(s) = 0 then
+    Exit;
   SetLength(Result, Length(S));
   AnsiToOem(PChar(S), PChar(Result));
 end;
 
-function LinuxSpace(const S: String): String;
+function LinuxSpace(const S: string): string;
 begin
   Result := StringReplace(S, ' ', '\ ', [rfReplaceAll]);
 end;
@@ -1480,16 +1484,16 @@ begin
     Result := '"' + Result + '"';
 end;
 
-procedure SelectFilesByExt(Extensions: array of String; List, OutList: TStrings);
+procedure SelectFilesByExt(Extensions: array of string; List, OutList: TStrings);
 var
   I, X: Integer;
 begin
-  for I:= 0 to Pred(List.Count) do
+  for I := 0 to Pred(List.Count) do
   begin
-    for X:= 0 to Pred(Length(Extensions)) do
+    for X := 0 to Pred(Length(Extensions)) do
     begin
       if (UpperCase(ExtractFileExt(List.Strings[I])) =
-          UpperCase(Extensions[X])) then
+        UpperCase(Extensions[X])) then
       begin
         OutList.Add(List.Strings[I]);
       end;

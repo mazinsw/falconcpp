@@ -3,26 +3,26 @@ unit UTemplates;
 interface
 
 uses
-  Windows, SysUtils, IniFiles, Graphics,  Classes, TBX, ComCtrls,
+  Windows, SysUtils, IniFiles, Graphics, Classes, TBX, ComCtrls,
   Controls, Dialogs, CompressUtils, SciZipFile, PNGImage,
   FormEffect;
 
 const
-  pngSign: array[0..3] of Byte =($89, $50, $4e, $47);
-  bmpSign: array[0..1] of Byte =($42, $4d);
-  zipSign: array[0..1] of Byte =($50, $4b);
-  bzpSign: array[0..1] of Byte =($42, $5a);
+  pngSign: array[0..3] of Byte = ($89, $50, $4E, $47);
+  bmpSign: array[0..1] of Byte = ($42, $4D);
+  zipSign: array[0..1] of Byte = ($50, $4B);
+  bzpSign: array[0..1] of Byte = ($42, $5A);
 
 type
   TTemplate = class;
-  
+
   TTemplateID = class
   private
-    FSheet: String;
-    FCaption: String;
+    FSheet: string;
+    FCaption: string;
   public
-    property Sheet: String read FSheet write FSheet;
-    property Caption: String read FCaption write FCaption;
+    property Sheet: string read FSheet write FSheet;
+    property Caption: string read FCaption write FCaption;
   end;
 
   TTemplateFiles = class
@@ -31,14 +31,14 @@ type
     FDefFile: Integer;
     FTemplate: TTemplate;
     function GetFile(Index: Integer): TStrings;
-    function GetFileName(Index: Integer): String;
+    function GetFileName(Index: Integer): string;
   public
     constructor Create;
     destructor Destroy; override;
-    function Insert(Name: String): Integer;
+    function Insert(Name: string): Integer;
     function Count: Integer;
     property SourceFile[Index: Integer]: TStrings read GetFile;
-    property FileName[Index: Integer]: String read GetFileName;
+    property FileName[Index: Integer]: string read GetFileName;
   published
     property DefaultFile: Integer read FDefFile;
   end;
@@ -47,69 +47,69 @@ type
   private
     FList: TStrings;
     FTemplate: TTemplate;
-    function GetResourceName(Index: Integer): String;
+    function GetResourceName(Index: Integer): string;
   public
     constructor Create;
     destructor Destroy; override;
     function Count: Integer;
-    procedure Insert(const FileName: String);
+    procedure Insert(const FileName: string);
     function CreateTemplateID: TTemplateID;
-    function SaveToFile(const FileName: String;
+    function SaveToFile(const FileName: string;
       Index: Integer): Boolean;
     function GetResource(Index: Integer; Stream: TStream): Boolean;
-    property ResourceName[Index: Integer]: String read GetResourceName;
+    property ResourceName[Index: Integer]: string read GetResourceName;
   end;
 
   TDataMenuItem = class(TTBXItem)
   private
-    FHelpFile: String;
+    FHelpFile: string;
   public
-    property HelpFile: String read FHelpFile write FHelpFile;
+    property HelpFile: string read FHelpFile write FHelpFile;
   end;
 
   TDataSubMenuItem = class(TTBXSubmenuItem)
   private
-    FHelpFile: String;
+    FHelpFile: string;
   public
-    property HelpFile: String read FHelpFile write FHelpFile;
+    property HelpFile: string read FHelpFile write FHelpFile;
   end;
 
   TTemplate = class
   private
-    FFileName: String;
-    FSheet: String;
-    FCaption: String;
-    FDescription: String;
+    FFileName: string;
+    FSheet: string;
+    FCaption: string;
+    FDescription: string;
     FIcon: TIcon;
     FBitmap: TBitmap;
-    FFlags: String;
-    FLibs: String;
+    FFlags: string;
+    FLibs: string;
     FAppType: Integer;
     FCompilerType: Integer;
     FSrcFiles: TTemplateFiles;
     FCppSrcFiles: TTemplateFiles;
     FResources: TTemplateResources;
     FHelpMenu: TDataSubMenuItem;
-    function FindMenu(const S: String; FalconHelp: TTBXSubmenuItem;
+    function FindMenu(const S: string; FalconHelp: TTBXSubmenuItem;
       var aHelpMenu: TDataSubMenuItem): Boolean;
   public
-    function Load(Template: String; FalconHelp: TTBXSubmenuItem): Boolean;
-    function GetFile(aFileName: String; Stream: TStream): Boolean;
+    function Load(Template: string; FalconHelp: TTBXSubmenuItem): Boolean;
+    function GetFile(aFileName: string; Stream: TStream): Boolean;
     constructor Create;
     destructor Destroy; override;
   published
     property SourceFiles: TTemplateFiles read FSrcFiles;
     property CppSourceFiles: TTemplateFiles read FCppSrcFiles;
     property Resources: TTemplateResources read FResources;
-    property Sheet: String read FSheet write FSheet;
-    property Caption: String read FCaption write FCaption;
-    property Description: String read FDescription write FDescription;
+    property Sheet: string read FSheet write FSheet;
+    property Caption: string read FCaption write FCaption;
+    property Description: string read FDescription write FDescription;
     property Icon: TIcon read FIcon;
     property ListImage: TBitmap read FBitmap;
     property AppType: Integer read FAppType write FAppType;
     property CompilerType: Integer read FCompilerType write FCompilerType;
-    property Flags: String read FFlags write FFlags;
-    property Libs: String read FLibs write FLibs;
+    property Flags: string read FFlags write FFlags;
+    property Libs: string read FLibs write FLibs;
     property HelpMenu: TDataSubMenuItem read FHelpMenu write FHelpMenu;
   end;
 
@@ -122,7 +122,7 @@ type
     constructor Create;
     destructor Destroy; override;
     function Count: Integer;
-    function Find(const Sheet, Caption: String): TTemplate; overload;
+    function Find(const Sheet, Caption: string): TTemplate; overload;
     function Find(TemplateID: TTemplateID): TTemplate; overload;
     function Insert(Template: TTemplate): Integer;
     function Delete(Index: Integer): Boolean;
@@ -136,7 +136,8 @@ uses
   UUtils, UFileProperty;
 
 {TTemplateResources}
-function TTemplateResources.GetResourceName(Index: Integer): String;
+
+function TTemplateResources.GetResourceName(Index: Integer): string;
 begin
   Result := FList.Strings[Index];
 end;
@@ -153,7 +154,7 @@ begin
   inherited Destroy;
 end;
 
-procedure TTemplateResources.Insert(const FileName: String);
+procedure TTemplateResources.Insert(const FileName: string);
 begin
   //if FList.IndexOf(FileName) < 0 then
   FList.Add(FileName);
@@ -174,7 +175,7 @@ end;
 function TTemplateResources.GetResource(Index: Integer;
   Stream: TStream): Boolean;
 var
-  FileName: String;
+  FileName: string;
 begin
   Result := False;
   if (Index < 0) or (Index >= Count) then
@@ -183,10 +184,10 @@ begin
   Result := FTemplate.GetFile(FileName, Stream);
 end;
 
-function TTemplateResources.SaveToFile(const FileName: String;
+function TTemplateResources.SaveToFile(const FileName: string;
   Index: Integer): Boolean;
 var
-  S, Path: String;
+  S, Path: string;
   fs: TFileStream;
 begin
   Result := False;
@@ -198,7 +199,7 @@ begin
     Result := DirectoryExists(Path);
     if not Result then
       Result := ForceDirectories(Path);
-    if not Result then//can't create directory
+    if not Result then //can't create directory
       Exit;
     if FileExists(FileName) then
       fs := TFileStream.Create(FileName, fmOpenReadWrite)
@@ -212,6 +213,7 @@ begin
 end;
 
 {TTemplateFiles}
+
 constructor TTemplateFiles.Create;
 begin
   inherited Create;
@@ -226,7 +228,7 @@ end;
 
 function TTemplateFiles.GetFile(Index: Integer): TStrings;
 var
-  aFileName: String;
+  aFileName: string;
   Ms: TMemoryStream;
 begin
   aFileName := FList.Strings[Index];
@@ -240,7 +242,7 @@ begin
   Ms.Free;
 end;
 
-function TTemplateFiles.GetFileName(Index: Integer): String;
+function TTemplateFiles.GetFileName(Index: Integer): string;
 begin
   Result := FList.Strings[Index];
 end;
@@ -250,7 +252,7 @@ begin
   Result := FList.Count;
 end;
 
-function TTemplateFiles.Insert(Name: String): Integer;
+function TTemplateFiles.Insert(Name: string): Integer;
 begin
   //if FList.IndexOf(Name) < 0 then
   Result := FList.Add(Name);
@@ -275,7 +277,7 @@ begin
   inherited Destroy;
 end;
 
-function TTemplate.GetFile(aFileName: String; Stream: TStream): Boolean;
+function TTemplate.GetFile(aFileName: string; Stream: TStream): Boolean;
 var
   FileType: Integer;
   Fs: TFileStream;
@@ -302,30 +304,30 @@ begin
   end;
   case FileType of
     FILE_TYPE_BZIP2:
-    begin
-      Ts := TMemoryStream.Create;
-      try
-        if ExtractBzip2File(Fs, Ts) then
-          Result := FindTarFile(aFileName, Ts, Stream);
-      finally
-        Ts.Free;
+      begin
+        Ts := TMemoryStream.Create;
+        try
+          if ExtractBzip2File(Fs, Ts) then
+            Result := FindTarFile(aFileName, Ts, Stream);
+        finally
+          Ts.Free;
+        end;
       end;
-    end;
     FILE_TYPE_ZIP:
-    begin
-      Zp := TZipFile.Create;
-      try
-        Zp.LoadFromStream(Fs);
-        Result := FindZipFile(aFileName, Zp, Stream);
-      finally
-        Zp.Free;
+      begin
+        Zp := TZipFile.Create;
+        try
+          Zp.LoadFromStream(Fs);
+          Result := FindZipFile(aFileName, Zp, Stream);
+        finally
+          Zp.Free;
+        end;
       end;
-    end;
   end;
   Fs.Free;
 end;
 
-function TTemplate.FindMenu(const S: String; FalconHelp: TTBXSubmenuItem;
+function TTemplate.FindMenu(const S: string; FalconHelp: TTBXSubmenuItem;
   var aHelpMenu: TDataSubMenuItem): Boolean;
 var
   I: Integer;
@@ -359,12 +361,12 @@ begin
   Result := False;
 end;
 
-function TTemplate.Load(Template: String; FalconHelp: TTBXSubmenuItem): Boolean;
+function TTemplate.Load(Template: string; FalconHelp: TTBXSubmenuItem): Boolean;
 var
   I, FileType: Integer;
   ini: TMemIniFile;
-  SubMCap, ExtStr, ImageName, IconName, Temp, SrcName: String;
-  compiler: String;
+  SubMCap, ExtStr, ImageName, IconName, Temp, SrcName: string;
+  compiler: string;
   List: TStrings;
   SubMenu: TDataMenuItem;
   ActualMenu: TTBXSubmenuItem;
@@ -414,7 +416,7 @@ var
       FBitmap := TBitmap.Create;
       try
         FBitmap.LoadFromStream(Ms);
-        if not(FBitmap.PixelFormat = pf32bit) then
+        if not (FBitmap.PixelFormat = pf32bit) then
           BitmapToAlpha(FBitmap, clFuchsia);
       except
         FBitmap.Free;
@@ -465,9 +467,9 @@ var
     if ini.SectionExists('Files') then
     begin
       ini.ReadSection('Files', List);
-      for X:= 0 to Pred(List.Count) do
+      for X := 0 to Pred(List.Count) do
       begin
-        if CompareText(List.Strings[X], 'Default') = 0then
+        if CompareText(List.Strings[X], 'Default') = 0 then
         begin
           Temp := ini.ReadString('Files', List.Strings[X], '');
           Temp := ini.ReadString('Files', Temp, '');
@@ -475,7 +477,8 @@ var
         else
         begin
           SrcName := ini.ReadString('Files', List.Strings[X], '');
-          if MsFileExist then SourceFiles.Insert(SrcName);
+          if MsFileExist then
+            SourceFiles.Insert(SrcName);
         end;
       end;
       SourceFiles.FDefFile := SourceFiles.FList.IndexOf(Temp);
@@ -485,7 +488,7 @@ var
     if ini.SectionExists('FilesCpp') then
     begin
       ini.ReadSection('FilesCpp', List);
-      for X:= 0 to Pred(List.Count) do
+      for X := 0 to Pred(List.Count) do
       begin
         if CompareText(List.Strings[X], 'Default') = 0 then
         begin
@@ -495,7 +498,8 @@ var
         else
         begin
           SrcName := ini.ReadString('FilesCpp', List.Strings[X], '');
-          if MsFileExist then CppSourceFiles.Insert(SrcName);
+          if MsFileExist then
+            CppSourceFiles.Insert(SrcName);
         end;
       end;
       CppSourceFiles.FDefFile := CppSourceFiles.FList.IndexOf(Temp);
@@ -509,7 +513,7 @@ var
     if ini.SectionExists('Resources') then
     begin
       ini.ReadSectionValues('Resources', List);
-      for X:= 0 to Pred(List.Count) do
+      for X := 0 to Pred(List.Count) do
       begin
         SrcName := List.Strings[X];
         if MsFileExist then
@@ -527,11 +531,11 @@ begin
   end;
   Ft[2] := #0;
   Fs.Read(Ft, 2);
-  if String(Ft) = 'BZ' then
+  if string(Ft) = 'BZ' then
   begin
     Tp := FILE_TYPE_BZIP2;
   end
-  else if String(Ft) = 'PK' then
+  else if string(Ft) = 'PK' then
   begin
     Tp := FILE_TYPE_ZIP;
   end
@@ -548,18 +552,46 @@ begin
 
   case Tp of
     FILE_TYPE_BZIP2:
-    begin
-      Ts := TMemoryStream.Create;
-      if ExtractBzip2File(Fs, Ts) then
       begin
-        if FindTarFile('*.ini', Ts, Ms) then
+        Ts := TMemoryStream.Create;
+        if ExtractBzip2File(Fs, Ts) then
+        begin
+          if FindTarFile('*.ini', Ts, Ms) then
+          begin
+            SetIniFile;
+            ImageName := ini.ReadString('Falcon', 'ListImage', '');
+            if FindTarFile(ImageName, Ts, Ms) then
+              SetListImage;
+            IconName := ini.ReadString('Falcon', 'AppIcon', '');
+            if FindTarFile(IconName, Ts, Ms) then
+              SetIconImage;
+            AddSourcesFiles;
+            AddResourcesFiles;
+          end
+          else
+          begin
+            Ms.Free;
+            Fs.Free;
+            Ts.Free;
+            ini.Free;
+            List.Free;
+            Exit;
+          end;
+        end;
+        Ts.Free;
+      end;
+    FILE_TYPE_ZIP:
+      begin
+        Zp := TZipFile.Create;
+        Zp.LoadFromStream(Fs);
+        if FindZipFile('*.ini', Zp, Ms) then
         begin
           SetIniFile;
           ImageName := ini.ReadString('Falcon', 'ListImage', '');
-          if FindTarFile(ImageName, Ts, Ms) then
+          if FindZipFile(ImageName, Zp, Ms) then
             SetListImage;
           IconName := ini.ReadString('Falcon', 'AppIcon', '');
-          if FindTarFile(IconName, Ts, Ms) then
+          if FindZipFile(IconName, Zp, Ms) then
             SetIconImage;
           AddSourcesFiles;
           AddResourcesFiles;
@@ -568,41 +600,13 @@ begin
         begin
           Ms.Free;
           Fs.Free;
-          Ts.Free;
+          Zp.Free;
           ini.Free;
           List.Free;
           Exit;
         end;
-      end;
-      Ts.Free;
-    end;
-    FILE_TYPE_ZIP:
-    begin
-      Zp := TZipFile.Create;
-      Zp.LoadFromStream(Fs);
-      if FindZipFile('*.ini', Zp, Ms) then
-      begin
-        SetIniFile;
-        ImageName := ini.ReadString('Falcon', 'ListImage', '');
-        if FindZipFile(ImageName, Zp, Ms) then
-          SetListImage;
-        IconName := ini.ReadString('Falcon', 'AppIcon', '');
-        if FindZipFile(IconName, Zp, Ms) then
-          SetIconImage;
-        AddSourcesFiles;
-        AddResourcesFiles;
-      end
-      else
-      begin
-        Ms.Free;
-        Fs.Free;
         Zp.Free;
-        ini.Free;
-        List.Free;
-        Exit;
       end;
-      Zp.Free;
-    end;
   end;
   Ms.Free;
   Fs.Free;
@@ -613,14 +617,14 @@ begin
   if (CompareText(compiler, 'C') = 0) or (CompareText(compiler, 'CC') = 0) then
     FCompilerType := COMPILER_C
   else if (CompareText(compiler, 'CPP') = 0) or
-          (CompareText(compiler, 'C++') = 0) or
-          (CompareText(compiler, 'CXX') = 0) then
+    (CompareText(compiler, 'C++') = 0) or
+    (CompareText(compiler, 'CXX') = 0) then
     FCompilerType := COMPILER_CPP
   else if (CompareText(compiler, 'RC') = 0) then
     FCompilerType := COMPILER_RC
   else if (CompareText(compiler, 'USER_DEFINED') = 0) or
-          (CompareText(compiler, 'USER') = 0) or
-          (CompareText(compiler, 'DEFINED') = 0)then
+    (CompareText(compiler, 'USER') = 0) or
+    (CompareText(compiler, 'DEFINED') = 0) then
     FCompilerType := USER_DEFINED
   else
     FCompilerType := NO_COMPILER;
@@ -638,7 +642,7 @@ begin
     IsSubMn := False;
     if (List.Count > 0) then
     begin
-      for I:= 0 to Pred(List.Count) do
+      for I := 0 to Pred(List.Count) do
       begin
         if IsSubMenu(ini.ReadString('Help', List.Strings[I], '')) then
         begin
@@ -770,7 +774,7 @@ begin
   Result := Find(TemplateID.Sheet, TemplateID.Caption);
 end;
 
-function TTemplates.Find(const Sheet, Caption: String): TTemplate;
+function TTemplates.Find(const Sheet, Caption: string): TTemplate;
 var
   I: Integer;
 begin
@@ -778,7 +782,7 @@ begin
   for I := 0 to Count - 1 do
   begin
     if (CompareText(Sheet, Templates[I].Sheet) = 0) and
-       (CompareText(Caption, Templates[I].Caption) = 0) then
+      (CompareText(Caption, Templates[I].Caption) = 0) then
     begin
       Result := Templates[I];
       Exit;

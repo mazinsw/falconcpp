@@ -99,7 +99,7 @@ type
     procedure RemoveIcon1Click(Sender: TObject);
     procedure ProjectChange(Sender: TObject);
     procedure ListValuesSetEditText(Sender: TObject; ACol, ARow: Integer;
-      const Value: String);
+      const Value: string);
     procedure VersionChange(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
@@ -165,14 +165,14 @@ end;
 
 procedure TFrmProperty.Save;
 var
-  Temp, OldFlags: String;
+  Temp, OldFlags: string;
   I: Integer;
 begin
   if (Project.FileType = FILE_TYPE_PROJECT) then
-    Project.FileName := ExtractFilePath(Project.GetCompleteFileName) +
+    Project.FileName := ExtractFilePath(Project.FileName) +
       ExtractName(EditProjName.Text) + '.fpj'
   else
-    Project.FileName := ExtractFilePath(Project.GetCompleteFileName) +
+    Project.FileName := ExtractFilePath(Project.FileName) +
       ExtractName(EditProjName.Text) +
       ExtractFileExt(Project.FileName);
   Project.Target := EditTarget.Text;
@@ -182,27 +182,30 @@ begin
   Project.CmdLine := EditParams.Text;
   Project.CompilerType := RGrpType.ItemIndex;
   Temp := '';
-  if CHBShowWar.Checked then Temp := '-Wall';
-  if CHBMinSize.Checked then Temp := Temp + ' -s';
-  if CHBOptSpd.Checked then Temp := Temp + ' -O2';
+  if CHBShowWar.Checked then
+    Temp := '-Wall';
+  if CHBMinSize.Checked then
+    Temp := Temp + ' -s';
+  if CHBOptSpd.Checked then
+    Temp := Temp + ' -O2';
   Project.CompilerOptions := Trim(Temp);
   Temp := '';
-  for I:= 0 to Pred(ChLbLibs.Count) do
+  for I := 0 to Pred(ChLbLibs.Count) do
     if ChLbLibs.Checked[I] then
     begin
       if Pos(' ', ChLbLibs.Items.Strings[I]) > 0 then
         Temp := Temp + ' ' + ChLbLibs.Items.QuoteChar + ChLbLibs.Items.Strings[I]
-                + ChLbLibs.Items.QuoteChar
+          + ChLbLibs.Items.QuoteChar
       else
         Temp := Temp + ' ' + ChLbLibs.Items.Strings[I];
     end;
   Project.Libs := Trim(Temp);
   Temp := '';
-  for I:= 0 to Pred(ListIncs.Count) do
+  for I := 0 to Pred(ListIncs.Count) do
   begin
     if Pos(' ', ListIncs.Items.Strings[I]) > 0 then
       Temp := Temp + ' ' + ListIncs.Items.QuoteChar + ListIncs.Items.Strings[I]
-              + ListIncs.Items.QuoteChar
+        + ListIncs.Items.QuoteChar
     else
       Temp := Temp + ' ' + ListIncs.Items.Strings[I];
   end;
@@ -247,7 +250,7 @@ begin
   if (self.Project <> Project) then
   begin
     Self.Project := Project;
-    EditProjName.Text := Project.Caption;
+    EditProjName.Text := Project.Name;
     EditTarget.Text := Project.Target;
     ImgIcon.Picture.Icon := Project.Icon;
     IconChanged := False;
@@ -269,11 +272,11 @@ begin
     List.Delimiter := ' ';
     List.DelimitedText := Trim(Project.Libs);
 
-    for I:= 0 to Pred(List.Count) do
+    for I := 0 to Pred(List.Count) do
       ChLbLibs.Checked[ChLbLibs.Items.Add(List.Strings[I])] := True;
 
     List.DelimitedText := Trim(Project.Flags);
-    for I:= 0 to Pred(List.Count) do
+    for I := 0 to Pred(List.Count) do
       ListIncs.Items.Add(List.Strings[I]);
     List.Free;
     ChbIncVer.Checked := Project.IncludeVersionInfo;
@@ -299,7 +302,8 @@ end;
 procedure TFrmProperty.ListValuesEditColumn(Sender: TObject; ACol,
   ARow: Integer; var CanEdit: Boolean; var EditType: TEditType);
 begin
-  if (ACol = 0) then CanEdit := False;
+  if (ACol = 0) then
+    CanEdit := False;
 end;
 
 procedure TFrmProperty.FormCreate(Sender: TObject);
@@ -309,7 +313,7 @@ procedure TFrmProperty.FormCreate(Sender: TObject);
   begin
     Result := -1;
     Index := -1;
-    for I:= 0 to Pred(CbbLang.ItemsEx.Count) do
+    for I := 0 to Pred(CbbLang.ItemsEx.Count) do
       if (TLanguageItem(CbbLang.ItemsEx.Items[I].Data).ID = LCID) then
       begin
         Result := CbbLang.ItemsEx.Items[I].Index;
@@ -323,12 +327,12 @@ var
   Item: TComboExItem;
   I, ActIdx: Integer;
   List: TStrings;
-  LibPath: String;
+  LibPath: string;
 begin
   IsLoading := True;
   LblLoc.Caption := GetLanguageName(0);
   List := GetLanguagesList;
-  for I:= 0 to Pred(List.Count) do
+  for I := 0 to Pred(List.Count) do
   begin
     LangItem := TLanguageItem(List.Objects[I]);
     Item := CbbLang.ItemsEx.Add;
@@ -344,15 +348,15 @@ begin
   begin
     List.Clear;
     FindFiles(LibPath + '*.a', List);
-    for I:= 0 to Pred(List.Count) do
+    for I := 0 to Pred(List.Count) do
     begin
       CBLibs.Items.Add(
         StringReplace(
-          ChangeFileExt(List.Strings[I], ''), 'lib', '-l', []));
+        ChangeFileExt(List.Strings[I], ''), 'lib', '-l', []));
     end;
     List.Clear;
     FindFiles(LibPath + '*.lib', List);
-    for I:= 0 to Pred(List.Count) do
+    for I := 0 to Pred(List.Count) do
       CBLibs.Items.Add('-l' + ChangeFileExt(List.Strings[I], ''));
   end;
   List.Free;
@@ -387,7 +391,7 @@ begin
   ImgIcon.Hint := STR_FRM_PROP[9];
   BtnLoadIcon.Caption := STR_FRM_PROP[10];
 
-  RGAppTp.Caption:= STR_FRM_PROP[47];
+  RGAppTp.Caption := STR_FRM_PROP[47];
   RGAppTp.Items.Strings[0] := STR_FRM_PROP[48];
   RGAppTp.Items.Strings[1] := STR_FRM_PROP[49];
   RGAppTp.Items.Strings[2] := STR_FRM_PROP[50];
@@ -454,7 +458,8 @@ end;
 
 procedure TFrmProperty.BtnOkClick(Sender: TObject);
 begin
-  if BtnApply.Enabled then Save;
+  if BtnApply.Enabled then
+    Save;
   Close;
 end;
 
@@ -463,14 +468,14 @@ var
   I, X: Integer;
 begin
   ProjectChange(Sender);
-  for I:= 0 to Pred(GrbIncVer.ControlCount) do
+  for I := 0 to Pred(GrbIncVer.ControlCount) do
   begin
-    if not(GrbIncVer.Controls[I] = ChbIncVer) then
+    if not (GrbIncVer.Controls[I] = ChbIncVer) then
     begin
       if (GrbIncVer.Controls[I] is TGroupBox) then
-        for X:= 0 to Pred(TGroupBox(GrbIncVer.Controls[I]).ControlCount) do
+        for X := 0 to Pred(TGroupBox(GrbIncVer.Controls[I]).ControlCount) do
           TGroupBox(GrbIncVer.Controls[I]).Controls[X].Enabled := ChbIncVer.Checked;
-        GrbIncVer.Controls[I].Enabled := ChbIncVer.Checked;
+      GrbIncVer.Controls[I].Enabled := ChbIncVer.Checked;
     end;
   end;
 end;
@@ -510,7 +515,7 @@ begin
 end;
 
 procedure TFrmProperty.ListValuesSetEditText(Sender: TObject; ACol,
-  ARow: Integer; const Value: String);
+  ARow: Integer; const Value: string);
 begin
   ProjectChange(Sender);
 end;
@@ -525,7 +530,8 @@ end;
 procedure TFrmProperty.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-  if Key = VK_ESCAPE then Close;
+  if Key = VK_ESCAPE then
+    Close;
 end;
 
 procedure TFrmProperty.ChLbLibsClick(Sender: TObject);
@@ -599,7 +605,7 @@ begin
   SBtnRem.Enabled := (ChLbLibs.ItemIndex > -1);
   SBtnUp.Enabled := (ChLbLibs.ItemIndex > 0);
   SBtnDown.Enabled := (ChLbLibs.ItemIndex < Pred(ChLbLibs.Count))
-                      and (ChLbLibs.ItemIndex > -1);
+    and (ChLbLibs.ItemIndex > -1);
   SBtnEdit.Enabled := (ChLbLibs.ItemIndex > -1);
 end;
 
@@ -646,23 +652,23 @@ begin
   SBtnDelInc.Enabled := (ListIncs.ItemIndex > -1);
   SBtnUpInc.Enabled := (ListIncs.ItemIndex > 0);
   SBtnDownInc.Enabled := (ListIncs.ItemIndex < Pred(ListIncs.Count))
-                          and (ListIncs.ItemIndex > -1);
+    and (ListIncs.ItemIndex > -1);
   SBtnEditInc.Enabled := (ListIncs.ItemIndex > -1);
 end;
 
 procedure TFrmProperty.SBtnAddIncClick(Sender: TObject);
 var
-  Direct, ProjDir: String;
+  Direct, ProjDir: string;
   I: Integer;
 begin
   if (Length(Trim(CBIncs.Text)) = 0) then
   begin
-    ProjDir := ExtractFilePath(Project.GetCompleteFileName);
+    ProjDir := ExtractFilePath(Project.FileName);
     Direct := ProjDir;
-    if BrowseDialog(Handle, STR_FRM_PROP[69], Direct)then
+    if BrowseDialog(Handle, STR_FRM_PROP[69], Direct) then
     begin
       Direct := ExtractRelativePath(ProjDir, Direct);
-      if(Pos('\', Direct) > 0) then
+      if (Pos('\', Direct) > 0) then
         CBIncs.Text := '-I"' + Direct + '"'
       else
         CBIncs.Text := '-I' + Direct;
@@ -758,88 +764,88 @@ begin
   begin
     case RGAppTp.ItemIndex of
       0:
-      begin
-        for I := Pred(ChLbLibs.Items.Count) downto 0 do
         begin
-          if ChLbLibs.Items.Strings[I] = '-mwindows' then
-            ChLbLibs.Items.Delete(I)
-          else if ChLbLibs.Items.Strings[I] = '-shared' then
-            ChLbLibs.Items.Delete(I)
-          else if Pos('-Wl,--add-stdcall-alias', ChLbLibs.Items.Strings[I]) > 0 then
-            ChLbLibs.Items.Delete(I);
-        end;
-      end;
-      1:
-      begin
-        for I := Pred(ChLbLibs.Items.Count) downto 0 do
-        begin
-          if ChLbLibs.Items.Strings[I] = '-mwindows' then
+          for I := Pred(ChLbLibs.Items.Count) downto 0 do
           begin
-            Idx := I;
-            ChLbLibs.Checked[I] := True;
-            if I <> 0 then
-              ChLbLibs.Items.Move(I, 0);
-          end
-          else if ChLbLibs.Items.Strings[I] = '-shared' then
-            ChLbLibs.Items.Delete(I)
-          else if Pos('-Wl,--add-stdcall-alias', ChLbLibs.Items.Strings[I]) > 0 then
-            ChLbLibs.Items.Delete(I);
-        end;
-        if Idx < 0 then
-        begin
-          ChLbLibs.Items.Insert(0, '-mwindows');
-          ChLbLibs.Checked[0] := True;
-        end;
-      end;
-      2:
-      begin
-        for I := Pred(ChLbLibs.Items.Count) downto 0 do
-        begin
-          if ChLbLibs.Items.Strings[I] = '-mwindows' then
-            ChLbLibs.Items.Delete(I)
-          else if ChLbLibs.Items.Strings[I] = '-shared' then
-          begin
-            Idx := I;
-            ChLbLibs.Checked[I] := True;
-            if I <> 0 then
-              ChLbLibs.Items.Move(I, 0);
-          end
-          else if Pos('-Wl,--add-stdcall-alias', ChLbLibs.Items.Strings[I]) > 0 then
-          begin
-            Idx2 := I;
-            ChLbLibs.Checked[I] := True;
-            if I <> 1 then
-              if ChLbLibs.Items.Count >=  2 then
-                ChLbLibs.Items.Move(I, 1);
+            if ChLbLibs.Items.Strings[I] = '-mwindows' then
+              ChLbLibs.Items.Delete(I)
+            else if ChLbLibs.Items.Strings[I] = '-shared' then
+              ChLbLibs.Items.Delete(I)
+            else if Pos('-Wl,--add-stdcall-alias', ChLbLibs.Items.Strings[I]) > 0 then
+              ChLbLibs.Items.Delete(I);
           end;
         end;
-        if Idx < 0 then
+      1:
         begin
-          ChLbLibs.Items.Insert(0, '-shared');
-          ChLbLibs.Checked[0] := True;
+          for I := Pred(ChLbLibs.Items.Count) downto 0 do
+          begin
+            if ChLbLibs.Items.Strings[I] = '-mwindows' then
+            begin
+              Idx := I;
+              ChLbLibs.Checked[I] := True;
+              if I <> 0 then
+                ChLbLibs.Items.Move(I, 0);
+            end
+            else if ChLbLibs.Items.Strings[I] = '-shared' then
+              ChLbLibs.Items.Delete(I)
+            else if Pos('-Wl,--add-stdcall-alias', ChLbLibs.Items.Strings[I]) > 0 then
+              ChLbLibs.Items.Delete(I);
+          end;
+          if Idx < 0 then
+          begin
+            ChLbLibs.Items.Insert(0, '-mwindows');
+            ChLbLibs.Checked[0] := True;
+          end;
         end;
-        if Idx2 < 0 then
+      2:
         begin
-          if ChbCreateLL.Checked then
-            ChLbLibs.Items.Insert(1, '-Wl,--add-stdcall-alias,--out-implib,lib'
-              + ChangeFileExt(Project.Target, '.dll.a'))
-          else
-            ChLbLibs.Items.Insert(1, '-Wl,--add-stdcall-alias');
-          ChLbLibs.Checked[1] := True;
+          for I := Pred(ChLbLibs.Items.Count) downto 0 do
+          begin
+            if ChLbLibs.Items.Strings[I] = '-mwindows' then
+              ChLbLibs.Items.Delete(I)
+            else if ChLbLibs.Items.Strings[I] = '-shared' then
+            begin
+              Idx := I;
+              ChLbLibs.Checked[I] := True;
+              if I <> 0 then
+                ChLbLibs.Items.Move(I, 0);
+            end
+            else if Pos('-Wl,--add-stdcall-alias', ChLbLibs.Items.Strings[I]) > 0 then
+            begin
+              Idx2 := I;
+              ChLbLibs.Checked[I] := True;
+              if I <> 1 then
+                if ChLbLibs.Items.Count >= 2 then
+                  ChLbLibs.Items.Move(I, 1);
+            end;
+          end;
+          if Idx < 0 then
+          begin
+            ChLbLibs.Items.Insert(0, '-shared');
+            ChLbLibs.Checked[0] := True;
+          end;
+          if Idx2 < 0 then
+          begin
+            if ChbCreateLL.Checked then
+              ChLbLibs.Items.Insert(1, '-Wl,--add-stdcall-alias,--out-implib,lib'
+                + ChangeFileExt(Project.Target, '.dll.a'))
+            else
+              ChLbLibs.Items.Insert(1, '-Wl,--add-stdcall-alias');
+            ChLbLibs.Checked[1] := True;
+          end;
         end;
-      end;
       3:
-      begin
-        for I := Pred(ChLbLibs.Items.Count) downto 0 do
         begin
-          if ChLbLibs.Items.Strings[I] = '-mwindows' then
-            ChLbLibs.Items.Delete(I)
-          else if ChLbLibs.Items.Strings[I] = '-shared' then
-            ChLbLibs.Items.Delete(I)
-          else if ChLbLibs.Items.Strings[I] = '-Wl,--add-stdcall-alias' then
-            ChLbLibs.Items.Delete(I);
+          for I := Pred(ChLbLibs.Items.Count) downto 0 do
+          begin
+            if ChLbLibs.Items.Strings[I] = '-mwindows' then
+              ChLbLibs.Items.Delete(I)
+            else if ChLbLibs.Items.Strings[I] = '-shared' then
+              ChLbLibs.Items.Delete(I)
+            else if ChLbLibs.Items.Strings[I] = '-Wl,--add-stdcall-alias' then
+              ChLbLibs.Items.Delete(I);
+          end;
         end;
-      end;
     end;
   end;
   ProjectChange(Sender);
@@ -847,7 +853,8 @@ end;
 
 procedure TFrmProperty.CbbLangChange(Sender: TObject);
 begin
-  if CbbLang.ItemIndex < 0 then Exit;
+  if CbbLang.ItemIndex < 0 then
+    Exit;
   ProjectChange(Sender);
 end;
 
@@ -899,7 +906,7 @@ var
   I, J: Integer;
 begin
   J := -1;
-  for I:= 0 to Pred(ChLbLibs.Items.Count) do
+  for I := 0 to Pred(ChLbLibs.Items.Count) do
   begin
     if Pos('-Wl,--add-stdcall-alias', ChLbLibs.Items.Strings[I]) > 0 then
     begin

@@ -3,7 +3,7 @@ unit UFraNewOpt;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ExtCtrls, ImgList, ComCtrls, ExtDlgs,
   Menus, Mask, IconDialog;
 
@@ -92,13 +92,13 @@ procedure TFraPrjOpt.CHBIncClick(Sender: TObject);
 var
   I: Integer;
 begin
-  for I:= 0 to Pred(GrBInfo.ControlCount) do
+  for I := 0 to Pred(GrBInfo.ControlCount) do
     GrBInfo.Controls[I].Enabled := CHBInc.Checked;
 end;
 
 procedure TFraPrjOpt.EditProjNameKeyPress(Sender: TObject; var Key: Char);
 begin
-  if Key in['\', '/', ':', '*', '?', '"', '<', '>', '|'] then
+  if Key in ['\', '/', ':', '*', '?', '"', '<', '>', '|'] then
     Key := #0;
 end;
 

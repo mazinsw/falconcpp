@@ -12,14 +12,14 @@ type
     FLine: Integer;
     FValid: Boolean;
     FEnable: Boolean;
-    FFileName: String;
+    FFileName: string;
   public
     constructor Create;
     property Index: Integer read FIndex write FIndex;
     property Line: Integer read FLine write FLine;
     property Valid: Boolean read FValid write FValid;
     property Enable: Boolean read FEnable write FEnable;
-    property FileName: String read FFileName write FFileName;
+    property FileName: string read FFileName write FFileName;
   end;
 
   TBreakpointList = class
@@ -50,6 +50,7 @@ type
 implementation
 
 {TBreakpoint}
+
 constructor TBreakpoint.Create;
 begin
   inherited Create;

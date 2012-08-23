@@ -11,8 +11,8 @@ type
   public
     CmdType: TDebugCommandType;
     ID: Integer;
-    Command: String;
-    VarName: String;
+    Command: string;
+    VarName: string;
     Line: Integer;
     SelStart: Integer;
     Data: Pointer;
@@ -30,14 +30,15 @@ type
     procedure Clear;
     function Count: Integer;
     function Empty: Boolean;
-    procedure Push(CmdType: TDebugCommandType; Command: String; ID: Integer;
-      VarName: String; Line, SelStart: Integer; Data: Pointer; Point: TPoint);
+    procedure Push(CmdType: TDebugCommandType; Command: string; ID: Integer;
+      VarName: string; Line, SelStart: Integer; Data: Pointer; Point: TPoint);
     property Front: TDebugCommand read GetFront;
   end;
 
 implementation
 
 {TCommandQueue}
+
 function TCommandQueue.GetFront: TDebugCommand;
 begin
   if not Empty then
@@ -86,8 +87,8 @@ begin
   Result := FList.Count = 0;
 end;
 
-procedure TCommandQueue.Push(CmdType: TDebugCommandType; Command: String;
-  ID: Integer; VarName: String; Line, SelStart: Integer; Data: Pointer;
+procedure TCommandQueue.Push(CmdType: TDebugCommandType; Command: string;
+  ID: Integer; VarName: string; Line, SelStart: Integer; Data: Pointer;
   Point: TPoint);
 var
   dbgc: TDebugCommand;

@@ -26,8 +26,8 @@ type
       Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       Stage: TCustomDrawStage; var DefaultDraw: Boolean);
     procedure FormKeyPress(Sender: TObject; var Key: Char);
-    function IndexOf(const ctiName: String; skip: Integer = -1): Integer;
-    procedure OkButtonEvent(Sender: TObject; const Name, Description: String;
+    function IndexOf(const ctiName: string; skip: Integer = -1): Integer;
+    procedure OkButtonEvent(Sender: TObject; const Name, Description: string;
       Data: Pointer; var Abort: Boolean);
     procedure MakeCompletion(List: TStrings);
     procedure BtnAddClick(Sender: TObject);
@@ -48,9 +48,9 @@ type
   TCodeTemplateItem = class
   public
     ReadOnly: Boolean;
-    Name: String;
-    Comment: String;
-    Code: String;
+      Name: string;
+    Comment: string;
+    Code: string;
   end;
 
 var
@@ -61,7 +61,6 @@ implementation
 uses UFrmEditorOptions, UFrmMain, UFrmPromptCodeTemplate, ULanguages;
 
 {$R *.dfm}
-
 
 procedure TFrmCodeTemplates.CreateParams(var Params: TCreateParams);
 begin
@@ -97,7 +96,7 @@ var
 begin
   AutoComplete := TSynAutoComplete.Create(Self);
   SynTemplates.Highlighter := FrmEditorOptions.SynCpp;
-  
+
   Rs := TResourceStream.Create(HInstance, 'AUTOCOMPLETE', RT_RCDATA);
   Rs.Position := 0;
   AutoComplete.AutoCompleteList.LoadFromStream(Rs);
@@ -116,7 +115,6 @@ begin
   end;
   AutoComplete.AutoCompleteList.Clear;
 
-  
   if FileExists(FrmEditorOptions.EditCodeTemplate.Text) then
     AutoComplete.AutoCompleteList.LoadFromFile(FrmEditorOptions.EditCodeTemplate.Text);
   for I := 0 to AutoComplete.Completions.Count - 1 do
@@ -130,7 +128,7 @@ begin
     Item.SubItems.Add(CTI.Comment);
     Item.Data := CTI;
   end;
-  if ListViewTemplates.Items.Count > 0  then
+  if ListViewTemplates.Items.Count > 0 then
     ListViewTemplates.Items[0].Selected := True;
   UpdateLangNow;
 end;
@@ -185,14 +183,15 @@ begin
   end;
 end;
 
-function TFrmCodeTemplates.IndexOf(const ctiName: String; skip: Integer = -1): Integer;
+function TFrmCodeTemplates.IndexOf(const ctiName: string; skip: Integer = -1): Integer;
 var
   I: Integer;
   CTI: TCodeTemplateItem;
 begin
   for I := 0 to ListViewTemplates.Items.Count - 1 do
   begin
-    if skip = I then Continue;
+    if skip = I then
+      Continue;
     CTI := TCodeTemplateItem(ListViewTemplates.Items[I].Data);
     if CTI.Name = ctiName then
     begin
@@ -203,8 +202,8 @@ begin
   Result := -1;
 end;
 
-procedure TFrmCodeTemplates.OkButtonEvent(Sender: TObject; const Name, Description: String;
-    Data: Pointer; var Abort: Boolean);
+procedure TFrmCodeTemplates.OkButtonEvent(Sender: TObject; const Name, Description: string;
+  Data: Pointer; var Abort: Boolean);
 begin
   if Length(Name) = 0 then
   begin
@@ -249,7 +248,7 @@ procedure TFrmCodeTemplates.BtnAddClick(Sender: TObject);
 var
   CTI: TCodeTemplateItem;
   Item: TListItem;
-  ctiName, ctiDesc: String;
+  ctiName, ctiDesc: string;
   List: TStrings;
 begin
   if PromptDialog(Handle, STR_FRM_CODE_TEMPL[5], ctiName, ctiDesc, nil, OkButtonEvent) then
@@ -278,7 +277,7 @@ procedure TFrmCodeTemplates.BtnEditClick(Sender: TObject);
 var
   CTI: TCodeTemplateItem;
   Item: TListItem;
-  ctiName, ctiDesc: String;
+  ctiName, ctiDesc: string;
   I: integer;
   List: TStrings;
 begin
@@ -300,7 +299,7 @@ begin
       FrmFalconMain.AutoComplete.CompletionComments.Strings[I] := ctiDesc;
       FrmFalconMain.AutoComplete.CompletionValues.Strings[I] := SynTemplates.Text;
     end;
-    
+
     List := TStringList.Create;
     MakeCompletion(List);
     try
@@ -324,7 +323,7 @@ end;
 
 procedure TFrmCodeTemplates.BtnOkClick(Sender: TObject);
 begin
- Close;
+  Close;
 end;
 
 procedure TFrmCodeTemplates.BtnRemClick(Sender: TObject);
@@ -346,7 +345,7 @@ begin
     FrmFalconMain.AutoComplete.CompletionComments.Delete(I);
     FrmFalconMain.AutoComplete.CompletionValues.Delete(I);
   end;
-  
+
   List := TStringList.Create;
   MakeCompletion(List);
   try

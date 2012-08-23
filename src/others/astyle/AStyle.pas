@@ -10,35 +10,35 @@ const
 
   //AStyle properties
   //Indentation
-  aspIndentClass                = 'IndentClass';
-  aspIndentSwitch               = 'IndentSwitch';
-  aspIndentCase                 = 'IndentCase';
-  aspIndentBracket              = 'IndentBracket';
-  aspIndentBlock                = 'IndentBlock';
-  aspIndentNamespace            = 'IndentNamespace';
-  aspIndentLabels               = 'IndentLabels';
+  aspIndentClass = 'IndentClass';
+  aspIndentSwitch = 'IndentSwitch';
+  aspIndentCase = 'IndentCase';
+  aspIndentBracket = 'IndentBracket';
+  aspIndentBlock = 'IndentBlock';
+  aspIndentNamespace = 'IndentNamespace';
+  aspIndentLabels = 'IndentLabels';
   aspIndentMultLinePreprocessor = 'IndentMultLinePreprocessor';
-  aspIndentCol1Comments         = 'IndentCol1Comments';
+  aspIndentCol1Comments = 'IndentCol1Comments';
 
   //padding
-  aspBreakBlocks                = 'BreakBlocks';
-  aspBreakClosingHeaderBlocks   = 'BreakClosingHeaderBlocks';
-  aspOperatorPadding            = 'OperatorPadding';
-	aspParensOutsidePadding       = 'ParensOutsidePadding';
-	aspParensInsidePadding        = 'ParensInsidePadding';
-  aspParensHeaderPadding        = 'ParensHeaderPadding';
-  aspParensUnPadding            = 'ParensUnPadding';
-  aspDeleteEmptyLines           = 'DeleteEmptyLines';
-  aspFillEmptyLines             = 'FillEmptyLines';
+  aspBreakBlocks = 'BreakBlocks';
+  aspBreakClosingHeaderBlocks = 'BreakClosingHeaderBlocks';
+  aspOperatorPadding = 'OperatorPadding';
+  aspParensOutsidePadding = 'ParensOutsidePadding';
+  aspParensInsidePadding = 'ParensInsidePadding';
+  aspParensHeaderPadding = 'ParensHeaderPadding';
+  aspParensUnPadding = 'ParensUnPadding';
+  aspDeleteEmptyLines = 'DeleteEmptyLines';
+  aspFillEmptyLines = 'FillEmptyLines';
 
   //formatting
   aspBreakClosingHeaderBrackets = 'BreakClosingHeaderBrackets';
-  aspBreakElseIfs               = 'BreakElseIfs';
-  aspAddBrackets                = 'AddBrackets';
-	aspAddOneLineBrackets         = 'AddOneLineBrackets';
-	aspBreakOneLineBlocks         = 'BreakOneLineBlocks';
-  aspSingleStatements           = 'SingleStatements';
-	aspTabSpaceConversion         = 'TabSpaceConversion';
+  aspBreakElseIfs = 'BreakElseIfs';
+  aspAddBrackets = 'AddBrackets';
+  aspAddOneLineBrackets = 'AddOneLineBrackets';
+  aspBreakOneLineBlocks = 'BreakOneLineBlocks';
+  aspSingleStatements = 'SingleStatements';
+  aspTabSpaceConversion = 'TabSpaceConversion';
 
 type
   TAStyleCreate = function: Pointer; cdecl;
@@ -55,29 +55,29 @@ type
   TAStyleFree = procedure(astyle: Pointer); cdecl;
 
   TFormatterStyle = (fsNONE,
-                     fsALLMAN, //ANSI
-                     fsJAVA,
-                     fsKR,
-                     fsSTROUSTRUP,
-                     fsWHITESMITH,
-                     fsBANNER,
-                     fsGNU,
-                     fsLINUX,
-                     fsHORSTMANN,
-                     fs1TBS,
-                     fsPICO,
-                     fsLISP);
-                     
+    fsALLMAN, //ANSI
+    fsJAVA,
+    fsKR,
+    fsSTROUSTRUP,
+    fsWHITESMITH,
+    fsBANNER,
+    fsGNU,
+    fsLINUX,
+    fsHORSTMANN,
+    fs1TBS,
+    fsPICO,
+    fsLISP);
+
   TBracketFormat = (bfNone,
-                    bfAtatch,
-                    bfBreakMode,
-                    bfBDAC,
-                    bfStroustrup,
-                    bfRunIn);
+    bfAtatch,
+    bfBreakMode,
+    bfBDAC,
+    bfStroustrup,
+    bfRunIn);
   TPointerAlign = (paNone,
-                   paType,
-                   paMiddle,
-                   paName);
+    paType,
+    paMiddle,
+    paName);
 
   TAStyle = class
   private
@@ -92,7 +92,7 @@ type
     procedure SetStyle(Value: TFormatterStyle);
     procedure SetBracketFormat(Value: TBracketFormat);
     procedure SetPointerAlign(Value: TPointerAlign);
-    procedure SetProperty(Index: String; Value: Boolean);
+    procedure SetProperty(Index: string; Value: Boolean);
     procedure SetForceUsingTabs(Value: Boolean);
     procedure SetTabWidth(Value: Integer);
     procedure SetSpaceWidth(Value: Integer);
@@ -100,20 +100,20 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    function Format(const Source: String): String;
+    function Format(const Source: string): string;
     property Style: TFormatterStyle read FStyle write SetStyle;
     property BracketFormat: TBracketFormat read FBracketFormat
       write SetBracketFormat;
     property PointerAlign: TPointerAlign read FPointerAlign
       write SetPointerAlign;
-    property Properties[Index: String]: Boolean write SetProperty;
+    property Properties[Index: string]: Boolean write SetProperty;
     property ForceUsingTabs: Boolean write SetForceUsingTabs;
     property TabWidth: Integer write SetTabWidth;
     property SpaceWidth: Integer write SetSpaceWidth;
     property MaxInstatementIndent: Integer write SetMaxInstatementIndent;
   end;
 
-  function AStyleLoaded: Boolean;
+function AStyleLoaded: Boolean;
 
 implementation
 
@@ -129,7 +129,7 @@ var
   AStyleForceUsingTabs: TAStyleForceUsingTabs = nil;
   AStyleSetTabWidth: TAStyleSetTabWidth = nil;
   AStyleSetSpaceWidth: TAStyleSetSpaceWidth = nil;
-  AStyleSetMaxInstatementIndent: TAStyleSetMaxInstatementIndent=  nil;
+  AStyleSetMaxInstatementIndent: TAStyleSetMaxInstatementIndent = nil;
   AStyleFormatText: TAStyleFormatText = nil;
   AStyleText: TAStyleText = nil;
   AStyleFree: TAStyleFree = nil;
@@ -157,7 +157,8 @@ procedure TAStyle.SetStyle(Value: TFormatterStyle);
 begin
   if Value <> FStyle then
   begin
-    if not Assigned(astyle) or not Assigned(AStyleSetStyle) then Exit;
+    if not Assigned(astyle) or not Assigned(AStyleSetStyle) then
+      Exit;
     AStyleSetStyle(astyle, Integer(Value));
     FStyle := Value;
   end;
@@ -167,7 +168,8 @@ procedure TAStyle.SetBracketFormat(Value: TBracketFormat);
 begin
   if Value <> FBracketFormat then
   begin
-    if not Assigned(astyle) or not Assigned(AStyleSetBracketFormat) then Exit;
+    if not Assigned(astyle) or not Assigned(AStyleSetBracketFormat) then
+      Exit;
     AStyleSetBracketFormat(astyle, Integer(Value));
     FBracketFormat := Value;
   end;
@@ -177,13 +179,14 @@ procedure TAStyle.SetPointerAlign(Value: TPointerAlign);
 begin
   if Value <> FPointerAlign then
   begin
-    if not Assigned(astyle) or not Assigned(AStyleSetPointerAlign) then Exit;
+    if not Assigned(astyle) or not Assigned(AStyleSetPointerAlign) then
+      Exit;
     AStyleSetPointerAlign(astyle, Integer(Value));
     FPointerAlign := Value;
   end;
 end;
 
-procedure TAStyle.SetProperty(Index: String; Value: Boolean);
+procedure TAStyle.SetProperty(Index: string; Value: Boolean);
 begin
   if not Assigned(astyle) or not Assigned(AStyleSetProperty) then
     Exit;
@@ -193,7 +196,7 @@ end;
 procedure TAStyle.SetForceUsingTabs(Value: Boolean);
 begin
   if (Value = FForceUsingTabs) or not Assigned(astyle)
-      or not Assigned(AStyleForceUsingTabs) then
+    or not Assigned(AStyleForceUsingTabs) then
     Exit;
   AStyleForceUsingTabs(astyle, Value);
   FForceUsingTabs := Value;
@@ -202,7 +205,8 @@ end;
 procedure TAStyle.SetTabWidth(Value: Integer);
 begin
   if (Value = FTabWidth) or not Assigned(astyle)
-      or not Assigned(AStyleSetTabWidth) or (Value < 1) then Exit;
+    or not Assigned(AStyleSetTabWidth) or (Value < 1) then
+    Exit;
   FTabWidth := Value;
   AStyleSetTabWidth(astyle, Value);
 end;
@@ -210,7 +214,8 @@ end;
 procedure TAStyle.SetSpaceWidth(Value: Integer);
 begin
   if (Value = FSpaceWidth) or not Assigned(astyle)
-      or not Assigned(AStyleSetSpaceWidth) or (Value < 0) then Exit;
+    or not Assigned(AStyleSetSpaceWidth) or (Value < 0) then
+    Exit;
   FSpaceWidth := Value;
   AStyleSetSpaceWidth(astyle, Value);
 end;
@@ -218,15 +223,16 @@ end;
 procedure TAStyle.SetMaxInstatementIndent(Value: Integer);
 begin
   if (Value = FMaxInstatementIndent) or not Assigned(astyle)
-      or not Assigned(AStyleSetMaxInstatementIndent) or (Value < 0) then Exit;
+    or not Assigned(AStyleSetMaxInstatementIndent) or (Value < 0) then
+    Exit;
   FMaxInstatementIndent := Value;
   AStyleSetMaxInstatementIndent(astyle, Value);
 end;
 
-function TAStyle.Format(const Source: String): String;
+function TAStyle.Format(const Source: string): string;
 begin
   if not Assigned(astyle) or not Assigned(AStyleFormatText) or
-     not Assigned(AStyleText) then
+    not Assigned(AStyleText) then
   begin
     Result := Source;
     Exit;
@@ -242,7 +248,8 @@ end;
 procedure AStyleLoadLibrary;
 begin
   astyleModule := LoadLibrary(astyledll);
-  if astyleModule = 0 then Exit;
+  if astyleModule = 0 then
+    Exit;
   AStyleCreate := GetProcAddress(astyleModule, 'AStyleCreate');
   AStyleSetStyle := GetProcAddress(astyleModule, 'AStyleSetStyle');
   AStyleSetBracketFormat := GetProcAddress(astyleModule, 'AStyleSetBracketFormat');

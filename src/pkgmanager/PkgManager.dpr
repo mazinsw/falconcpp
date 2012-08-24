@@ -24,8 +24,6 @@ uses
   CompressUtils in '..\others\compressutils\CompressUtils.pas',
   StrMatch in '..\others\compressutils\StrMatch.pas';
 
-{$R *.res}
-
 var
   Silent: Boolean;
   Install: Boolean;

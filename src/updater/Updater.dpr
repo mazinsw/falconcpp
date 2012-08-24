@@ -15,7 +15,6 @@ uses
   CompressUtils in '..\others\compressutils\CompressUtils.pas',
   StrMatch in '..\others\compressutils\StrMatch.pas';
 
-{$R *.res}
 {$R resources.RES}
 
 begin

@@ -3,7 +3,7 @@ unit ThreadLoadTokenFiles;
 interface
 
 uses
-  TokenFile, Classes, SysUtils;
+  Windows, TokenFile, Classes, SysUtils;
 
 type
   TTokenFileInfo = class
@@ -16,6 +16,7 @@ type
 
   TThreadLoadTokenFiles = class(TThread)
   private
+    fLock: TRTLCriticalSection;
     fTokenFile: TTokenFile;
     fProgsFileName: string;
     fCurrent: Integer;
@@ -52,6 +53,7 @@ type
     procedure AddFile(TokenFiles: TTokenFiles; const FileName, BaseDir,
       FromBaseDir, Extension: string);
     property Busy: Boolean read FBusy;
+    property Canceled: Boolean read fCancel;
     property OnStart: TNotifyEvent read fOnStart write fOnStart;
     property OnProgress: TProgressEvent read fOnProgress write fOnProgress;
     property OnFinish: TNotifyEvent read fOnFinish write fOnFinish;
@@ -109,6 +111,7 @@ procedure TThreadLoadTokenFiles.Start(TokenFiles: TTokenFiles;
 var
   tkinfo: TTokenFileInfo;
 begin
+  InitializeCriticalSection(fLock);
   fCancel := False;
   tkinfo := TTokenFileInfo.Create;
   tkinfo.TokenFiles := TokenFiles;
@@ -117,6 +120,7 @@ begin
   tkinfo.FromBaseDir := FromBaseDir;
   tkinfo.Extension := Extension;
   fFileList.Insert(fFileList.Count, tkinfo);
+  DeleteCriticalSection(flock);
   if FBusy then
     Exit;
   FBusy := True;
@@ -133,7 +137,7 @@ begin
     Start(TokenFiles, FileName, BaseDir, FromBaseDir, Extension);
     Exit;
   end;
-
+  InitializeCriticalSection(flock);
   tkinfo := TTokenFileInfo.Create;
   tkinfo.TokenFiles := TokenFiles;
   tkinfo.FileName := FileName;
@@ -141,6 +145,7 @@ begin
   tkinfo.FromBaseDir := FromBaseDir;
   tkinfo.Extension := Extension;
   fFileList.Insert(fFileList.Count, tkinfo);
+  DeleteCriticalSection(flock);
 end;
 
 procedure TThreadLoadTokenFiles.Cancel;
@@ -148,6 +153,8 @@ begin
   fCancel := True;
   if Assigned(fTokenFiles) then
     fTokenFiles.Cancel;
+  if Busy then
+    WaitFor;
 end;
 
 procedure TThreadLoadTokenFiles.ParserStart(Sender: TObject);

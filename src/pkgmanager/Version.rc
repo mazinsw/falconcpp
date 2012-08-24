@@ -1,0 +1,30 @@
+
+1 VERSIONINFO
+FILEVERSION 3,2,0,0
+PRODUCTVERSION 3,2,0,0
+FILEOS 0x4
+FILETYPE 0x1
+{
+BLOCK "StringFileInfo"
+{
+	BLOCK "041604E4"
+	{
+		VALUE "CompanyName", "MZSW\0"
+		VALUE "FileDescription", "Falcon C++ Package Manager\0"
+		VALUE "FileVersion", "3.2.0.0\0"
+		VALUE "InternalName", "PkgManager.exe\0"
+		VALUE "LegalCopyright", "\0"
+		VALUE "LegalTrademarks", "\0"
+		VALUE "OriginalFilename", "PkgManager.exe\0"
+		VALUE "ProductName", "Falcon C++\0"
+		VALUE "ProductVersion", "3.2.0.0\0"
+		VALUE "Comments", "\0"
+	}
+}
+
+BLOCK "VarFileInfo"
+{
+	VALUE "Translation", 0x0416 0x04E4
+}
+}
+

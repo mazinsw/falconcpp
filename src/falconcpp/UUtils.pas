@@ -1348,6 +1348,7 @@ begin
   ProjProp := TProjectProperty(NewSourceFile(FileType,
     GetCompiler(FileType), '', '', '', FileName, nil, True, False));
   ProjProp.Saved := True;
+  ProjProp.IsNew := False;
   ProjProp.DateOfFile := FileDateTime(ProjProp.FileName);
 
   if (ProjProp.FileType <> FILE_TYPE_PROJECT) then

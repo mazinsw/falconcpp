@@ -621,8 +621,7 @@ type
     //for ThreadTokenFiles
     IsLoadingSrcFiles: Boolean;
     LoadTokenMode: Integer;
-    ParseAllCloseApp: Boolean;
-
+    
     FalconVersion: TVersion; //this file version
     LastProjectBuild: TProjectProperty; //last builded project
     startBuildTicks: Cardinal;
@@ -1326,7 +1325,8 @@ begin
   begin
     ProjProp := TProjectProperty(Node.Data);
     List.AddObject(ProjProp.FileName, ProjProp);
-    if (ProjProp.Modified or not ProjProp.Saved or ProjProp.FilesChanged) then
+    if (ProjProp.Modified or (not ProjProp.Saved and not ProjProp.IsNew) or
+      ProjProp.FilesChanged or ProjProp.SomeFileChanged) then
     begin
       R := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[10],
         [ExtractFileName(ProjProp.FileName)])), 'Falcon C++',
@@ -1361,14 +1361,12 @@ begin
   end;
   try
     //close when parsing
-    if ParseAllFiles.Busy then
-    begin
+    if ThreadTokenFiles.Busy then
       ThreadTokenFiles.Cancel;
-      ParseAllCloseApp := True;
-      Action := caNone;
-      List.Free;
-      Exit;
-    end;
+    if ThreadFilesParsed.Busy then
+      ThreadFilesParsed.Cancel;
+    if ThreadLoadTkFiles.Busy then
+      ThreadLoadTkFiles.Cancel;
     Config.Save(IniConfigFile, Self);
     ini := TIniFile.Create(IniConfigFile);
     ini.EraseSection('History');
@@ -1935,6 +1933,10 @@ begin
     StatusBar.Panels.Items[1].Caption := '';
     StatusBar.Panels.Items[2].ImageIndex := -1;
     StatusBar.Panels.Items[2].Caption := '';
+    if ThreadFilesParsed.Busy then
+      ThreadFilesParsed.Cancel;
+    if ThreadLoadTkFiles.Busy then
+      ThreadLoadTkFiles.Cancel;
     FilesParsed.Clear;
   end;
 
@@ -2206,7 +2208,8 @@ begin
     Exit;
   Sheet := TSourceFileSheet(PageControlEditor.Pages[TabIndex]);
   FileProp := TSourceFile(Sheet.Node.Data);
-  if not FileProp.Saved or (FileProp.Modified and not (Config.Environment.RemoveFileOnClose and
+  if (not FileProp.Saved and not FileProp.IsNew) or
+    (FileProp.Modified and not (Config.Environment.RemoveFileOnClose and
     (FileProp.Project.FileType <> FILE_TYPE_PROJECT))) then
   begin
     if FileProp.Project.Saved then
@@ -3063,7 +3066,8 @@ begin
   if (Node.Level = 0) then //is project
   begin
     ProjProp := FileProp.Project;
-    if ProjProp.Modified or not ProjProp.Saved or ProjProp.FilesChanged then
+    if ProjProp.Modified or (not ProjProp.Saved and not ProjProp.IsNew) or
+      ProjProp.FilesChanged or ProjProp.SomeFileChanged then
     begin //modified
       I := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[10],
         [ExtractFileName(ProjProp.FileName)])), 'Falcon C++',
@@ -3751,6 +3755,7 @@ begin
         if not OwnerFile.FindFile(FolderName, OwnerFile) then
         begin
           OwnerFile := CreateSourceFolder(FolderName, OwnerFile);
+          OwnerFile.IsNew := False;
           OwnerFile.Saved := True;
         end;
         SrcDir := ExcludeRootPathName(SrcDir);
@@ -5098,15 +5103,15 @@ begin
           FrmNewProj.ShowModal;
         end;
       end;
-    2: NewSourceFile(FILE_TYPE_C, COMPILER_C, 'main' + '.c', STR_FRM_MAIN[13], '.c', '', SelFile, False, False).Edit;
-    3: NewSourceFile(FILE_TYPE_CPP, COMPILER_CPP, 'main' + '.cpp', STR_FRM_MAIN[13], '.cpp', '', SelFile, False, False).Edit;
-    4: NewSourceFile(FILE_TYPE_H, NO_COMPILER, 'main' + '.h', STR_FRM_MAIN[13], '.h', '', SelFile, False, False).Edit;
-    5: NewSourceFile(FILE_TYPE_RC, COMPILER_RC, STR_FRM_MAIN[16] + '.rc', STR_FRM_MAIN[13], '.rc', '', SelFile, False, False).Edit;
-    6: NewSourceFile(FILE_TYPE_UNKNOW, CompilerType, 'main', STR_FRM_MAIN[13], '', '', SelFile, False, False).Edit;
+    2: NewSourceFile(FILE_TYPE_C, COMPILER_C, 'main' + '.c', STR_FRM_MAIN[13], '.c', '', SelFile, False, False).Edit.Memo.Modified := False;
+    3: NewSourceFile(FILE_TYPE_CPP, COMPILER_CPP, 'main' + '.cpp', STR_FRM_MAIN[13], '.cpp', '', SelFile, False, False).Edit.Memo.Modified := False;
+    4: NewSourceFile(FILE_TYPE_H, NO_COMPILER, 'main' + '.h', STR_FRM_MAIN[13], '.h', '', SelFile, False, False).Edit.Memo.Modified := False;
+    5: NewSourceFile(FILE_TYPE_RC, COMPILER_RC, STR_FRM_MAIN[16] + '.rc', STR_FRM_MAIN[13], '.rc', '', SelFile, False, False).Edit.Memo.Modified := False;
+    6: NewSourceFile(FILE_TYPE_UNKNOW, CompilerType, 'main', STR_FRM_MAIN[13], '', '', SelFile, False, False).Edit.Memo.Modified := False;
     7: NewSourceFile(FILE_TYPE_FOLDER, NO_COMPILER, STR_NEW_MENU[8], STR_FRM_MAIN[14], '', '', SelFile, True, False);
   else
     NewSourceFile(FileType, CompilerType, 'main' + Ext,
-      STR_FRM_MAIN[13], Ext, '', SelFile, False, False).Edit;
+      STR_FRM_MAIN[13], Ext, '', SelFile, False, False).Edit.Memo.Modified := False;
   end;
 end;
 
@@ -6210,16 +6215,13 @@ var
 begin
   if IsLoadingSrcFiles then
   begin
-    if ParseAllCloseApp then
+    if not ThreadTokenFiles.Canceled then
     begin
-      Application.Terminate;
-      Exit;
+      ini := TIniFile.Create(IniConfigFile);
+      ini.WriteInteger('Packages', 'NewInstalled', 0);
+      ini.Free;
     end;
-    ini := TIniFile.Create(IniConfigFile);
-    ini.WriteInteger('Packages', 'NewInstalled', 0);
-    ini.Free;
     IsLoadingSrcFiles := False;
-    ParseAllCloseApp := False;
   end;
   if not ThreadFilesParsed.Busy then
     ProgressBarParser.Hide;
@@ -6453,7 +6455,7 @@ var
   Buffer: TBufferCoord;
   Attri: TSynHighlighterAttributes;
   InputError: Boolean;
-  StartTicks: Cardinal;
+  //StartTicks: Cardinal;
 begin
   Input := '';
   CanExecute := False;
@@ -6532,7 +6534,7 @@ begin
       Exit;
   end;
   //End temp
-  StartTicks := GetTickCount;
+  //StartTicks := GetTickCount;
   if Input <> '' then
   begin
     if ActiveEditingFile.GetScopeAt(Token, SelStart) then
@@ -6555,9 +6557,9 @@ begin
         DebugHint.Cancel;
         HintTip.Cancel;
         CanExecute := True;
-        StartTicks := GetTickCount - StartTicks;
-        AddMessage(ActiveEditingFile.FileName, 'Fill list',
-          FormatFloat('" Items on " 0.000"s"', StartTicks / 1000), 0, 0, 0, mitCompiler);
+        //StartTicks := GetTickCount - StartTicks;
+        //AddMessage(ActiveEditingFile.FileName, 'Fill list',
+        //  FormatFloat('" Items on " 0.000"s"', StartTicks / 1000), 0, 0, 0, mitCompiler);
         Exit; //?
       end;
     end;
@@ -6591,9 +6593,9 @@ begin
       DebugHint.Cancel;
       HintTip.Cancel;
       CanExecute := True;
-      StartTicks := GetTickCount - StartTicks;
-      AddMessage(ActiveEditingFile.FileName, 'Fill list',
-        FormatFloat('" Items on " 0.000"s"', StartTicks / 1000), 0, 0, 0, mitCompiler);
+      //StartTicks := GetTickCount - StartTicks;
+      //AddMessage(ActiveEditingFile.FileName, 'Fill list',
+      //  FormatFloat('" Items on " 0.000"s"', StartTicks / 1000), 0, 0, 0, mitCompiler);
       Exit; //?
     end;
     Exit; //WARNNING cin. if cin not found then does not show code completion
@@ -6660,9 +6662,9 @@ begin
   DebugHint.Cancel;
   HintTip.Cancel;
   CanExecute := True;
-  StartTicks := GetTickCount - StartTicks;
-  AddMessage(ActiveEditingFile.FileName, 'Fill list',
-    FormatFloat('" Items on " 0.000"s"', StartTicks / 1000), 0, 0, 0, mitCompiler);
+  //StartTicks := GetTickCount - StartTicks;
+  //AddMessage(ActiveEditingFile.FileName, 'Fill list',
+  //  FormatFloat('" Items on " 0.000"s"', StartTicks / 1000), 0, 0, 0, mitCompiler);
 end;
 
 procedure TFrmFalconMain.CodeCompletionCodeCompletion(Sender: TObject;

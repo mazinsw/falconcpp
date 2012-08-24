@@ -366,7 +366,6 @@ begin
       Ver := ParseVersion(FraPrjOpt.EditVer.Text);
       Version.Major := Ver.Major;
       Version.Minor := Ver.Minor;
-      ;
       Version.Release := Ver.Release;
       Version.Build := Ver.Build;
       Version.FileDescription := FraPrjOpt.EditDesc.Text;
@@ -433,6 +432,8 @@ begin
         False, False);
       FileText := TemFiles.SourceFile[I];
       NewFile.Edit.Memo.Lines.Assign(FileText);
+      NewFile.Edit.Memo.Modified := False;
+      NewFile.IsNew := True;
       FileText.Free;
     end;
   end;

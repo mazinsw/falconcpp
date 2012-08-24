@@ -104,7 +104,7 @@ begin
     Desc.Free;
     LblChanges.Show;
     MemoChanges.Show;
-    BtnCancel.Caption := STR_POPUP_EDITOR[1];
+    BtnCancel.Caption := STR_POPUP_TABS[1];
     BtnUpdate.Caption := STR_FRM_UPD[3];
     BtnUpdate.Show;
   end;

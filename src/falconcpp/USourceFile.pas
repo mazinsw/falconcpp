@@ -92,6 +92,7 @@ type
     FNode: TTreeNode;
     FProject: TProjectProperty;
     FSaved: Boolean;
+    FIsNew: Boolean;
     FBreakpoint: TBreakpointList;
     function GetName: string;
     function GetCaption: string;
@@ -135,6 +136,7 @@ type
     property Caption: string read GetCaption;
     property FileType: Integer read FFileType write SetFileType;
     property Saved: Boolean read FSaved write FSaved;
+    property IsNew: Boolean read FIsNew write FIsNew;
   end;
 
   TProjectProperty = class(TSourceFile)
@@ -161,6 +163,7 @@ type
     FIcon: TIcon;
     FAutoIncBuild: Boolean;
     FPropertyChanged: Boolean;
+    FSomeFileChanged: Boolean;
     FCompilerPropertyChanged: Boolean;
     FDebugging: Boolean;
     FVersion: TVersionInfo;
@@ -208,6 +211,7 @@ type
     property TargetDateTime: TdateTime read FTargetDateTime write FTargetDateTime;
     property AutoIncBuild: Boolean read FAutoIncBuild write FAutoIncBuild;
     property PropertyChanged: Boolean read FPropertyChanged write FPropertyChanged;
+    property SomeFileChanged: Boolean read FSomeFileChanged write FSomeFileChanged;
     property BreakpointChanged: Boolean read FBreakpointChanged write FBreakpointChanged;
     property CompilePropertyChanged: Boolean read FCompilerPropertyChanged
       write FCompilerPropertyChanged;
@@ -272,6 +276,7 @@ begin
   FNode := Node;
   FFileType := FILE_TYPE_UNKNOW;
   FSaved := False;
+  FIsNew := True;
 end;
 
 destructor TSourceFile.Destroy;
@@ -283,7 +288,12 @@ end;
 function TSourceFile.GetName: string;
 begin
   if Self is TProjectProperty then
-    Result := ExtractName(FFileName)
+  begin
+    if FileType = FILE_TYPE_PROJECT then
+      Result := ExtractName(FFileName)
+    else
+      Result := ExtractFileName(FFileName);
+  end
   else
     Result := FFileName;
 end;
@@ -447,6 +457,7 @@ begin
   FNode := Value.FNode;
   FProject := Value.FProject;
   FSaved := Value.FSaved;
+  FIsNew := Value.FIsNew;
 end;
 
 function TSourceFile.GetProject: TProjectProperty;
@@ -670,11 +681,11 @@ begin
     Result := FModified;
     Exit;
   end;
-  if (FileType = FILE_TYPE_PROJECT) then
+  if FileType = FILE_TYPE_PROJECT then
   begin
     ProjProp := TProjectProperty(Self);
-    FModified := ProjProp.PropertyChanged or ProjProp.FileChangedInDisk;
-    Result := FModified;
+    Result := ProjProp.PropertyChanged or ProjProp.FileChangedInDisk or
+      ProjProp.SomeFileChanged;
     Exit;
   end;
   //modification in text
@@ -689,7 +700,7 @@ begin
     Exit;
   end;
   //if verify if file exist and if date are equals
-  if Saved or FileExists(FileName) then
+  if (Saved or FileExists(FileName)) and not IsNew then
   begin
     FModified := not FileExists(FileName);
     if not FModified then
@@ -754,6 +765,9 @@ begin
       if GetSheet(Sheet) then
       begin
         Sheet.Memo.Lines.SaveToFile(FileName);
+        if sheet.Memo.Modified and not Project.Saved and IsNew then
+          Project.SomeFileChanged := True;
+        IsNew := False;
         sheet.Memo.Modified := False;
         if not FSaved then
           FSaved := True;
@@ -767,6 +781,7 @@ begin
       TProjectProperty(Self).SaveToFile(FileName);
       if not FSaved then
         FSaved := True;
+      IsNew := False;
     end;
     FFileDateTime := FileDateTime(FileName);
   end;
@@ -932,6 +947,7 @@ function TProjectProperty.LoadFromFile(const AFileName: string): Boolean;
         begin
           FileProp.DateOfFile := FileDateTime(NodeFileName);
           FileProp.Saved := True;
+          FileProp.IsNew := False;
         end
         else
         begin

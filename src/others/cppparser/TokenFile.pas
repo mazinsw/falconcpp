@@ -898,6 +898,8 @@ begin
       Exit;
     Result := LoadRecursiveAux(NewLoadName, BaseDir, FromBaseDir, Extension,
       Result, fProgressEvent);
+    if fCancel then
+      Exit;
   end;
 end;
 

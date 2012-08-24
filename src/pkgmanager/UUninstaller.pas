@@ -240,7 +240,7 @@ begin
   FUnDeletedFiles := 0;
   if not Silent then
   begin
-    FrmUninstall := TFrmUninstall.Create(nil);
+    FrmUninstall := TFrmUninstall.CreateParented(Parent);
     //FrmUninstall.ParentWindow := Parent;
     FrmUninstall.OnShow := FormUninstallShow;
   end;

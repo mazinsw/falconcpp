@@ -3,12 +3,13 @@ unit ThreadTokenFiles;
 interface
 
 uses
-  TokenFile, Classes, SysUtils;
+  Windows, TokenFile, Classes, SysUtils;
 
 type
   TThreadTokenFiles = class(TThread)
   private
     { Private declarations }
+    fLock: TRTLCriticalSection;
     fTokenFile: TTokenFile;
     fProgsFileName: string;
     fCurrent: Integer;
@@ -50,6 +51,7 @@ type
     procedure Cancel;
     function AddFiles(FileList: TStrings): Boolean;
     property Busy: Boolean read FBusy;
+    property Canceled: Boolean read fCancel;
     property OnStart: TNotifyEvent read fOnStart write fOnStart;
     property OnProgress: TProgressEvent read fOnProgress write fOnProgress;
     property OnFinish: TNotifyEvent read fOnFinish write fOnFinish;
@@ -121,7 +123,6 @@ begin
   fTokenFiles := TokenFiles;
   fFileList.Assign(FileList);
   fMethod := tpmParseAndLoad;
-  //if not Suspended then Beep;
   Resume;
 end;
 
@@ -151,7 +152,9 @@ begin
   Result := False;
   if not Busy then
     Exit;
+  InitializeCriticalSection(flock);
   fFileList.AddStrings(FileList);
+  DeleteCriticalSection(flock);
   Result := True;
 end;
 
@@ -159,6 +162,8 @@ procedure TThreadTokenFiles.Cancel;
 begin
   fCancel := True;
   fTokenFiles.Cancel;
+  if Busy then
+    WaitFor;
 end;
 
 procedure TThreadTokenFiles.DoStart;

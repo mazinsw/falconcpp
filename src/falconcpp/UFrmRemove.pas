@@ -19,7 +19,7 @@ type
     BtnOk: TButton;
     BtnCancel: TButton;
     BtnApply: TButton;
-    procedure SetProject(Proj: TProjectProperty);
+    procedure SetProject(Proj: TProjectFile);
     procedure BtnCancelClick(Sender: TObject);
     procedure BtnOkClick(Sender: TObject);
     procedure BtnApplyClick(Sender: TObject);
@@ -55,14 +55,15 @@ begin
   end;
 end;
 
-procedure TFrmRemove.SetProject(Proj: TProjectProperty);
+procedure TFrmRemove.SetProject(Proj: TProjectFile);
 var
   I: Integer;
   Files: TStrings;
   Item: TListItem;
 begin
-  Files := proj.GetFiles;
-  for I := 0 to Pred(Files.Count) do
+  Files := TStringList.Create;
+  proj.GetFiles(Files);
+  for I := 0 to Files.Count - 1 do
   begin
     Item := FileList.Items.Add;
     Item.Caption := TSourceFile(Files.Objects[I]).Name;
@@ -70,6 +71,7 @@ begin
     Item.ImageIndex := TSourceFile(Files.Objects[I]).Node.ImageIndex;
     Item.Data := Files.Objects[I];
   end;
+  Files.Free;
 end;
 
 procedure TFrmRemove.BtnCancelClick(Sender: TObject);

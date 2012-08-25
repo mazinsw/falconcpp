@@ -461,7 +461,6 @@ begin
       end;
     2:
       begin
-      //TODO
         ProgressBarFindFiles.Visible := FindFilesRunning;
         LblRep.Visible := FindFilesRunning;
         if not FindFilesRunning then
@@ -547,7 +546,6 @@ end;
 procedure TFrmFind.FinishFindAll(const aSearch: string; Results: Integer; Canceled: Boolean);
 begin
   TabCtrl.TabIndex := 2;
-  //TODO Stop
   FindFilesRunning := False;
   FindFilesCanceled := False;
   LblRep.Caption := STR_FRM_FIND[6];

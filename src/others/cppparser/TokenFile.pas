@@ -1107,7 +1107,7 @@ begin
     Exit;
   List.AddObject('', token);
   AllScope := False;
-  //TODO while parent is not nil fill objects
+  { TODO -oMazin -c : while parent is not nil fill objects 24/08/2012 22:32:19 }
   //get parent of Token
   if Assigned(Token.Parent) and
     (Token.Parent.Token in [tkClass, tkStruct, tkScopeClass]) then
@@ -1288,7 +1288,7 @@ begin
       Exit;
     end;
     AllScope := False;
-    //TODO while parent is not nil fill objects
+    { TODO -oMazin -c : while parent is not nil fill objects 24/08/2012 22:32:35 }
     //get parent of Token
     if Assigned(Token.Parent) and
       (Token.Parent.Token in [tkClass, tkStruct, tkScopeClass]) then
@@ -1387,7 +1387,7 @@ begin
   //file environment #include <stdio.h>
   if IncludeToken.Flag = 'S' then
   begin
-    //TODO for
+    { TODO -oMazin -c : For each all include path 24/08/2012 22:33:01 }
     FindName := ExpandFileName(PathList.Strings[0] +
       ConvertSlashes(IncludeToken.Name));
     FindedTokenFile := ItemOfByFileName(FindName);
@@ -1401,7 +1401,7 @@ begin
     //if not found try file environment #include <stdio.h>
     if FindedTokenFile = nil then
     begin
-      //TODO for
+      { TODO -oMazin -c : for each all include path 24/08/2012 22:33:40 }
       FindName := ExpandFileName(PathList.Strings[0] + ConvertSlashes(IncludeToken.Name));
       FindedTokenFile := ItemOfByFileName(FindName);
     end;

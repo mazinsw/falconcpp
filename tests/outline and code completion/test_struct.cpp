@@ -9,7 +9,7 @@ typedef struct{
 
 typedef struct{
     char * pais;
-    UF *uf;
+    UF uf;
     char *cidade;
 } Localizacao;
 
@@ -26,7 +26,7 @@ typedef struct{
 
 Aluno * test_trigger(int argument)
 {
-    return NULL;   
+    return new Aluno;   
 }
 
 int main(int argc, char *argv[])
@@ -38,8 +38,7 @@ int main(int argc, char *argv[])
     a
     .
     info.
-    loca[10 /* comment */]    .    uf-> sigla = (char*)"PI";
+    loca[10 /* comment */]    .    uf. sigla = (char*)"PI";
     test_trigger((int)"aaaaaaaa()*/")->info.loca;
-    system("pause");
-    return 0;
+    return 123;
 }

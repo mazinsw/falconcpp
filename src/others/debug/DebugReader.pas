@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Classes, ShellAPI, regexp_tregexpr, Dialogs, ComCtrls,
-  TokenList;
+  TokenList, TokenUtils;
 
 type
   TDebugCmd = (dcPrint, dcLocalize, dcNextLine, dcWatch, dcOnBreak,
@@ -142,10 +142,10 @@ type
     FText: string;
     fptr: PChar;
     FTreeView: TTreeView;
-    function GetPair(openPair, closePair: Char): string;
-    function GetString(commaChar: Char): string;
+    procedure SkipPair(openPair, closePair: Char);
+    procedure SkipString(commaChar: Char);
     function SearchVariable(const Name: string;
-      Parent: TTreeNode): TTreeNode;
+      Parent: TTreeNode; Index: Integer): TTreeNode;
     procedure Parse(Parent: TTreeNode; Token: TTokenClass);
   public
     procedure Clear;
@@ -171,7 +171,9 @@ var
   bSucess: Boolean;
   Buffer: array[0..2048] of Char;
   Output: string;
-  I, Offset: Integer;
+  CRLFFound: Boolean;
+  ptr, ptrStart: PChar;
+  SaveChar: Char;
 begin
   Synchronize(FDebugReader.DoStart);
   Output := '';
@@ -179,20 +181,29 @@ begin
     bSucess := ReadFile(OutputRead, Buffer, SizeOf(Buffer) - 1, nRead, nil);
     if not bSucess or (nRead = 0) or (GetLastError() = ERROR_BROKEN_PIPE) then
       Break;
-
     Buffer[nRead] := #0;
-    Output := Output + StrPas(Buffer);
-    Offset := Length(Output) - Length(GDB_PROMPT + ' ') + 1;
-    if Offset < 1 then
-      Offset := 1;
-    I := PosEx(GDB_PROMPT + ' ', Output, Offset);
-    if ((I > 0) and (I = Offset)) or (Pos('No symbol "', Output) > 0) then
-    begin
-      //OemToAnsi(Buffer, Buffer);
-      FDebugReader.FOutput := Output;
-      Output := '';
-      Synchronize(FDebugReader.DoOutputWriter);
-    end;
+    ptr := PChar(@Buffer);
+    ptrStart := ptr;
+    repeat
+      while not (ptr^ in [#0, CR, LF]) do
+        Inc(ptr);
+      CRLFFound := ptr^ <> #0;
+      if (ptr^ = CR) then
+        Inc(ptr);
+      if (ptr^ = LF) then
+        Inc(ptr);
+      SaveChar := ptr^;
+      ptr^ := #0;
+      Output := Output + StrPas(ptrStart);
+      ptr^ := SaveChar;
+      ptrStart := ptr;
+      if CRLFFound then
+      begin
+        FDebugReader.FOutput := Output;
+        Output := '';
+        Synchronize(FDebugReader.DoOutputWriter);
+      end;
+    until not CRLFFound;
   until False;
 end;
 
@@ -423,8 +434,7 @@ procedure TDebugReader.ProcessLocalize;
 var
   FileName: string;
 begin
-  FileName := regexp.Match[2];
-  FileName := StringReplace(FileName, '/', '\', [rfReplaceAll]);
+  FileName := ConvertSlashes(regexp.Match[2]);
   if Pos(':', FileName) = 0 then
     FileName := FDirectory + FileName;
   FileName := ExpandFileName(FileName);
@@ -441,8 +451,7 @@ procedure TDebugReader.ProcessNextLine;
 var
   FileName: string;
 begin
-  FileName := regexp.Match[1] + regexp.Match[2];
-  FileName := StringReplace(FileName, '/', '\', [rfReplaceAll]);
+  FileName := ConvertSlashes(regexp.Match[1] + regexp.Match[2]);
   if Pos(':', FileName) = 0 then
     FileName := FDirectory + FileName;
   FileName := ExpandFileName(FileName);
@@ -473,8 +482,7 @@ begin
   ID := StrToInt(regexp.Match[1]);
   if FLastID < ID then
     FLastID := ID;
-  FileName := regexp.Match[3];
-  FileName := StringReplace(FileName, '/', '\', [rfReplaceAll]);
+  FileName := ConvertSlashes(regexp.Match[3]);
   if Pos(':', FileName) = 0 then
     FileName := FDirectory + FileName;
   FileName := ExpandFileName(FileName);
@@ -549,7 +557,6 @@ begin
   ID := StrToInt(regexp.Match[1]);
   if FLastID < ID then
     FLastID := ID;
-//  ShowMessage(FOutput);
   if Assigned(FOnCommandEvent) then
     FOnCommandEvent(Self, dcOnAddWatch, regexp.Match[2], regexp.Match[1], 0);
 end;
@@ -561,7 +568,6 @@ begin
   ID := StrToInt(regexp.Match[1]);
   if FLastID < ID then
     FLastID := ID;
-//  ShowMessage(FOutput);
   if Assigned(FOnCommandEvent) then
     FOnCommandEvent(Self, dcOnWatchPoint, regexp.Match[2], regexp.Match[1], 0);
 end;
@@ -593,7 +599,6 @@ begin
     begin
       S := Copy(S, I + Length(GDB_PROMPT + ' '), Length(S) -
         Length(GDB_PROMPT + ' '));
-      S := Trim(S);
       ProcessIdle;
       I := Pos(GDB_PROMPT + ' ', S);
     end;
@@ -662,33 +667,23 @@ end;
 
 {TDebugParser}
 
-function TDebugParser.GetString(commaChar: Char): string;
+procedure TDebugParser.SkipString(commaChar: Char);
 begin
-  Result := '';
   if fptr^ = commaChar then
-  begin
-    Result := fptr^;
     Inc(fptr);
-  end;
   if fptr^ = #0 then
     Exit;
-  repeat
-    Result := Result + fptr^;
+  while (fptr^ <> #0) and ((fptr^ <> commaChar) or ((fptr - 1)^ = '\')) do
     Inc(fptr);
-  until (fptr^ = #0) or ((fptr^ = commaChar) and ((fptr - 1)^ <> '\'));
-  if fptr^ <> #0 then
-    Result := Result + fptr^;
 end;
 
-function TDebugParser.GetPair(openPair, closePair: Char): string;
+procedure TDebugParser.SkipPair(openPair, closePair: Char);
 var
   pairCount: Integer;
 begin
   pairCount := 0;
-  Result := '';
   if fptr^ = openPair then
   begin
-    Result := fptr^;
     Inc(fptr);
     Inc(pairCount);
   end;
@@ -704,29 +699,25 @@ begin
       if (pairCount = 0) then
         Break;
     end;
-    Result := Result + fptr^;
     Inc(fptr);
   until fptr^ = #0;
-  if fptr^ <> #0 then
-    Result := Result + fptr^;
 end;
 
 function TDebugParser.SearchVariable(const Name: string;
-  Parent: TTreeNode): TTreeNode;
+  Parent: TTreeNode; Index: Integer): TTreeNode;
 var
-  I: Integer;
   Item: TWatchVariable;
   Node: TTreeNode;
 begin
   Result := nil;
   if Assigned(Parent) then
   begin
-    for I := 0 to Parent.Count - 1 do
+    if (Index < Parent.Count) and (Index >= 0) then
     begin
-      Item := TWatchVariable(Parent.Item[I].Data);
+      Item := TWatchVariable(Parent.Item[Index].Data);
       if Name = Item.Name then
       begin
-        Result := Parent.Item[I];
+        Result := Parent.Item[Index];
         Exit;
       end;
     end;
@@ -749,7 +740,8 @@ end;
 
 procedure TDebugParser.Parse(Parent: TTreeNode; Token: TTokenClass);
 
-  function AddVar(Name, Value: string; var childToken: TTokenClass): TTreeNode;
+  function AddVar(const Name, Value: string; var childToken: TTokenClass;
+    Index: Integer): TTreeNode;
   var
     tempToken: TTokenClass;
     watchVar: TWatchVariable;
@@ -766,7 +758,7 @@ procedure TDebugParser.Parse(Parent: TTreeNode; Token: TTokenClass);
       else
         tempToken := childToken;
     end;
-    Result := SearchVariable(Name, Parent);
+    Result := SearchVariable(Name, Parent, Index);
     if not Assigned(Result) then
     begin
       if Value = '' then
@@ -804,46 +796,64 @@ var
   closePair: Char;
   Item: TTreeNode;
   childToken: TTokenClass;
+  IVector, Len, Index: Integer;
+  ptrB, ptrE: PChar;
 begin
   VarName := '';
   VarValue := '';
   EqFind := False;
+  IVector := 0;
+  ptrB := fptr;
+  ptrE := ptrB;
+  Index := 0;
   repeat
     case fptr^ of
       '=':
         begin
           EqFind := True;
-          VarValue := '';
+          Len := ptrE - ptrB;
+          SetLength(VarName, Len);
+          if Len > 0 then
+            StrLCopy(PChar(VarName), ptrB, Len);
+          //PChar(VarName)[Len] := #0;
+          Inc(fptr);
+          while fptr^ in [' ', #10, #13] do
+            Inc(fptr);
+          ptrB := fptr;
+          ptrE := ptrB;
+          Continue;
         end;
       #0: Break;
       '"', '''':
-        begin
-          if EqFind then
-            VarValue := VarValue + GetString(fptr^)
-          else
-            VarName := VarName + GetString(fptr^);
-        end;
+      begin
+        SkipString(fptr^);
+        ptrE := fptr + 1;
+      end;
       '(', '<', '[':
         begin
           case fptr^ of
             '(': closePair := ')';
             '<': closePair := '>';
-            '[': closePair := ']';
           else
-            closePair := #0;
+            closePair := ']';
           end;
-          if EqFind then
-            VarValue := VarValue + GetPair(fptr^, closePair)
-          else
-            VarName := VarName + GetPair(fptr^, closePair);
+          SkipPair(fptr^, closePair);
+          ptrE := fptr + 1;
         end;
       '{', ',', '}':
         begin
-          VarName := Trim(VarName);
-          VarValue := Trim(VarValue);
-          Item := AddVar(VarName, VarValue, childToken);
-          VarName := '';
-          VarValue := '';
+          Len := ptrE - ptrB;
+          SetLength(VarValue, Len);
+          if Len > 0 then
+            StrLCopy(PChar(VarValue), ptrB, Len);
+          //PChar(VarValue)[ptrE - ptrB] := #0;
+          if not EqFind then
+          begin
+            VarName := '[' + IntToStr(IVector) + ']';
+            Inc(IVector);
+          end;
+          Item := AddVar(VarName, VarValue, childToken, Index);
+          Inc(Index);
           EqFind := False;
           if fptr^ = '{' then
           begin
@@ -857,20 +867,26 @@ begin
           end;
           if fptr^ = #0 then
             Break;
+          // ,
+          Inc(fptr);
+          while fptr^ in [' ', #10, #13] do
+            Inc(fptr);
+          ptrB := fptr;
+          ptrE := ptrB;
+          Continue;
         end;
     else
-      if EqFind then
-        VarValue := VarValue + fptr^
-      else
-        VarName := VarName + fptr^;
+      if fptr^ <> ' ' then
+        ptrE := fptr + 1;
     end;
     Inc(fptr);
   until fptr^ = #0;
-  VarName := Trim(VarName);
-  VarValue := Trim(VarValue);
-  if (VarName = '') or (VarValue = '') then
+  if not EqFind then
     Exit;
-  AddVar(VarName, VarValue, childToken);
+  SetLength(VarValue, ptrE - ptrB);
+  StrLCopy(PChar(VarValue), ptrB, ptrE - ptrB);
+  PChar(VarValue)[ptrE - ptrB] := #0;
+  AddVar(VarName, VarValue, childToken, Index);
 end;
 
 procedure TDebugParser.Clear;

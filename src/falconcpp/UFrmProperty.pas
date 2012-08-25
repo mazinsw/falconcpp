@@ -89,7 +89,7 @@ type
     procedure ListValuesEditColumn(Sender: TObject; ACol, ARow: Integer;
       var CanEdit: Boolean; var EditType: TEditType);
     procedure FormCreate(Sender: TObject);
-    procedure SetProject(Project: TProjectProperty);
+    procedure SetProject(Project: TProjectFile);
     procedure Save;
     procedure BtnCancelClick(Sender: TObject);
     procedure BtnApplyClick(Sender: TObject);
@@ -138,7 +138,7 @@ type
     procedure CreateParams(var Params: TCreateParams); override;
   public
     { Public declarations }
-    Project: TProjectProperty;
+    Project: TProjectFile;
     IconChanged, IsLoading: Boolean;
     AppIcon: TIcon;
   end;
@@ -190,7 +190,7 @@ begin
     Temp := Temp + ' -O2';
   Project.CompilerOptions := Trim(Temp);
   Temp := '';
-  for I := 0 to Pred(ChLbLibs.Count) do
+  for I := 0 to ChLbLibs.Count - 1 do
     if ChLbLibs.Checked[I] then
     begin
       if Pos(' ', ChLbLibs.Items.Strings[I]) > 0 then
@@ -201,7 +201,7 @@ begin
     end;
   Project.Libs := Trim(Temp);
   Temp := '';
-  for I := 0 to Pred(ListIncs.Count) do
+  for I := 0 to ListIncs.Count - 1 do
   begin
     if Pos(' ', ListIncs.Items.Strings[I]) > 0 then
       Temp := Temp + ' ' + ListIncs.Items.QuoteChar + ListIncs.Items.Strings[I]
@@ -242,7 +242,7 @@ begin
   FrmFalconMain.TreeViewProjectsChange(Self, Project.Node);
 end;
 
-procedure TFrmProperty.SetProject(Project: TProjectProperty);
+procedure TFrmProperty.SetProject(Project: TProjectFile);
 var
   List: TStrings;
   I: Integer;
@@ -272,11 +272,11 @@ begin
     List.Delimiter := ' ';
     List.DelimitedText := Trim(Project.Libs);
 
-    for I := 0 to Pred(List.Count) do
+    for I := 0 to List.Count - 1 do
       ChLbLibs.Checked[ChLbLibs.Items.Add(List.Strings[I])] := True;
 
     List.DelimitedText := Trim(Project.Flags);
-    for I := 0 to Pred(List.Count) do
+    for I := 0 to List.Count - 1 do
       ListIncs.Items.Add(List.Strings[I]);
     List.Free;
     ChbIncVer.Checked := Project.IncludeVersionInfo;
@@ -313,7 +313,7 @@ procedure TFrmProperty.FormCreate(Sender: TObject);
   begin
     Result := -1;
     Index := -1;
-    for I := 0 to Pred(CbbLang.ItemsEx.Count) do
+    for I := 0 to CbbLang.ItemsEx.Count - 1 do
       if (TLanguageItem(CbbLang.ItemsEx.Items[I].Data).ID = LCID) then
       begin
         Result := CbbLang.ItemsEx.Items[I].Index;
@@ -332,7 +332,7 @@ begin
   IsLoading := True;
   LblLoc.Caption := GetLanguageName(0);
   List := GetLanguagesList;
-  for I := 0 to Pred(List.Count) do
+  for I := 0 to List.Count - 1 do
   begin
     LangItem := TLanguageItem(List.Objects[I]);
     Item := CbbLang.ItemsEx.Add;
@@ -348,7 +348,7 @@ begin
   begin
     List.Clear;
     FindFiles(LibPath + '*.a', List);
-    for I := 0 to Pred(List.Count) do
+    for I := 0 to List.Count - 1 do
     begin
       CBLibs.Items.Add(
         StringReplace(
@@ -356,7 +356,7 @@ begin
     end;
     List.Clear;
     FindFiles(LibPath + '*.lib', List);
-    for I := 0 to Pred(List.Count) do
+    for I := 0 to List.Count - 1 do
       CBLibs.Items.Add('-l' + ChangeFileExt(List.Strings[I], ''));
   end;
   List.Free;
@@ -468,12 +468,12 @@ var
   I, X: Integer;
 begin
   ProjectChange(Sender);
-  for I := 0 to Pred(GrbIncVer.ControlCount) do
+  for I := 0 to GrbIncVer.ControlCount - 1 do
   begin
     if not (GrbIncVer.Controls[I] = ChbIncVer) then
     begin
       if (GrbIncVer.Controls[I] is TGroupBox) then
-        for X := 0 to Pred(TGroupBox(GrbIncVer.Controls[I]).ControlCount) do
+        for X := 0 to TGroupBox(GrbIncVer.Controls[I]).ControlCount - 1 do
           TGroupBox(GrbIncVer.Controls[I]).Controls[X].Enabled := ChbIncVer.Checked;
       GrbIncVer.Controls[I].Enabled := ChbIncVer.Checked;
     end;
@@ -604,7 +604,7 @@ procedure TFrmProperty.ChLbLibsSelect(Sender: TObject);
 begin
   SBtnRem.Enabled := (ChLbLibs.ItemIndex > -1);
   SBtnUp.Enabled := (ChLbLibs.ItemIndex > 0);
-  SBtnDown.Enabled := (ChLbLibs.ItemIndex < Pred(ChLbLibs.Count))
+  SBtnDown.Enabled := (ChLbLibs.ItemIndex < ChLbLibs.Count - 1)
     and (ChLbLibs.ItemIndex > -1);
   SBtnEdit.Enabled := (ChLbLibs.ItemIndex > -1);
 end;
@@ -651,7 +651,7 @@ procedure TFrmProperty.ListIncsSelect(Sender: TObject);
 begin
   SBtnDelInc.Enabled := (ListIncs.ItemIndex > -1);
   SBtnUpInc.Enabled := (ListIncs.ItemIndex > 0);
-  SBtnDownInc.Enabled := (ListIncs.ItemIndex < Pred(ListIncs.Count))
+  SBtnDownInc.Enabled := (ListIncs.ItemIndex < ListIncs.Count - 1)
     and (ListIncs.ItemIndex > -1);
   SBtnEditInc.Enabled := (ListIncs.ItemIndex > -1);
 end;
@@ -765,7 +765,7 @@ begin
     case RGAppTp.ItemIndex of
       0:
         begin
-          for I := Pred(ChLbLibs.Items.Count) downto 0 do
+          for I := ChLbLibs.Items.Count - 1 downto 0 do
           begin
             if ChLbLibs.Items.Strings[I] = '-mwindows' then
               ChLbLibs.Items.Delete(I)
@@ -777,7 +777,7 @@ begin
         end;
       1:
         begin
-          for I := Pred(ChLbLibs.Items.Count) downto 0 do
+          for I := ChLbLibs.Items.Count - 1 downto 0 do
           begin
             if ChLbLibs.Items.Strings[I] = '-mwindows' then
             begin
@@ -799,7 +799,7 @@ begin
         end;
       2:
         begin
-          for I := Pred(ChLbLibs.Items.Count) downto 0 do
+          for I := ChLbLibs.Items.Count - 1 downto 0 do
           begin
             if ChLbLibs.Items.Strings[I] = '-mwindows' then
               ChLbLibs.Items.Delete(I)
@@ -836,7 +836,7 @@ begin
         end;
       3:
         begin
-          for I := Pred(ChLbLibs.Items.Count) downto 0 do
+          for I := ChLbLibs.Items.Count - 1 downto 0 do
           begin
             if ChLbLibs.Items.Strings[I] = '-mwindows' then
               ChLbLibs.Items.Delete(I)
@@ -862,7 +862,7 @@ procedure TFrmProperty.FormDestroy(Sender: TObject);
 var
   I: Integer;
 begin
-  for I := 0 to Pred(CbbLang.ItemsEx.Count) do
+  for I := 0 to CbbLang.ItemsEx.Count - 1 do
     TLanguageItem(CbbLang.ItemsEx.Items[I].Data).Free;
 end;
 
@@ -906,7 +906,7 @@ var
   I, J: Integer;
 begin
   J := -1;
-  for I := 0 to Pred(ChLbLibs.Items.Count) do
+  for I := 0 to ChLbLibs.Items.Count - 1 do
   begin
     if Pos('-Wl,--add-stdcall-alias', ChLbLibs.Items.Strings[I]) > 0 then
     begin

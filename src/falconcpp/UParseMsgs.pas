@@ -304,7 +304,7 @@ begin
     Delete(Temp, 1, 1);
   Consts := Temp;
   Temp := src;
-  for I := 0 to Pred(CountLine(Consts)) do
+  for I := 0 to CountLine(Consts) - 1 do
   begin
     Str := GetLine(Consts, I);
     if (Pos(Str, Temp) > 0) then
@@ -342,7 +342,7 @@ begin
     Delete(Temp, 1, 1);
   Consts := Temp;
   Temp := src;
-  for I := 0 to Pred(CountLine(Consts)) do
+  for I := 0 to CountLine(Consts) - 1 do
   begin
     Str := GetLine(Consts, I);
     if (Pos(Str, Temp) > 0) then
@@ -445,7 +445,7 @@ begin
   new_fmt := Copy(fmt, I + 6, Length(fmt));
   I := Pos('}', new_fmt);
   new_fmt := Copy(new_fmt, I + 1, length(new_fmt));
-  for I := 0 to Pred(order_count) do
+  for I := 0 to order_count - 1 do
   begin
     Ordr := StrToIntDef(GetLine(order, I), 0);
     if (Ordr > 0) and (Ordr <= src_count) then
@@ -510,7 +510,7 @@ begin
     Delete(Temp, 1, 1);
   Consts := Temp;
   Temp := src;
-  for I := 0 to Pred(CountLine(Consts)) do
+  for I := 0 to CountLine(Consts) - 1 do
   begin
     Str := GetLine(Consts, I);
     if (Pos(Str, Temp) > 0) then
@@ -582,7 +582,7 @@ begin
   //** parse results**//
   Cont := False;
   Capt := FrmFalconMain.Caption;
-  for I := 0 to Pred(Value.Count) do
+  for I := 0 to Value.Count - 1 do
   begin
     if FrmFalconMain.CompilationStopped then
       Break;

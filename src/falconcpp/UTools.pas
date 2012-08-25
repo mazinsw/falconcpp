@@ -111,7 +111,6 @@ var
   Memo: TSynMemo;
   Line, Column, I, J: Integer;
   FileProp: TSourceFile;
-  //ProjProp: TProjectProperty;
   Sheet: TSourceFileSheet;
 begin
   Result := True;

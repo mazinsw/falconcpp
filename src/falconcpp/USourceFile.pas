@@ -81,7 +81,7 @@ type
   end;
 
   TSourceFileSheet = class;
-  TProjectProperty = class;
+  TProjectFile = class;
 
   TSourceFile = class
   private
@@ -90,7 +90,7 @@ type
     FFileType: Integer;
     FEditor: TSynMemo;
     FNode: TTreeNode;
-    FProject: TProjectProperty;
+    FProject: TProjectFile;
     FSaved: Boolean;
     FIsNew: Boolean;
     FBreakpoint: TBreakpointList;
@@ -98,9 +98,9 @@ type
     function GetCaption: string;
     function GetNode: TTreeNode;
     function GetEditor: TModernPageControl;
-    function GetProject: TProjectProperty;
+    function GetProject: TProjectFile;
     function IsModified: Boolean;
-    procedure SetProject(Value: TProjectProperty);
+    procedure SetProject(Value: TProjectFile);
     procedure SetFileType(Value: Integer);
     procedure SetFileName(Value: string);
   protected
@@ -113,6 +113,7 @@ type
     function ViewPage: Boolean;
     function Rename(NewName: string): Boolean;
     procedure LoadFile(Text: TStrings);
+    procedure GetSubFiles(List: TStrings);
     function GetSheet(var Sheet: TSourceFileSheet): Boolean;
     function Open: Boolean;
     function Close: Boolean;
@@ -125,7 +126,7 @@ type
     constructor Create(Editor, Node: Pointer);
     destructor Destroy; override;
     property Breakpoint: TBreakpointList read FBreakpoint;
-    property Project: TProjectProperty read GetProject write SetProject;
+    property Project: TProjectFile read GetProject write SetProject;
     property PageCtrl: TModernPageControl read GetEditor;
     property DateOfFile: TDateTime read FFileDateTime write FFileDateTime;
     property Node: TTreeNode read GetNode;
@@ -139,7 +140,7 @@ type
     property IsNew: Boolean read FIsNew write FIsNew;
   end;
 
-  TProjectProperty = class(TSourceFile)
+  TProjectFile = class(TSourceFile)
   private
     FTargetDateTime: TDateTime;
     FLibs: string;
@@ -188,8 +189,8 @@ type
     function SaveLayout: Boolean;
     function SaveToFile(const AFileName: string): Boolean;
     function GetResource(Res: TStrings): Boolean;
-    function GetFiles(AllTypes: Boolean = False;
-      WithBreakpoint: Boolean = False): TStrings;
+    procedure GetFiles(List: TStrings; AllTypes: Boolean = False;
+      WithBreakpoint: Boolean = False);
     function Build(Run: Boolean = False): Boolean;
     function SaveAs(const AFileName: string): Boolean;
     function NeedBuild: Boolean;
@@ -287,7 +288,7 @@ end;
 
 function TSourceFile.GetName: string;
 begin
-  if Self is TProjectProperty then
+  if Self is TProjectFile then
   begin
     if FileType = FILE_TYPE_PROJECT then
       Result := ExtractName(FFileName)
@@ -460,12 +461,12 @@ begin
   FIsNew := Value.FIsNew;
 end;
 
-function TSourceFile.GetProject: TProjectProperty;
+function TSourceFile.GetProject: TProjectFile;
 begin
-  Result := TProjectProperty(FProject);
+  Result := TProjectFile(FProject);
 end;
 
-procedure TSourceFile.SetProject(Value: TProjectProperty);
+procedure TSourceFile.SetProject(Value: TProjectFile);
 begin
   if (Value <> FProject) then
     FProject := Value;
@@ -474,8 +475,8 @@ end;
 procedure TSourceFile.SetFileName(Value: string);
 var
   Temp: string;
+  Sheet: TSourceFileSheet;
 begin
-
   if (FileType <> FILE_TYPE_FOLDER) then
   begin    { ***   PROJECT or FILE   *** }
     if ExtractFileName(Value) = Name then
@@ -488,7 +489,7 @@ begin
       FrmFalconMain.RenameFileInHistory(FileName,
         ExtractFilePath(FileName) + ExtractFileName(Value));
     end;
-    if Self is TProjectProperty then
+    if Self is TProjectFile then
     begin
       if (Project.AppType = APPTYPE_LIB) then
       begin
@@ -526,6 +527,8 @@ begin
   end;
   FFileName := Value;
   Node.Text := Name;
+  if GetSheet(Sheet) then
+    Sheet.Caption := Caption;
 end;
 
 procedure TSourceFile.SetFileType(Value: Integer);
@@ -614,13 +617,35 @@ begin
   Text.LoadFromFile(FileName);
 end;
 
+procedure TSourceFile.GetSubFiles(List: TStrings);
+
+  procedure GetSubFiles(Folder: TSourceFile);
+  var
+    I: Integer;
+  begin
+    for I := 0 to Folder.Node.Count - 1 do
+    begin
+      if TSourceFile(Folder.Node.Item[I].Data).FileType = FILE_TYPE_FOLDER then
+        GetSubFiles(TSourceFile(Folder.Node.Item[I].Data))
+      else if TSourceFile(Folder.Node.Item[I].Data).FileType <> FILE_TYPE_RC then
+        List.AddObject(TSourceFile(Folder.Node.Item[I].Data).FileName,
+          TSourceFile(Folder.Node.Item[I].Data));
+    end;
+  end;
+
+begin
+  if FileType <> FILE_TYPE_FOLDER then
+    Exit;
+  GetSubFiles(Self);
+end;
+
 function TSourceFile.GetSheet(var Sheet: TSourceFileSheet): Boolean;
 var
   I: Integer;
   ASheet: TSourceFileSheet;
 begin
   Result := False;
-  for I := 0 to Pred(PageCtrl.PageCount) do
+  for I := 0 to PageCtrl.PageCount - 1 do
   begin
     ASheet := TSourceFileSheet(PageCtrl.Pages[I]);
     if (ASheet.Node = Node) then
@@ -638,7 +663,7 @@ var
   Sheet: TSourceFileSheet;
 begin
   Result := False;
-  for I := 0 to Pred(PageCtrl.PageCount) do
+  for I := 0 to PageCtrl.PageCount - 1 do
   begin
     Sheet := TSourceFileSheet(PageCtrl.Pages[I]);
     if (Sheet.Node = Node) then
@@ -657,7 +682,7 @@ var
   Sheet: TSourceFileSheet;
 begin
   Result := False;
-  for I := 0 to Pred(PageCtrl.PageCount) do
+  for I := 0 to PageCtrl.PageCount - 1 do
   begin
     Sheet := TSourceFileSheet(PageCtrl.Pages[I]);
     if (Sheet.Node = Node) then
@@ -672,7 +697,7 @@ function TSourceFile.IsModified: Boolean;
 var
   FileDate: TDateTime;
   Sheet: TSourceFileSheet;
-  ProjProp: TProjectProperty;
+  ProjProp: TProjectFile;
   FModified: Boolean;
 begin
   if (FileType = FILE_TYPE_FOLDER) then
@@ -683,7 +708,7 @@ begin
   end;
   if FileType = FILE_TYPE_PROJECT then
   begin
-    ProjProp := TProjectProperty(Self);
+    ProjProp := TProjectFile(Self);
     Result := ProjProp.PropertyChanged or ProjProp.FileChangedInDisk or
       ProjProp.SomeFileChanged;
     Exit;
@@ -722,7 +747,7 @@ begin
   Result := False;
   if GetSheet(Sheet) then
   begin
-    if (Sheet.PageIndex = Pred(GetEditor.PageCount))
+    if (Sheet.PageIndex = GetEditor.PageCount - 1)
       and (Sheet.PageIndex > 0) then
       GetEditor.ActivePageIndex := Sheet.PageIndex - 1;
     Sheet.Free;
@@ -777,8 +802,8 @@ begin
     end
     else
     begin
-      TProjectProperty(Self).PropertyChanged := False;
-      TProjectProperty(Self).SaveToFile(FileName);
+      TProjectFile(Self).PropertyChanged := False;
+      TProjectFile(Self).SaveToFile(FileName);
       if not FSaved then
         FSaved := True;
       IsNew := False;
@@ -802,9 +827,9 @@ begin
   Result := True;
 end;
 
-{TProjectProperty}
+{TProjectFile}
 
-constructor TProjectProperty.Create(Editor, Node: Pointer);
+constructor TProjectFile.Create(Editor, Node: Pointer);
 begin
   inherited Create(Editor, Node);
   FForceClean := False; //first compilation do clean?
@@ -826,7 +851,7 @@ begin
   FCompilerPath := '$(MINGW_PATH)';
 end;
 
-destructor TProjectProperty.Destroy;
+destructor TProjectFile.Destroy;
 begin
   if Assigned(FTemplateResources) then
     FTemplateResources.Free;
@@ -836,24 +861,26 @@ begin
   inherited Destroy;
 end;
 
-procedure TProjectProperty.SetIcon(Value: TIcon);
+procedure TProjectFile.SetIcon(Value: TIcon);
 begin
   if (FIcon <> Value) then
     FIcon := Value;
 end;
 
-function TProjectProperty.CloseAll: Boolean;
+function TProjectFile.CloseAll: Boolean;
 var
   I: Integer;
   AllFiles: TStrings;
 begin
   Result := True;
-  AllFiles := GetFiles(True);
-  for I := 0 to Pred(AllFiles.Count) do
+  AllFiles := TStringList.Create;
+  GetFiles(AllFiles, True);
+  for I := 0 to AllFiles.Count - 1 do
     TSourceFile(AllFiles.Objects[I]).Close;
+  AllFiles.Free;
 end;
 
-function TProjectProperty.SaveAll(SavePrjFile: Boolean = False): Boolean;
+function TProjectFile.SaveAll(SavePrjFile: Boolean = False): Boolean;
 var
   I: Integer;
   AllFiles: TStrings;
@@ -873,9 +900,11 @@ begin
       Save;
   end;
   //save all files with folders
-  AllFiles := GetFiles(True);
-  for I := 0 to Pred(AllFiles.Count) do
+  AllFiles := TStringList.Create;
+  GetFiles(AllFiles, True);
+  for I := 0 to AllFiles.Count - 1 do
     TSourceFile(AllFiles.Objects[I]).Save;
+  AllFiles.Free;
   //save template resources
   if Assigned(FTemplateResources) then
   begin
@@ -895,18 +924,18 @@ begin
   end;
 end;
 
-function TProjectProperty.SaveAs(const AFileName: string): Boolean;
+function TProjectFile.SaveAs(const AFileName: string): Boolean;
 begin
   FFileName := AFileName;
   Result := SaveAll(True);
 end;
 
-function TProjectProperty.GetTarget: string;
+function TProjectFile.GetTarget: string;
 begin
   Result := ExtractFilePath(FileName) + Target;
 end;
 
-function TProjectProperty.LoadFromFile(const AFileName: string): Boolean;
+function TProjectFile.LoadFromFile(const AFileName: string): Boolean;
 
   function GetTagProperty(Node: IXMLNode; Tag, Attribute: string): string;
   var
@@ -951,7 +980,7 @@ function TProjectProperty.LoadFromFile(const AFileName: string): Boolean;
         end
         else
         begin
-          // TODO: file not found
+          { TODO -oMazin -c : file not found 24/08/2012 22:26:21 }
         end;
       end;
       Temp := Temp.NextSibling;
@@ -1074,12 +1103,12 @@ begin
   Result := True;
 end;
 
-function TProjectProperty.GetFileName: string;
+function TProjectFile.GetFileName: string;
 begin
   Result := FFileName;
 end;
 
-function TProjectProperty.GetFileByPathName(const RelativeName: string): TSourceFile;
+function TProjectFile.GetFileByPathName(const RelativeName: string): TSourceFile;
 var
   Temp, S: string;
   Parent: TSourceFile;
@@ -1110,7 +1139,7 @@ begin
   end;
 end;
 
-function TProjectProperty.LoadLayout: Boolean;
+function TProjectFile.LoadLayout: Boolean;
 
   function GetTagProperty(Node: IXMLNode; Tag, Attribute: string;
     Default: string = ''): string;
@@ -1279,7 +1308,7 @@ begin
   Result := True;
 end;
 
-function TProjectProperty.SaveLayout: Boolean;
+function TProjectFile.SaveLayout: Boolean;
 
 var
   pageIndex, FilesOpenCount, FoldersExpanded: Integer;
@@ -1322,7 +1351,7 @@ var
     sheet: TSourceFileSheet;
   begin
     ProjPath := ExtractFilePath(FileName);
-    for I := 0 to Pred(Parent.Node.Count) do
+    for I := 0 to Parent.Node.Count - 1 do
     begin
       FileProp := TSourceFile(Parent.Node.Item[I].Data);
       RelFileName := ExtractRelativePath(ProjPath, FileProp.FileName);
@@ -1424,7 +1453,7 @@ begin
   Result := True;
 end;
 
-function TProjectProperty.SaveToFile(const AFileName: string): Boolean;
+function TProjectFile.SaveToFile(const AFileName: string): Boolean;
 
   procedure SetTagProperty(Node: IXMLNode; Tag, Attribute, Value: string);
   var
@@ -1442,7 +1471,7 @@ function TProjectProperty.SaveToFile(const AFileName: string): Boolean;
     I: Integer;
     FileProp: TSourceFile;
   begin
-    for I := 0 to Pred(Parent.Node.Count) do
+    for I := 0 to Parent.Node.Count - 1 do
     begin
       FileProp := TSourceFile(Parent.Node.Item[I].Data);
       if (FileProp.FileType = FILE_TYPE_FOLDER) then
@@ -1545,22 +1574,23 @@ begin
   Result := True;
 end;
 
-function TProjectProperty.NeedBuild: Boolean;
+function TProjectFile.NeedBuild: Boolean;
 begin
   Result := FileChangedInDisk or (not Compiled) or (not FileExists(GetTarget)) or
     CompilePropertyChanged or FilesChanged or TargetChanged or
-    (BreakpointChanged and not Debugging);
+    (BreakpointChanged and not Debugging) or (Debugging and not HasBreakpoint);
 end;
 
-function TProjectProperty.FilesChanged: Boolean;
+function TProjectFile.FilesChanged: Boolean;
 var
   I: Integer;
   FileProp: TSourceFile;
   List: TStrings;
 begin
   Result := False;
-  List := GetFiles;
-  for I := 0 to Pred(List.Count) do
+  List := TStringList.Create;
+  GetFiles(List);
+  for I := 0 to List.Count - 1 do
   begin
     FileProp := TSourceFile(List.Objects[I]);
     if FileProp.Modified or FileProp.FileChangedInDisk then
@@ -1573,7 +1603,7 @@ begin
   List.Free;
 end;
 
-function TProjectProperty.TargetChanged: Boolean;
+function TProjectFile.TargetChanged: Boolean;
 begin
   Result := True;
   if FileExists(GetTarget) then
@@ -1586,55 +1616,36 @@ begin
   end
 end;
 
-function TProjectProperty.GetFiles(AllTypes, WithBreakpoint: Boolean): TStrings;
+procedure TProjectFile.GetFiles(List: TStrings; AllTypes,
+  WithBreakpoint: Boolean);
 
-  procedure AddFiles(List: TStrings; ANode: TTreeNode);
+  procedure AddFiles(SrcFile: TSourceFile);
   var
-    X: Integer;
+    I: Integer;
     canAdd: Boolean;
-    fp: TSourceFile;
   begin
-    fp := TSourceFile(ANode.Data);
-    canAdd := (not (fp.FileType in [FILE_TYPE_RC, FILE_TYPE_FOLDER]) and
-      WithBreakpoint and (fp.Breakpoint.Count > 0)) or not WithBreakpoint;
-    if AllTypes then
-    begin
-      if canAdd then
-        List.AddObject(fp.FileName, fp);
-    end
-    else
-    begin
-      if (TSourceFile(ANode.Data).FileType <> FILE_TYPE_FOLDER) then
-      begin
-        if canAdd then
-          List.AddObject(fp.FileName, fp);
-      end;
-    end;
-    if (ANode.Count > 0) then
-    begin
-      for X := 0 to Pred(ANode.Count) do
-        AddFiles(List, ANode.Item[X]);
-    end;
+    canAdd := (not (SrcFile.FileType in [FILE_TYPE_RC, FILE_TYPE_FOLDER]) and
+      WithBreakpoint and (SrcFile.Breakpoint.Count > 0)) or not WithBreakpoint;
+
+    if canAdd and (AllTypes or (SrcFile.FileType <> FILE_TYPE_FOLDER)) then
+      List.AddObject(SrcFile.FileName, SrcFile);
+    for I := 0 to SrcFile.Node.Count - 1 do
+      AddFiles(TSourceFile(SrcFile.Node.Item[I].Data));
   end;
 
 var
-  List: TStrings;
   I: Integer;
 begin
-  List := TStringList.Create;
   if (FileType = FILE_TYPE_PROJECT) then
-    for I := 0 to Pred(Node.Count) do
-      AddFiles(List, Node.Item[I])
-  else
   begin
-    if (not (FileType in [FILE_TYPE_RC, FILE_TYPE_FOLDER]) and
-      WithBreakpoint and (Breakpoint.Count > 0)) or not WithBreakpoint then
-      List.AddObject(FileName, TSourceFile(Self));
-  end;
-  Result := List;
+    for I := 0 to Node.Count - 1 do
+      AddFiles(TSourceFile(Node.Item[I].Data));
+  end
+  else
+    AddFiles(Self);
 end;
 
-function TProjectProperty.GetResource(Res: TStrings): Boolean;
+function TProjectFile.GetResource(Res: TStrings): Boolean;
 var
   List: TStrings;
   I: Integer;
@@ -1642,8 +1653,9 @@ var
   Manf: Byte;
 begin
   Result := False;
-  List := GetFiles(True);
-  for I := 0 to Pred(List.Count) do
+  List := TStringList.Create;
+  GetFiles(List, True);
+  for I := 0 to List.Count - 1 do
   begin
     if (TSourceFile(List.Objects[I]).FFileType = FILE_TYPE_RC) then
     begin
@@ -1652,6 +1664,7 @@ begin
         TSourceFile(List.Objects[I]).FileName + '"'));
     end;
   end;
+  List.Free;
   Manf := 0;
   if IncludeVersionInfo or Assigned(Icon) then
     Result := True;
@@ -1708,10 +1721,9 @@ begin
       end;
     end;
   end;
-  List.Free;
 end;
 
-function TProjectProperty.Build(Run: Boolean = False): Boolean;
+function TProjectFile.Build(Run: Boolean = False): Boolean;
 
   procedure SaveManifest(AFileName, ResName: string);
   var
@@ -1751,7 +1763,8 @@ begin
   SaveAll;
   if (CompilerType = COMPILER_CPP) or (CompilerType = COMPILER_C) then
   begin
-    Files := GetFiles;
+    Files := TStringList.Create;
+    GetFiles(Files);
     Res := TStringList.Create;
     if GetResource(Res) then
     begin
@@ -1854,29 +1867,31 @@ begin
   end;
 end;
 
-function TProjectProperty.GetBreakpointLists(List: TStrings): Boolean;
+function TProjectFile.GetBreakpointLists(List: TStrings): Boolean;
 var
   I: Integer;
-  files: TStrings;
+  Files: TStrings;
   fprop: TSourceFile;
 begin
-  files := GetFiles(False, True);
-  Result := files.Count > 0;
-  for I := 0 to files.Count - 1 do
+  Files := TStringList.Create;
+  GetFiles(Files, False, True);
+  Result := Files.Count > 0;
+  for I := 0 to Files.Count - 1 do
   begin
-    fprop := TSourceFile(files.Objects[I]);
-    List.AddObject(files.Strings[I], fprop.Breakpoint);
+    fprop := TSourceFile(Files.Objects[I]);
+    List.AddObject(Files.Strings[I], fprop.Breakpoint);
   end;
-  files.Free;
+  Files.Free;
 end;
 
-function TProjectProperty.HasBreakpoint: Boolean;
+function TProjectFile.HasBreakpoint: Boolean;
 var
-  files: TStrings;
+  Files: TStrings;
 begin
-  files := GetFiles(False, True);
-  Result := files.Count > 0;
-  files.Free;
+  Files := TStringList.Create;
+  GetFiles(Files, False, True);
+  Result := Files.Count > 0;
+  Files.Free;
 end;
 
 {TProjectsSheet}
@@ -2021,7 +2036,6 @@ begin
   FSynMemo.OnGutterClick := FrmFalconMain.TextEditorGutterClick;
   FSynMemo.OnGutterPaint := FrmFalconMain.TextEditorGutterPaint;
   FSynMemo.OnSpecialLineColors := FrmFalconMain.TextEditorSpecialLineColors;
-  //TODO
   PageCtrl.OnPageChange := nil;
   if SelectTab then
     PageCtrl.ActivePageIndex := PageIndex;

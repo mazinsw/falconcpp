@@ -1218,7 +1218,7 @@ var
   I: Integer;
 begin
   Result := '';
-  for I := 0 to Pred(FList.Count) do
+  for I := 0 to FList.Count - 1 do
   begin
     LangItem := TLanguageProperty(FList.Objects[I]);
     if (LangItem.ID = LangID) then
@@ -1235,7 +1235,7 @@ var
   I: Integer;
 begin
   Result := -1;
-  for I := 0 to Pred(FList.Count) do
+  for I := 0 to FList.Count - 1 do
   begin
     LangItem := TLanguageProperty(FList.Objects[I]);
     if (LangItem.ID = LangID) then
@@ -1259,7 +1259,7 @@ begin
   SaveID := FCurrent.ID;
   Clear;
   FindFiles(LangDir + '*.lng', Files);
-  for I := 0 to Pred(Files.Count) do
+  for I := 0 to Files.Count - 1 do
   begin
     Temp := LangDir + Files.Strings[I];
     ini := TIniFile.Create(Temp);
@@ -1309,7 +1309,7 @@ var
 begin
   Result := False;
   Temp := '';
-  for I := 0 to Pred(FList.Count) do
+  for I := 0 to FList.Count - 1 do
   begin
     LangProp := TLanguageProperty(FList.Objects[I]);
     if (LangProp.Name = LangName) then

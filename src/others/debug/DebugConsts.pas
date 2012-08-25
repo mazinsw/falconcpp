@@ -26,6 +26,8 @@ const
   GDB_SETCONFIRM = 'set confirm';
   GDB_SETNEWCONSOLE = 'set new-console';
   GDB_SETPRINTADDR = 'set print address';
+  GDB_SETPRINTSYMBOL = 'set print symbol-filename';
+  GDB_SETPRINTNULLSTOP = 'set print null-stop';
   GDB_WATCH = 'watch';
 
   CR = #13;
@@ -50,7 +52,7 @@ const
   //28	    a.SetIdade(13);, Line: 1
   //REGEXP_NEXTLINE   = '([0-9]+)[\t].*';
   //#26#26D:\Estudos\Delphi 7\MZSW\Falcon C++\src\debug/main.cpp:28:1001:beg:0x4013a4
-  REGEXP_NEXTLINE = '\x1A\x1A([A-Za-z]:)([^:]+):([0-9]+):[0-9]+:[beg]+:(0x[0-9A-z]+)'; //[0-9]+:[.*]:[xA-Fa-f0-9]+
+  REGEXP_NEXTLINE = '\x1A\x1A([A-Za-z]:)([^:]+):([0-9]+):[0-9]+:[beg]+:(0x[0-9A-Fa-f]+)';
   //Breakpoint 1 at 0x40133d: file main.cpp, line 27
   REGEXP_BREAKPOINT = 'Breakpoint ([0-9]+) at [xA-Fa-f0-9]+: file (.*), line ([0-9]+).';
   //[New thread 3588.0xdf4]

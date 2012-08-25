@@ -439,7 +439,7 @@ var
 
   procedure SetIconImage;
   begin
-    //TODO add suport for png and bmp image, convert to icon
+    { TODO -oMazin -c : add suport for png and bmp image, convert to icon 24/08/2012 22:30:27 }
     Ms.Position := 0;
     FIcon := TIcon.Create;
     try
@@ -467,7 +467,7 @@ var
     if ini.SectionExists('Files') then
     begin
       ini.ReadSection('Files', List);
-      for X := 0 to Pred(List.Count) do
+      for X := 0 to List.Count - 1 do
       begin
         if CompareText(List.Strings[X], 'Default') = 0 then
         begin
@@ -488,7 +488,7 @@ var
     if ini.SectionExists('FilesCpp') then
     begin
       ini.ReadSection('FilesCpp', List);
-      for X := 0 to Pred(List.Count) do
+      for X := 0 to List.Count - 1 do
       begin
         if CompareText(List.Strings[X], 'Default') = 0 then
         begin
@@ -513,7 +513,7 @@ var
     if ini.SectionExists('Resources') then
     begin
       ini.ReadSectionValues('Resources', List);
-      for X := 0 to Pred(List.Count) do
+      for X := 0 to List.Count - 1 do
       begin
         SrcName := List.Strings[X];
         if MsFileExist then
@@ -642,7 +642,7 @@ begin
     IsSubMn := False;
     if (List.Count > 0) then
     begin
-      for I := 0 to Pred(List.Count) do
+      for I := 0 to List.Count - 1 do
       begin
         if IsSubMenu(ini.ReadString('Help', List.Strings[I], '')) then
         begin

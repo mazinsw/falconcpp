@@ -97,7 +97,7 @@ procedure TMakefile.TransformToRelativePath;
 var
   I: Integer;
 begin
-  for I := 0 to Pred(Files.Count) do
+  for I := 0 to Files.Count - 1 do
     Files.Strings[I] := ExtractRelativePath(BaseDir, Files.Strings[I]);
 end;
 
@@ -105,9 +105,9 @@ procedure TMakefile.SelectFilesByExt(Extensions: array of string; List: TStrings
 var
   I, X: Integer;
 begin
-  for I := 0 to Pred(Files.Count) do
+  for I := 0 to Files.Count - 1 do
   begin
-    for X := 0 to Pred(Length(Extensions)) do
+    for X := 0 to Length(Extensions) - 1 do
     begin
       if CompareText(ExtractFileExt(Files.Strings[I]), Extensions[X]) = 0 then
         List.Add(Files.Strings[I]);

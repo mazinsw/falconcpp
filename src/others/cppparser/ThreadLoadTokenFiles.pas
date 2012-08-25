@@ -27,6 +27,7 @@ type
     fOnStart: TNotifyEvent;
     fOnProgress: TProgressEvent;
     fOnFinish: TNotifyEvent;
+    fOnAllFinish: TNotifyEvent;
 
     fCancel: Boolean;
     fTokenFiles: TTokenFiles;
@@ -36,6 +37,7 @@ type
     procedure DoStart;
     procedure DoProgress;
     procedure DoFinish;
+    procedure DoAllFinish;
 
     procedure ParserStart(Sender: TObject);
     procedure ParserProgress(Sender: TObject; TokenFile: TTokenFile;
@@ -57,6 +59,7 @@ type
     property OnStart: TNotifyEvent read fOnStart write fOnStart;
     property OnProgress: TProgressEvent read fOnProgress write fOnProgress;
     property OnFinish: TNotifyEvent read fOnFinish write fOnFinish;
+    property OnAllFinish: TNotifyEvent read fOnAllFinish write fOnAllFinish;
   end;
 
 implementation
@@ -92,6 +95,7 @@ begin
   end;
   fTokenFiles := nil;
   FBusy := False;
+  Synchronize(DoAllFinish);
 end;
 
 constructor TThreadLoadTokenFiles.Create;
@@ -101,7 +105,11 @@ begin
 end;
 
 destructor TThreadLoadTokenFiles.Destroy;
+var
+  I: Integer;
 begin
+  for I := 0 to fFileList.Count - 1 do
+    TTokenFileInfo(fFileList.Items[I]).Free;
   fFileList.Free;
   inherited Destroy;
 end;
@@ -197,6 +205,12 @@ procedure TThreadLoadTokenFiles.DoStart;
 begin
   if Assigned(fOnStart) then
     fOnStart(Self);
+end;
+
+procedure TThreadLoadTokenFiles.DoAllFinish;
+begin
+  if Assigned(fOnAllFinish) then
+    fOnAllFinish(Self);
 end;
 
 end.

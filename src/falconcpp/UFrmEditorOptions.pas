@@ -462,7 +462,7 @@ begin
   ReadOnly := Source.ReadOnly;
   Changed := Source.Changed;
   Clear;
-  for I := 0 to Pred(Source.Count) do
+  for I := 0 to Source.Count - 1 do
     AddSintaxType(Source.Items[I].Name,
       Source.Items[I].Foreground,
       Source.Items[I].Background,
@@ -477,7 +477,7 @@ var
 begin
   if Length(AttributeName) > 0 then
   begin
-    for I := 0 to Pred(Highlight.AttrCount) do
+    for I := 0 to Highlight.AttrCount - 1 do
       if Highlight.Attribute[I].Name = AttributeName then
         Break;
     if GetType(AttributeName, st) and (I >= 0) then
@@ -489,7 +489,7 @@ begin
     Exit;
   end;
 
-  for I := 0 to Pred(Highlight.AttrCount) do
+  for I := 0 to Highlight.AttrCount - 1 do
     if GetType(Highlight.Attribute[I].Name, st) then
     begin
       Highlight.Attribute[I].Foreground := st.Foreground;
@@ -551,7 +551,7 @@ var
   I: Integer;
 begin
   Result := False;
-  for I := Pred(Count) downto 0 do
+  for I := Count - 1 downto 0 do
     if Items[I].Name = Name then
     begin
       Result := True;
@@ -579,7 +579,7 @@ procedure TSintax.Clear;
 var
   I: Integer;
 begin
-  for I := Pred(Count) downto 0 do
+  for I := Count - 1 downto 0 do
     Delete(I);
 end;
 
@@ -764,7 +764,7 @@ procedure TSintaxList.Clear;
 var
   I: Integer;
 begin
-  for I := Pred(Count) downto 0 do
+  for I := Count - 1 downto 0 do
     Delete(I);
 end;
 
@@ -1274,7 +1274,7 @@ begin
   BtnDel.Enabled := not ActiveSintax.ReadOnly;
   BtnSave.Enabled := ActiveSintax.Changed;
   ListBoxType.Items.Clear;
-  for I := 0 to Pred(ActiveSintax.Count) do
+  for I := 0 to ActiveSintax.Count - 1 do
     ListBoxType.Items.Add(ActiveSintax.Items[I].Name);
   if ActiveSintax.Count = 0 then
     Exit;
@@ -1761,8 +1761,8 @@ begin
           1: formatter.BracketFormat := bfBreakMode; //Break
           2: formatter.BracketFormat := bfAtatch; //Attach
           3: formatter.BracketFormat := bfBDAC; //Linux
-        //TODO 4: formatter.BracketFormat := bfRunIn;//?
-        //TODO 5: formatter.BracketFormat := bfStroustrup;//?
+        { TODO -oMazin -c : formatter.BracketFormat := bfRunIn; 24/08/2012 22:23:50 }
+        { TODO -oMazin -c : formatter.BracketFormat := bfStroustrup; 24/08/2012 22:24:27 }
         else
         //None
           formatter.BracketFormat := bfNone;

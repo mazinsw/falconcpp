@@ -273,7 +273,7 @@ var
   S: string;
 begin
   Result := False;
-  for I := 0 to Pred(Source.Count) do
+  for I := 0 to Source.Count - 1 do
   begin
     S := ConvertSlashes(Source.Name[I]);
     if FileNameMatch(FindName, S) then
@@ -293,7 +293,7 @@ var
   S: string;
 begin
   Result := False;
-  for I := 0 to Pred(Source.Count) do
+  for I := 0 to Source.Count - 1 do
   begin
     S := ConvertSlashes(Source.Name[I]);
     if FileNameMatch(FindName, S) then

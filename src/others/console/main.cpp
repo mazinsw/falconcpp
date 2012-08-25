@@ -1,5 +1,6 @@
 /*
- * This file is part of the Falcon C++ IDE and licensed under the GNU General Public License, version 3
+ * This file is part of the Falcon C++ IDE and licensed under the GNU General 
+ * Public License, version 3
  * http://www.gnu.org/licenses/gpl-3.0.html
  *
  */
@@ -41,7 +42,10 @@ int main(int argc, char** argv)
     fullsize += argc + 32;
 
     char* cmdline = new char[fullsize];
+    char* consoleTitle = new char[fullsize];
     memset(cmdline, 0, fullsize);
+    strcpy(consoleTitle, argv[1]);
+    AnsiToOem(consoleTitle, consoleTitle);
 
     // 1st arg (executable) enclosed in quotes to support filenames with spaces
     bool sp = canAddQuotes(argv[1]);
@@ -63,7 +67,7 @@ int main(int argc, char** argv)
         strcat(cmdline, " ");
     }
 
-    SetConsoleTitle(cmdline);
+    SetConsoleTitle(consoleTitle);
 
     STARTUPINFO si;
     PROCESS_INFORMATION pi;
@@ -97,6 +101,7 @@ int main(int argc, char** argv)
     getch();
 
     delete[] cmdline;
+    delete[] consoleTitle;
     return ret;
 }
 

@@ -95,9 +95,9 @@ begin
   begin
     Desc := TStringList.Create;
     Desc.Text := NodeFiles.Text;
-    for I := 0 to Pred(Desc.Count) do
+    for I := 0 to Desc.Count - 1 do
       Desc.Strings[I] := Trim(Desc.Strings[I]);
-    for I := Pred(Desc.Count) downto 0 do
+    for I := Desc.Count - 1 downto 0 do
       if Length(Desc.Strings[I]) = 0 then
         Desc.Delete(I);
     MemoChanges.Text := Desc.Text;

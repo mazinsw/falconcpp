@@ -53,6 +53,9 @@ type
     );
   TExecuteFileOptions = set of TExecuteFileOption;
 
+{$EXTERNALSYM SwitchToThisWindow}
+procedure SwitchToThisWindow(hWnd: HWND; fAltTab: BOOL); stdcall;
+
 function GetTickTime(ticks: Cardinal; fmt: string): string;
 procedure GetNameAndVersion(const S: string; var aName, aVersion: string);
 procedure SearchCompilers(List: TStrings; var PathCompiler: string);
@@ -95,9 +98,9 @@ function GetFullFileName(Name: string): string;
 function DoubleQuotedStr(const S: string): string;
 
 function EditorGotoXY(Memo: TSynMemo; X, Y: Integer): Boolean;
-function SearchFileProperty(FileName: string;
+function SearchSourceFile(FileName: string;
   var FileProp: TSourceFile): Boolean;
-function OpenFile(FileName: string): TProjectProperty;
+function OpenFile(FileName: string): TProjectFile;
 function RemoveOption(const S, Options: string): string;
 function DeleteResourceFiles(List: TStrings): Boolean;
 procedure ProjectPopupMenuItens(ItemNew, ItemNewPro, ItemNewC, ItemNewCPP,
@@ -319,10 +322,10 @@ begin
   if Assigned(bmp) then
   begin
     bmp.PixelFormat := pf32bit;
-    for y := 0 to Pred(bmp.Height) do
+    for y := 0 to bmp.Height - 1 do
     begin
       ColorSL := bmp.Scanline[y];
-      for x := 0 to Pred(bmp.Width) do
+      for x := 0 to bmp.Width - 1 do
       begin
         CurrCl := RGB(ColorSL^[x].rgbRed,
           ColorSL^[x].rgbGreen,
@@ -372,10 +375,10 @@ begin
       Result.Width := 48;
       Result.Canvas.Brush.Color := clBlack;
       Result.Canvas.FillRect(Result.Canvas.ClipRect);
-      for y := 0 to Pred(Result.Height) do
+      for y := 0 to Result.Height - 1 do
       begin
         ColorSL := Result.Scanline[y];
-        for x := 0 to Pred(Result.Width) do
+        for x := 0 to Result.Width - 1 do
           ColorSL^[x].rgbReserved := 0;
       end;
       Result.Canvas.Draw((48 - bmp.Width) div 2, (48 - bmp.Height) div 2, bmp);
@@ -385,6 +388,8 @@ begin
       Result := bmp;
   end;
 end;
+
+procedure SwitchToThisWindow; external user32 name 'SwitchToThisWindow';
 
 function GetFileVersionA(FileName: string): TVersion;
 type
@@ -696,7 +701,7 @@ var
   I: Integer;
 begin
   List := TStringList.Create;
-  for I := 0 to Pred(Languages.Count) do
+  for I := 0 to Languages.Count - 1 do
   begin
     LangItem := TLanguageItem.Create;
     LangItem.ID := Languages.LocaleID[I];
@@ -1051,7 +1056,7 @@ begin
   Ret := '';
   C := Length(HEXText) div 64;
   Rest := Length(HEXText) mod 64;
-  for I := 0 to Pred(C) do
+  for I := 0 to C - 1 do
   begin
     Ret := Ret + TwoParms + Copy(HEXText, I * 64 + 1, 64);
   end;
@@ -1157,7 +1162,7 @@ function NewSourceFile(FileType, Compiler: Integer; FirstName, BaseName,
   Expand: Boolean): TSourceFile;
 var
   Node: TTreeNode;
-  NewPrj, Proj: TProjectProperty;
+  NewPrj, Proj: TProjectFile;
   NewFile: TSourceFile;
   AName: string;
 
@@ -1175,7 +1180,7 @@ var
       else
         AName := ExtractFileName(FileName);
       Node := TreeViewProjects.Items.Add(nil, AName);
-      NewPrj := TProjectProperty.Create(PageControlEditor, Node);
+      NewPrj := TProjectFile.Create(PageControlEditor, Node);
       NewPrj.Project := NewPrj;
       NewPrj.FileType := FileType;
       NewPrj.CompilerType := Compiler;
@@ -1200,9 +1205,9 @@ begin
   begin
     if Assigned(OwnerFile) then
     begin
-      if (OwnerFile is TProjectProperty) then
+      if (OwnerFile is TProjectFile) then
       begin
-        Proj := TProjectProperty(OwnerFile);
+        Proj := TProjectFile(OwnerFile);
         if (Proj.FileType <> FILE_TYPE_PROJECT) then
         begin
           Result := NewProject;
@@ -1318,7 +1323,7 @@ begin
   Result := (Memo.DisplayX = X) and (Memo.DisplayY = Y);
 end;
 
-function SearchFileProperty(FileName: string;
+function SearchSourceFile(FileName: string;
   var FileProp: TSourceFile): Boolean;
 var
   ActFile: TSourceFile;
@@ -1326,7 +1331,7 @@ var
   Node: TTreeNode;
 begin
   Result := False;
-  for I := 0 to Pred(FrmFalconMain.TreeViewProjects.Items.Count) do
+  for I := 0 to FrmFalconMain.TreeViewProjects.Items.Count - 1 do
   begin
     Node := FrmFalconMain.TreeViewProjects.Items.Item[I];
     ActFile := TSourceFile(Node.Data);
@@ -1339,13 +1344,13 @@ begin
   end;
 end;
 
-function OpenFile(FileName: string): TProjectProperty;
+function OpenFile(FileName: string): TProjectFile;
 var
-  ProjProp: TProjectProperty;
+  ProjProp: TProjectFile;
   FileType: Integer;
 begin
   FileType := GetFileType(FileName);
-  ProjProp := TProjectProperty(NewSourceFile(FileType,
+  ProjProp := TProjectFile(NewSourceFile(FileType,
     GetCompiler(FileType), '', '', '', FileName, nil, True, False));
   ProjProp.Saved := True;
   ProjProp.IsNew := False;
@@ -1383,7 +1388,7 @@ var
   Ext: string;
 begin
   Result := False;
-  for I := Pred(List.Count) downto 0 do
+  for I := List.Count - 1 downto 0 do
   begin
     Ext := ExtractFileExt(List.Strings[I]);
     if CompareText(Ext, '.RC') = 0 then
@@ -1442,7 +1447,7 @@ function NextFileName(FirstName, Ext: string; Node: TTreeNode): string;
     Caption: string;
   begin
     Result := False;
-    for I := 0 to Pred(Node.Count) do
+    for I := 0 to Node.Count - 1 do
     begin
       Caption := TSourceFile(Node[I].Data).Name;
       if (Caption = FileName) then
@@ -1518,7 +1523,7 @@ procedure TransformToRelativePath(BaseName: string; Files: TStrings);
 var
   I: Integer;
 begin
-  for I := 0 to Pred(Files.Count) do
+  for I := 0 to Files.Count - 1 do
   begin
     Files.Strings[I] := ExtractRelativePath(BaseName, Files.Strings[I]);
   end;
@@ -1559,9 +1564,9 @@ procedure SelectFilesByExt(Extensions: array of string; List, OutList: TStrings)
 var
   I, X: Integer;
 begin
-  for I := 0 to Pred(List.Count) do
+  for I := 0 to List.Count - 1 do
   begin
-    for X := 0 to Pred(Length(Extensions)) do
+    for X := 0 to Length(Extensions) - 1 do
     begin
       if (UpperCase(ExtractFileExt(List.Strings[I])) =
         UpperCase(Extensions[X])) then

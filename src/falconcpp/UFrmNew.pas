@@ -169,7 +169,7 @@ begin
   Bitmap.Free;
   FraProjs.Parent := PainelFra;
   FraProjs.LastItemIndex := -1;
-  for I := 0 to Pred(FrmFalconMain.Templates.Count) do
+  for I := 0 to FrmFalconMain.Templates.Count - 1 do
   begin
     Item := FraProjs.GetListViewOfSheet(
       FrmFalconMain.Templates.Templates[I].Sheet).Items.Add;
@@ -284,7 +284,7 @@ end;
 procedure TFrmNewProj.BtnFnshClick(Sender: TObject);
 var
   Node: TTreeNode;
-  NewPrj: TProjectProperty;
+  NewPrj: TProjectFile;
   NewFile, OwnerFile: TSourceFile;
   FileName, SrcFileName, SrcDir, FolderName: string;
   Optmz: string;
@@ -301,7 +301,7 @@ var
 begin
   FrmFalconMain.IsLoading := True;
   Node := FrmFalconMain.TreeViewProjects.Items.AddChild(nil, '');
-  NewPrj := TProjectProperty.Create(FrmFalconMain.PageControlEditor, Node);
+  NewPrj := TProjectFile.Create(FrmFalconMain.PageControlEditor, Node);
   NewPrj.Project := NewPrj;
   NewPrj.FileType := FILE_TYPE_PROJECT;
   Node.Data := NewPrj;
@@ -399,7 +399,7 @@ begin
       if Template.CppSourceFiles.Count > 0 then
         TemFiles := Template.CppSourceFiles;
     end;
-    for I := 0 to Pred(TemFiles.Count) do
+    for I := 0 to TemFiles.Count - 1 do
     begin
       SrcFileName := ConvertSlashes(TemFiles.FileName[I]);
       FileType := GetFileType(SrcFileName);

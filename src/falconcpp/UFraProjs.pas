@@ -48,7 +48,7 @@ var
   I: Integer;
   NewPage: TProjectsSheet;
 begin
-  for I := 0 to Pred(PageControl.PageCount) do
+  for I := 0 to PageControl.PageCount - 1 do
   begin
     if (PageControl.Pages[I].Caption = SheetCaption) then
     begin

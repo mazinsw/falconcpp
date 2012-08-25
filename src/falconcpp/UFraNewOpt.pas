@@ -92,7 +92,7 @@ procedure TFraPrjOpt.CHBIncClick(Sender: TObject);
 var
   I: Integer;
 begin
-  for I := 0 to Pred(GrBInfo.ControlCount) do
+  for I := 0 to GrBInfo.ControlCount - 1 do
     GrBInfo.Controls[I].Enabled := CHBInc.Checked;
 end;
 

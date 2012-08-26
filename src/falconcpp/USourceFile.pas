@@ -58,9 +58,11 @@ const
     );
 
   NEW_LINE = #13 + #10;
-
-  staticLibStr = ' -Wl,--add-stdcall-alias,--out-implib,lib%s';
-
+  LD_COMMAND = '-Wl';
+  LD_OPTION_KILL_AT = '--kill-at';
+  LD_OPTION_OUT_LIB = '--out-implib';
+  LD_DLL_STATIC_LIB = LD_COMMAND + ',' + LD_OPTION_KILL_AT + ',' +
+    LD_OPTION_OUT_LIB + ',lib%s';
 type
   TVersionInfo = class
     Major: Integer;

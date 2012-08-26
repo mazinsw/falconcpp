@@ -90,7 +90,7 @@ object FrmProperty: TFrmProperty
           Width = 169
           Height = 21
           TabOrder = 2
-          OnChange = ProjectChange
+          OnChange = EditTargetChange
         end
         object BtnLoadIcon: TButton
           Left = 250
@@ -737,7 +737,7 @@ object FrmProperty: TFrmProperty
             Top = 8
             Width = 369
             Height = 21
-            ItemHeight = 0
+            ItemHeight = 13
             TabOrder = 0
             OnKeyPress = CBLibsKeyPress
           end
@@ -1092,7 +1092,7 @@ object FrmProperty: TFrmProperty
             Top = 8
             Width = 369
             Height = 21
-            ItemHeight = 0
+            ItemHeight = 13
             TabOrder = 0
             OnKeyPress = CBIncsKeyPress
           end

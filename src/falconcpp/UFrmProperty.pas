@@ -132,6 +132,7 @@ type
     procedure VersionNumbersChange(Sender: TObject);
     procedure VersionNumbersKeyPress(Sender: TObject; var Key: Char);
     procedure UpDownVersionClick(Sender: TObject; Button: TUDBtnType);
+    procedure EditTargetChange(Sender: TObject);
   private
     { Private declarations }
   protected
@@ -547,6 +548,7 @@ end;
 procedure TFrmProperty.SBtnAddClick(Sender: TObject);
 var
   I: Integer;
+  LibDir, LibName: string;
 begin
   if (Length(Trim(CBLibs.Text)) = 0) then
   begin
@@ -555,16 +557,25 @@ begin
       Options := Options + [ofFileMustExist];
       Filter := 'Library File (*.a, *.lib)|*.a;*.lib';
       FilterIndex := 0;
-      InitialDir := FrmFalconMain.Config.Compiler.Path + '\lib\';
+      LibDir := FrmFalconMain.Config.Compiler.Path + '\lib\';
+      InitialDir := LibDir;
       if Execute then
       begin
-        if CompareText(ExtractFileExt(FileName), '.a') = 0 then
+        if Pos(LibDir, FileName) = 0 then
         begin
-          CBLibs.Text := StringReplace(ExtractName(FileName),
-            'lib', '-l', []);
+          LibName := ExtractRelativePath(Project.FileName, FileName);
+          CBLibs.Text := LibName;
         end
         else
-          CBLibs.Text := '-l' + ChangeFileExt(FileName, '');
+        begin
+          if CompareText(ExtractFileExt(FileName), '.a') = 0 then
+          begin
+            CBLibs.Text := StringReplace(ExtractName(FileName),
+              'lib', '-l', []);
+          end
+          else
+            CBLibs.Text := '-l' + ChangeFileExt(FileName, '');
+        end;
         SBtnAdd.Click;
       end;
       Free;
@@ -771,7 +782,7 @@ begin
               ChLbLibs.Items.Delete(I)
             else if ChLbLibs.Items.Strings[I] = '-shared' then
               ChLbLibs.Items.Delete(I)
-            else if Pos('-Wl,--add-stdcall-alias', ChLbLibs.Items.Strings[I]) > 0 then
+            else if Pos(LD_COMMAND + ',' + LD_OPTION_KILL_AT, ChLbLibs.Items.Strings[I]) > 0 then
               ChLbLibs.Items.Delete(I);
           end;
         end;
@@ -788,7 +799,7 @@ begin
             end
             else if ChLbLibs.Items.Strings[I] = '-shared' then
               ChLbLibs.Items.Delete(I)
-            else if Pos('-Wl,--add-stdcall-alias', ChLbLibs.Items.Strings[I]) > 0 then
+            else if Pos(LD_COMMAND + ',' + LD_OPTION_KILL_AT, ChLbLibs.Items.Strings[I]) > 0 then
               ChLbLibs.Items.Delete(I);
           end;
           if Idx < 0 then
@@ -810,7 +821,7 @@ begin
               if I <> 0 then
                 ChLbLibs.Items.Move(I, 0);
             end
-            else if Pos('-Wl,--add-stdcall-alias', ChLbLibs.Items.Strings[I]) > 0 then
+            else if Pos(LD_COMMAND + ',' + LD_OPTION_KILL_AT, ChLbLibs.Items.Strings[I]) > 0 then
             begin
               Idx2 := I;
               ChLbLibs.Checked[I] := True;
@@ -827,10 +838,10 @@ begin
           if Idx2 < 0 then
           begin
             if ChbCreateLL.Checked then
-              ChLbLibs.Items.Insert(1, '-Wl,--add-stdcall-alias,--out-implib,lib'
-                + ChangeFileExt(Project.Target, '.dll.a'))
+              ChLbLibs.Items.Insert(1, Format(LD_DLL_STATIC_LIB,
+                [RemoveFileExt(EditTarget.Text) + 'dll.a']))
             else
-              ChLbLibs.Items.Insert(1, '-Wl,--add-stdcall-alias');
+              ChLbLibs.Items.Insert(1, LD_COMMAND + ',' + LD_OPTION_KILL_AT);
             ChLbLibs.Checked[1] := True;
           end;
         end;
@@ -842,7 +853,7 @@ begin
               ChLbLibs.Items.Delete(I)
             else if ChLbLibs.Items.Strings[I] = '-shared' then
               ChLbLibs.Items.Delete(I)
-            else if ChLbLibs.Items.Strings[I] = '-Wl,--add-stdcall-alias' then
+            else if ChLbLibs.Items.Strings[I] = LD_COMMAND + ',' + LD_OPTION_KILL_AT then
               ChLbLibs.Items.Delete(I);
           end;
         end;
@@ -879,6 +890,7 @@ procedure TFrmProperty.SBtnEditIncClick(Sender: TObject);
 begin
   ListIncs.Enabled := False;
   SBtnEditInc.Enabled := False;
+  SBtnDelInc.Enabled := False;
   CBIncs.Text := ListIncs.Items.Strings[ListIncs.ItemIndex];
 end;
 
@@ -886,6 +898,7 @@ procedure TFrmProperty.SBtnEditClick(Sender: TObject);
 begin
   ChLbLibs.Enabled := False;
   SBtnEdit.Enabled := False;
+  SBtnRem.Enabled := False;
   CBLibs.Text := ChLbLibs.Items.Strings[ChLbLibs.ItemIndex];
 end;
 
@@ -908,7 +921,7 @@ begin
   J := -1;
   for I := 0 to ChLbLibs.Items.Count - 1 do
   begin
-    if Pos('-Wl,--add-stdcall-alias', ChLbLibs.Items.Strings[I]) > 0 then
+    if Pos(LD_COMMAND + ',' + LD_OPTION_KILL_AT, ChLbLibs.Items.Strings[I]) > 0 then
     begin
       J := I;
       Break;
@@ -916,13 +929,14 @@ begin
   end;
   if J >= 0 then
   begin
-    if ChbCreateLL.Checked and (Pos(',--out-implib,', ChLbLibs.Items.Strings[J]) = 0) then
+    if ChbCreateLL.Checked then
     begin
-      ChLbLibs.Items.Strings[J] := ChLbLibs.Items.Strings[J] +
-        ',--out-implib,lib' + ChangeFileExt(Project.Target, '.dll.a');
+      ChLbLibs.Items.Strings[J] := LD_COMMAND + ',' + LD_OPTION_KILL_AT +
+        ',' + LD_OPTION_OUT_LIB + ',lib' + RemoveFileExt(EditTarget.Text) +
+        'dll.a';
     end
-    else if not ChbCreateLL.Checked then
-      ChLbLibs.Items.Strings[J] := '-Wl,--add-stdcall-alias';
+    else
+      ChLbLibs.Items.Strings[J] := LD_COMMAND + ',' + LD_OPTION_KILL_AT;
   end;
   ProjectChange(Sender);
 end;
@@ -960,6 +974,14 @@ procedure TFrmProperty.UpDownVersionClick(Sender: TObject;
   Button: TUDBtnType);
 begin
   VersionChange(Sender);
+end;
+
+procedure TFrmProperty.EditTargetChange(Sender: TObject);
+begin
+  if (RGAppTp.ItemIndex = 2) and ChbCreateLL.Checked then
+    ChbCreateLLClick(ChbCreateLL)
+  else
+    ProjectChange(Sender);
 end;
 
 end.

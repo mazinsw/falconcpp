@@ -343,7 +343,7 @@ begin
         AddLibs := '-mwindows ';
         NewPrj.EnableTheme := True;
       end;
-    APPTYPE_DLL: AddLibs := '-shared -Wl,--add-stdcall-alias ';
+    APPTYPE_DLL: AddLibs := '-shared ' + LD_COMMAND + ',' + LD_OPTION_KILL_AT;
   end;
   NewPrj.Libs := AddLibs + Template.Libs;
   NewPrj.Flags := Template.Flags;

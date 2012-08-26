@@ -5562,7 +5562,7 @@ begin
   if createStaticLib then
   begin
     NewPrj.Libs := Trim(NewPrj.Libs + ' ' +
-      Format(staticLibStr, [ChangeFileExt(NewPrj.Target, '.dll.a')]));
+      Format(LD_DLL_STATIC_LIB, [ChangeFileExt(NewPrj.Target, 'dll.a')]));
   end;
   if createDefFile then
   begin

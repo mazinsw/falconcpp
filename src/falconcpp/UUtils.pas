@@ -1125,7 +1125,7 @@ begin
     Exit;
   end;
   Node := FrmFalconMain.TreeViewProjects.Items.AddChild(Parent.Node, Name);
-  Result := TSourceFile.Create(FrmFalconMain.PageControlEditor, Node);
+  Result := TSourceFile.Create(Node);
   Node.Data := Result;
   Result.FileType := FILE_TYPE_FOLDER;
   Result.Project := Parent.Project;
@@ -1180,7 +1180,7 @@ var
       else
         AName := ExtractFileName(FileName);
       Node := TreeViewProjects.Items.Add(nil, AName);
-      NewPrj := TProjectFile.Create(PageControlEditor, Node);
+      NewPrj := TProjectFile.Create(Node);
       NewPrj.Project := NewPrj;
       NewPrj.FileType := FileType;
       NewPrj.CompilerType := Compiler;
@@ -1233,7 +1233,7 @@ begin
         AName := NextFileName(BaseName, Ext, OwnerFile.Node);
       end;
       Node := TreeViewProjects.Items.AddChild(OwnerFile.Node, AName);
-      NewFile := TSourceFile.Create(PageControlEditor, Node);
+      NewFile := TSourceFile.Create(Node);
       NewFile.Project := Proj;
       NewFile.FileName := AName;
       NewFile.FileType := FileType;

@@ -115,7 +115,7 @@ var
 begin
   Result := True;
   Sheet := TSourceFileSheet(FrmFalconMain.PageControlEditor.ActivePage);
-  FileProp := TSourceFile(Sheet.Node.Data);
+  FileProp := Sheet.SourceFile;
   //ProjProp := FileProp.Project;
   Memo := Sheet.Memo;
 

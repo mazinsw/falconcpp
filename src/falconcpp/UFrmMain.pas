@@ -894,7 +894,7 @@ begin
   begin
     if FrmFalconMain.GetActiveSheet(sheet) then
     begin
-      fTokenFile.Data := TSourceFile(sheet.Node.Data);
+      fTokenFile.Data := sheet.SourceFile;
       fSource := sheet.Memo.Text;
     end
     else
@@ -1781,7 +1781,7 @@ begin
       if (PageControlEditor.ActivePageIndex >= 0) then
       begin
         Sheet := TSourceFileSheet(PageControlEditor.ActivePage);
-        ActiveFile := TSourceFile(Sheet.Node.Data);
+        ActiveFile := Sheet.SourceFile;
       end
       else
         ActiveFile := TSourceFile(TreeViewProjects.Selected.Data);
@@ -1791,7 +1791,7 @@ begin
   else if (PageControlEditor.ActivePageIndex >= 0) then
   begin
     Sheet := TSourceFileSheet(PageControlEditor.ActivePage);
-    ActiveFile := TSourceFile(Sheet.Node.Data);
+    ActiveFile := Sheet.SourceFile;
     Result := True;
   end
   else
@@ -2210,7 +2210,7 @@ begin
   if TabIndex < 0 then
     Exit;
   Sheet := TSourceFileSheet(PageControlEditor.Pages[TabIndex]);
-  FileProp := TSourceFile(Sheet.Node.Data);
+  FileProp := Sheet.SourceFile;
   if (not FileProp.Saved and not FileProp.IsNew) or
     (FileProp.Modified and not (Config.Environment.RemoveFileOnClose and
     (FileProp.Project.FileType <> FILE_TYPE_PROJECT))) then
@@ -2706,11 +2706,11 @@ begin
     end;
 
     Sheet := TSourceFileSheet(PageControlEditor.ActivePage);
-    Prop := TSourceFile(Sheet.Node.Data);
-    if (TObject(Sheet.Node.Data) is TProjectFile) then
-      ProjProp := TProjectFile(Sheet.Node.Data)
+    Prop := Sheet.SourceFile;
+    if Sheet.SourceFile is TProjectFile then
+      ProjProp := TProjectFile(Sheet.SourceFile)
     else
-      ProjProp := TSourceFile(Sheet.Node.Data).Project;
+      ProjProp := Sheet.SourceFile.Project;
 
     BoldTreeNode(ProjProp.Node, True);
 
@@ -3050,7 +3050,7 @@ begin
   begin
     for I := 0 to ParseList.Count - 1 do
     begin
-      if Sheet.Node = TSourceFile(ParseList.Objects[I]).Node then
+      if Sheet.SourceFile = TSourceFile(ParseList.Objects[I]) then
         ActiveEditingFile.FileName := TSourceFile(ParseList.Objects[I]).FileName;
     end;
   end;
@@ -4406,7 +4406,7 @@ begin
     else
       Memo.ActiveLineColor := clNone;
     Sheet := TSourceFileSheet(Memo.Owner);
-    FilePrp := TSourceFile(Sheet.Node.Data);
+    FilePrp := Sheet.SourceFile;
     FileSave.Enabled := FilePrp.Modified or not FilePrp.Saved;
     BtnSave.Enabled := FileSave.Enabled;
     PopTabsSave.Enabled := FileSave.Enabled;
@@ -4685,7 +4685,7 @@ begin
     if GetActiveSheet(sheet) then
     begin
       //search #include <stdio.h> in project
-      Prop := TSourceFile(sheet.Node.Data);
+      Prop := Sheet.SourceFile;
       Proj := Prop.Project;
       FileName := ExpandFileName(ExtractFilePath(Prop.FileName) + S);
       if Proj.FileType = FILE_TYPE_PROJECT then
@@ -5166,7 +5166,7 @@ begin
     Exit;
   end;
   Node := TreeViewProjects.Items.AddChild(nil, '');
-  NewPrj := TProjectFile.Create(PageControlEditor, Node);
+  NewPrj := TProjectFile.Create(Node);
   NewPrj.Project := NewPrj;
   NewPrj.FileType := FILE_TYPE_PROJECT;
   Node.Data := NewPrj;
@@ -5397,7 +5397,7 @@ begin
     Exit;
   end;
   Node := TreeViewProjects.Items.AddChild(nil, '');
-  NewPrj := TProjectFile.Create(PageControlEditor, Node);
+  NewPrj := TProjectFile.Create(Node);
   NewPrj.Project := NewPrj;
   NewPrj.FileType := FILE_TYPE_PROJECT;
   Node.Data := NewPrj;
@@ -5813,11 +5813,10 @@ var
   HT: THitTests;
   fpd, fps: TSourceFile;
 begin
-  if TreeViewProjects.Selected = nil then
-    Exit;
   Selitem := TreeViewProjects.Selected;
   HT := TreeViewProjects.GetHitTestInfoAt(X, Y);
-  AnItem := TreeViewProjects.GetNodeAt(X, Y);
+  //AnItem := TreeViewProjects.GetNodeAt(X, Y);
+  AnItem := TreeViewProjects.DropTarget;
   if (AnItem = nil) or (AnItem = Selitem) then
     Exit;
   if (HT - [htOnItem, htOnIcon, htNowhere, htOnIndent, htBelow] <> HT) then
@@ -5835,11 +5834,14 @@ begin
 
     fps.Project.PropertyChanged := True;
     fpd.Project.PropertyChanged := True;
-
+    if fpd is TProjectFile then
+      fps.MoveFileTo(ExtractFilePath(fpd.FileName))
+    else
+      fps.MoveFileTo(fpd.FileName);
     //convert to TSourceFile
     if fps is TProjectFile then
     begin
-      Selitem.Data := TSourceFile.Create(fps.PageCtrl, fps.Node);
+      Selitem.Data := TSourceFile.Create(fps.Node);
       TSourceFile(Selitem.Data).Assign(fps); //copy
       fps.Free; //release
       fps := TSourceFile(Selitem.Data);
@@ -5847,7 +5849,7 @@ begin
     end;
     if TSourceFile(Selitem.Data).Project <> fpd.Project then
       AdjustNewProject(Selitem, fpd.Project);
-    TreeViewProjects.Selected.MoveTo(AnItem, AttachMode);
+    Selitem.MoveTo(AnItem, AttachMode);
     BoldTreeNode(fpd.Project.Node, True);
   end;
 end;
@@ -6964,14 +6966,14 @@ begin
   begin
     EditorPrint.Highlighter := sheet.Memo.Highlighter;
     EditorPrint.SynEdit := sheet.Memo;
-    EditorPrint.DocTitle := TSourceFile(sheet.Node.Data).Name;
+    EditorPrint.DocTitle := Sheet.SourceFile.Name;
     AFont := TFont.Create;
     with EditorPrint.Header do
     begin
       AFont.Assign(DefaultFont);
       AFont.Size := 7;
       AFont.Style := [fsBold];
-      Add(TSourceFile(sheet.Node.Data).FileName, AFont, taLeftJustify, 1);
+      Add(Sheet.SourceFile.FileName, AFont, taLeftJustify, 1);
       Add(FormatDateTime(STR_FRM_MAIN[38], Now), AFont, taRightJustify, 1);
     end;
     with EditorPrint.Footer do
@@ -7071,7 +7073,7 @@ begin
   if not GetActiveSheet(sheet) then
     Exit;
   ExporterHTML.Highlighter := sheet.Memo.Highlighter;
-  ExporterHTML.Title := TSourceFile(sheet.Node.Data).Name;
+  ExporterHTML.Title := Sheet.SourceFile.Name;
   ExporterHTML.ExportAll(sheet.Memo.Lines);
   ExporterHTML.ExportAsText := True;
 
@@ -7079,7 +7081,7 @@ begin
   begin
     Filter := ExporterHTML.DefaultFilter;
     DefaultExt := '.html';
-    FileName := ChangeFileExt(TSourceFile(sheet.Node.Data).Name, '.html');
+    FileName := ChangeFileExt(Sheet.SourceFile.Name, '.html');
     if Execute then
     begin
       ExporterHTML.SaveToFile(FileName);
@@ -7095,7 +7097,7 @@ begin
   if not GetActiveSheet(sheet) then
     Exit;
   ExporterRTF.Highlighter := sheet.Memo.Highlighter;
-  ExporterRTF.Title := TSourceFile(sheet.Node.Data).Name;
+  ExporterRTF.Title := Sheet.SourceFile.Name;
   ExporterRTF.ExportAll(sheet.Memo.Lines);
   //ExporterRTF.ExportAsText := True;
 
@@ -7103,7 +7105,7 @@ begin
   begin
     Filter := ExporterRTF.DefaultFilter;
     DefaultExt := '.rtf';
-    FileName := ChangeFileExt(TSourceFile(sheet.Node.Data).Name, '.rtf');
+    FileName := ChangeFileExt(Sheet.SourceFile.Name, '.rtf');
     if Execute then
     begin
       ExporterRTF.SaveToFile(FileName);
@@ -7119,7 +7121,7 @@ begin
   if not GetActiveSheet(sheet) then
     Exit;
   ExporterTeX.Highlighter := sheet.Memo.Highlighter;
-  ExporterTeX.Title := TSourceFile(sheet.Node.Data).Name;
+  ExporterTeX.Title := Sheet.SourceFile.Name;
   ExporterTeX.ExportAll(sheet.Memo.Lines);
   ExporterTeX.TabWidth := sheet.Memo.TabWidth;
 
@@ -7127,7 +7129,7 @@ begin
   begin
     Filter := ExporterTeX.DefaultFilter;
     DefaultExt := '.tex';
-    FileName := ChangeFileExt(TSourceFile(sheet.Node.Data).Name, '.tex');
+    FileName := ChangeFileExt(Sheet.SourceFile.Name, '.tex');
     if Execute then
     begin
       ExporterTeX.SaveToFile(FileName);
@@ -7186,7 +7188,7 @@ var
 begin
   if not GetActiveSheet(sheet) then
     Exit;
-  fprop := TSourceFile(sheet.Node.Data);
+  fprop := Sheet.SourceFile;
   parent := nil;
   if Assigned(fprop.Node.Parent) then
     parent := TSourceFile(fprop.Node.Parent.Data);
@@ -7607,7 +7609,7 @@ var
 begin
   if not GetActiveSheet(sheet) then
     Exit;
-  fprop := TSourceFile(sheet.Node.Data);
+  fprop := Sheet.SourceFile;
   if DebugReader.Running then
   begin
     if fprop.Breakpoint.HasBreakpoint(aLine) then
@@ -7654,7 +7656,7 @@ var
 begin
   if not GetActiveSheet(sheet) then
     Exit;
-  fprop := TSourceFile(sheet.Node.Data);
+  fprop := Sheet.SourceFile;
   if fprop.Breakpoint.HasBreakpoint(aLine) then
   begin
     fprop.Breakpoint.DrawBreakpoint(sheet.Memo, aLine, X, Y);
@@ -7683,7 +7685,7 @@ var
 begin
   if not GetActiveSheet(sheet) then
     Exit;
-  fprop := TSourceFile(sheet.Node.Data);
+  fprop := Sheet.SourceFile;
   if fprop.Breakpoint.HasBreakpoint(Line) then
   begin
     fg := clWindow;
@@ -7862,7 +7864,7 @@ begin
   Result := False;
   if GetActiveSheet(sheet) then
   begin
-    fp := TSourceFile(sheet.Node.Data);
+    fp := Sheet.SourceFile;
     if CompareText(fp.FileName, FileName) <> 0 then
     begin
       if not SearchSourceFile(FileName, fp) then
@@ -7931,7 +7933,7 @@ begin
       begin
         if GetActiveSheet(sheet) then
         begin
-          fp := TSourceFile(sheet.Node.Data);
+          fp := Sheet.SourceFile;
           S := ExtractFilePath(fp.Project.FileName);
           FileName := ConvertSlashes(S + Name);
           if CompareText(fp.FileName, FileName) <> 0 then
@@ -8022,7 +8024,7 @@ begin
         if not GetActiveSheet(sheet) or CommandQueue.Empty then
           Exit;
         dbgc := CommandQueue.Front;
-        fp := TSourceFile(sheet.Node.Data);
+        fp := Sheet.SourceFile;
         S := dbgc.VarName + ' = ' + Value;
         varID := StrToInt(Name);
         if varID <> dbgc.ID then
@@ -8093,7 +8095,7 @@ begin
   //AddMessage('gdb', 'ExitCode', 'ExitCode: ' + IntToStr(ExitCode), 0, 0, 0, mitCompiler);
   if GetActiveSheet(sheet) then
   begin
-    prop := TSourceFile(sheet.Node.Data);
+    prop := Sheet.SourceFile;
     FindedTokenFile := FilesParsed.ItemOfByFileName(Prop.FileName);
     if FindedTokenFile <> nil then
       UpdateActiveFileToken(FindedTokenFile);
@@ -8210,7 +8212,7 @@ var
 begin
   if GetActiveSheet(sheet) then
   begin
-    FileProp := TSourceFile(sheet.Node.Data);
+    FileProp := Sheet.SourceFile;
     ProjProp := FileProp.Project;
     ProjProp.BreakpointChanged := True;
     ProjProp.BreakpointCursor.Line := sheet.Memo.CaretY;
@@ -8291,7 +8293,7 @@ var
 begin
   if not GetActiveSheet(sheet) then
     Exit;
-  fprop := TSourceFile(sheet.Node.Data);
+  fprop := Sheet.SourceFile;
   FindedTokenFile := FilesParsed.ItemOfByFileName(fprop.FileName);
   if FindedTokenFile = nil then
     Exit;
@@ -8314,7 +8316,7 @@ var
 begin
   if not GetActiveSheet(sheet) then
     Exit;
-  fprop := TSourceFile(sheet.Node.Data);
+  fprop := Sheet.SourceFile;
   FindedTokenFile := FilesParsed.ItemOfByFileName(fprop.FileName);
   if FindedTokenFile = nil then
     Exit;

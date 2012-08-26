@@ -301,7 +301,7 @@ var
 begin
   FrmFalconMain.IsLoading := True;
   Node := FrmFalconMain.TreeViewProjects.Items.AddChild(nil, '');
-  NewPrj := TProjectFile.Create(FrmFalconMain.PageControlEditor, Node);
+  NewPrj := TProjectFile.Create(Node);
   NewPrj.Project := NewPrj;
   NewPrj.FileType := FILE_TYPE_PROJECT;
   Node.Data := NewPrj;

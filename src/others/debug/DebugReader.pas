@@ -3,7 +3,7 @@ unit DebugReader;
 interface
 
 uses
-  Windows, SysUtils, Classes, ShellAPI, regexp_tregexpr, Dialogs, ComCtrls,
+  Windows, SysUtils, Classes, regexp_tregexpr, Dialogs, ComCtrls,
   TokenList, TokenUtils;
 
 type
@@ -155,7 +155,7 @@ type
 
 implementation
 
-uses DebugConsts, DebugWatch, StrUtils;
+uses DebugConsts, DebugWatch;
 
 {TReaderConsole}
 
@@ -238,8 +238,6 @@ var
   hOutputReadTmp, hInputWriteTmp: THandle;
   hInputRead, hOutputWrite, hErrorWrite: THandle;
 begin
-  //DoStart;
-
   SecAttrib.nLength := SizeOf(TSecurityAttributes);
   SecAttrib.lpSecurityDescriptor := nil;
   SecAttrib.bInheritHandle := True;
@@ -247,6 +245,7 @@ begin
   // Create a pipe for the child process's STDOUT.
   if not CreatePipe(hOutputReadTmp, hOutputWrite, @SecAttrib, 0) then
   begin
+    DoStart;
     DoFinish;
     Exit;
   end;
@@ -254,6 +253,7 @@ begin
   if not DuplicateHandle(GetCurrentProcess(), hOutputWrite,
     GetCurrentProcess(), @hErrorWrite, 0, true, DUPLICATE_SAME_ACCESS) then
   begin
+    DoStart;
     DoFinish;
     Exit;
   end;
@@ -261,6 +261,7 @@ begin
   // Create a pipe for the child process's STDIN.
   if not CreatePipe(hInputRead, hInputWriteTmp, @SecAttrib, 0) then
   begin
+    DoStart;
     DoFinish;
     Exit;
   end;
@@ -268,6 +269,7 @@ begin
   if not DuplicateHandle(GetCurrentProcess(), hOutputReadTmp,
     GetCurrentProcess(), @hOutputRead, 0, False, DUPLICATE_SAME_ACCESS) then
   begin
+    DoStart;
     DoFinish;
     Exit;
   end;
@@ -275,6 +277,7 @@ begin
   if not DuplicateHandle(GetCurrentProcess(), hInputWriteTmp,
     GetCurrentProcess(), @hInputWrite, 0, False, DUPLICATE_SAME_ACCESS) then
   begin
+    DoStart;
     DoFinish;
     Exit;
   end;
@@ -282,11 +285,13 @@ begin
   if not CloseHandle(hOutputReadTmp) or
     not CloseHandle(hInputWriteTmp) then
   begin
+    DoStart;
     DoFinish;
     Exit;
   end;
 
   FRunning := Launch(hInputRead, hOutputWrite, hErrorWrite);
+  DoStart;
   if not FRunning then
   begin
     FeCode := GetLastError;

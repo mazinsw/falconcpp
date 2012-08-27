@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ComCtrls, StdCtrls, ExtCtrls, Buttons, UFrmMain, SynMemo, StrMatch,
+  Dialogs, ComCtrls, StdCtrls, ExtCtrls, Buttons, UFrmMain, SynMemo, 
   SynEditTypes, SynEditSearch;
 
 type
@@ -86,7 +86,7 @@ function EncodeStr(const S: string): string;
 
 implementation
 
-uses USourceFile, StrUtils, SynEdit, SynEditMiscClasses, ULanguages,
+uses USourceFile, SynEdit, SynEditMiscClasses, ULanguages,
   UUtils, UParseMsgs;
 
 {$R *.dfm}

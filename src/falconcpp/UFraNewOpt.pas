@@ -4,8 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, ImgList, ComCtrls, ExtDlgs,
-  Menus, Mask, IconDialog;
+  Dialogs, StdCtrls, ExtCtrls, 
+  Menus, IconDialog;
 
 type
   TFraPrjOpt = class(TFrame)

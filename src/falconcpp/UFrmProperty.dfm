@@ -737,7 +737,7 @@ object FrmProperty: TFrmProperty
             Top = 8
             Width = 369
             Height = 21
-            ItemHeight = 13
+            ItemHeight = 0
             TabOrder = 0
             OnKeyPress = CBLibsKeyPress
           end
@@ -1092,7 +1092,7 @@ object FrmProperty: TFrmProperty
             Top = 8
             Width = 369
             Height = 21
-            ItemHeight = 13
+            ItemHeight = 0
             TabOrder = 0
             OnKeyPress = CBIncsKeyPress
           end

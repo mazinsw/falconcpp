@@ -3,9 +3,9 @@ unit UUtils;
 interface
 
 uses
-  Windows, SysUtils, Classes, Dialogs, ComCtrls, Controls, TLHelp32, PsAPI,
-  USourceFile, Registry, ImgList, SynEditKeyCmds, SynMemo, SynEdit, UTools,
-  ShlObj, Graphics, Messages, XMLDoc, XMLIntf, CommCtrl, Consts, UParseMsgs,
+  Windows, SysUtils, Classes, Dialogs, ComCtrls, Controls, 
+  USourceFile, Registry, ImgList, SynEditKeyCmds, SynMemo, SynEdit, 
+  ShlObj, Graphics, Messages, XMLDoc, XMLIntf, UParseMsgs,
   ShellAPI, Forms;
 
 const
@@ -127,7 +127,7 @@ function IsNumber(Str: string): Boolean;
 
 implementation
 
-uses UTemplates, UFrmMain, ULanguages, UConfig;
+uses UFrmMain, ULanguages, UConfig;
 
 { ---------- Font Methods ---------- }
 

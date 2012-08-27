@@ -4,9 +4,9 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Menus, ExtCtrls, StdCtrls, ComCtrls, Mask, ImgList, Grids,
-  ListGridView, ExtDlgs, USourceFile, CheckLst, Buttons, IconDialog,
-  FormEffect, EditAlign;
+  Dialogs, Menus, ExtCtrls, StdCtrls, ComCtrls, ImgList, Grids,
+  ListGridView, USourceFile, CheckLst, Buttons, IconDialog,
+  EditAlign;
 
 type
 

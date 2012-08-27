@@ -4,8 +4,8 @@ interface
 
 uses
   Windows, SysUtils, IniFiles, Forms, Graphics, Classes, Dialogs,
-  Menus, ComCtrls, Controls, Registry, ShellApi,
-  SynMemo, SynEdit, XMLDoc, XMLIntf, TBX, ULanguages, ModernTabs;
+  Menus, Controls, 
+  TBX, ULanguages, ModernTabs;
 
 type
 
@@ -161,7 +161,7 @@ function ReadIniFile(Section, Ident, Default: string): string;
 
 implementation
 
-uses UFrmMain, UUtils, ExecWait, UTemplates;
+uses UFrmMain, UUtils;
 
 procedure WriteIniFile(const Section, Ident, Value: string);
 var

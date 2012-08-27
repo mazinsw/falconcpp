@@ -3,7 +3,7 @@ unit UTemplates;
 interface
 
 uses
-  Windows, SysUtils, IniFiles, Graphics, Classes, TBX, ComCtrls,
+  Windows, SysUtils, IniFiles, Graphics, Classes, TBX, 
   Controls, Dialogs, CompressUtils, SciZipFile, PNGImage,
   FormEffect;
 
@@ -84,6 +84,7 @@ type
     FBitmap: TBitmap;
     FFlags: string;
     FLibs: string;
+    FParams: string;
     FAppType: Integer;
     FCompilerType: Integer;
     FSrcFiles: TTemplateFiles;
@@ -110,6 +111,7 @@ type
     property CompilerType: Integer read FCompilerType write FCompilerType;
     property Flags: string read FFlags write FFlags;
     property Libs: string read FLibs write FLibs;
+    property Params: string read FParams write FParams;
     property HelpMenu: TDataSubMenuItem read FHelpMenu write FHelpMenu;
   end;
 
@@ -634,6 +636,7 @@ begin
   FSheet := ini.ReadString('Falcon', 'Sheet', 'Basic');
   FFlags := ini.ReadString('Falcon', 'Flags', '');
   FLibs := ini.ReadString('Falcon', 'Libs', '');
+  FParams := ini.ReadString('Falcon', 'Params', '');
 
   ActualMenu := FalconHelp;
   if ini.SectionExists('Help') then

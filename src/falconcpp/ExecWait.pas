@@ -60,7 +60,7 @@ type
   public
     class function Exec: TExecWait;
     procedure Reset;
-    procedure ExecuteAndWatch(sFileName, sParams, sPath: string; bVisible: boolean; iTimeOut: Cardinal; OnTermEvent: TNotifyEvent);
+    procedure ExecuteAndWatch(sFileName, sParams, sPath: string; bVisible: boolean; iTimeOut: Cardinal; OnStartEvent, OnTermEvent: TNotifyEvent);
   published
     property FileName: string read fFileName write fFileName;
     property Running: boolean read fIsRunning;
@@ -149,10 +149,12 @@ begin
 end;
 
 procedure TExecWait.ExecuteAndWatch(sFileName, sParams, sPath: string;
-  bVisible: boolean; iTimeOut: Cardinal; OnTermEvent: TNotifyEvent);
+  bVisible: boolean; iTimeOut: Cardinal; OnStartEvent, OnTermEvent: TNotifyEvent);
 begin
   fIsRunning := True;
   fOnTermEvent := OnTermEvent;
+  if Assigned(OnStartEvent) then
+    OnStartEvent(Self);
   fExec := TExecThread.Create(True);
   FileName := sFileName;
   with fExec do

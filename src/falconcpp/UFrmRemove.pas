@@ -40,7 +40,7 @@ var
 
 implementation
 
-uses UFrmMain;
+
 
 {$R *.dfm}
 

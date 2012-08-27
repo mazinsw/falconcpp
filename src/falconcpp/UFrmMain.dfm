@@ -45,7 +45,7 @@ object FrmFalconMain: TFrmFalconMain
         DropdownCombo = True
         ImageIndex = 6
         LinkSubitems = FileNew
-        OnClick = NewItemClick
+        OnClick = FileNewItemClick
       end
       object BtnOpen: TTBXItem
         Caption = 'Open'
@@ -57,7 +57,7 @@ object FrmFalconMain: TFrmFalconMain
         Caption = 'Remove'
         Enabled = False
         ImageIndex = 12
-        OnClick = RemoveClick
+        OnClick = FileRemoveClick
       end
       object TBXSeparatorItem1: TTBXSeparatorItem
       end
@@ -94,14 +94,14 @@ object FrmFalconMain: TFrmFalconMain
         Enabled = False
         ImageIndex = 18
         ShortCut = 16474
-        OnClick = SubMUndoClick
+        OnClick = EditUndoClick
       end
       object BtnRedo: TTBXItem
         Caption = 'Redo'
         Enabled = False
         ImageIndex = 19
         ShortCut = 16473
-        OnClick = SubMRedoClick
+        OnClick = EditRedoClick
       end
     end
     object NavigatorBar: TTBXToolbar
@@ -206,7 +206,7 @@ object FrmFalconMain: TFrmFalconMain
         Tag = 1
         Caption = 'New Project'
         ImageIndex = 1
-        OnClick = NewItemClick
+        OnClick = FileNewItemClick
       end
       object BtnProperties: TTBXItem
         Caption = 'Properties'
@@ -294,14 +294,14 @@ object FrmFalconMain: TFrmFalconMain
         Enabled = False
         ImageIndex = 37
         ShortCut = 16454
-        OnClick = FindMenuClick
+        OnClick = SearchFindClick
       end
       object BtnReplace: TTBXItem
         Caption = 'Replace'
         Enabled = False
         ImageIndex = 48
         ShortCut = 16466
-        OnClick = ReplaceMenuClick
+        OnClick = SearchReplaceClick
       end
       object TBXSeparatorItem29: TTBXSeparatorItem
       end
@@ -345,38 +345,38 @@ object FrmFalconMain: TFrmFalconMain
             Tag = 1
             Caption = '&Project...'
             ImageIndex = 1
-            OnClick = NewItemClick
+            OnClick = FileNewItemClick
           end
           object FileNewC: TTBXItem
             Tag = 2
             Caption = 'C File'
             ImageIndex = 2
-            OnClick = NewItemClick
+            OnClick = FileNewItemClick
           end
           object FileNewCpp: TTBXItem
             Tag = 3
             Caption = 'C++ File'
             ImageIndex = 3
             ShortCut = 16462
-            OnClick = NewItemClick
+            OnClick = FileNewItemClick
           end
           object FileNewHeader: TTBXItem
             Tag = 4
             Caption = 'Header File'
             ImageIndex = 4
-            OnClick = NewItemClick
+            OnClick = FileNewItemClick
           end
           object FileNewResource: TTBXItem
             Tag = 5
             Caption = 'Resource File'
             ImageIndex = 5
-            OnClick = NewItemClick
+            OnClick = FileNewItemClick
           end
           object FileNewEmpty: TTBXItem
             Tag = 6
             Caption = 'Empty File'
             ImageIndex = 6
-            OnClick = NewItemClick
+            OnClick = FileNewItemClick
           end
           object TBXSeparatorItem3: TTBXSeparatorItem
           end
@@ -385,7 +385,7 @@ object FrmFalconMain: TFrmFalconMain
             Caption = 'Folder'
             Enabled = False
             ImageIndex = 7
-            OnClick = NewItemClick
+            OnClick = FileNewItemClick
           end
         end
         object FileOpen: TTBXItem
@@ -473,7 +473,7 @@ object FrmFalconMain: TFrmFalconMain
         object FileRemove: TTBXItem
           Caption = 'Remove'
           Enabled = False
-          OnClick = RemoveClick
+          OnClick = FileRemoveClick
         end
         object TBXSeparatorItem6: TTBXSeparatorItem
         end
@@ -498,14 +498,14 @@ object FrmFalconMain: TFrmFalconMain
           Enabled = False
           ImageIndex = 18
           ShortCut = 16474
-          OnClick = SubMUndoClick
+          OnClick = EditUndoClick
         end
         object EditRedo: TTBXItem
           Caption = 'Redo'
           Enabled = False
           ImageIndex = 19
           ShortCut = 16473
-          OnClick = SubMRedoClick
+          OnClick = EditRedoClick
         end
         object TBXSeparatorItem7: TTBXSeparatorItem
         end
@@ -514,21 +514,21 @@ object FrmFalconMain: TFrmFalconMain
           Enabled = False
           ImageIndex = 15
           ShortCut = 16472
-          OnClick = SubMCutClick
+          OnClick = EditCutClick
         end
         object EditCopy: TTBXItem
           Caption = 'Copy'
           Enabled = False
           ImageIndex = 16
           ShortCut = 16451
-          OnClick = SubMCopyClick
+          OnClick = EditCopyClick
         end
         object EditPaste: TTBXItem
           Caption = 'Paste'
           Enabled = False
           ImageIndex = 17
           ShortCut = 16470
-          OnClick = SubMPasteClick
+          OnClick = EditPasteClick
         end
         object TBXSeparatorItem5: TTBXSeparatorItem
         end
@@ -545,14 +545,14 @@ object FrmFalconMain: TFrmFalconMain
           Enabled = False
           ImageIndex = 12
           ShortCut = 46
-          OnClick = PopEditorDeleteClick
+          OnClick = EditDeleteClick
         end
         object EditSelectAll: TTBXItem
           Caption = 'Select All'
           Enabled = False
           ImageIndex = 45
           ShortCut = 16449
-          OnClick = SubMSelectAllClick
+          OnClick = EditSelectAllClick
         end
         object TBXSeparatorItem36: TTBXSeparatorItem
         end
@@ -713,32 +713,32 @@ object FrmFalconMain: TFrmFalconMain
           Enabled = False
           ImageIndex = 37
           ShortCut = 16454
-          OnClick = FindMenuClick
+          OnClick = SearchFindClick
         end
         object SearchFindNext: TTBXItem
           Caption = 'Find Next'
           Enabled = False
           ShortCut = 114
-          OnClick = FindNextMenuClick
+          OnClick = SearchFindNextClick
         end
         object SearchFindPrev: TTBXItem
           Caption = 'Find Previous'
           Enabled = False
           ShortCut = 8306
-          OnClick = FindPrevMenuClick
+          OnClick = SearchFindPrevClick
         end
         object SearchFindFiles: TTBXItem
           Caption = 'Find in Files...'
           Enabled = False
           ShortCut = 16456
-          OnClick = FindFilesMenuClick
+          OnClick = SearchFindFilesClick
         end
         object SearchReplace: TTBXItem
           Caption = 'Replace...'
           Enabled = False
           ImageIndex = 48
           ShortCut = 16466
-          OnClick = ReplaceMenuClick
+          OnClick = SearchReplaceClick
         end
         object SearchIncremental: TTBXItem
           Caption = 'Incremental Search...'
@@ -777,21 +777,21 @@ object FrmFalconMain: TFrmFalconMain
           AutoCheck = True
           Caption = 'Project Manager'
           Checked = True
-          OnClick = ViewMenuClick
+          OnClick = ViewItemClick
         end
         object ViewStatusBar: TTBXItem
           Tag = 1
           AutoCheck = True
           Caption = 'Statusbar'
           Checked = True
-          OnClick = ViewMenuClick
+          OnClick = ViewItemClick
         end
         object ViewOutline: TTBXItem
           Tag = 2
           AutoCheck = True
           Caption = 'Outline'
           Checked = True
-          OnClick = ViewMenuClick
+          OnClick = ViewItemClick
         end
         object ViewCompOut: TTBXItem
           Caption = 'Compiler Output'
@@ -923,13 +923,13 @@ object FrmFalconMain: TFrmFalconMain
         object ViewFullScreen: TTBXItem
           Caption = 'Full Screen'
           ShortCut = 123
-          OnClick = FullScreen1Click
+          OnClick = ViewFullScreenClick
         end
         object TBXSeparatorItem20: TTBXSeparatorItem
         end
         object ViewRestoreDefault: TTBXItem
           Caption = 'Restore Default'
-          OnClick = RestoreDefault1Click
+          OnClick = ViewRestoreDefClick
         end
       end
       object MenuProject: TTBXSubmenuItem
@@ -944,7 +944,7 @@ object FrmFalconMain: TFrmFalconMain
           Caption = 'Remove'
           Enabled = False
           ImageIndex = 28
-          OnClick = SubMRemoveClick
+          OnClick = ProjectRemoveClick
         end
         object TBXSeparatorItem2: TTBXSeparatorItem
         end
@@ -952,7 +952,7 @@ object FrmFalconMain: TFrmFalconMain
           Caption = 'Build'
           Enabled = False
           ImageIndex = 26
-          OnClick = SubMBuildClick
+          OnClick = ProjectBuildClick
         end
         object TBXSeparatorItem10: TTBXSeparatorItem
         end
@@ -1034,15 +1034,15 @@ object FrmFalconMain: TFrmFalconMain
         Caption = '&Tools'
         object ToolsEnvOptions: TTBXItem
           Caption = 'Environment Options...'
-          OnClick = EnvironOptions1Click
+          OnClick = ToolsEnvOptionsClick
         end
         object ToolsCompilerOptions: TTBXItem
           Caption = 'Compiler Options...'
-          OnClick = CompilerOptions2Click
+          OnClick = ToolsCompilerOptionsClick
         end
         object ToolsEditorOptions: TTBXItem
           Caption = 'Editor Options...'
-          OnClick = EditorOptions1Click
+          OnClick = ToolsEditorOptionsClick
         end
         object TBXSeparatorItem18: TTBXSeparatorItem
         end
@@ -1058,7 +1058,7 @@ object FrmFalconMain: TFrmFalconMain
         end
         object ToolsPackages: TTBXItem
           Caption = 'Packages...'
-          OnClick = Packages1Click
+          OnClick = ToolsPackagesClick
         end
       end
       object MenuHelp: TTBXSubmenuItem
@@ -1525,7 +1525,7 @@ object FrmFalconMain: TFrmFalconMain
       Caption = 'Remove'
       ImageIndex = 12
       ShortCut = 46
-      OnClick = RemoveClick
+      OnClick = FileRemoveClick
     end
     object PopProjRename: TTBXItem
       Caption = 'Rename'
@@ -1551,9 +1551,9 @@ object FrmFalconMain: TFrmFalconMain
     OwnerDraw = True
     Left = 299
     Top = 272
-    object PopEditorFindDecl: TTBXItem
+    object PopEditorOpenDecl: TTBXItem
       Caption = 'Open declaration'
-      OnClick = PopEditorFindDeclClick
+      OnClick = PopEditorOpenDeclClick
     end
     object TBXSeparatorItem44: TTBXSeparatorItem
     end
@@ -1570,39 +1570,39 @@ object FrmFalconMain: TFrmFalconMain
     object PopEditorUndo: TTBXItem
       Caption = 'Undo'
       ImageIndex = 18
-      OnClick = SubMUndoClick
+      OnClick = EditUndoClick
     end
     object PopEditorRedo: TTBXItem
       Caption = 'Redo'
       ImageIndex = 19
-      OnClick = SubMRedoClick
+      OnClick = EditRedoClick
     end
     object TBXSeparatorItem28: TTBXSeparatorItem
     end
     object PopEditorCut: TTBXItem
       Caption = 'Cut'
       ImageIndex = 15
-      OnClick = SubMCutClick
+      OnClick = EditCutClick
     end
     object PopEditorCopy: TTBXItem
       Caption = 'Copy'
       ImageIndex = 16
-      OnClick = SubMCopyClick
+      OnClick = EditCopyClick
     end
     object PopEditorPaste: TTBXItem
       Caption = 'Paste'
       ImageIndex = 17
-      OnClick = SubMPasteClick
+      OnClick = EditPasteClick
     end
     object PopEditorDelete: TTBXItem
       Caption = 'Delete'
       ImageIndex = 12
-      OnClick = PopEditorDeleteClick
+      OnClick = EditDeleteClick
     end
     object PopEditorSelectAll: TTBXItem
       Caption = 'Select All'
       ImageIndex = 45
-      OnClick = SubMSelectAllClick
+      OnClick = EditSelectAllClick
     end
     object TBXSeparatorItem27: TTBXSeparatorItem
     end
@@ -1611,12 +1611,12 @@ object FrmFalconMain: TFrmFalconMain
     end
     object TBXSeparatorItem26: TTBXSeparatorItem
     end
-    object EditorBookmarks: TTBXSubmenuItem
+    object PopEditorBookmarks: TTBXSubmenuItem
       Caption = 'Toggle Bookmarks'
       ImageIndex = 53
       LinkSubitems = EditBookmarks
     end
-    object EditorGotoBookmarks: TTBXSubmenuItem
+    object PopEditorGotoBookmarks: TTBXSubmenuItem
       Caption = 'Goto Bookmarks'
       ImageIndex = 52
       LinkSubitems = EditGotoBookmarks

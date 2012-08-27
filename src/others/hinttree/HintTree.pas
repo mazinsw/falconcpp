@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, Classes, Forms, Controls, Graphics, SysUtils, ComCtrls,
-  ExtCtrls, TokenList, TokenHint, StdCtrls, DebugReader, DebugWatch;
+  ExtCtrls, TokenList, TokenHint, DebugReader;
 
 type
   THintTreeTip = class(TTokenHintTip);
@@ -51,7 +51,7 @@ type
 
 implementation
 
-uses Types, TokenFile, TokenUtils;
+uses Types;
 
 constructor THintTree.Create(AOwner: TComponent);
 begin

@@ -3,7 +3,7 @@ unit ULanguages;
 interface
 
 uses
-  Windows, SysUtils, Classes, Dialogs, ComCtrls, Controls,
+  Windows, SysUtils, Classes, Dialogs, Controls,
   IniFiles, ImgList;
 
 const
@@ -323,7 +323,7 @@ const
     'Clear'
     );
 
-  MAX_FRM_MAIN = 50;
+  MAX_FRM_MAIN = 51;
   CONST_STR_FRM_MAIN: array[1..MAX_FRM_MAIN] of string = (
     //Tabs Left
     'Projects',
@@ -380,7 +380,8 @@ const
     '%s Project',
     'This file has been modified by another program.'#13 +
     'Do you want to reload it?',
-    'Variables'
+    'Variables',
+    'Continue'
     );
 
   MAX_FRM_PROP = 70;
@@ -1067,7 +1068,7 @@ var
 
 implementation
 
-uses UFrmProperty, UUtils, UFrmOptions, UFrmUpdate, UFrmMain,
+uses UUtils, UFrmOptions, UFrmUpdate, UFrmMain,
   UFrmCompOptions, UFrmEditorOptions, UFrmEnvOptions;
 
 constructor TFalconLanguages.Create;

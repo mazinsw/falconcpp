@@ -38,7 +38,7 @@ function sscanfs(const fmt, src: string; var str_out: string): Boolean;
 
 implementation
 
-uses UUtils, StrUtils, UFrmMain, ULanguages, TokenUtils;
+uses StrUtils, UFrmMain, ULanguages, TokenUtils;
 
 constructor TMessageItem.Create;
 begin

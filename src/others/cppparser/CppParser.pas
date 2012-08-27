@@ -3,7 +3,7 @@ unit CppParser;
 interface
 
 uses
-  Classes, SysUtils, StrUtils, TokenList;
+  Classes, SysUtils, TokenList;
 
 type
   TSetOfChars = set of Char;

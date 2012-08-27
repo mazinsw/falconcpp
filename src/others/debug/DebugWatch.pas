@@ -3,7 +3,7 @@ unit DebugWatch;
 interface
 
 uses
-  Windows, Controls, Classes, SysUtils, SynEdit, TokenList;
+  Windows, Controls, Classes, SysUtils, TokenList;
 
 type
   TWatchType = (wtAuto, wtUser, wtNone);

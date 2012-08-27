@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, ComCtrls, USourceFile, UTemplates, SynMemo,
+  Dialogs, StdCtrls, ExtCtrls, ComCtrls, USourceFile, UTemplates, 
   FormEffect;
 
 type
@@ -347,6 +347,7 @@ begin
   end;
   NewPrj.Libs := AddLibs + Template.Libs;
   NewPrj.Flags := Template.Flags;
+  NewPrj.CmdLine := Template.Params;
   NewPrj.Icon := Template.Icon;
 
   if (Page = pwOpt) then

@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ComCtrls, StdCtrls, ExtCtrls, Mask, Buttons, ShellAPI, EditAlign;
+  Dialogs, ComCtrls, StdCtrls, ExtCtrls, Buttons, ShellAPI, EditAlign;
 
 type
   TFrmEnvOptions = class(TForm)
@@ -86,7 +86,7 @@ var
 
 implementation
 
-uses UFrmMain, ULanguages, UConfig, UUtils, UTemplates, USourceFile;
+uses UFrmMain, ULanguages, UConfig, UUtils, UTemplates;
 
 {$R *.dfm}
 

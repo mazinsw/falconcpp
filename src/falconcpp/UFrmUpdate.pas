@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ComCtrls, ExtCtrls, FileDownload, ShellAPI, XMLDoc,
+  Dialogs, StdCtrls, ExtCtrls, ShellAPI, XMLDoc,
   XMLIntf, UUtils;
 
 type
@@ -40,7 +40,7 @@ var
 
 implementation
 
-uses UConfig, UFrmMain, ULanguages;
+uses UFrmMain, ULanguages;
 
 {$R *.dfm}
 

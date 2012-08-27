@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Mask, ExtCtrls, ComCtrls, EditAlign;
+  Dialogs, StdCtrls, ExtCtrls, ComCtrls, EditAlign;
 
 type
   TFormGotoLine = class(TForm)

@@ -3,8 +3,8 @@ unit USourceFile;
 interface
 
 uses
-  Windows, SysUtils, IniFiles, Forms, Graphics, Classes, Dialogs,
-  Menus, ComCtrls, Controls, Registry, ShellApi,
+  Windows, SysUtils, Forms, Graphics, Classes, Dialogs,
+  Menus, ComCtrls, Controls, ShellApi,
   SynMemo, SynEdit, XMLDoc, XMLIntf, SynEditHighlighter, SynEditKeyCmds,
   Makefile, Breakpoint, UTemplates, ModernTabs;
 
@@ -291,7 +291,7 @@ type
 
 implementation
 
-uses UFrmMain, UUtils, ExecWait, UConfig;
+uses UFrmMain, UUtils, UConfig;
 
 
 { TSourceBase }
@@ -792,6 +792,14 @@ begin
         sheet.Memo.Modified := False;
         if not FSaved then
           FSaved := True;
+      end // create empty file
+      else if not FileExists(FileName) then
+      begin
+        with TStringList.Create do
+        begin
+          SaveToFile(FileName);
+          Free;
+        end;
       end;
       if FileType = FILE_TYPE_H then
         Project.ForceClean := True;
@@ -1828,6 +1836,7 @@ begin
     begin
       ForceClean := False; //WARNING if mingw32-make.exe not complete clean rule
                           //directives aren't updated
+      FrmFalconMain.LastProjectBuild := Self;
       FrmFalconMain.CompilerCmd.FileName := 'mingw32-make.exe';
       FrmFalconMain.CompilerCmd.Directory := ExtractFilePath(Makefile);
       FrmFalconMain.CompilerCmd.Params := '-s -f Makefile.mak';
@@ -1869,6 +1878,7 @@ begin
     FrmFalconMain.CompilerCmd.Directory := ExtractFilePath(FileName);
     FrmFalconMain.CompilerCmd.Params := '-i "' + Temp + '" -J rc -o "' +
       Target + '" -O COFF';
+    FrmFalconMain.LastProjectBuild := Self;
     FrmFalconMain.CompilerCmd.Start;
   end;
 end;

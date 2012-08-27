@@ -201,7 +201,7 @@ type
     function GetResource(Res: TStrings): Boolean;
     procedure GetFiles(List: TStrings; AllTypes: Boolean = False;
       WithBreakpoint: Boolean = False);
-    function Build(Run: Boolean = False): Boolean; virtual;
+    procedure Build; virtual;
     procedure SaveAs(const FileName: string); virtual;
     function NeedBuild: Boolean; virtual;
     function GetTarget: string;
@@ -254,9 +254,9 @@ type
     procedure SaveAs(const FileName: string); override;
     function NeedBuild: Boolean; override;
     function FilesChanged: Boolean;
-    procedure SaveAll(SavePrjFile: Boolean = False);
+    procedure SaveAll;
     procedure CloseAll;
-    function Build(Run: Boolean = False): Boolean; override;
+    procedure Build; override;
   end;
 
   TProjectsSheet = class(TModernTabSheet)
@@ -1039,9 +1039,8 @@ begin
   Files.Free;
 end;
 
-function TProjectBase.Build(Run: Boolean): Boolean;
+procedure TProjectBase.Build;
 begin
-  Result := False;
 end;
 
 {TProjectFile}
@@ -1058,7 +1057,7 @@ begin
   AllFiles.Free;
 end;
 
-procedure TProjectFile.SaveAll(SavePrjFile: Boolean = False);
+procedure TProjectFile.SaveAll;
 var
   I: Integer;
   AllFiles: TStrings;
@@ -1066,16 +1065,8 @@ var
   Template: TTemplate;
   Resources: TTemplateResources;
 begin
-  if not SavePrjFile then
-  begin
-    if not (FileType = FILE_TYPE_PROJECT) then
-      Save; //save .c or .cpp file
-  end
-  else
-  begin //save project file
-    if Modified or not FileExists(FileName) then
-      Save;
-  end;
+  if not (FileType = FILE_TYPE_PROJECT) then
+    Save; //save .c or .cpp file
   //save all files with folders
   AllFiles := TStringList.Create;
   GetFiles(AllFiles, True);
@@ -1753,7 +1744,7 @@ begin
   List.Free;
 end;
 
-function TProjectFile.Build(Run: Boolean = False): Boolean;
+procedure TProjectFile.Build;
 
   procedure SaveManifest(AFileName, ResName: string);
   var
@@ -1775,23 +1766,8 @@ var
   mk: TMakefile;
   OldDebuggingState: Boolean;
 begin
-  Result := False;
-  with FrmFalconMain do
-  begin
-    RunNow := Run;
-    RunRun.Enabled := False;
-    BtnRun.Enabled := False;
-    ProjectBuild.Enabled := False;
-    RunCompile.Enabled := False;
-    BtnCompile.Enabled := False;
-    RunExecute.Enabled := False;
-    BtnExecute.Enabled := False;
-    RunStop.Enabled := True;
-    BtnStop.Enabled := True;
-    LastProjectBuild := Self;
-  end;
   SaveAll;
-  if (CompilerType = COMPILER_CPP) or (CompilerType = COMPILER_C) then
+  if CompilerType in [COMPILER_CPP, COMPILER_C] then
   begin
     Files := TStringList.Create;
     GetFiles(Files);
@@ -1901,7 +1877,8 @@ procedure TProjectFile.SaveAs(const FileName: string);
 begin
   FFileName := FileName;
   { TODO -oMazin -c : Copy All Saved Files To 26/08/2012 18:21:08 }
-  SaveAll(True);
+  SaveAll;
+  Save;
 end;
 
 function TProjectFile.GetFileName: string;

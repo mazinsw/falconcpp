@@ -341,38 +341,38 @@ object FrmFalconMain: TFrmFalconMain
         object FileNew: TTBXSubmenuItem
           Caption = '&New'
           ImageIndex = 6
-          object SubNNewProject: TTBXItem
+          object FileNewProject: TTBXItem
             Tag = 1
             Caption = '&Project...'
             ImageIndex = 1
             OnClick = NewItemClick
           end
-          object SubNNewCFile: TTBXItem
+          object FileNewC: TTBXItem
             Tag = 2
             Caption = 'C File'
             ImageIndex = 2
             OnClick = NewItemClick
           end
-          object SubNNewCppFile: TTBXItem
+          object FileNewCpp: TTBXItem
             Tag = 3
             Caption = 'C++ File'
             ImageIndex = 3
             ShortCut = 16462
             OnClick = NewItemClick
           end
-          object SubNNewHeaderFile: TTBXItem
+          object FileNewHeader: TTBXItem
             Tag = 4
             Caption = 'Header File'
             ImageIndex = 4
             OnClick = NewItemClick
           end
-          object SubNNewResFile: TTBXItem
+          object FileNewResource: TTBXItem
             Tag = 5
             Caption = 'Resource File'
             ImageIndex = 5
             OnClick = NewItemClick
           end
-          object SubNNewEmptyFile: TTBXItem
+          object FileNewEmpty: TTBXItem
             Tag = 6
             Caption = 'Empty File'
             ImageIndex = 6
@@ -380,7 +380,7 @@ object FrmFalconMain: TFrmFalconMain
           end
           object TBXSeparatorItem3: TTBXSeparatorItem
           end
-          object SubNNewFolder: TTBXItem
+          object FileNewFolder: TTBXItem
             Tag = 7
             Caption = 'Folder'
             Enabled = False
@@ -740,7 +740,7 @@ object FrmFalconMain: TFrmFalconMain
           ShortCut = 16466
           OnClick = ReplaceMenuClick
         end
-        object TBXItem70: TTBXItem
+        object SearchIncremental: TTBXItem
           Caption = 'Incremental Search...'
           Enabled = False
           ShortCut = 16460
@@ -855,7 +855,7 @@ object FrmFalconMain: TFrmFalconMain
             OnClick = TViewToolbarClick
           end
         end
-        object SbMnThemes: TTBXSubmenuItem
+        object ViewThemes: TTBXSubmenuItem
           Tag = 2
           Caption = 'Themes'
           object ViewThemeDef: TTBXItem
@@ -901,7 +901,7 @@ object FrmFalconMain: TFrmFalconMain
             OnClick = SelectThemeClick
           end
         end
-        object TBXSubmenuItem2: TTBXSubmenuItem
+        object ViewZoom: TTBXSubmenuItem
           Tag = 2
           Caption = 'Zoom'
           object ViewZoomInc: TTBXItem
@@ -1032,31 +1032,31 @@ object FrmFalconMain: TFrmFalconMain
       end
       object MenuTools: TTBXSubmenuItem
         Caption = '&Tools'
-        object TBXItem49: TTBXItem
+        object ToolsEnvOptions: TTBXItem
           Caption = 'Environment Options...'
           OnClick = EnvironOptions1Click
         end
-        object TBXItem48: TTBXItem
+        object ToolsCompilerOptions: TTBXItem
           Caption = 'Compiler Options...'
           OnClick = CompilerOptions2Click
         end
-        object TBXItem43: TTBXItem
+        object ToolsEditorOptions: TTBXItem
           Caption = 'Editor Options...'
           OnClick = EditorOptions1Click
         end
         object TBXSeparatorItem18: TTBXSeparatorItem
         end
-        object TBXItem86: TTBXItem
+        object ToolsTemplate: TTBXItem
           Caption = 'Template Creator...'
           Enabled = False
         end
-        object TBXItem72: TTBXItem
+        object ToolsPackageCreator: TTBXItem
           Caption = 'Package Creator...'
           Enabled = False
         end
         object TBXSeparatorItem19: TTBXSeparatorItem
         end
-        object TBXItem87: TTBXItem
+        object ToolsPackages: TTBXItem
           Caption = 'Packages...'
           OnClick = Packages1Click
         end
@@ -1066,26 +1066,26 @@ object FrmFalconMain: TFrmFalconMain
         object HelpFalcon: TTBXSubmenuItem
           Caption = 'Falcon Help'
           ImageIndex = 30
-          object TBXItem2: TTBXItem
+          object HelpFalconFalcon: TTBXItem
             Caption = 'Falcon C++'
             ImageIndex = 21
             OnClick = FalconHelpClick
           end
         end
-        object TBXItem90: TTBXItem
+        object HelpTipOfDay: TTBXItem
           Caption = 'Tip of the Day...'
           Enabled = False
         end
         object TBXSeparatorItem11: TTBXSeparatorItem
         end
-        object TBXItem40: TTBXItem
+        object HelpUpdate: TTBXItem
           Caption = 'Update...'
           ImageIndex = 47
           OnClick = SubMUpdateClick
         end
         object TBXSeparatorItem13: TTBXSeparatorItem
         end
-        object TBXItem39: TTBXItem
+        object HelpAbout: TTBXItem
           Caption = 'About...'
           OnClick = About1Click
         end

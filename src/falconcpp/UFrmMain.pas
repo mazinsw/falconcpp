@@ -71,6 +71,8 @@ type
     Opacite: Integer;
   end;
 
+  TSaveMode = (smSave, smSaveAs);
+
   //Outline objects images
   TOutlineImages = array[0..MAX_OUTLINE_TREE_IMAGES - 1] of Integer;
 
@@ -130,14 +132,14 @@ type
     MenuBar: TTBXToolbar;
     MenuFile: TTBXSubmenuItem;
     FileNew: TTBXSubmenuItem;
-    SubNNewProject: TTBXItem;
-    SubNNewCFile: TTBXItem;
-    SubNNewCppFile: TTBXItem;
-    SubNNewHeaderFile: TTBXItem;
-    SubNNewResFile: TTBXItem;
-    SubNNewEmptyFile: TTBXItem;
+    FileNewProject: TTBXItem;
+    FileNewC: TTBXItem;
+    FileNewCpp: TTBXItem;
+    FileNewHeader: TTBXItem;
+    FileNewResource: TTBXItem;
+    FileNewEmpty: TTBXItem;
     TBXSeparatorItem3: TTBXSeparatorItem;
-    SubNNewFolder: TTBXItem;
+    FileNewFolder: TTBXItem;
     FileOpen: TTBXItem;
     FileReopen: TTBXSubmenuItem;
     FileReopenClear: TTBXItem;
@@ -173,7 +175,7 @@ type
     SearchFindPrev: TTBXItem;
     SearchFindFiles: TTBXItem;
     SearchReplace: TTBXItem;
-    TBXItem70: TTBXItem;
+    SearchIncremental: TTBXItem;
     TBXSeparatorItem16: TTBXSeparatorItem;
     SearchGotoFunction: TTBXItem;
     SearchGotoLine: TTBXItem;
@@ -190,11 +192,11 @@ type
     TBXItem8: TTBXItem;
     TBXItem77: TTBXItem;
     TBXItem79: TTBXItem;
-    SbMnThemes: TTBXSubmenuItem;
+    ViewThemes: TTBXSubmenuItem;
     ViewThemeDef: TTBXItem;
     ViewThemeOffice2003: TTBXItem;
     ViewThemeOffXP: TTBXItem;
-    TBXSubmenuItem2: TTBXSubmenuItem;
+    ViewZoom: TTBXSubmenuItem;
     ViewZoomInc: TTBXItem;
     ViewZoomDec: TTBXItem;
     TBXSeparatorItem21: TTBXSeparatorItem;
@@ -215,20 +217,20 @@ type
     RunCompile: TTBXItem;
     RunExecute: TTBXItem;
     MenuTools: TTBXSubmenuItem;
-    TBXItem49: TTBXItem;
-    TBXItem48: TTBXItem;
-    TBXItem43: TTBXItem;
+    ToolsEnvOptions: TTBXItem;
+    ToolsCompilerOptions: TTBXItem;
+    ToolsEditorOptions: TTBXItem;
     TBXSeparatorItem18: TTBXSeparatorItem;
-    TBXItem86: TTBXItem;
-    TBXItem72: TTBXItem;
+    ToolsTemplate: TTBXItem;
+    ToolsPackageCreator: TTBXItem;
     TBXSeparatorItem19: TTBXSeparatorItem;
-    TBXItem87: TTBXItem;
+    ToolsPackages: TTBXItem;
     MenuHelp: TTBXSubmenuItem;
-    TBXItem90: TTBXItem;
+    HelpTipOfDay: TTBXItem;
     TBXSeparatorItem11: TTBXSeparatorItem;
-    TBXItem40: TTBXItem;
+    HelpUpdate: TTBXItem;
     TBXSeparatorItem13: TTBXSeparatorItem;
-    TBXItem39: TTBXItem;
+    HelpAbout: TTBXItem;
     PopupEditor: TTBXPopupMenu;
     PopEditorProperties: TTBXItem;
     PopEditorSelectAll: TTBXItem;
@@ -252,7 +254,7 @@ type
     BtnGotoLN: TTBXItem;
     TBXSeparatorItem29: TTBXSeparatorItem;
     HelpFalcon: TTBXSubmenuItem;
-    TBXItem2: TTBXItem;
+    HelpFalconFalcon: TTBXItem;
     PopupMsg: TTBXPopupMenu;
     PupMsgGotoLine: TTBXItem;
     TBXSeparatorItem31: TTBXSeparatorItem;
@@ -582,10 +584,7 @@ type
   private
     { Private declarations }
     fWorkerThread: TThread;
-    procedure AddFilesToProject(Files: TStrings; Parent: TSourceFile;
-      References: Boolean);
-  public
-    { Public declarations }
+    
     //accept drag drop
     TreeViewProjectsOldProc: TWndMethod;
     PanelEditorMessagesOldProc: TWndMethod;
@@ -593,54 +592,55 @@ type
 
     //config, resources, sintax
     OutlineImages: TOutlineImages;
-    SintaxList: TSintaxList; //highlighter list
-    Config: TConfig; //window objects positions, zoom, etc.
-    Templates: TTemplates; //all falcon c++ templates
+    FSintaxList: TSintaxList; //highlighter list
+    FConfig: TConfig; //window objects positions, zoom, etc.
+    FTemplates: TTemplates; //all falcon c++ templates
 
     //paths
-    AppRoot: string; //path of executable
+    FAppRoot: string; //path of executable
     CompilerActiveMsg: string; //Caption compiler info
-    ConfigRoot: string; //directory configuration
-    IniConfigFile: string; //file configuration
+    FConfigRoot: string; //directory configuration
+    FIniConfigFile: string; //file configuration
     LastOpenFileName: string;
+
     //flags
-    IsLoading: Boolean;
+    FIsLoading: Boolean;
     ShowingReloadEnquiry: Boolean;
-    RunNow: Boolean; //?
+    FRunNow: Boolean; //?
     ActDropDownBtn: Boolean; //?
     XMLOpened: Boolean;
-    CompilationStopped: Boolean;
+    FCompilationStopped: Boolean;
     FullScreenMode: Boolean;
     CanShowHintTip: Boolean;
     UsingCtrlSpace: Boolean;
-    HandlingTabs: Boolean;
+    FHandlingTabs: Boolean;
     LastKeyPressed: Char;
-    CanFillCompletion: Boolean;
     CurrentFileIsParsed: Boolean;
     LastMousePos: TPoint;
     LastWordHintStart: Integer;
+
     //for ThreadTokenFiles
     IsLoadingSrcFiles: Boolean;
     LoadTokenMode: Integer;
-
-    FalconVersion: TVersion; //this file version
-    LastProjectBuild: TProjectFile; //last builded project
+    FLastProjectBuild: TProjectFile; //last builded project
     startBuildTicks: Cardinal;
     BuildTime: Cardinal;
-    LastSearch: TSearchItem;
     ZoomEditor: Integer; //edit zoom
     ActiveEditingFile: TTokenFile; //last parsed tokens
     FilesParsed: TTokenFiles; //all files parsed
+
     //for Project
     ThreadFilesParsed: TThreadTokenFiles;
     AllParsedList: TStrings;
+
     //for Cache
     ParseAllFiles: TTokenFiles; //parse unparsed static files
     ThreadLoadTkFiles: TThreadLoadTokenFiles;
     ThreadTokenFiles: TThreadTokenFiles;
     HintTip: TTokenHintTip; //mouse over hint
     HintParams: TTokenHintParams;
-    AutoComplete: TSynAutoComplete; //auto complete
+    FAutoComplete: TSynAutoComplete; //auto complete
+
     //debug
     DebugReader: TDebugReader;
     WatchList: TDebugWatchList;
@@ -649,16 +649,20 @@ type
     DebugActiveFile: TSourceFile;
     DebugHint: THintTree;
     DebugParser: TDebugParser;
+
     //Completion List Colors
     CompletionColors: TCompletionColors;
+
     //functions
+    procedure AddFilesToProject(Files: TStrings; Parent: TSourceFile;
+      References: Boolean);
+    procedure UpdateMenuItems;
     procedure StopAll;
     procedure RunApplication(ProjectFile: TProjectFile;
       RunToCursor: Boolean = False);
     procedure ExecuteApplication(ProjectFile: TProjectFile);
     procedure ShowLineError(Project: TProjectFile; Msg: TMessageItem);
-    function SaveProject(ProjProp: TProjectFile): Boolean;
-    procedure SelectTheme(Theme: string);
+    function SaveProject(ProjProp: TProjectFile; SaveMode: TSaveMode): Boolean;
     procedure InvalidateDebugLine;
     procedure AddWatchDebugVariables(scopeToken: TTokenClass;
       SelLine: Integer; var LastID: Integer; var VarAdded: Integer);
@@ -679,50 +683,71 @@ type
     procedure FillTreeView(Node: TTreeNode; Token: TTokenClass);
     procedure UpdateCompletionColors(EdtOpt: TEditorOptions);
     procedure ParseFiles(List: TStrings);
-    procedure ParseProjectFiles(Proj: TProjectFile);
-    function GetSourcesFiles(List: TStrings;
-      IncludeRC: Boolean = False): Integer;
     function GetSelectedFileInList(var ActiveFile: TSourceFile): Boolean;
     function GetActiveProject(var Project: TProjectFile): Boolean;
-    function GetActiveFile(var ActiveFile: TSourceFile): Boolean;
-    function GetActiveSheet(var sheet: TSourceFileSheet): Boolean;
     function FileInHistory(const FileName: string;
       var HistCount: Integer): Boolean;
-    function RenameFileInHistory(const FileName,
-      NewFileName: string): Boolean;
     function AddFileToHistory(const FileName: string): Boolean;
     function OpenFileWithHistoric(Value: string;
       var Proj: TProjectFile): Boolean;
     procedure RemoveFileFromHistoric(FileName: string);
-    procedure UpdateLangNow;
     procedure TextEditorFileParsed(EditFile: TSourceFile;
       TokenFile: TTokenFile);
-    procedure UpdateOpenedSheets;
     function ImportDevCppProject(const FileName: string;
       var Proj: TProjectFile): Boolean;
     function ImportCodeBlocksProject(const FileName: string;
       var Proj: TProjectFile): Boolean;
     function ImportMSVCProject(const FileName: string;
       var Proj: TProjectFile): Boolean;
-    procedure ToolbarCheck(const Index: Integer; const Value: Boolean);
     procedure DropFilesIntoProjectList(List: TStrings; X, Y: Integer);
+    
     //outline functions
     procedure UpdateActiveFileToken(NewToken: TTokenFile;
       Reload: Boolean = False);
+
     //hint functions
     procedure ProcessDebugHint(Input: string; Line, SelStart: integer;
       CursorPos: TPoint);
-    procedure AddMessage(const FileName, Title, Msg: string; Line,
-      Column, EndColumn: Integer; MsgType: TMessageItemType;
-      AlignCenter: Boolean = True);
-    procedure GotoLineAndAlignCenter(Memo: TSynMemo; Line: Integer;
-      Col: Integer = 1; EndCol: Integer = 1; CursorEnd: Boolean = False);
     procedure SelectToken(Token: TTokenClass);
     procedure ShowHintParams(Memo: TSynMemo);
     procedure ProcessHintView(FileProp: TSourceFile;
       Memo: TSynMemo; const X, Y: Integer);
     procedure PaintTokenItem(const ToCanvas: TCanvas;
       DisplayRect: TRect; Token: TTokenClass; State: TCustomDrawState);
+  public
+    { Public declarations }
+    LastSearch: TSearchItem;
+    FalconVersion: TVersion; //this file version
+
+    procedure UpdateLangNow;
+    function RenameFileInHistory(const FileName,
+      NewFileName: string): Boolean;
+    procedure ToolbarCheck(const Index: Integer; const Value: Boolean);
+    procedure UpdateOpenedSheets;
+    procedure ParseProjectFiles(Proj: TProjectFile);
+    procedure SelectTheme(Theme: string);
+    function GetActiveFile(var ActiveFile: TSourceFile): Boolean;
+    procedure AddMessage(const FileName, Title, Msg: string; Line,
+      Column, EndColumn: Integer; MsgType: TMessageItemType;
+      AlignCenter: Boolean = True);
+    function GetSourcesFiles(List: TStrings;
+      IncludeRC: Boolean = False): Integer;
+    function GetActiveSheet(var sheet: TSourceFileSheet): Boolean;
+    procedure GotoLineAndAlignCenter(Memo: TSynMemo; Line: Integer;
+      Col: Integer = 1; EndCol: Integer = 1; CursorEnd: Boolean = False);
+
+    property LastProjectBuild: TProjectFile read FLastProjectBuild write FLastProjectBuild;
+    property RunNow: Boolean read FRunNow write FRunNow;
+    property HandlingTabs: Boolean read FHandlingTabs write FHandlingTabs;
+    property ConfigRoot: string read FConfigRoot;
+    property IniConfigFile: string read FIniConfigFile;
+    property CompilationStopped: Boolean read FCompilationStopped;
+    property SintaxList: TSintaxList read FSintaxList;
+    property Templates: TTemplates read FTemplates;
+    property Config: TConfig read FConfig;
+    property IsLoading: Boolean read FIsLoading write FIsLoading;
+    property AppRoot: string read FAppRoot;
+    property AutoComplete: TSynAutoComplete read FAutoComplete;
   end;
 
   { TParserThread }
@@ -1000,17 +1025,17 @@ var
   Proj: TProjectFile;
 begin
   IsLoading := True;
-  Config := TConfig.Create;
-  AppRoot := ExtractFilePath(Application.ExeName);
-  ConfigRoot := GetUserFolderPath(CSIDL_APPDATA) + 'Falcon\';
+  FConfig := TConfig.Create;
+  FAppRoot := ExtractFilePath(Application.ExeName);
+  FConfigRoot := GetUserFolderPath(CSIDL_APPDATA) + 'Falcon\';
   //create config root directory
   if not DirectoryExists(ConfigRoot) then
     CreateDir(ConfigRoot);
-  IniConfigFile := ConfigRoot + 'Config.ini';
+  FIniConfigFile := ConfigRoot + 'Config.ini';
   Config.Load(IniConfigFile, Self);
   if Config.Environment.AlternativeConfFile and
     FileExists(Config.Environment.ConfigurationFile) then
-    IniConfigFile := Config.Environment.ConfigurationFile;
+    FIniConfigFile := Config.Environment.ConfigurationFile;
   if Config.Environment.ShowSplashScreen then
     SplashScreen.Show;
   SplashScreen.TextOut(55, 300, STR_FRM_MAIN[45]);
@@ -1049,7 +1074,7 @@ begin
   DebugParser.TreeView := TreeViewOutline;
   DebugHint := THintTree.Create(Self); //hint with a treeview
   DebugHint.ImageList := ImageListDebug;
-  AutoComplete := TSynAutoComplete.Create(Self); //Ctrl+J
+  FAutoComplete := TSynAutoComplete.Create(Self); //Ctrl+J
   //Load default auto complete
   Rs := TResourceStream.Create(HInstance, 'AUTOCOMPLETE', RT_RCDATA);
   Rs.Position := 0;
@@ -1087,7 +1112,7 @@ begin
   ActDropDownBtn := True;
   XMLOpened := False;
   FullScreenMode := False;
-  SintaxList := TSintaxList.Create;
+  FSintaxList := TSintaxList.Create;
   SintaxList.Highlight := CppHighligher;
   //create projects directory
   if not DirectoryExists(Config.Environment.ProjectsDir) then
@@ -1188,7 +1213,7 @@ begin
 
   SplashScreen.TextOut(55, 300, STR_FRM_MAIN[25]);
   Screen.Cursors[crHandPoint] := LoadCursor(0, IDC_HAND);
-  Templates := TTemplates.Create;
+  FTemplates := TTemplates.Create;
   Template := TTemplate.Create;
   Template.Sheet := 'Basic';
   Template.Description := STR_FRM_MAIN[9];
@@ -1338,7 +1363,7 @@ begin
           begin
             if not ProjProp.Saved then
             begin
-              if not SaveProject(ProjProp) then
+              if not SaveProject(ProjProp, smSave) then
               begin
                 Action := caNone;
                 List.Free;
@@ -1346,7 +1371,10 @@ begin
               end;
             end
             else if ProjProp.Modified or ProjProp.FilesChanged then
-              ProjProp.SaveAll(True);
+            begin
+              ProjProp.SaveAll;
+              ProjProp.Save;
+            end;
           end; //mrYes
         mrCancel:
           begin
@@ -1465,7 +1493,7 @@ begin
   if Assigned(FrmNewProj) then
     FrmNewProj.ReloadTemplates(aTemplates);
   Templates.Free;
-  Templates := aTemplates;
+  FTemplates := aTemplates;
 end;
 
 procedure TFrmFalconMain.FillTreeView(Node: TTreeNode; Token: TTokenClass);
@@ -1851,17 +1879,16 @@ procedure TFrmFalconMain.ProjectPropertiesClick(Sender: TObject);
 var
   ProjProp: TProjectFile;
 begin
-  if GetActiveProject(ProjProp) then
-  begin
-    if not Assigned(FrmProperty) then
-      FrmProperty := TFrmProperty.CreateParented(Handle);
-    try
-      FrmProperty.SetProject(ProjProp);
-      FrmProperty.ShowModal;
-    finally
-      FrmProperty.Free;
-      FrmProperty := nil;
-    end;
+  if not GetActiveProject(ProjProp) then
+    Exit;
+  if not Assigned(FrmProperty) then
+    FrmProperty := TFrmProperty.CreateParented(Handle);
+  try
+    FrmProperty.SetProject(ProjProp);
+    FrmProperty.ShowModal;
+  finally
+    FrmProperty.Free;
+    FrmProperty := nil;
   end;
 end;
 
@@ -1912,22 +1939,18 @@ begin
   TreeView_SetItem(treeNode.Handle, treeItem);
 end;
 
+procedure TFrmFalconMain.UpdateMenuItems;
+begin
+//
+end;
+
 //on change file selection
 
 procedure TFrmFalconMain.TreeViewProjectsChange(Sender: TObject; Node: TTreeNode);
 var
   FilePrp: TSourceFile;
-  ProjProp: TProjectFile;
-  prjs: TTreeNode;
-  HasActiveFile: Boolean;
+  Sibling: TTreeNode;
 begin
-  TextEditorAllAction(Sender);
-  BtnSaveAll.Enabled := (TreeViewProjects.Items.Count > 0);
-  FileSaveAll.Enabled := BtnSaveAll.Enabled;
-  PopTabsSaveAll.Enabled := FileSaveAll.Enabled;
-  BtnRemove.Enabled := (TreeViewProjects.SelectionCount > 0);
-  FileRemove.Enabled := (TreeViewProjects.SelectionCount > 0);
-
   if (TreeViewProjects.Items.Count = 0) then
   begin
     StatusBar.Panels.Items[0].ImageIndex := -1;
@@ -1942,119 +1965,30 @@ begin
       ThreadLoadTkFiles.Cancel;
     FilesParsed.Clear;
   end;
-
-  //No file selected and none editing file
-  if (TreeViewProjects.Items.Count = 0) or
-    ((TreeViewProjects.SelectionCount = 0) and (PageControlEditor.PageCount = 0)) then
+  Sibling := TreeViewProjects.Items.GetFirstNode;
+  while Sibling <> nil do
   begin
-    FileSave.Enabled := False;
-    BtnSave.Enabled := False;
-    PopTabsSave.Enabled := False;
-    BtnRemove.Enabled := False;
-    FileRemove.Enabled := False;
+    BoldTreeNode(Sibling, False);
+    Sibling := Sibling.getNextSibling;
   end;
-  if not Assigned(Node) then
+  FilePrp := nil;
+  if Node <> nil then
+    FilePrp := TSourceFile(Node.Data);
+  if (FilePrp <> nil) or GetActiveFile(FilePrp) then
+    BoldTreeNode(FilePrp.Project.Node, True);
+  if FilePrp <> nil then
+    StatusBar.Panels.Items[0].ImageIndex := FILE_IMG_LIST[FilePrp.FileType]
+  else
   begin
-    FilePrp := nil;
-    ProjProp := nil;
-    HasActiveFile := GetActiveFile(FilePrp);
-    FileSaveAs.Enabled := HasActiveFile;
-    // compile with no selected
-    //if (PageControlEditor.PageCount = 0) then Exit;
-    if HasActiveFile then
-    begin
-      ProjProp := FilePrp.Project;
-      ProjectAdd.Enabled := (PageControlEditor.PageCount > 0) and
-        (FilePrp.Project.FileType = FILE_TYPE_PROJECT);
-      ProjectRemove.Enabled := (PageControlEditor.PageCount > 0) and
-        (FilePrp.Project.FileType = FILE_TYPE_PROJECT);
-    end
-    else
-    begin
-      ProjectAdd.Enabled := False;
-      ProjectRemove.Enabled := False;
-    end;
-
-    ProjectBuild.Enabled := HasActiveFile;
-    ProjectProperties.Enabled := HasActiveFile;
-    PopEditorProperties.Enabled := HasActiveFile;
-    BtnProperties.Enabled := HasActiveFile;
-    BtnRun.Enabled := HasActiveFile and
-      (not Executor.Running or (assigned(LastProjectBuild) and
-      (LastProjectBuild <> ProjProp)) or DebugReader.Running);
-    RunRun.Enabled := BtnRun.Enabled;
-    RunCompile.Enabled := BtnRun.Enabled and not DebugReader.Running;
-    BtnCompile.Enabled := RunCompile.Enabled;
-    if HasActiveFile then
-    begin
-      RunExecute.Enabled := ProjProp.Compiled and FileExists(ProjProp.GetTarget)
-        and BtnRun.Enabled and not DebugReader.Running;
-      BtnExecute.Enabled := RunExecute.Enabled;
-      ProjectPopupMenuItens(True, True, True, True, True, True, True, False,
-        False, False, False, False, True);
-    end
-    else
-    begin
-      RunExecute.Enabled := False;
-      BtnExecute.Enabled := False;
-      ProjectPopupMenuItens(True, True, True, True, True, True, True, False,
-        False, False, False, False, False);
-    end;
+    StatusBar.Panels.Items[0].ImageIndex := -1;
     Exit;
   end;
-
-  prjs := TreeViewProjects.Items.GetFirstNode;
-  while prjs <> nil do
-  begin
-    BoldTreeNode(prjs, False);
-    prjs := prjs.getNextSibling;
-  end;
-
-  BoldTreeNode(TSourceFile(Node.Data).Project.Node, True);
-
-  FileSaveAS.Enabled := True;
-  TextEditorEnter(Sender);
-  FilePrp := TSourceFile(Node.Data);
-  StatusBar.Panels.Items[0].ImageIndex := FILE_IMG_LIST[FilePrp.FileType];
   if FilePrp.FileType = FILE_TYPE_FOLDER then
     StatusBar.Panels.Items[0].Caption :=
       ExtractFileName(ExcludeTrailingPathDelimiter(FilePrp.FileName))
   else
     StatusBar.Panels.Items[0].Caption := FilePrp.Name;
   StatusBar.Panels.Items[0].Hint := FilePrp.FileName;
-  if (FilePrp is TProjectFile) then
-    BtnSave.Enabled := (FilePrp.Modified or
-      TProjectFile(FilePrp).FilesChanged) or
-      not FilePrp.Saved
-  else
-    BtnSave.Enabled := FilePrp.Modified or not FilePrp.Saved;
-  BtnSaveAll.Enabled := True;
-  FileSave.Enabled := BtnSave.Enabled;
-  PopTabsSave.Enabled := BtnSave.Enabled;
-  FileSaveAll.Enabled := True;
-  PopTabsSaveAll.Enabled := FileSaveAll.Enabled;
-  case FilePrp.FileType of
-    FILE_TYPE_PROJECT:
-      begin
-        ProjectPopupMenuItens(True, False, True, True, True, True, True, True,
-          False, FilePrp.Saved, True, True, True);
-      end;
-    FILE_TYPE_FOLDER:
-      begin
-        ProjectPopupMenuItens(True, False, True, True, True, True, True, True,
-          False, FilePrp.Saved, True, True, True);
-      end;
-    FILE_TYPE_C..FILE_TYPE_UNKNOW:
-      begin
-        ProjectPopupMenuItens(True, False, False, False, False, False, False,
-          not (FilePrp is TProjectFile), True, FilePrp.Saved, True, True, True);
-      end;
-  end;
-  ProjectBuild.Enabled := True;
-  ProjectProperties.Enabled := True;
-
-  ProjectRemove.Enabled := FilePrp.Project.FileType = FILE_TYPE_PROJECT;
-  ProjectAdd.Enabled := FilePrp.Project.FileType = FILE_TYPE_PROJECT;
   if FilePrp.Editing then
     FilePrp.ViewPage;
 end;
@@ -2201,10 +2135,9 @@ procedure TFrmFalconMain.PageControlEditorClose(Sender: TObject;
   TabIndex: Integer; var AllowClose: Boolean);
 var
   FileProp: TSourceFile;
-  ProjProp: TProjectFile;
   Sheet: TSourceFileSheet;
   I: Integer;
-  allow, clAction: Boolean;
+  clAction: Boolean;
   FileName: string;
 begin
   if TabIndex < 0 then
@@ -2234,27 +2167,14 @@ begin
       mrCancel: Exit;
     end;
   end;
-
   clAction := True;
   if (FileProp.Project.FileType <> FILE_TYPE_PROJECT) and
     Config.Environment.RemoveFileOnClose then
   begin
     RemoveFile(FileProp);
-
-    BtnPrevPage.Enabled := PageControlEditor.PageCount > 1;
-    BtnNextPage.Enabled := PageControlEditor.PageCount > 1;
     Exit;
   end;
-
   PageControlEditor.Visible := (PageControlEditor.PageCount > 1);
-  FileClose.Enabled := PageControlEditor.Visible;
-  FileCloseAll.Enabled := PageControlEditor.Visible;
-  EditSwap.Enabled := FileClose.Enabled;
-  FilePrint.Enabled := PageControlEditor.Visible;
-  FileExport.Enabled := PageControlEditor.Visible;
-  RunToggleBreakpoint.Enabled := PageControlEditor.Visible;
-  RunRuntoCursor.Enabled := PageControlEditor.Visible;
-  PopTabsClose.Enabled := PageControlEditor.Visible;
   if not DebugReader.Running and
     (TabIndex = PageControlEditor.ActivePageIndex) then
     TreeViewOutline.Items.Clear;
@@ -2265,77 +2185,11 @@ begin
 
   if not PageControlEditor.Visible and (PageControlProjects.ActivePageIndex = 0) then
   begin
-    EditUndo.Enabled := False;
-    BtnUndo.Enabled := False;
-    PopEditorUndo.Enabled := False;
-    EditRedo.Enabled := False;
-    BtnRedo.Enabled := False;
-    PopEditorRedo.Enabled := False;
     StatusBar.Panels.Items[1].Caption := '';
     StatusBar.Panels.Items[2].Caption := '';
     StatusBar.Panels.Items[2].ImageIndex := -1;
-    EditSelectAll.Enabled := False;
-    EditDelete.Enabled := False;
-    PopEditorSelectAll.Enabled := False;
-    EditCopy.Enabled := False;
-    PopEditorCopy.Enabled := False;
-    EditCut.Enabled := False;
-    PopEditorCut.Enabled := False;
-    EditPaste.Enabled := False;
-    PopEditorPaste.Enabled := False;
-    BtnToggleBook.Enabled := False;
-    BtnGotoBook.Enabled := False;
-    EditBookmarks.Enabled := False;
-    EditGotoBookmarks.Enabled := False;
-    EditFormat.Enabled := False;
-    EditIndent.Enabled := False;
-    EditUnindent.Enabled := False;
-
-    SearchFind.Enabled := False;
-    SearchFindNext.Enabled := False;
-    SearchFindPrev.Enabled := False;
-    SearchFindFiles.Enabled := TreeViewProjects.Items.Count > 0;
-    SearchReplace.Enabled := False;
-    SearchGotoFunction.Enabled := TreeViewProjects.Items.Count > 0;
-    SearchGotoLine.Enabled := False;
-    BtnGotoLN.Enabled := False;
-    SearchGotoPrevFunc.Enabled := False;
-    SearchGotoNextFunc.Enabled := False;
-    BtnFind.Enabled := False;
-    BtnReplace.Enabled := False;
-
     if ProjectPanel.Visible then
       TreeViewProjects.SetFocus;
-    if GetActiveProject(ProjProp) then
-    begin
-      BtnRun.Enabled := (PageControlEditor.PageCount > 0) and
-        (not Executor.Running or (assigned(LastProjectBuild) and
-        (LastProjectBuild <> ProjProp)) or DebugReader.Running);
-      RunRun.Enabled := BtnRun.Enabled;
-      RunCompile.Enabled := BtnRun.Enabled and not DebugReader.Running;
-      BtnCompile.Enabled := RunCompile.Enabled;
-      RunExecute.Enabled := ProjProp.Compiled and FileExists(ProjProp.GetTarget)
-        and BtnRun.Enabled and not DebugReader.Running;
-      BtnExecute.Enabled := RunExecute.Enabled;
-      if GetSelectedFileInList(FileProp) then
-      begin
-        allow := (FileProp.FileType <> FILE_TYPE_PROJECT) and (FileProp.FileType <> FILE_TYPE_FOLDER);
-        ProjectPopupMenuItens(True, False, not allow, not allow, not allow,
-          not allow, not allow, not allow, allow,
-          FileProp.FileType <> FILE_TYPE_PROJECT, True, True, True);
-      end;
-    end
-    else
-    begin
-      RunExecute.Enabled := False;
-      BtnExecute.Enabled := False;
-      BtnRun.Enabled := False;
-      RunRun.Enabled := False;
-      RunCompile.Enabled := False;
-      BtnCompile.Enabled := False;
-      ProjectPopupMenuItens(True, True, True, True, True, True, True, False,
-        False, False, False, False, False);
-    end;
   end;
   AllowClose := clAction;
 end;
@@ -2355,7 +2209,7 @@ begin
   end;
 end;
 
-function TFrmFalconMain.SaveProject(ProjProp: TProjectFile): Boolean;
+function TFrmFalconMain.SaveProject(ProjProp: TProjectFile; SaveMode: TSaveMode): Boolean;
 begin
   Result := False;
   with TSaveDialog.Create(Self) do
@@ -2394,16 +2248,8 @@ begin
           Filter := Filter + '|' + STR_NEW_MENU[4] + '  (*.h, *.hpp, *.rh, *.hh)|*.h; *.hpp; *.rh; *.hh';
           Filter := Filter + '|' + STR_NEW_MENU[5] + ' (*.rc)|*.rc';
           Filter := Filter + '|' + STR_FRM_MAIN[12] + '|*.*';
-        //if DefFileType = FILE_TYPE_CPP then
-        //begin
           FilterIndex := 2;
           DefaultExt := 'cpp';
-        //end
-        //else
-        //begin
-        //  FilterIndex := 1;
-        //  DefaultExt := '.c';
-        //end;
           OnTypeChange := SaveExtensionChange;
         end;
     end;
@@ -2416,16 +2262,16 @@ begin
       ProjProp.CompilerType := GetCompiler(ProjProp.FileType);
     end;
     ProjProp.Saved := True;
-    ProjProp.FileName := FileName;
-    ProjProp.SaveAll(True);
-    FileSave.Enabled := ProjProp.Modified;
-    BtnSave.Enabled := FileSave.Enabled;
-    PopTabsSave.Enabled := FileSave.Enabled;
-    FileSaveAll.Enabled := FileSave.Enabled;
-    BtnSaveAll.Enabled := FileSave.Enabled;
-    PopTabsSaveAll.Enabled := FileSaveAll.Enabled;
+    if SaveMode = smSaveAs then
+      ProjProp.SaveAs(FileName)
+    else
+    begin
+      ProjProp.FileName := FileName;
+      ProjProp.SaveAll;
+      ProjProp.Save;
+    end;
     Result := True;
-  end
+  end;
 end;
 
 //save selected project or file in list
@@ -2438,21 +2284,20 @@ begin
   if not GetActiveFile(FileProp) then
     Exit;
   ProjProp := FileProp.Project;
-
   if not ProjProp.Saved then
   begin
-    SaveProject(ProjProp);
+    SaveProject(ProjProp, smSave);
   end
   else
   begin
     FileProp.Project.Compiled := False;
     if FileProp is TProjectFile then
-      ProjProp.SaveAll(True)
+    begin
+      ProjProp.SaveAll;
+      ProjProp.Save;
+    end
     else
       FileProp.Save;
-    FileSave.Enabled := FileProp.Modified;
-    BtnSave.Enabled := FileSave.Enabled;
-    PopTabsSave.Enabled := FileSave.Enabled;
   end;
 
 end;
@@ -2484,16 +2329,7 @@ end;
 
 procedure TFrmFalconMain.PageControlEditorChange(Sender: TObject);
 begin
-  FileClose.Enabled := (PageControlEditor.PageCount > 0);
-  EditSwap.Enabled := FileClose.Enabled;
-  FilePrint.Enabled := (PageControlEditor.PageCount > 0);
-  FileExport.Enabled := (PageControlEditor.PageCount > 0);
-  BtnPrevPage.Enabled := PageControlEditor.PageCount > 1;
-  BtnNextPage.Enabled := PageControlEditor.PageCount > 1;
-  RunToggleBreakpoint.Enabled := (PageControlEditor.PageCount > 0);
-  RunRuntoCursor.Enabled := (PageControlEditor.PageCount > 0);
-  FileCloseAll.Enabled := FileClose.Enabled;
-  PopTabsClose.Enabled := FileClose.Enabled;
+  //
 end;
 
 procedure TFrmFalconMain.EditorBeforeCreate(FileProp: TSourceFile);
@@ -2554,15 +2390,6 @@ begin
         end;
       APPTYPE_CONSOLE, APPTYPE_GUI:
         begin
-          BtnStop.Enabled := True;
-          RunStop.Enabled := True;
-          RunRun.Enabled := ProjectFile.Debugging;
-          BtnRun.Enabled := ProjectFile.Debugging;
-          ProjectBuild.Enabled := False;
-          RunCompile.Enabled := False;
-          BtnCompile.Enabled := False;
-          RunExecute.Enabled := False;
-          BtnExecute.Enabled := False;
           if ProjectFile.Debugging then
             Caption := 'Falcon C++ [' + STR_FRM_MAIN[44] + ']'
           else
@@ -2640,45 +2467,8 @@ end;
 //on enter in project list
 
 procedure TFrmFalconMain.TreeViewProjectsEnter(Sender: TObject);
-var
-  ProjProp: TProjectFile;
 begin
-  if (TreeViewProjects.SelectionCount > 0) then
-  begin
-    if (TObject(TreeViewProjects.Selected.Data) is TProjectFile) then
-      ProjProp := TProjectFile(TreeViewProjects.Selected.Data)
-    else
-      ProjProp := TSourceFile(TreeViewProjects.Selected.Data).Project;
-
-    BtnRun.Enabled := not Executor.Running or (assigned(LastProjectBuild) and
-      (LastProjectBuild <> ProjProp) or DebugReader.Running);
-    RunRun.Enabled := BtnRun.Enabled;
-    RunCompile.Enabled := BtnRun.Enabled and not DebugReader.Running;
-    BtnCompile.Enabled := RunCompile.Enabled;
-
-    if FileExists(ProjProp.GetTarget) then
-    begin
-      RunExecute.Enabled := ProjProp.Compiled and BtnRun.Enabled
-        and not DebugReader.Running;
-      BtnExecute.Enabled := RunExecute.Enabled;
-    end
-    else
-    begin
-      RunExecute.Enabled := False;
-      BtnExecute.Enabled := False;
-    end;
-  end
-  else
-  begin
-    //compile with no selected
-    //if (PageControlEditor.PageCount > 0) then Exit;
-    BtnRun.Enabled := False;
-    RunRun.Enabled := False;
-    RunCompile.Enabled := False;
-    BtnCompile.Enabled := False;
-    RunExecute.Enabled := False;
-    BtnExecute.Enabled := False;
-  end;
+  //
 end;
 
 //on change the active tab
@@ -2704,37 +2494,13 @@ begin
       BoldTreeNode(prjs, False);
       prjs := prjs.getNextSibling;
     end;
-
     Sheet := TSourceFileSheet(PageControlEditor.ActivePage);
     Prop := Sheet.SourceFile;
     if Sheet.SourceFile is TProjectFile then
       ProjProp := TProjectFile(Sheet.SourceFile)
     else
       ProjProp := Sheet.SourceFile.Project;
-
     BoldTreeNode(ProjProp.Node, True);
-
-    BtnRun.Enabled := not Executor.Running or (assigned(LastProjectBuild) and
-      (LastProjectBuild <> ProjProp)) or DebugReader.Running;
-    RunRun.Enabled := BtnRun.Enabled;
-    RunCompile.Enabled := BtnRun.Enabled and not DebugReader.Running;
-    BtnCompile.Enabled := RunCompile.Enabled;
-
-    FileSave.Enabled := Prop.Modified or not Prop.Saved;
-    BtnSave.Enabled := FileSave.Enabled;
-    PopTabsSave.Enabled := FileSave.Enabled;
-
-    if FileExists(ProjProp.GetTarget) then
-    begin
-      RunExecute.Enabled := ProjProp.Compiled and BtnRun.Enabled
-        and not DebugReader.Running;
-      BtnExecute.Enabled := RunExecute.Enabled;
-    end
-    else
-    begin
-      RunExecute.Enabled := False;
-      BtnExecute.Enabled := False;
-    end;
     //Reload Tokens ?
     if not IsLoading then
     begin
@@ -2776,8 +2542,8 @@ begin
   CompilerActiveMsg := STR_FRM_MAIN[18];
   if ProjectFile.NeedBuild then
   begin
-    CompilationStopped := False;
-    ProjectFile.Build(True);
+    FCompilationStopped := False;
+    ProjectFile.Build;
   end
   else
     ExecuteApplication(ProjectFile);
@@ -2794,41 +2560,7 @@ end;
 //on execution finished
 
 procedure TFrmFalconMain.LauncherFinished(Sender: TObject);
-var
-  ProjProp: TProjectFile;
 begin
-  if GetActiveProject(ProjProp) then
-  begin
-    if FileExists(ProjProp.GetTarget) and ProjProp.Compiled then
-    begin
-      RunExecute.Enabled := True;
-      BtnExecute.Enabled := True;
-    end
-    else
-    begin
-      RunExecute.Enabled := False;
-      BtnExecute.Enabled := False;
-    end;
-  end
-  else
-  begin
-    RunExecute.Enabled := False;
-    BtnExecute.Enabled := False;
-  end;
-  RunRun.Enabled := TreeViewProjects.Items.Count > 0;
-  BtnRun.Enabled := RunRun.Enabled;
-  BtnStop.Enabled := False;
-  RunStop.Enabled := False;
-  ProjectBuild.Enabled := TreeViewProjects.Items.Count > 0;
-  RunCompile.Enabled := TreeViewProjects.Items.Count > 0;
-  BtnCompile.Enabled := RunCompile.Enabled;
-  //debug
-  RunStepInto.Enabled := False;
-  BtnStepInto.Enabled := False;
-  RunStepOver.Enabled := False;
-  BtnStepOver.Enabled := False;
-  RunStepReturn.Enabled := False;
-  BtnStepReturn.Enabled := False;
   //--clean
   if Assigned(LastProjectBuild) then
     LastProjectBuild.BreakpointCursor.Valid := False;
@@ -2840,7 +2572,7 @@ end;
 
 procedure TFrmFalconMain.StopAll;
 begin
-  CompilationStopped := True;
+  FCompilationStopped := True;
   if CompilerCmd.Executing then
     CompilerCmd.Stop;
   if Executor.Running then
@@ -2896,8 +2628,8 @@ begin
   begin
     if (TreeViewProjects.SelectionCount = 1) then
       TreeViewProjects.Selected.Selected := False;
-    ProjectPopupMenuItens(True, True, True, True, True, True, True, False,
-      False, False, False, False, False);
+    {ProjectPopupMenuItens(True, True, True, True, True, True, True, False,
+      False, False, False, False, False);}
   end
   else
   begin
@@ -2950,7 +2682,7 @@ begin
   CompilerActiveMsg := STR_FRM_MAIN[18];
   if GetActiveProject(ProjProp) then
   begin
-    CompilationStopped := False;
+    FCompilationStopped := False;
     ProjProp.Build;
   end;
 end;
@@ -3152,25 +2884,10 @@ begin
     FileProp.Delete;
   end;
 
-  ProjectPopupMenuItens(True, True, True, True, True, True, True,
-    False, False, False, False, False, False);
+  {ProjectPopupMenuItens(True, True, True, True, True, True, True,
+    False, False, False, False, False, False);}
   TreeViewProjectsChange(TreeViewProjects, TreeViewProjects.Selected);
   TextEditorExit(Self);
-  //enable items if has open in sheet
-  FileClose.Enabled := PageControlEditor.PageCount > 0;
-  FileCloseAll.Enabled := PageControlEditor.PageCount > 0;
-  EditSwap.Enabled := FileClose.Enabled;
-  FileRemove.Enabled := TreeViewProjects.SelectionCount > 0;
-  BtnRemove.Enabled := TreeViewProjects.SelectionCount > 0;
-  BtnNextPage.Enabled := PageControlEditor.PageCount > 1;
-  BtnPrevPage.Enabled := PageControlEditor.PageCount > 1;
-  EditDelete.Enabled := PageControlEditor.PageCount > 0;
-  SearchGotoFunction.Enabled := TreeViewProjects.Items.Count > 0;
-
-  FilePrint.Enabled := PageControlEditor.PageCount > 0;
-  RunToggleBreakpoint.Enabled := PageControlEditor.PageCount > 0;
-  RunRuntoCursor.Enabled := PageControlEditor.PageCount > 0;
-  FileExport.Enabled := PageControlEditor.PageCount > 0; //?
   PanelOutline.Visible := (PageControlEditor.PageCount > 0) and ViewOutline.Checked;
   Result := True;
 end;
@@ -3205,12 +2922,18 @@ end;
 
 procedure TFrmFalconMain.PopProjRenameClick(Sender: TObject);
 begin
+  if TreeViewProjects.SelectionCount = 0 then
+    Exit;
   TreeViewProjects.Selected.EditText;
 end;
 
 procedure TFrmFalconMain.PopProjOpenClick(Sender: TObject);
+var
+  SourceFile: TSourceFile;
 begin
-  TSourceFile(TreeViewProjects.Selected.Data).Open;
+  if not GetSelectedFileInList(SourceFile) then
+    Exit;
+  SourceFile.Open;
 end;
 
 procedure TFrmFalconMain.FileExitClick(Sender: TObject);
@@ -3564,8 +3287,6 @@ begin
       DeleteFile(Temp + 'AppIcon.ico');
     if FileExists(LastProjectBuild.GetTarget) then
     begin
-      RunExecute.Enabled := True;
-      BtnExecute.Enabled := True;
       LastProjectBuild.TargetDateTime := FileDateTime(LastProjectBuild.GetTarget);
       if RunNow and ((LastProjectBuild.AppType = APPTYPE_CONSOLE) or
         (LastProjectBuild.AppType = APPTYPE_GUI)) then
@@ -4145,65 +3866,20 @@ end;
 procedure TFrmFalconMain.FileSaveAllClick(Sender: TObject);
 var
   ProjProp: TProjectFile;
-  I: Integer;
+  Sibling: TTreeNode;
 begin
-  for I := 0 to TreeViewProjects.Items.Count - 1 do
+  Sibling := TreeViewProjects.Items.GetFirstNode;
+  while Sibling <> nil do
   begin
-    if (TreeViewProjects.Items.Item[I].Level <> 0) then
-      Continue;
-    ProjProp := TProjectFile(TreeViewProjects.Items.Item[I].Data);
+    ProjProp := TProjectFile(Sibling.Data);
     if not ProjProp.Saved then
-      with TSaveDialog.Create(Self) do
-      begin
-        FileName := ProjProp.Name;
-        case ProjProp.FileType of
-          FILE_TYPE_PROJECT:
-            begin
-              DefaultExt := '.fpj';
-              Filter := STR_FRM_MAIN[11] + ' (*.fpj)|*.fpj';
-            end;
-          FILE_TYPE_C:
-            begin
-              DefaultExt := '.c';
-              Filter := STR_NEW_MENU[2] + ' (*.c)|*.c';
-            end;
-          FILE_TYPE_CPP:
-            begin
-              DefaultExt := '.cpp';
-              Filter := STR_NEW_MENU[3] + ' (*.cpp)|*.cpp';
-            end;
-          FILE_TYPE_H:
-            begin
-              DefaultExt := '.h';
-              Filter := STR_NEW_MENU[4] + ' (*.h)|*.h';
-            end;
-          FILE_TYPE_RC:
-            begin
-              DefaultExt := '.rc';
-              Filter := STR_NEW_MENU[5] + ' (*.rc)|*.rc';
-            end;
-          FILE_TYPE_UNKNOW: Filter := STR_FRM_MAIN[12] + '|*.*';
-        end;
-        Options := Options + [ofOverwritePrompt];
-        if Execute then
-        begin
-          ProjProp.Saved := True;
-          ProjProp.FileType := GetFileType(FileName);
-          ProjProp.CompilerType := GetCompiler(ProjProp.FileType);
-          ProjProp.FileName := FileName;
-          ProjProp.SaveAll(True);
-          FileSave.Enabled := False;
-          BtnSave.Enabled := FileSave.Enabled;
-          PopTabsSave.Enabled := FileSave.Enabled;
-        end;
-      end
+      SaveProject(ProjProp, smSave)
     else
     begin
-      ProjProp.SaveAll(True);
-      FileSave.Enabled := False;
-      BtnSave.Enabled := FileSave.Enabled;
-      PopTabsSave.Enabled := FileSave.Enabled;
+      ProjProp.SaveAll;
+      ProjProp.Save;
     end;
+    Sibling := Sibling.getPrevSibling;
   end;
 end;
 
@@ -4218,59 +3894,13 @@ begin
       ProjProp := TProjectFile(FileProp)
     else
       ProjProp := FileProp.Project;
-    with TSaveDialog.Create(Self) do
+    if SaveProject(ProjProp, smSaveAs) then
     begin
-      FileName := ProjProp.Name;
-      case ProjProp.FileType of
-        FILE_TYPE_PROJECT:
-          begin
-            DefaultExt := '.fpj';
-            Filter := STR_FRM_MAIN[11] + ' (*.fpj)|*.fpj';
-          end;
-        FILE_TYPE_C:
-          begin
-            DefaultExt := '.c';
-            Filter := STR_NEW_MENU[2] + ' (*.c)|*.c';
-          end;
-        FILE_TYPE_CPP:
-          begin
-            DefaultExt := '.cpp';
-            Filter := STR_NEW_MENU[3] + ' (*.cpp, *.cc, *.cxx, *.c++, *.cp)|*.cpp; *.cc; *.cxx; *.c++; *.cp';
-          end;
-        FILE_TYPE_H:
-          begin
-            DefaultExt := '.h';
-            Filter := STR_NEW_MENU[4] + ' (*.h, *.hpp, *.rh, *.hh)|*.h; *.hpp; *.rh; *.hh';
-          end;
-        FILE_TYPE_RC:
-          begin
-            DefaultExt := '.rc';
-            Filter := STR_NEW_MENU[5] + ' (*.rc)|*.rc';
-          end;
-        FILE_TYPE_UNKNOW: Filter := STR_FRM_MAIN[35] + ' |*.fpj; *.c; *.cpp;' +
-          ' *.cc; *.cxx; *.c++; *.cp; *.h; *.hpp; *.rh; *.hh; *.rc| ' +
-            STR_FRM_MAIN[12] + ' (*.*)|*.*';
-      end;
-      Options := Options + [ofOverwritePrompt];
-      if Execute then
-      begin
-        ProjProp.Saved := True;
-        if (ProjProp.FileType = FILE_TYPE_UNKNOW) then
-        begin
-          ProjProp.FileType := GetFileType(FileName);
-          ProjProp.CompilerType := GetCompiler(ProjProp.FileType);
-        end;
-        ProjProp.SaveAs(FileName);
-        ProjProp.Node.Text := ProjProp.Name;
-        FileSave.Enabled := FileProp.Modified;
-        BtnSave.Enabled := FileSave.Enabled;
-        PopTabsSave.Enabled := FileSave.Enabled;
-        //update status bar
-        StatusBar.Panels.Items[0].ImageIndex := FILE_IMG_LIST[FileProp.FileType];
-        StatusBar.Panels.Items[0].Caption := FileProp.Name;
-        StatusBar.Panels.Items[0].Hint := FileProp.FileName;
-      end;
-    end
+      //update status bar
+      StatusBar.Panels.Items[0].ImageIndex := FILE_IMG_LIST[FileProp.FileType];
+      StatusBar.Panels.Items[0].Caption := FileProp.Name;
+      StatusBar.Panels.Items[0].Hint := FileProp.FileName;
+    end;
   end;
 end;
 
@@ -4334,32 +3964,8 @@ begin
   if (Sender is TSynMemo) then
   begin
     Memo := TSynMemo(Sender);
-    EditUndo.Enabled := Memo.CanUndo;
-    BtnUndo.Enabled := Memo.CanUndo;
-    PopEditorUndo.Enabled := Memo.CanUndo;
-    EditRedo.Enabled := Memo.CanRedo;
-    BtnRedo.Enabled := Memo.CanRedo;
-    PopEditorRedo.Enabled := Memo.CanRedo;
     StatusBar.Panels.Items[1].Caption := Format('Ln : %d  Col : %d   Sel : %d',
       [Memo.DisplayY, Memo.DisplayX, Memo.SelLength]);
-    EditSelectAll.Enabled := not (Memo.SelLength = Length(Memo.Text)) and
-      (Length(Memo.Text) > 0);
-    PopEditorSelectAll.Enabled := EditSelectAll.Enabled;
-    PopEditorDelete.Enabled := ((Memo.Focused) and (Length(Memo.Text) > 0)
-      and (Memo.SelStart <> Length(Memo.Text))) or
-      (TreeViewProjects.SelectionCount > 0);
-    EditDelete.Enabled := PopEditorDelete.Enabled;
-
-    EditCopy.Enabled := (Memo.SelLength > 0);
-    EditIndent.Enabled := EditCopy.Enabled;
-    EditUnindent.Enabled := EditCopy.Enabled;
-    PopEditorCopy.Enabled := EditCopy.Enabled;
-
-    EditCut.Enabled := EditCopy.Enabled;
-    PopEditorCut.Enabled := EditCopy.Enabled;
-
-    EditPaste.Enabled := Memo.CanPaste;
-    PopEditorPaste.Enabled := Memo.CanPaste;
   end;
 end;
 
@@ -4407,9 +4013,6 @@ begin
       Memo.ActiveLineColor := clNone;
     Sheet := TSourceFileSheet(Memo.Owner);
     FilePrp := Sheet.SourceFile;
-    FileSave.Enabled := FilePrp.Modified or not FilePrp.Saved;
-    BtnSave.Enabled := FileSave.Enabled;
-    PopTabsSave.Enabled := FileSave.Enabled;
     if FilePrp.Modified then
       Sheet.Caption := '*' + FilePrp.Name
     else
@@ -4484,7 +4087,6 @@ begin
   end;
   if GetActiveProject(ProjProp) then
   begin
-    FileSaveAs.Enabled := True;
     if (Sender is TSynMemo) then
     begin
       TextEditorAllAction(Sender);
@@ -4501,48 +4103,6 @@ begin
           TTBXItem(EditGotoBookmarks.Items[I - 1]).Checked := False;
           TTBXItem(EditGotoBookmarks.Items[I - 1]).Enabled := False;
         end;
-      BtnToggleBook.Enabled := True;
-      BtnGotoBook.Enabled := True;
-      EditBookmarks.Enabled := True;
-      EditGotoBookmarks.Enabled := True;
-      EditorBookmarks.Enabled := True;
-      EditorGotoBookmarks.Enabled := True;
-      PopEditorTools.Enabled := True;
-      EditFormat.Enabled := AStyleLoaded;
-
-      SearchFind.Enabled := True;
-      SearchGotoFunction.Enabled := True;
-      SearchGotoLine.Enabled := True;
-      BtnGotoLN.Enabled := True;
-      SearchGotoPrevFunc.Enabled := True;
-      SearchGotoNextFunc.Enabled := True;
-      SearchFindNext.Enabled := True;
-      SearchFindPrev.Enabled := True;
-      SearchFindFiles.Enabled := True;
-      BtnFind.Enabled := True;
-      SearchReplace.Enabled := True;
-      BtnReplace.Enabled := True;
-    end;
-
-    BtnRun.Enabled := not Executor.Running or (assigned(LastProjectBuild) and
-      (LastProjectBuild <> ProjProp)) or DebugReader.Running;
-    RunRun.Enabled := BtnRun.Enabled;
-    RunCompile.Enabled := BtnRun.Enabled and not DebugReader.Running;
-    BtnCompile.Enabled := RunCompile.Enabled;
-    PopEditorProperties.Enabled := True;
-    BtnProperties.Enabled := True;
-    ProjectProperties.Enabled := True;
-    ProjectBuild.Enabled := BtnRun.Enabled;
-
-    if FileExists(ProjProp.GetTarget) and ProjProp.Compiled then
-    begin
-      RunExecute.Enabled := BtnRun.Enabled and not DebugReader.Running;
-      BtnExecute.Enabled := RunExecute.Enabled;
-    end
-    else
-    begin
-      RunExecute.Enabled := False;
-      BtnExecute.Enabled := False;
     end;
   end;
 end;
@@ -4550,80 +4110,9 @@ end;
 //on exit of code editor
 
 procedure TFrmFalconMain.TextEditorExit(Sender: TObject);
-var
-  ProjProp: TProjectFile;
 begin
   CheckIfFilesHasChanged;
   HintParams.Cancel;
-  EditUndo.Enabled := False;
-  BtnUndo.Enabled := False;
-  PopEditorUndo.Enabled := False;
-
-  EditRedo.Enabled := False;
-  BtnRedo.Enabled := False;
-  PopEditorRedo.Enabled := False;
-
-  EditSelectAll.Enabled := False;
-  EditDelete.Enabled := False;
-  PopEditorSelectAll.Enabled := False;
-
-  EditCopy.Enabled := False;
-  PopEditorCopy.Enabled := False;
-  EditIndent.Enabled := False;
-  EditUnindent.Enabled := False;
-
-  EditCut.Enabled := False;
-  PopEditorCut.Enabled := False;
-
-  EditPaste.Enabled := False;
-  PopEditorPaste.Enabled := False;
-
-  BtnToggleBook.Enabled := PageControlEditor.PageCount > 0;
-  BtnGotoBook.Enabled := PageControlEditor.PageCount > 0;
-  EditBookmarks.Enabled := PageControlEditor.PageCount > 0;
-  EditGotoBookmarks.Enabled := PageControlEditor.PageCount > 0;
-  EditorBookmarks.Enabled := PageControlEditor.PageCount > 0;
-  EditorGotoBookmarks.Enabled := PageControlEditor.PageCount > 0;
-
-  PopEditorTools.Enabled := False;
-  EditIndent.Enabled := False;
-  EditUnindent.Enabled := False;
-  EditFormat.Enabled := AStyleLoaded and (PageControlEditor.PageCount > 0);
-
-  SearchFind.Enabled := PageControlEditor.PageCount > 0;
-  SearchGotoFunction.Enabled := (PageControlEditor.PageCount > 0) or
-    (TreeViewProjects.Items.Count > 0);
-  SearchGotoLine.Enabled := PageControlEditor.PageCount > 0;
-  BtnGotoLN.Enabled := PageControlEditor.PageCount > 0;
-  SearchGotoPrevFunc.Enabled := PageControlEditor.PageCount > 0;
-  SearchGotoNextFunc.Enabled := PageControlEditor.PageCount > 0;
-  SearchFindNext.Enabled := PageControlEditor.PageCount > 0;
-  SearchFindPrev.Enabled := PageControlEditor.PageCount > 0;
-  SearchFindFiles.Enabled := PageControlEditor.PageCount > 0;
-  BtnFind.Enabled := PageControlEditor.PageCount > 0;
-  SearchReplace.Enabled := PageControlEditor.PageCount > 0;
-  BtnReplace.Enabled := PageControlEditor.PageCount > 0;
-
-  if GetActiveProject(ProjProp) then
-  begin
-    BtnRun.Enabled := not Executor.Running or (assigned(LastProjectBuild) and
-      (LastProjectBuild <> ProjProp)) or DebugReader.Running;
-    RunRun.Enabled := BtnRun.Enabled;
-    RunCompile.Enabled := BtnRun.Enabled and not DebugReader.Running;
-    BtnCompile.Enabled := RunCompile.Enabled;
-    RunExecute.Enabled := not ProjProp.TargetChanged and BtnRun.Enabled
-      and not DebugReader.Running;
-    BtnExecute.Enabled := BtnExecute.Enabled;
-  end
-  else
-  begin
-    BtnRun.Enabled := False;
-    RunRun.Enabled := False;
-    RunCompile.Enabled := False;
-    BtnCompile.Enabled := False;
-    RunExecute.Enabled := False;
-    BtnExecute.Enabled := False;
-  end;
 end;
 
 procedure TFrmFalconMain.TextEditorMouseMove(Sender: TObject; Shift: TShiftState;
@@ -4929,10 +4418,7 @@ end;
 procedure TFrmFalconMain.TreeViewProjectsAddition(Sender: TObject;
   Node: TTreeNode);
 begin
-  BtnSaveAll.Enabled := (TreeViewProjects.Items.Count > 0);
-  FileSaveAll.Enabled := BtnSaveAll.Enabled;
-  PopTabsSaveAll.Enabled := FileSaveAll.Enabled;
-  FileSaveAs.Enabled := (TreeViewProjects.SelectionCount > 0);
+  //
 end;
 
 procedure TFrmFalconMain.FormShow(Sender: TObject);
@@ -7166,15 +6652,11 @@ end;
 procedure TFrmFalconMain.PopTabsTabsAtTopClick(Sender: TObject);
 begin
   PageControlEditor.TabPosition := mtpTop;
-  PopTabsTabsAtTop.Enabled := False;
-  PopTabsTabsAtBottom.Enabled := True;
 end;
 
 procedure TFrmFalconMain.PopTabsTabsAtBottomClick(Sender: TObject);
 begin
   PageControlEditor.TabPosition := mtpBottom;
-  PopTabsTabsAtTop.Enabled := True;
-  PopTabsTabsAtBottom.Enabled := False;
 end;
 
 procedure TFrmFalconMain.EditSwapClick(Sender: TObject);
@@ -7327,7 +6809,7 @@ end;
 
 procedure TFrmFalconMain.PopupTabsPopup(Sender: TObject);
 begin
-  PopTabsCloseAllOthers.Enabled := PageControlEditor.PageCount > 1;
+  //
 end;
 
 procedure TFrmFalconMain.PageControlEditorTabClick(Sender: TObject);
@@ -8105,12 +7587,6 @@ end;
 
 procedure TFrmFalconMain.DebugReaderStart(Sender: TObject);
 begin
-  RunStepInto.Enabled := True;
-  BtnStepInto.Enabled := True;
-  RunStepOver.Enabled := True;
-  BtnStepOver.Enabled := True;
-  RunStepReturn.Enabled := True;
-  BtnStepReturn.Enabled := True;
   TreeViewOutline.Items.Clear;
   TSOutline.Caption := STR_FRM_MAIN[50];
   TreeViewOutline.Images := ImageListDebug;
@@ -8231,8 +7707,8 @@ begin
     CompilerActiveMsg := STR_FRM_MAIN[18];
     if ProjProp.NeedBuild then
     begin
-      CompilationStopped := False;
-      ProjProp.Build(True);
+      FCompilationStopped := False;
+      ProjProp.Build;
     end
     else
       ExecuteApplication(ProjProp);

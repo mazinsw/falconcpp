@@ -103,9 +103,6 @@ function SearchSourceFile(FileName: string;
 function OpenFile(FileName: string): TProjectFile;
 function RemoveOption(const S, Options: string): string;
 function DeleteResourceFiles(List: TStrings): Boolean;
-procedure ProjectPopupMenuItens(ItemNew, ItemNewPro, ItemNewC, ItemNewCPP,
-  ItemNewH, ItemNewRC, ItemNewEmp, ItemNewFol, ItemEdit, ItemOpen, ItemDel,
-  ItemRen, ItemProp: Boolean);
 function IsNT: Boolean;
 function GetAppTypeByName(AppType: string): Integer;
 function GetCurrentUserName: string;
@@ -716,27 +713,6 @@ begin
   end;
   TStringList(List).Sort;
   Result := List;
-end;
-
-procedure ProjectPopupMenuItens(ItemNew, ItemNewPro, ItemNewC, ItemNewCPP,
-  ItemNewH, ItemNewRC, ItemNewEmp, ItemNewFol, ItemEdit, ItemOpen, ItemDel,
-  ItemRen, ItemProp: Boolean);
-begin
-  with FrmFalconMain do
-  begin
-    PopProjNew.Enabled := ItemNew;
-    SubNNewFolder.Enabled := ItemNewFol;
-    PopProjEdit.Enabled := ItemEdit;
-    PopProjOpen.Enabled := ItemOpen;
-    PopProjRemove.Enabled := ItemDel;
-    PopProjDelFromDsk.Enabled := ItemDel;
-    PopProjRename.Enabled := ItemRen;
-    PopProjAdd.Enabled := ItemNewC and ItemRen;
-    PopProjProp.Enabled := ItemProp;
-    PopEditorProperties.Enabled := ItemProp;
-    BtnProperties.Enabled := ItemProp;
-    PopTabsClose.Enabled := FileClose.Enabled;
-  end;
 end;
 
 function IsNT: Boolean;

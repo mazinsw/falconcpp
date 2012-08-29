@@ -1954,7 +1954,7 @@ begin
   FListView := TListView.Create(Self);
   FListView.Parent := Self;
   FListView.Align := alClient;
-  FListView.BorderStyle := bsNone;
+  //FListView.BorderStyle := bsNone;
   FListView.DoubleBuffered := True;
   FListView.HideSelection := False;
   FListView.ReadOnly := True;
@@ -1980,7 +1980,7 @@ begin
   FSourceFile.FSheet := Self;
   FSheetType := SHEET_TYPE_FILE;
   FSynMemo := TSynMemo.Create(Self);
-  FSynMemo.BorderStyle := bsNone;
+  //FSynMemo.BorderStyle := bsNone;
   with FrmFalconMain.Config.Editor do
   begin
     Options := FSynMemo.Options;

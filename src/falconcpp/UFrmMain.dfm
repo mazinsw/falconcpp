@@ -1141,10 +1141,12 @@ object FrmFalconMain: TFrmFalconMain
         NormalColor = clWhite
         FocusedColor = 15973017
         Images = ImgListMenus
+        ParentColor = False
         PopupMenu = PopupTabs
         TabIndex = -1
         TabOrder = 0
         TabStop = True
+        FixedTabWidth = True
         Visible = False
         OnChange = PageControlEditorChange
         OnClose = PageControlEditorClose
@@ -1173,11 +1175,14 @@ object FrmFalconMain: TFrmFalconMain
         Align = alClient
         NormalColor = clWhite
         FocusedColor = 15973017
+        ParentColor = False
         TabIndex = 0
         TabOrder = 0
         TabStop = True
+        FixedTabWidth = True
         OnClose = PageControlMsgClose
         object TSMessages: TModernTabSheet
+          Color = 16185078
           Caption = 'Messages'
           ImageIndex = 0
           PageControl = PageControlMessages
@@ -1189,7 +1194,6 @@ object FrmFalconMain: TFrmFalconMain
             Align = alClient
             BevelInner = bvNone
             BevelOuter = bvNone
-            BorderStyle = bsNone
             Columns = <
               item
                 Caption = 'File'
@@ -1270,14 +1274,18 @@ object FrmFalconMain: TFrmFalconMain
       Height = 533
       ActivePage = TSProjects
       Align = alClient
-      NormalColor = clWhite
-      FocusedColor = 15973017
+      Color = clWhite
+      NormalColor = 11053224
+      FocusedColor = 16185078
       Images = ImgListMenus
+      ParentColor = False
       ShowCloseButton = False
       TabIndex = 0
       TabOrder = 0
       TabStop = True
+      FixedTabWidth = True
       object TSProjects: TModernTabSheet
+        Color = 16185078
         Caption = 'Projects'
         ImageIndex = 1
         PageControl = PageControlProjects
@@ -1287,7 +1295,6 @@ object FrmFalconMain: TFrmFalconMain
           Width = 175
           Height = 502
           Align = alClient
-          BorderStyle = bsNone
           BorderWidth = 1
           DragMode = dmAutomatic
           Font.Charset = DEFAULT_CHARSET
@@ -1336,11 +1343,14 @@ object FrmFalconMain: TFrmFalconMain
       NormalColor = clWhite
       FocusedColor = 15973017
       Images = ImgListMenus
+      ParentColor = False
       ShowCloseButton = False
       TabIndex = 0
       TabOrder = 0
       TabStop = True
+      FixedTabWidth = True
       object TSOutline: TModernTabSheet
+        Color = 16185078
         Caption = 'Outline'
         ImageIndex = 56
         PageControl = PageControlOutline
@@ -1350,7 +1360,6 @@ object FrmFalconMain: TFrmFalconMain
           Width = 175
           Height = 502
           Align = alClient
-          BorderStyle = bsNone
           BorderWidth = 1
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText

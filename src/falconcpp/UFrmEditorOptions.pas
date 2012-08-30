@@ -698,20 +698,20 @@ begin
   Stx.Name := 'Default';
   Stx.ReadOnly := True;
   Stx.AddSintaxType('Assembler', clNone);
-  Stx.AddSintaxType('Character', 33023);
-  Stx.AddSintaxType('Comment', clGreen, clNone, [fsItalic]);
-  Stx.AddSintaxType('Float', clGreen);
-  Stx.AddSintaxType('Hexadecimal', clGreen);
+  Stx.AddSintaxType('Character', clGray);
+  Stx.AddSintaxType('Comment', clGreen);
+  Stx.AddSintaxType('Float', $000080FF);
+  Stx.AddSintaxType('Hexadecimal', $000080FF);
   Stx.AddSintaxType('Identifier', clNone);
-  Stx.AddSintaxType('Number', clGreen);
-  Stx.AddSintaxType('Octal', clGreen);
-  Stx.AddSintaxType('Preprocessor', clTeal);
-  Stx.AddSintaxType('Reserved Word', clNone, clNone, [fsBold]);
+  Stx.AddSintaxType('Number', $000080FF);
+  Stx.AddSintaxType('Octal', $000080FF);
+  Stx.AddSintaxType('Preprocessor', $00004080);
+  Stx.AddSintaxType('Reserved Word', $00FF0080, clNone, [fsBold]);
   Stx.AddSintaxType('Space', clNone);
   Stx.AddSintaxType('String', clBlue);
-  Stx.AddSintaxType('Symbol', clMaroon);
-  Stx.AddSintaxType('Gutter', clWindowText, clBtnFace);
-  Stx.AddSintaxType('Selection', clHighlightText, clHighlight);
+  Stx.AddSintaxType('Symbol', clNavy, clNone, [fsBold]);
+  Stx.AddSintaxType('Gutter', clGray, $00E4E4E4);
+  Stx.AddSintaxType('Selection', clWindowText, clGray);
   FItemIndex := Add(Stx);
 end;
 
@@ -861,6 +861,10 @@ begin
     for I := 0 to TSFormatterIndentation.ControlCount - 1 do
     begin
       TSFormatterIndentation.Controls[I].Enabled := BtnPrevStyle.Visible;
+    end;
+    for I := 0 to TSFormatterPadding.ControlCount - 1 do
+    begin
+      TSFormatterPadding.Controls[I].Enabled := BtnPrevStyle.Visible;
     end;
     for I := 0 to TSFormatterFormatting.ControlCount - 1 do
     begin
@@ -1647,7 +1651,7 @@ begin
   ClbB.Selected := clSkyBlue;
   //---------------------------
   ChbHighCurLn.Checked := True;
-  ClbCurLn.Selected := $AAD5D5;
+  ClbCurLn.Selected := $FFE0C2;
   //---------------------------
   ChbLinkClick.Checked := True;
   ClbLinkColor.Selected := clBlue;

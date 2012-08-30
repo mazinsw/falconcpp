@@ -318,7 +318,7 @@ begin
     BgColor := StringToColor(ini.ReadString('EditorOptions', 'BgColor', 'clSkyBlue'));
 
     HighligthCurrentLine := ini.ReadBool('EditorOptions', 'HighligthCurrentLine', True);
-    CurrentLineColor := StringToColor(ini.ReadString('EditorOptions', 'CurrentLineColor', '$AAD5D5'));
+    CurrentLineColor := StringToColor(ini.ReadString('EditorOptions', 'CurrentLineColor', '$FFE0C2'));
 
     LinkClick := ini.ReadBool('EditorOptions', 'LinkClick', True);
     LinkColor := StringToColor(ini.ReadString('EditorOptions', 'LinkColor', 'clBlue'));

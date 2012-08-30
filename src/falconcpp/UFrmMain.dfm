@@ -1138,6 +1138,7 @@ object FrmFalconMain: TFrmFalconMain
         Width = 518
         Height = 386
         Align = alClient
+        CanDragTabs = True
         NormalColor = clWhite
         FocusedColor = 15973017
         Images = ImgListMenus

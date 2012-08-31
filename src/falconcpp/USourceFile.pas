@@ -249,7 +249,7 @@ type
     procedure LoadLayout;
     procedure SaveLayout;
     procedure SaveToFile(const FileName: string);
-
+    procedure Save; override;
     procedure MoveSavedFilesTo(const Path: string);
     procedure SaveAs(const FileName: string); override;
     function NeedBuild: Boolean; override;
@@ -755,63 +755,43 @@ end;
 procedure TSourceFile.Save;
 var
   Sheet: TSourceFileSheet;
-  CanSaveFile: Boolean;
 begin
-  CanSaveFile := False;
-  if FSaved then
+  if (FileType = FILE_TYPE_FOLDER) then
   begin
-    if (FileType <> FILE_TYPE_FOLDER) then
+    if not DirectoryExists(FileName) then
     begin
-      if Modified or not FileExists(FileName) or FileChangedInDisk then
-        CanSaveFile := True;
-    end
-    else if not DirectoryExists(FileName) then
+      if TSourceBase(Node.Parent.Data).FileType = FILE_TYPE_FOLDER then
+        TSourceBase(Node.Parent.Data).Save;
       CreateDir(FileName);
-  end
-  else
-  begin
-    if (FileType <> FILE_TYPE_FOLDER) then
-    begin
-      CanSaveFile := True;
-    end
-    else if not DirectoryExists(FileName) then
-      CreateDir(FileName);
-    FSaved := True;
+    end;
+    if not FSaved then
+      FSaved := True;
+    Exit;
   end;
-  if CanSaveFile then
+  if (FileType <> FILE_TYPE_FOLDER) and (not FSaved or Modified or
+    not FileExists(FileName) or FileChangedInDisk) then
   begin
     Project.Compiled := False;
-    if (FileType <> FILE_TYPE_PROJECT) then
+    if GetSheet(Sheet) then
     begin
-      if GetSheet(Sheet) then
-      begin
-        Sheet.Memo.Lines.SaveToFile(FileName);
-        if sheet.Memo.Modified and not Project.Saved and IsNew then
-          Project.SomeFileChanged := True;
-        IsNew := False;
-        sheet.Memo.Modified := False;
-        if not FSaved then
-          FSaved := True;
-      end // create empty file
-      else if not FileExists(FileName) then
-      begin
-        with TStringList.Create do
-        begin
-          SaveToFile(FileName);
-          Free;
-        end;
-      end;
-      if FileType = FILE_TYPE_H then
-        Project.ForceClean := True;
-    end
-    else
-    begin
-      TProjectFile(Self).PropertyChanged := False;
-      TProjectFile(Self).SaveToFile(FileName);
+      Sheet.Memo.Lines.SaveToFile(FileName);
+      if sheet.Memo.Modified and not Project.Saved and IsNew then
+        Project.SomeFileChanged := True;
+      IsNew := False;
+      sheet.Memo.Modified := False;
       if not FSaved then
         FSaved := True;
-      IsNew := False;
+    end // create empty file
+    else if not FileExists(FileName) then
+    begin
+      with TStringList.Create do
+      begin
+        SaveToFile(FileName);
+        Free;
+      end;
     end;
+    if FileType = FILE_TYPE_H then
+      Project.ForceClean := True;
     FFileDateTime := FileDateTime(FileName);
   end;
   //update main form
@@ -1723,6 +1703,27 @@ begin
     Exit;
   end;
   XMLDoc.Free;
+end;
+
+procedure TProjectFile.Save;
+begin
+  if FileType <> FILE_TYPE_PROJECT then
+  begin
+    inherited;
+    Exit;
+  end;
+  if not FSaved or (Modified or not FileExists(FileName) or FileChangedInDisk) then
+  begin
+    Compiled := False;
+    begin
+      TProjectFile(Self).PropertyChanged := False;
+      TProjectFile(Self).SaveToFile(FileName);
+      if not FSaved then
+        FSaved := True;
+      IsNew := False;
+    end;
+    FFileDateTime := FileDateTime(FileName);
+  end;
 end;
 
 function TProjectFile.NeedBuild: Boolean;

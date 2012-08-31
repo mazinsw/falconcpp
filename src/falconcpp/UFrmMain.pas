@@ -1503,7 +1503,6 @@ end;
 
 procedure TFrmFalconMain.UpdateMenuItems(Regions: TRegionMenuState);
 var
-  EditingFile: TSourceFile;
   SelectedFile: TSourceFile;
   CurrentFile: TSourceFile;
   CurrentProject: TProjectFile;
@@ -1518,9 +1517,6 @@ begin
   GetSelectedFileInList(SelectedFile);
   CurrentSheet := nil;
   GetActiveSheet(CurrentSheet);
-  EditingFile := nil;
-  if Assigned(CurrentSheet) then
-    EditingFile := CurrentSheet.SourceFile;
   if rmFile in Regions then
   begin
     //FileOpen.Enabled := True;
@@ -1641,11 +1637,11 @@ begin
     ProjectBuild.Enabled := Flag;
     Flag := Assigned(CurrentProject);
     ProjectProperties.Enabled := Flag;
-    PopProjProp.Enabled := Flag;
     PopEditorProperties.Enabled := Flag;
     BtnProperties.Enabled := Flag;
+    Flag := Assigned(SelectedFile);
+    PopProjProp.Enabled := Flag;
   end;
-  Flag := False;
   if rmRun in Regions then
   begin
     Flag := Assigned(CurrentProject) and ((not CompilerCmd.Executing and
@@ -1679,29 +1675,39 @@ begin
     RunStop.Enabled := Flag;
     BtnStop.Enabled := Flag;
   end;
-  Flag := False;
   if rmProjectsPopup in Regions then
   begin
+    Flag := Assigned(SelectedFile) and not (SelectedFile.FileType in [FILE_TYPE_PROJECT,
+      FILE_TYPE_FOLDER]);
     PopProjEdit.Enabled := Flag;
+    Flag := Assigned(SelectedFile) and SelectedFile.Saved;
     PopProjOpen.Enabled := Flag;
+    Flag := Assigned(SelectedFile);
     PopProjRename.Enabled := Flag;
+    Flag := Assigned(SelectedFile) and SelectedFile.Saved;
     PopProjDelFromDsk.Enabled := Flag;
   end;
-  Flag := False;
   if rmPageCtrlPopup in Regions then
   begin
+    Flag := (PageControlEditor.PageCount > 1);
     PopTabsCloseAllOthers.Enabled := Flag;
+    Flag := (PageControlEditor.TabPosition <> mtpTop);
     PopTabsTabsAtTop.Enabled := Flag;
+    Flag := (PageControlEditor.TabPosition <> mtpBottom);
     PopTabsTabsAtBottom.Enabled := Flag;
     // others
+    Flag := (PageControlEditor.PageCount > 1);
     BtnPrevPage.Enabled := Flag;
     BtnNextPage.Enabled := Flag;
   end;
   Flag := False;
   if rmEditorPopup in Regions then
   begin
+    Flag := Assigned(CurrentSheet) and (CurrentSheet.Memo.Lines.Count > 0);
     PopEditorOpenDecl.Enabled := Flag;
+    Flag := Assigned(CurrentSheet) and (CurrentSheet.Memo.Lines.Count > 0);
     PopEditorCompClass.Enabled := Flag;
+    Flag := Assigned(CurrentSheet);
     PopEditorTools.Enabled := Flag;
   end;
 end;
@@ -2552,6 +2558,7 @@ procedure TFrmFalconMain.PageControlEditorChange(Sender: TObject);
 begin
   if PageControlEditor.PageCount = 0 then
     UpdateMenuItems([rmEdit, rmSearch]);
+  UpdateMenuItems([rmEdit, rmSearch, rmPageCtrlPopup]);
 end;
 
 procedure TFrmFalconMain.EditorBeforeCreate(FileProp: TSourceFile);
@@ -3704,7 +3711,10 @@ begin
   if Parent.FileType = FILE_TYPE_PROJECT then
     ParentPath := ExtractFilePath(Parent.FileName)
   else if Parent.FileType = FILE_TYPE_FOLDER then
-    ParentPath := Parent.FileName
+  begin
+    Parent.Save;
+    ParentPath := Parent.FileName;
+  end
   else
     Exit;
   for I := Files.Count - 1 downto 0 do
@@ -5628,8 +5638,13 @@ begin
     fpd.Project.PropertyChanged := True;
     if fpd is TProjectFile then
       fps.MoveFileTo(ExtractFilePath(fpd.FileName))
-    else
+    else if fpd.FileType = FILE_TYPE_FOLDER then
+    begin
+      fpd.Save;
       fps.MoveFileTo(fpd.FileName);
+    end
+    else
+      Exit;
     //convert to TSourceFile
     if fps is TProjectFile then
     begin
@@ -6941,11 +6956,13 @@ end;
 procedure TFrmFalconMain.PopTabsTabsAtTopClick(Sender: TObject);
 begin
   PageControlEditor.TabPosition := mtpTop;
+  UpdateMenuItems([rmPageCtrlPopup]);
 end;
 
 procedure TFrmFalconMain.PopTabsTabsAtBottomClick(Sender: TObject);
 begin
   PageControlEditor.TabPosition := mtpBottom;
+  UpdateMenuItems([rmPageCtrlPopup]);
 end;
 
 procedure TFrmFalconMain.EditSwapClick(Sender: TObject);

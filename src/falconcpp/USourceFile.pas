@@ -423,8 +423,9 @@ begin
       TSourceFile(Node.Item[I].Data).Delete;
   end;
   Close;
-  Node.Delete;
   Project.PropertyChanged := True;
+  Project.CompilePropertyChanged := True;
+  Node.Delete;
   Free;
 end;
 

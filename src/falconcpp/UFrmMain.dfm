@@ -1506,6 +1506,7 @@ object FrmFalconMain: TFrmFalconMain
   object PopupProject: TTBXPopupMenu
     Images = ImgListMenus
     OwnerDraw = True
+    OnPopup = PopupProjectPopup
     Left = 75
     Top = 112
     object PopProjNew: TTBXSubmenuItem

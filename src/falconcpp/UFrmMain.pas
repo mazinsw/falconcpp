@@ -583,6 +583,7 @@ type
     procedure CodeCompletionAfterCodeCompletion(Sender: TObject;
       const Value: string; Shift: TShiftState; Index: Integer;
       EndToken: Char);
+    procedure PopupProjectPopup(Sender: TObject);
     //**********************************************/
   private
     { Private declarations }
@@ -681,7 +682,7 @@ type
     procedure ToggleBreakpoint(aLine: Integer);
     procedure CheckIfFilesHasChanged;
     procedure DetectScope(Memo: TSynMemo);
-    function RemoveFile(FileProp: TSourceFile): Boolean;
+    function RemoveFile(FileProp: TSourceFile; FromDisk: Boolean = False): Boolean;
     procedure FillTreeView(Node: TTreeNode; Token: TTokenClass);
     procedure UpdateCompletionColors(EdtOpt: TEditorOptions);
     procedure ParseFiles(List: TStrings);
@@ -1700,7 +1701,6 @@ begin
     BtnPrevPage.Enabled := Flag;
     BtnNextPage.Enabled := Flag;
   end;
-  Flag := False;
   if rmEditorPopup in Regions then
   begin
     Flag := Assigned(CurrentSheet) and (CurrentSheet.Memo.Lines.Count > 0);
@@ -2241,7 +2241,6 @@ var
 begin
   if TreeViewProjects.SelectionCount = 0 then
     Exit;
-
   if not TreeViewProjects.IsEditing then
   begin
     Node := TreeViewProjects.Selected;
@@ -2371,7 +2370,9 @@ begin
     Exit;
   Sheet := TSourceFileSheet(PageControlEditor.Pages[TabIndex]);
   FileProp := Sheet.SourceFile;
-  if (not FileProp.Saved and not FileProp.IsNew) or
+  if (not FileProp.Saved and
+    (not FileProp.IsNew or
+    ((FileProp.Project.FileType = FILE_TYPE_PROJECT) and (Sheet.Memo.Lines.Count > 0)))) or
     (FileProp.Modified and not (Config.Environment.RemoveFileOnClose and
     (FileProp.Project.FileType <> FILE_TYPE_PROJECT))) then
   begin
@@ -3030,32 +3031,41 @@ begin
       TreeViewProjects.Selected.EditText;
 end;
 
-function TFrmFalconMain.RemoveFile(FileProp: TSourceFile): Boolean;
+function TFrmFalconMain.RemoveFile(FileProp: TSourceFile; FromDisk: Boolean): Boolean;
 var
   Node: TTreeNode;
   ProjProp: TProjectFile;
   I: Integer;
 begin
   Result := False;
-  Node := FileProp.Node;
-  if (Node.Level = 0) then //is project
+  if FileProp is TProjectBase then //is project
   begin
     ProjProp := FileProp.Project;
-    if ProjProp.Modified or (not ProjProp.Saved and not ProjProp.IsNew) or
-      ProjProp.FilesChanged or ProjProp.SomeFileChanged then
-    begin //modified
-      I := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[10],
-        [ExtractFileName(ProjProp.FileName)])), 'Falcon C++',
-        MB_YESNOCANCEL + MB_ICONINFORMATION);
-      case I of
-        mrYes:
-          begin
-            FileSaveClick(Self);
-            if not ProjProp.Saved then
-              Exit;
-          end;
-        mrCancel: Exit;
-      end; //case
+    if not FromDisk then
+    begin
+      if ProjProp.Modified or (not ProjProp.Saved and not ProjProp.IsNew) or
+        ProjProp.FilesChanged or ProjProp.SomeFileChanged then
+      begin //modified
+        I := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[10],
+          [ExtractFileName(ProjProp.FileName)])), 'Falcon C++',
+          MB_YESNOCANCEL + MB_ICONINFORMATION);
+        case I of
+          mrYes:
+            begin
+              FileSaveClick(Self);
+              if not ProjProp.Saved then
+                Exit;
+            end;
+          mrCancel: Exit;
+        end; //case
+      end;
+    end
+    else
+    begin
+      I := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[21],
+        [FileProp.Name])), 'Falcon C++', MB_YESNOCANCEL + MB_ICONEXCLAMATION);
+      if I <> mrYes then
+        Exit;
     end;
     if DebugReader.Running and Assigned(DebugActiveFile) and
       (DebugActiveFile.Project = ProjProp) then
@@ -3064,7 +3074,7 @@ begin
       DebugActiveLine := -1;
       DebugActiveFile := nil;
     end;
-    if Config.Environment.CreateLayoutFiles and ProjProp.Saved and
+    if not FromDisk and Config.Environment.CreateLayoutFiles and ProjProp.Saved and
       (ProjProp.FileType = FILE_TYPE_PROJECT) then
       ProjProp.SaveLayout;
     ProjProp.CloseAll;
@@ -3080,8 +3090,10 @@ begin
       LastProjectBuild := nil;
       ListViewMsg.Clear;
     end;
-    ProjProp.Free;
-    Node.Delete;
+    if not FromDisk then
+      ProjProp.Delete
+    else
+      ProjProp.DeleteOfDisk;
     if TreeViewProjects.Items.Count = 0 then
     begin
       LastProjectBuild := nil;
@@ -3091,35 +3103,45 @@ begin
   end //level = 0
   else
   begin
-    FileProp := TSourceFile(Node.Data);
-    if FileProp.Modified and FileProp.Saved then
-    begin //modified
-      I := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[10],
-        [ExtractFileName(FileProp.FileName)])), 'Falcon C++',
-        MB_YESNO + MB_ICONINFORMATION);
-      case I of
-        mrYes: FileProp.Save;
-      end; //case
-    end;
-    if Config.Environment.AskForDeleteFile then
+    if not FromDisk then
     begin
-      I := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[20],
-        [FileProp.Name])), 'Falcon C++',
-        MB_YESNO + MB_ICONQUESTION);
+      if FileProp.Modified and FileProp.Saved then
+      begin //modified
+        I := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[10],
+          [ExtractFileName(FileProp.FileName)])), 'Falcon C++',
+          MB_YESNO + MB_ICONINFORMATION);
+        case I of
+          mrYes: FileProp.Save;
+        end; //case
+      end;
+      if Config.Environment.AskForDeleteFile then
+      begin
+        I := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[20],
+          [FileProp.Name])), 'Falcon C++',
+          MB_YESNO + MB_ICONQUESTION);
+        if I <> mrYes then
+          Exit;
+      end;
+    end
+    else
+    begin
+      I := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[21],
+        [FileProp.Name])), 'Falcon C++', MB_YESNOCANCEL + MB_ICONEXCLAMATION);
       if I <> mrYes then
         Exit;
     end;
+    Node := FileProp.Node;
     if Node.getNextSibling = nil then
     begin
       Node := Node.getPrevSibling;
       if Assigned(Node) then
         Node.Selected := True;
     end;
-    FileProp.Delete;
+    if not FromDisk then
+      FileProp.Delete
+    else
+      FileProp.DeleteOfDisk;
   end;
-
-  {ProjectPopupMenuItens(True, True, True, True, True, True, True,
-    False, False, False, False, False, False);}
   TreeViewProjectsChange(TreeViewProjects, TreeViewProjects.Selected);
   TextEditorExit(Self);
   PanelOutline.Visible := (PageControlEditor.PageCount > 0) and ViewOutline.Checked;
@@ -3130,7 +3152,6 @@ procedure TFrmFalconMain.PopProjDelFromDskClick(Sender: TObject);
 var
   Node: TTreeNode;
   FileProp: TSourceFile;
-  I: Integer;
 begin
   if (TreeViewProjects.SelectionCount > 0) then
   begin
@@ -3138,18 +3159,7 @@ begin
     begin
       Node := TreeViewProjects.Selected;
       FileProp := TSourceFile(Node.Data);
-      I := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[21],
-        [FileProp.Name])), 'Falcon C++', MB_YESNOCANCEL + MB_ICONEXCLAMATION);
-      case I of
-        mrYes:
-          begin
-            FileProp.DeleteOfDisk;
-            TreeViewProjectsChange(TreeViewProjects, TreeViewProjects.Selected);
-            PageControlEditorChange(PageControlEditor);
-            if PageControlEditor.ActivePageIndex < 0 then
-              TextEditorExit(nil);
-          end;
-      end;
+      RemoveFile(FileProp, True)
     end; //not editing
   end; //count > 0
 end;
@@ -3752,6 +3762,7 @@ begin
       True,
       False);
     NewFile.Project.PropertyChanged := True;
+    NewFile.Project.CompilePropertyChanged := True;
     if not References then
       NewFile.Edit.Memo.Lines.LoadFromFile(Files.Strings[I])
     else
@@ -5635,7 +5646,9 @@ begin
     fpd := TSourceFile(AnItem.Data);
 
     fps.Project.PropertyChanged := True;
+    fps.Project.CompilePropertyChanged := True;
     fpd.Project.PropertyChanged := True;
+    fpd.Project.CompilePropertyChanged := True;
     if fpd is TProjectFile then
       fps.MoveFileTo(ExtractFilePath(fpd.FileName))
     else if fpd.FileType = FILE_TYPE_FOLDER then
@@ -8050,6 +8063,11 @@ begin
   token := GetTokenByName(token, 'Scope', tkScope);
   Buffer := sheet.Memo.CharIndexToRowCol(Token.SelStart);
   GotoLineAndAlignCenter(sheet.Memo, Buffer.Line, Buffer.Char);
+end;
+
+procedure TFrmFalconMain.PopupProjectPopup(Sender: TObject);
+begin
+  UpdateMenuItems([rmProjectsPopup]);
 end;
 
 end.

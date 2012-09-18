@@ -129,7 +129,7 @@ begin
       sheet.Free;
     end;
   end;
-
+  FraProjs.PageControl.LockAnimation;
   for I := Templates.Count - 1 downto 0 do
   begin
     if List.IndexOf(Templates.Templates[I]) >= 0 then
@@ -145,6 +145,7 @@ begin
       Item.ImageIndex := 0;
     Item.Data := Templates.Templates[I];
   end;
+  FraProjs.PageControl.UnlockAnimation;
   List.Free;
 end;
 
@@ -169,6 +170,8 @@ begin
   Bitmap.Free;
   FraProjs.Parent := PainelFra;
   FraProjs.LastItemIndex := -1;
+  //ReloadTemplates(FrmFalconMain.Templates);
+  FraProjs.PageControl.LockAnimation;
   for I := 0 to FrmFalconMain.Templates.Count - 1 do
   begin
     Item := FraProjs.GetListViewOfSheet(
@@ -181,6 +184,7 @@ begin
       Item.ImageIndex := 0;
     Item.Data := FrmFalconMain.Templates.Templates[I];
   end;
+  FraProjs.PageControl.UnlockAnimation;
   FraPrjOpt := TFraPrjOpt.Create(Self);
   Page := pwProj;
   FraProjs.PageControl.ActivePageIndex := 0;

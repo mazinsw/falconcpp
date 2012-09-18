@@ -102,6 +102,7 @@ type
     procedure SetFileName(Value: string); virtual;
   public
     constructor Create(Node: TTreeNode);
+    procedure Assign(Value: TSourceBase);
     procedure Save; virtual;
     procedure DeleteOfDisk; virtual;
     procedure Delete; virtual;
@@ -244,6 +245,7 @@ type
     function GetFileName: string; override;
     procedure SetFileName(Value: string); override;
   public
+    function ConvertToSourceFile(Project: TProjectFile): TSourceFile;
     function GetFileByPathName(const RelativeName: string): TSourceFile;
     procedure LoadFromFile(const FileName: string);
     procedure LoadLayout;
@@ -295,6 +297,16 @@ uses UFrmMain, UUtils, UConfig;
 
 
 { TSourceBase }
+
+procedure TSourceBase.Assign(Value: TSourceBase);
+begin
+  FFileName := Value.FFileName;
+  FFileType := Value.FFileType;
+  FNode := Value.FNode;
+  FProject := Value.FProject;
+  FSaved := Value.FSaved;
+  FIsNew := Value.FIsNew;
+end;
 
 constructor TSourceBase.Create(Node: TTreeNode);
 begin
@@ -505,15 +517,10 @@ end;
 
 procedure TSourceFile.Assign(Value: TSourceFile);
 begin
-  if not assigned(Value) then
-    Exit;
+  inherited Assign(Value);
   FFileDateTime := Value.FFileDateTime;
-  FFileName := Value.FFileName;
-  FFileType := Value.FFileType;
-  FNode := Value.FNode;
-  FProject := Value.FProject;
-  FSaved := Value.FSaved;
-  FIsNew := Value.FIsNew;
+  FSheet := Value.FSheet;
+  FBreakpoint.Assign(Value.FBreakpoint);
 end;
 
 procedure TSourceFile.SetProject(Value: TProjectFile);
@@ -1663,8 +1670,7 @@ begin
   SetTagProperty(ProjNode, 'Libs', 'Value', Libs);
   SetTagProperty(ProjNode, 'Flags', 'Value', Flags);
   SetTagProperty(ProjNode, 'Target', 'Value', Target);
-  SetTagProperty(ProjNode, 'CommandLine', 'Value',
-    StringReplace(CmdLine, '"', '''', [rfReplaceAll]));
+  SetTagProperty(ProjNode, 'CommandLine', 'Value', CmdLine);
   SetTagProperty(ProjNode, 'CompilerOptions', 'Value', CompilerOptions);
   Temp := BoolToHuman(DeleteObjsBefore);
   SetTagProperty(ProjNode, 'DeleteObjectsBefore', 'Value', Temp);
@@ -1946,6 +1952,18 @@ begin
   Node.Text := Name;
   if GetSheet(Sheet) then
     Sheet.Caption := Caption;
+end;
+
+function TProjectFile.ConvertToSourceFile(Project: TProjectFile): TSourceFile;
+var
+  sheet: TSourceFileSheet;
+begin
+  Result := TSourceFile.Create(Node);
+  Result.Assign(Self);
+  Result.FFileName := ExtractFileName(FFileName);
+  Result.FProject := Project;
+  if GetSheet(sheet) then
+    sheet.FSourceFile := Result;
 end;
 
 {TProjectsSheet}

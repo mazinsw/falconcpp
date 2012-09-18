@@ -5649,27 +5649,22 @@ begin
     fps.Project.CompilePropertyChanged := True;
     fpd.Project.PropertyChanged := True;
     fpd.Project.CompilePropertyChanged := True;
-    if fpd is TProjectFile then
-      fps.MoveFileTo(ExtractFilePath(fpd.FileName))
-    else if fpd.FileType = FILE_TYPE_FOLDER then
+    if fps.Saved then
     begin
-      fpd.Save;
-      fps.MoveFileTo(fpd.FileName);
-    end
-    else
-      Exit;
+      if fpd is TProjectFile then
+        fps.MoveFileTo(ExtractFilePath(fpd.FileName))
+      else if fpd.FileType = FILE_TYPE_FOLDER then
+      begin
+        fpd.Save;
+        fps.MoveFileTo(fpd.FileName);
+      end;
+    end;
+    Selitem.MoveTo(AnItem, AttachMode);
     //convert to TSourceFile
     if fps is TProjectFile then
-    begin
-      Selitem.Data := TSourceFile.Create(fps.Node);
-      TSourceFile(Selitem.Data).Assign(fps); //copy
-      fps.Free; //release
-      fps := TSourceFile(Selitem.Data);
-      fps.FileName := fps.Name;
-    end;
-    if TSourceFile(Selitem.Data).Project <> fpd.Project then
+      Selitem.Data := TProjectFile(fps).ConvertToSourceFile(fpd.Project);
+    if fps.Project <> fpd.Project then
       AdjustNewProject(Selitem, fpd.Project);
-    Selitem.MoveTo(AnItem, AttachMode);
     BoldTreeNode(fpd.Project.Node, True);
   end;
 end;

@@ -15,6 +15,7 @@ type
     FFileName: string;
   public
     constructor Create;
+    procedure Assign(Value: TBreakpoint);
     property Index: Integer read FIndex write FIndex;
     property Line: Integer read FLine write FLine;
     property Valid: Boolean read FValid write FValid;
@@ -36,6 +37,7 @@ type
     constructor Create;
     destructor Destroy; override;
     procedure Clear;
+    procedure Assign(Value: TBreakpointList);
     function Count: Integer;
     function HasBreakpoint(Line: Integer): Boolean;
     procedure DrawBreakpoint(Editor: TSynEdit; Line, X, Y: Integer);
@@ -50,6 +52,15 @@ type
 implementation
 
 {TBreakpoint}
+
+procedure TBreakpoint.Assign(Value: TBreakpoint);
+begin
+  FIndex := Value.FIndex;
+  FLine := Value.FLine;
+  FValid := Value.FValid;
+  FEnable := Value.FEnable;
+  FFileName := Value.FFileName;
+end;
 
 constructor TBreakpoint.Create;
 begin
@@ -196,6 +207,23 @@ begin
     Exit;
   end;
   Result := TBreakpoint(FList.Items[Index]);
+end;
+
+procedure TBreakpointList.Assign(Value: TBreakpointList);
+var
+  I: Integer;
+  bp: TBreakpoint;
+begin
+  FImageList := Value.FImageList;
+  FImageIndex := Value.FImageIndex;
+  FInvalidIndex := Value.FInvalidIndex;
+  Clear;
+  for I := 0 to Value.Count - 1 do
+  begin
+    bp := TBreakpoint.Create;
+    bp.Assign(Value.Items[I]);
+    FList.Add(bp);
+  end;
 end;
 
 end.

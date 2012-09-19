@@ -22,7 +22,9 @@ uses
   LibTar in '..\others\libtar\LibTar.pas',
   SciZipFile in '..\others\scizipfile\SciZipFile.pas',
   CompressUtils in '..\others\compressutils\CompressUtils.pas',
-  StrMatch in '..\others\compressutils\StrMatch.pas';
+  StrMatch in '..\others\compressutils\StrMatch.pas',
+  UFrmPkgDownload in 'UFrmPkgDownload.pas' {FrmPkgDownload},
+  UPkgClasses in 'UPkgClasses.pas';
 
 var
   Silent: Boolean;

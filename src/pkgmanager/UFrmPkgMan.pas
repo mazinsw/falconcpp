@@ -111,7 +111,7 @@ var
 
 implementation
 
-uses UInstaller, UFrmWizard, UFraFnsh, UUninstaller;
+uses UInstaller, UFrmWizard, UFraFnsh, UUninstaller, UFrmPkgDownload;
 
 {$R *.dfm}
 
@@ -343,7 +343,7 @@ end;
 
 procedure TFrmPkgMan.InstallClick(Sender: TObject);
 begin
-  with TOpenDialog.Create(Self) do
+  {with TOpenDialog.Create(Self) do
   begin
     Filter :=
     'All package files(*.fpk, *.DevPak, *.zip)|*.fpk; *.DevPak; *.zip|' +
@@ -366,7 +366,8 @@ begin
       end;
       Free;
     end;
-  end;
+  end;}
+  InstallPackages(Handle);
 end;
 
 procedure TFrmPkgMan.ExitClick(Sender: TObject);

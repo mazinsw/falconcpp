@@ -1,6 +1,6 @@
 object FrmPkgMan: TFrmPkgMan
-  Left = 325
-  Top = 195
+  Left = 335
+  Top = 293
   Width = 800
   Height = 600
   Caption = 'Falcon C++ Package Manager'
@@ -19,12 +19,12 @@ object FrmPkgMan: TFrmPkgMan
   object Splitter1: TSplitter
     Left = 185
     Top = 58
-    Height = 469
+    Height = 465
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 527
-    Width = 792
+    Top = 523
+    Width = 784
     Height = 19
     Panels = <>
   end
@@ -32,7 +32,7 @@ object FrmPkgMan: TFrmPkgMan
     Left = 0
     Top = 58
     Width = 185
-    Height = 469
+    Height = 465
     Align = alLeft
     BevelOuter = bvNone
     TabOrder = 1
@@ -40,7 +40,7 @@ object FrmPkgMan: TFrmPkgMan
       Left = 0
       Top = 0
       Width = 185
-      Height = 469
+      Height = 465
       ActivePage = TsInfo
       Align = alClient
       TabOrder = 0
@@ -151,7 +151,7 @@ object FrmPkgMan: TFrmPkgMan
           Left = 0
           Top = 171
           Width = 177
-          Height = 270
+          Height = 266
           Align = alClient
           ReadOnly = True
           TabOrder = 4
@@ -164,7 +164,7 @@ object FrmPkgMan: TFrmPkgMan
           Left = 0
           Top = 0
           Width = 177
-          Height = 441
+          Height = 437
           Align = alClient
           Images = ImgListMenu
           Indent = 19
@@ -176,8 +176,8 @@ object FrmPkgMan: TFrmPkgMan
   object PanelList: TPanel
     Left = 188
     Top = 58
-    Width = 604
-    Height = 469
+    Width = 596
+    Height = 465
     Align = alClient
     BevelOuter = bvNone
     BorderWidth = 2
@@ -185,8 +185,8 @@ object FrmPkgMan: TFrmPkgMan
     object PkgList: TListView
       Left = 2
       Top = 2
-      Width = 600
-      Height = 465
+      Width = 592
+      Height = 461
       Align = alClient
       Columns = <>
       IconOptions.AutoArrange = True
@@ -203,7 +203,7 @@ object FrmPkgMan: TFrmPkgMan
   object ToolBar: TToolBar
     Left = 0
     Top = 0
-    Width = 792
+    Width = 784
     Height = 58
     AutoSize = True
     ButtonHeight = 52
@@ -375,7 +375,7 @@ object FrmPkgMan: TFrmPkgMan
     Left = 440
     Top = 16
     Bitmap = {
-      494C010109000E00040010001000FFFFFFFFFF00FFFFFFFFFFFFFFFF424D3600
+      494C010109000E00080010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000003000000001002000000000000030
       0000000000000000000000000000000000000000000080808000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -775,7 +775,8 @@ object FrmPkgMan: TFrmPkgMan
       C001800180038001800080018003800100008001800380010000800180038001
       0000800180038001000080018003800100008001800380010000800180038001
       00018001800380010003800180038001000780018003800181FF800380078001
-      C3FF8007800F8001FFFF800F801F801F}
+      C3FF8007800F8001FFFF800F801F801F00000000000000000000000000000000
+      000000000000}
   end
   object ImgListToolbar: TImageList
     Height = 32

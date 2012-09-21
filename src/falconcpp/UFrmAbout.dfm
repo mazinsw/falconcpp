@@ -32,7 +32,7 @@ object FormAbout: TFormAbout
     Top = 40
     Width = 99
     Height = 13
-    Caption = 'Falcon C++: v3.1.0.0'
+    Caption = 'Falcon C++: v3.2.0.0'
     Color = 16513786
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -1559,7 +1559,7 @@ object FormAbout: TFormAbout
           Height = 236
           Align = alClient
           Lines.Strings = (
-            'Mazinsw: mailto:mazin.z@hotmail.com   '#13)
+            'Mazinsw: mailto:mazin.z@hotmail.com    '#13)
           ReadOnly = True
           ScrollBars = ssVertical
           TabOrder = 0
@@ -1575,7 +1575,7 @@ object FormAbout: TFormAbout
           Height = 236
           Align = alClient
           Lines.Strings = (
-            'Mazinsw: mailto:mazin.z@hotmail.com     '#13)
+            'Mazinsw: mailto:mazin.z@hotmail.com      '#13)
           ReadOnly = True
           ScrollBars = ssVertical
           TabOrder = 0
@@ -1591,7 +1591,7 @@ object FormAbout: TFormAbout
           Height = 236
           Align = alClient
           Lines.Strings = (
-            'Marcos Castro: mailto:marcoscastro87@hotmail.com   '#13
+            'Marcos Castro: mailto:marcoscastro87@hotmail.com    '#13
             'Gilvan Veras: mailto:gilvanokra@hotmail.com '#13)
           ReadOnly = True
           ScrollBars = ssVertical

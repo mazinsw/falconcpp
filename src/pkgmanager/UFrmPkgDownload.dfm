@@ -139,6 +139,7 @@ object FrmPkgDownload: TFrmPkgDownload
       Height = 25
       Caption = 'Cancel'
       TabOrder = 1
+      OnClick = BtnCancelClick
     end
   end
   object GroupBox2: TGroupBox
@@ -226,7 +227,7 @@ object FrmPkgDownload: TFrmPkgDownload
     Left = 704
     Top = 304
     Bitmap = {
-      494C010102004800180010001000FFFFFFFF2000FFFFFFFFFFFFFFFF424D3600
+      494C0101020048001C0010001000FFFFFFFF2000FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001000000001002000000000000010
       00000000000000000000000000000000000006060615191919891C1C1CD51010
       10EB0E0E0EE511191CD3143941E712576BF6196D89FA25829AF3338EA2DC3173
@@ -359,7 +360,7 @@ object FrmPkgDownload: TFrmPkgDownload
       000000000000000000000000000000000000}
   end
   object FileDownloadXML: TFileDownload
-    URL = 'http://127.0.0.1/packages/list.php'
+    URL = 'http://localhost/packages/list.php'
     OnStart = FileDownloadXMLStart
     OnProgress = FileDownloadXMLProgress
     OnFinish = FileDownloadXMLFinish

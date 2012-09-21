@@ -7,6 +7,12 @@ uses
   Dialogs, NativeTreeView, ImgList, ExtCtrls, StdCtrls, ComCtrls,
   RichEditViewer, FileDownload, XMLDoc, XMLIntf, UPkgClasses;
 
+const
+  {$EXTERNALSYM PBS_MARQUEE}
+  PBS_MARQUEE = $0008;
+  {$EXTERNALSYM PBM_SETMARQUEE}
+  PBM_SETMARQUEE = WM_USER+10;
+
 type
   TFrmPkgDownload = class(TForm)
     ImageList16x16: TImageList;
@@ -41,11 +47,13 @@ type
       var CellText: WideString);
     procedure TreeViewPackagesChange(Sender: TBaseNativeTreeView;
       Node: PNativeNode);
+    procedure BtnCancelClick(Sender: TObject);
   private
     { Private declarations }
     InstalledCount: Integer;
     Ms: TMemoryStream;
     CategoryList: TCategoryList;
+    marquee: Boolean;
     procedure DownloadPackageList;
     procedure ReloadPackages;
     procedure SearchPackage(const S: string);
@@ -197,12 +205,14 @@ begin
       begin
         PackageItem := TPackage.Create;
         LibraryItem.Add(PackageItem);
+        PackageItem.Name := PackageNode.Attributes['name'];
         PackageItem.Version := PackageNode.Attributes['version'];
         PackageItem.Size := StrToInt(PackageNode.Attributes['size']);
         PackageItem.URL := PackageNode.Attributes['url'];
         PackageItem.LastModified := StrToDateTime(PackageNode.Attributes['lastmodified'], fmt);
         PackageItem.GCCVersion := PackageNode.Attributes['gccversion'];
-        PackageItem.Name := LibraryItem.Name + ' ' + PackageItem.Version;
+        PackageItem.Description := GetTagContent(PackageNode, 'description');
+        { TODO -oMazin -c : loop dependency 20/09/2012 16:01:27 }
         PackageNode := PackageNode.NextSibling;
       end;
       LibraryNode := LibraryNode.NextSibling;
@@ -237,9 +247,25 @@ end;
 procedure TFrmPkgDownload.FileDownloadXMLProgress(Sender: TObject;
   ReceivedBytes, CalculatedFileSize: Cardinal);
 begin
-  ProgressBar1.Position := Round((ReceivedBytes / CalculatedFileSize) * 100);
-  LabelProgresss.Caption := Format('Downloading packages list %.2f%%.',
-    [(ReceivedBytes / CalculatedFileSize) * 100]);
+  if CalculatedFileSize > 0 then
+  begin
+    ProgressBar1.Position := Round((ReceivedBytes / CalculatedFileSize) * 100);
+    LabelProgresss.Caption := Format('Downloading packages list %.2f%%.',
+      [(ReceivedBytes / CalculatedFileSize) * 100]);
+  end
+  else
+  begin
+    if not marquee then
+    begin
+      marquee := True;
+      ProgressBar1.Position := 0;
+      SetWindowLong(ProgressBar1.Handle, GWL_STYLE,
+        GetWindowLong(ProgressBar1.Handle, GWL_STYLE) or PBS_MARQUEE);
+      SendMessage(ProgressBar1.Handle, PBM_SETMARQUEE, 1, 0);
+    end;
+    LabelProgresss.Caption := 'Downloading packages list...';
+  end;
+
 end;
 
 procedure TFrmPkgDownload.FileDownloadXMLStart(Sender: TObject);
@@ -267,8 +293,26 @@ end;
 procedure TFrmPkgDownload.FileDownloadXMLFinish(Sender: TObject;
   Canceled: Boolean);
 begin
+  if marquee then
+  begin
+    SetWindowLong(ProgressBar1.Handle, GWL_STYLE,
+      GetWindowLong(ProgressBar1.Handle, GWL_STYLE) xor PBS_MARQUEE);
+    SendMessage(ProgressBar1.Handle, PBM_SETMARQUEE, 0, 0);
+  end;
   if not Canceled and (Ms.Size > 0) then
-    ReloadPackages;
+    ReloadPackages
+  else if Canceled then
+  begin
+    ProgressBar1.Position := 0;
+    LabelProgresss.Caption := 'Download canceled.';
+    BtnCancel.Enabled := False;
+  end
+  else
+  begin
+    ProgressBar1.Position := 0;
+    LabelProgresss.Caption := 'Download error invalid xml file.';
+    BtnCancel.Enabled := False;
+  end;
 end;
 
 procedure TFrmPkgDownload.TreeViewPackagesGetText(
@@ -286,7 +330,7 @@ begin
       else if Data is TLibrary then
         CellText := TLibrary(Data).Name
       else if Data is TPackage then
-        CellText := TPackage(Data).Name;
+        CellText := TPackage(Data).Name + ' ' + TPackage(Data).Version;
     end;
     1:
     begin
@@ -323,6 +367,12 @@ begin
   GroupBox2.Visible := True;
   Bevel1.Visible := True;
   FormResize(Self);
+end;
+
+procedure TFrmPkgDownload.BtnCancelClick(Sender: TObject);
+begin
+  if FileDownloadXML.IsBusy then
+    FileDownloadXML.Stop;
 end;
 
 end.

@@ -74,6 +74,7 @@ type
     FList: TList;
     FName: string;
     FVersion: string;
+    FDescription: string;
     FSize: Cardinal;
     FLastModified: TDateTime;
     FURL: string;
@@ -87,6 +88,7 @@ type
     property Owner: TLibrary read FOwner write FOwner;
     property Name: string read FName write FName;
     property Version: string read FVersion write FVersion;
+    property Description: string read FDescription write FDescription;
     property Size: Cardinal read FSize write FSize;
     property LastModified: TDateTime read FLastModified write FLastModified;
     property URL: string read FURL write FURL;

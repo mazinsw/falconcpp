@@ -24,7 +24,9 @@ uses
   CompressUtils in '..\others\compressutils\CompressUtils.pas',
   StrMatch in '..\others\compressutils\StrMatch.pas',
   UFrmPkgDownload in 'UFrmPkgDownload.pas' {FrmPkgDownload},
-  UPkgClasses in 'UPkgClasses.pas';
+  UPkgClasses in 'UPkgClasses.pas',
+  UFrmHelp in 'UFrmHelp.pas' {FrmHelp},
+  rbtree in '..\falconcpp\rbtree.pas';
 
 var
   Silent: Boolean;

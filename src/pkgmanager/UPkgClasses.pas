@@ -10,6 +10,13 @@ type
   TLibrary = class;
   TCategory = class;
 
+  TDependency = class
+  public
+    Package: TPackage;
+    Name: string;
+    Version: string;
+  end;
+
   TChangeStateEvent = procedure(Sender: TObject; Pkg: TPackage) of object;
   TCategoryList = class
   private
@@ -19,6 +26,8 @@ type
   public
     constructor Create;
     destructor Destroy; override;
+    function FindPackage(const CategoryName, LibraryName, Name, Version: string): TPackage;
+    function Find(const Name: string): Integer;
     function Add(Item: TCategory): Integer;
     function Count: Integer;
     procedure Clear;
@@ -81,6 +90,7 @@ type
     FGCCVersion: string;
     FOwner: TLibrary;
     FState: TPackageState;
+    FData: Pointer;
     FInstalled: Boolean;
     procedure SetState(Value: TPackageState);
     function GetPackage(Index: Integer): TPackage;
@@ -95,6 +105,7 @@ type
     property GCCVersion: string read FGCCVersion write FGCCVersion;
     property Installed: Boolean read FInstalled write FInstalled;
     property State: TPackageState read FState write SetState;
+    property Data: Pointer read FData write FData;
     function Add(Item: TPackage): Integer;
     constructor Create;
     destructor Destroy; override;
@@ -278,39 +289,57 @@ end;
 
 procedure TPackage.SetState(Value: TPackageState);
 
-  procedure MarkToInstall(Package: TPackage; List: TList);
+  procedure MarkToInstall(Package: TPackage);
   var
     I: Integer;
+    StateEvent: TChangeStateEvent;
   begin
-    List.Add(Package);
+    StateEvent := Owner.Owner.Owner.OnChangeState;
     for I := 0 to Package.Count - 1 do
     begin
-
+      if (Package.Items[I].FState = psInstall) or
+        (Package.Items[I].FInstalled and (Package.Items[I].State <> psUninstall)) then
+        Continue;
+      Package.Items[I].FState := psInstall;
+      if Assigned(StateEvent) then
+        StateEvent(FOwner.FOwner.FOwner, Package.Items[I]);
+      MarkToInstall(Package.Items[I]);
     end;
-
   end;
 
   procedure MarkToUninstall(Package: TPackage; List: TList);
   var
     I: Integer;
+    StateEvent: TChangeStateEvent;
   begin
-    List.Add(Package);
+    StateEvent := FOwner.FOwner.FOwner.FOnChangeState;
     for I := 0 to Package.Count - 1 do
     begin
-
+      if (Package.Items[I].FState <> psInstall) or Package.Items[I].FInstalled then
+        Continue;
+      Package.Items[I].FState := psUninstall;
+      if Assigned(StateEvent) then
+        StateEvent(FOwner.FOwner.FOwner, Package.Items[I]);
+      MarkToUninstall(Package.Items[I], List);
     end;
-
   end;
 
 var
   List: TList;
+  OldState: TPackageState;
+  StateEvent: TChangeStateEvent;
 begin
   if FState = Value then
     Exit;
   List := TList.Create;
+  OldState := FState;
+  FState := Value;
+  StateEvent := FOwner.FOwner.FOwner.FOnChangeState;
+  if Assigned(StateEvent) then
+    StateEvent(FOwner.FOwner.FOwner, Self);
   if Value = psInstall then
-    MarkToInstall(Self, List)
-  else if (Value = psUninstall) and FInstalled then
+    MarkToInstall(Self)
+  else if ((Value = psUninstall) and FInstalled) or (OldState = psInstall) then
     MarkToUninstall(Self, List);
   List.Free;
 end;
@@ -347,6 +376,39 @@ begin
   Clear;
   FList.Free;
   inherited;
+end;
+
+function TCategoryList.Find(const Name: string): Integer;
+var
+  I: Integer;
+begin
+  Result := -1;
+  for I := 0 to Count - 1 do
+  begin
+    if Items[I].Name = Name then
+    begin
+      Result := I;
+      Exit;
+    end;
+  end;
+end;
+
+function TCategoryList.FindPackage(const CategoryName, LibraryName, Name,
+  Version: string): TPackage;
+var
+  I, J, K: Integer;
+begin
+  Result := nil;
+  I := Find(CategoryName);
+  if I < 0 then
+    Exit;
+  J := Items[I].Find(LibraryName);
+  if J < 0 then
+    Exit;
+  K := Items[I].Items[J].Find(Name, Version);
+  if K < 0 then
+    Exit;
+  Result := Items[I].Items[J].Items[K];
 end;
 
 function TCategoryList.GetCategory(Index: Integer): TCategory;

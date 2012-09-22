@@ -89,6 +89,7 @@ type
     PkgListWndProc: TWndMethod;
   public
     { Public declarations }
+    function PackageInstalled(const Name, Version: string): Boolean;
   end;
 
   TPkgItem = class
@@ -111,7 +112,8 @@ var
 
 implementation
 
-uses UInstaller, UFrmWizard, UFraFnsh, UUninstaller, UFrmPkgDownload;
+uses UInstaller, UFrmWizard, UFraFnsh, UUninstaller, UFrmPkgDownload,
+  UFrmHelp;
 
 {$R *.dfm}
 
@@ -244,6 +246,22 @@ begin
     for I:= 0 to Pred(FileList.Items.Count) do
       if FileList.Items.Item[I].Level = 0 then
         FileList.Items.Item[I].Expand(True);
+end;
+
+function TFrmPkgMan.PackageInstalled(const Name, Version: string): Boolean;
+var
+  I: Integer;
+begin
+  for I := 0 to PkgList.Items.Count - 1 do
+  begin
+    if (CompareText(TPkgItem(PkgList.Items.Item[I].Data).Name, Name) = 0) and
+      (CompareText(TPkgItem(PkgList.Items.Item[I].Data).Version, Version) = 0) then
+    begin
+      Result := True;
+      Exit;
+    end;
+  end;
+  Result := False;
 end;
 
 procedure TFrmPkgMan.LoadPackages;
@@ -485,28 +503,8 @@ end;
 
 procedure TFrmPkgMan.TbHelpClick(Sender: TObject);
 begin
-  ShowMessage(
-  'Falcon C++ Package Manager'#10+
-  '=========================='#10#10+
-  #9'Install *.fpk, *.DevPak C/C++ Packages'#10+
-  'Drag drop packages to install or'#10+
-  'click on Install button or Packages->Install menu'#10+
-  'or press Insert Key'#10#10+
-  '============ Command line ==========='#10#10+
-  'Install package:'#10+
-  #9'PkgManager.exe   [/I | /install | -I | --install]   [/S | /silent | -S | --silent]   mypack.fpk'#10+
-  'Example:'#10+
-  #9'PkgManager.exe mypack.fpk'#10#10+
-  'Uninstall package:'#10+
-  #9'PkgManager.exe   (/U | /uninstall | -U | --uninstall)   [/S | /silent | -S | --silent]   mypack.fpk'#10+
-  'Example:'#10+
-  #9'PkgManager.exe --uninstall --silent mypack.fpk'#10#10+
-  '[?] optional'#10+
-  '(?) need'#10+
-  '[/I | /install | -I | --install],'#9'install an package'#10+
-  '(/U | /uninstall | -U | --uninstall),'#9'uninstall an package'#10+
-  '[/S | /silent | -S | --silent],'#9'activate silent mode'#10
-  );
+  FrmHelp := TFrmHelp.CreateParented(Handle);
+  FrmHelp.ShowModal;
 end;
 
 end.

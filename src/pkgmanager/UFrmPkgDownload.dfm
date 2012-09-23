@@ -3,7 +3,6 @@ object FrmPkgDownload: TFrmPkgDownload
   Top = 173
   Width = 758
   Height = 506
-  BorderIcons = [biSystemMenu]
   Caption = 'Install packages'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -13,6 +12,7 @@ object FrmPkgDownload: TFrmPkgDownload
   Font.Style = []
   OldCreateOrder = False
   Position = poOwnerFormCenter
+  OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnResize = FormResize
@@ -48,6 +48,13 @@ object FrmPkgDownload: TFrmPkgDownload
       Height = 13
       Caption = 'Show:'
     end
+    object Label6: TLabel
+      Left = 8
+      Top = 339
+      Width = 82
+      Height = 13
+      Caption = 'Search package:'
+    end
     object TreeViewPackages: TNativeTreeView
       Left = 8
       Top = 20
@@ -65,13 +72,14 @@ object FrmPkgDownload: TFrmPkgDownload
       Images = ImageList16x16
       LineStyle = lsSolid
       NodeDataSize = 4
-      TabOrder = 0
+      TabOrder = 1
       TreeOptions.AutoOptions = [toAutoScrollOnExpand, toAutoTristateTracking, toAutoHideButtons, toAutoDeleteMovedNodes]
       TreeOptions.MiscOptions = [toCheckSupport, toFullRepaintOnResize, toInitOnSave, toReportMode, toToggleOnDblClick, toWheelPanning]
       TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowHorzGridLines, toShowRoot, toShowTreeLines, toShowVertGridLines, toThemeAware, toUseBlendedImages, toFullVertGridLines, toUseExplorerTheme, toHideTreeLinesIfThemed]
       TreeOptions.SelectionOptions = [toFullRowSelect]
       OnChange = TreeViewPackagesChange
       OnChecked = TreeViewPackagesChecked
+      OnChecking = TreeViewPackagesChecking
       OnGetText = TreeViewPackagesGetText
       OnGetImageIndex = TreeViewPackagesGetImageIndex
       Columns = <
@@ -109,7 +117,7 @@ object FrmPkgDownload: TFrmPkgDownload
       Caption = 'Updates/New'
       Checked = True
       State = cbChecked
-      TabOrder = 1
+      TabOrder = 2
       OnClick = CheckBox1Click
     end
     object CheckBox2: TCheckBox
@@ -120,7 +128,7 @@ object FrmPkgDownload: TFrmPkgDownload
       Caption = 'Installed'
       Checked = True
       State = cbChecked
-      TabOrder = 2
+      TabOrder = 3
       OnClick = CheckBox1Click
     end
     object Button1: TButton
@@ -130,7 +138,8 @@ object FrmPkgDownload: TFrmPkgDownload
       Height = 25
       Caption = 'Install packages...'
       Enabled = False
-      TabOrder = 3
+      TabOrder = 4
+      OnClick = Button1Click
     end
     object Button2: TButton
       Left = 296
@@ -139,7 +148,16 @@ object FrmPkgDownload: TFrmPkgDownload
       Height = 25
       Caption = 'Delete packages...'
       Enabled = False
-      TabOrder = 4
+      TabOrder = 5
+      OnClick = Button2Click
+    end
+    object EditSearch: TEdit
+      Left = 96
+      Top = 336
+      Width = 121
+      Height = 21
+      TabOrder = 0
+      OnChange = EditSearchChange
     end
   end
   object Panel1: TPanel
@@ -276,7 +294,7 @@ object FrmPkgDownload: TFrmPkgDownload
     Left = 704
     Top = 304
     Bitmap = {
-      494C010108004800500010001000FFFFFFFF2000FFFFFFFFFFFFFFFF424D3600
+      494C010108004800600010001000FFFFFFFF2000FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000003000000001002000000000000030
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -665,11 +683,19 @@ object FrmPkgDownload: TFrmPkgDownload
       000000000000000000000000000000000000}
   end
   object FileDownloadXML: TFileDownload
-    URL = 'http://localhost/packages/list.php'
+    URL = 'http://falconcpp.sourceforge.net/packages/list.php'
     OnStart = FileDownloadXMLStart
     OnProgress = FileDownloadXMLProgress
     OnFinish = FileDownloadXMLFinish
     Left = 104
     Top = 264
+  end
+  object FileDownloadPkg: TFileDownload
+    PartExt = '.part'
+    OnStart = FileDownloadPkgStart
+    OnProgress = FileDownloadPkgProgress
+    OnFinish = FileDownloadPkgFinish
+    Left = 160
+    Top = 265
   end
 end

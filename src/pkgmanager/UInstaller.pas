@@ -27,7 +27,6 @@ type
   TInstaller = class
   private
     FName: String;
-    FLargeName: String;
     FVersion: String;
     FWebSiteCaption: String;
     FWebSite: String;
@@ -75,7 +74,6 @@ type
     procedure SaveEntryFile;
     function Clear: Boolean;
     property Name: String read FName write FName;
-    property LargeName: String read FLargeName write FLargeName;
     property Version: String read FVersion write FVersion;
     property WebSiteCaption: String read FWebSiteCaption write FWebSiteCaption;
     property WebSite: String read FWebSite write FWebSite;
@@ -107,6 +105,7 @@ function GetFalconDir: String;
 function FindFiles(Search: String; Finded:TStrings): Boolean;
 procedure ConvertTo32BitImageList(const ImageList: TImageList);
 function LoadPackageFile(FileName: String; Silent: Boolean = False): Boolean;
+function GetSpecialFolder(ID: Integer): String;
 
 implementation
 
@@ -267,10 +266,9 @@ begin
   ini := TMemIniFile.Create(FFalconDir + 'Packages\' + Name + '.ini');
   ini.Clear;
   ini.WriteString('Package', 'Name', Name);
-  ini.WriteString('Package', 'LargeName', LargeName);
   ini.WriteString('Package', 'Version', FVersion);
   ini.WriteString('Package', 'Description', FDescription);
-  ini.WriteString('Package', 'FWebSiteCaption', FWebSiteCaption);
+  ini.WriteString('Package', 'WebSiteCaption', FWebSiteCaption);
   ini.WriteString('Package', 'WebSite', FWebSite);
   ini.WriteString('Package', 'Dependencies', FDependencies);
   ini.GetStrings(lst);
@@ -609,7 +607,6 @@ begin
     pktFalconCpp, pktOther:
     begin
       FName := ini.ReadString('Package', 'Name', 'Unknown');
-      FLargeName := ini.ReadString('Package', 'LargeName', FName);
       FVersion := ini.ReadString('Package', 'Version', '1.0');
       FDescription := ini.ReadString('Package', 'Description', '');
       FWebSiteCaption := ini.ReadString('Package', 'WebsiteCaption', '');
@@ -647,7 +644,6 @@ begin
     begin
       FName := ini.ReadString('Setup', 'MenuName', ini.ReadString('Setup',
         'AppName', 'Unknown'));
-      FLargeName := ini.ReadString('Setup', 'AppName', FName);
       FVersion := ini.ReadString('Setup', 'AppVersion', '1.0');
       FDescription := ini.ReadString('Setup', 'Description', '');
       FWebSite := ini.ReadString('Setup', 'Url', '');

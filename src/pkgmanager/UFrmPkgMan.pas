@@ -95,7 +95,6 @@ type
   TPkgItem = class
   public
     Name: String;
-    LargeName: String;
     Version: String;
     Description: String;
     WebSiteCaption: String;
@@ -282,10 +281,9 @@ begin
     PkgInfo := TPkgItem.Create;
     ini.ReadSectionValues('Files', PkgInfo.Files);
     PkgInfo.Name := ini.ReadString('Package', 'Name', '');
-    PkgInfo.LargeName := ini.ReadString('Package', 'LargeName', '');
     PkgInfo.Version := ini.ReadString('Package', 'Version', '');
     PkgInfo.Description := ini.ReadString('Package', 'Description', '');
-    PkgInfo.WebSiteCaption := ini.ReadString('Package', 'FWebSiteCaption', '');
+    PkgInfo.WebSiteCaption := ini.ReadString('Package', 'WebSiteCaption', '');
     PkgInfo.WebSite := ini.ReadString('Package', 'WebSite', '');
     PkgInfo.Dependencies := ini.ReadString('Package', 'Dependencies', '');
     Item := PkgList.Items.Add;
@@ -482,7 +480,7 @@ begin
   if Assigned(Item) then
   begin
     PkgList.ShowHint := True;
-    PkgList.Hint := TPkgItem(Item.Data).LargeName;
+    PkgList.Hint := TPkgItem(Item.Data).Name + ' ' + TPkgItem(Item.Data).Version;
   end
   else
     PkgList.ShowHint := False;

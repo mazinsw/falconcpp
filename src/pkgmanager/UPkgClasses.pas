@@ -76,6 +76,20 @@ type
     property Items[Index: Integer]: TPackage read GetPackage;
   end;
 
+  TPackageList = class
+  private
+    FList: TList;
+    function GetPackage(Index: Integer): TPackage;
+  public
+    function Add(Item: TPackage): Integer;
+    constructor Create;
+    destructor Destroy; override;
+    function Count: Integer;
+    procedure Clear;
+    procedure Delete(Index: Integer);
+    property Items[Index: Integer]: TPackage read GetPackage;
+  end;
+
   TPackageState = (psNone, psInstall, psUninstall);
 
   TPackage = class
@@ -92,6 +106,7 @@ type
     FState: TPackageState;
     FData: Pointer;
     FInstalled: Boolean;
+    FOwnerDependencyList: TPackageList;
     procedure SetState(Value: TPackageState);
     function GetPackage(Index: Integer): TPackage;
   public
@@ -106,6 +121,9 @@ type
     property Installed: Boolean read FInstalled write FInstalled;
     property State: TPackageState read FState write SetState;
     property Data: Pointer read FData write FData;
+    property OwnerDependencyList: TPackageList read FOwnerDependencyList;
+    function InstaledPackage(const Name: string): Boolean;
+    function CanUninstall: Boolean;
     function Add(Item: TPackage): Integer;
     constructor Create;
     destructor Destroy; override;
@@ -254,6 +272,24 @@ begin
   Result := FList.Add(Item);
 end;
 
+function TPackage.CanUninstall: Boolean;
+var
+  I: Integer;
+  Item: TPackage;
+begin
+  for I := 0 to FOwnerDependencyList.Count - 1 do
+  begin
+    Item := FOwnerDependencyList.Items[I];
+    if (Item.FInstalled and (Item.FState <> psUninstall)) or
+      (Item.FState = psInstall) then
+    begin
+      Result := False;
+      Exit;
+    end;
+  end;
+  Result := True;
+end;
+
 procedure TPackage.Clear;
 //var
 //  I: Integer;
@@ -271,12 +307,14 @@ end;
 constructor TPackage.Create;
 begin
   FList := TList.Create;
+  FOwnerDependencyList := TPackageList.Create;
   FState := psNone;
 end;
 
 destructor TPackage.Destroy;
 begin
   Clear;
+  FOwnerDependencyList.Free;
   FList.Free;
   //Owner.FList.Remove(Self);
   inherited;
@@ -287,6 +325,24 @@ begin
   Result := TPackage(FList.Items[Index]);
 end;
 
+function TPackage.InstaledPackage(const Name: string): Boolean;
+var
+  I: Integer;
+begin
+  for I := 0 to Owner.Count - 1 do
+  begin
+    if Owner.Items[I] = Self then
+      Continue;
+    if (Owner.Items[I].Name = Name) and ((Owner.Items[I].FState = psInstall) or
+      (Owner.Items[I].FInstalled and not (Owner.Items[I].FState = psUninstall))) then
+    begin
+      Result := True;
+      Exit;
+    end;
+  end;
+  Result := False;
+end;
+
 procedure TPackage.SetState(Value: TPackageState);
 
   procedure MarkToInstall(Package: TPackage);
@@ -295,52 +351,88 @@ procedure TPackage.SetState(Value: TPackageState);
     StateEvent: TChangeStateEvent;
   begin
     StateEvent := Owner.Owner.Owner.OnChangeState;
+    if (Package.FState = psInstall) or
+      (Package.FInstalled and (Package.State <> psUninstall)) then
+      Exit;
+    if Package.FInstalled then
+      Package.FState := psNone
+    else
+      Package.FState := psInstall;
+    if Assigned(StateEvent) then
+      StateEvent(FOwner.FOwner.FOwner, Package);
     for I := 0 to Package.Count - 1 do
-    begin
-      if (Package.Items[I].FState = psInstall) or
-        (Package.Items[I].FInstalled and (Package.Items[I].State <> psUninstall)) then
-        Continue;
-      Package.Items[I].FState := psInstall;
-      if Assigned(StateEvent) then
-        StateEvent(FOwner.FOwner.FOwner, Package.Items[I]);
       MarkToInstall(Package.Items[I]);
-    end;
   end;
 
-  procedure MarkToUninstall(Package: TPackage; List: TList);
+  procedure MarkReset(Package: TPackage);
   var
     I: Integer;
     StateEvent: TChangeStateEvent;
   begin
+    if ((Package.FState = psInstall) and not Package.FInstalled) or
+        (Package.FInstalled and (Package.State <> psUninstall) and (Value <> psNone)) then
+        Exit;
+    StateEvent := Owner.Owner.Owner.OnChangeState;
+    if not Package.FInstalled then
+      Package.FState := psInstall
+    else
+      Package.FState := psNone;
+    if Assigned(StateEvent) then
+      StateEvent(FOwner.FOwner.FOwner, Package);
+    for I := 0 to Package.Count - 1 do
+      MarkReset(Package.Items[I]);
+  end;
+
+  procedure MarkToUninstall(Package: TPackage; List: TList);
+  var
+    I, J, InstalledCount: Integer;
+    StateEvent: TChangeStateEvent;
+    Dependency, OwnerDependency: TPackage;
+  begin
     StateEvent := FOwner.FOwner.FOwner.FOnChangeState;
+    Package.FState := psUninstall;
+    if Assigned(StateEvent) then
+      StateEvent(FOwner.FOwner.FOwner, Package);
     for I := 0 to Package.Count - 1 do
     begin
-      if (Package.Items[I].FState <> psInstall) or Package.Items[I].FInstalled then
+      Dependency := Package.Items[I];
+      if (Dependency.FState = psUninstall) or (not Dependency.FInstalled and
+        not (Dependency.FState = psInstall)) then
         Continue;
-      Package.Items[I].FState := psUninstall;
-      if Assigned(StateEvent) then
-        StateEvent(FOwner.FOwner.FOwner, Package.Items[I]);
+      InstalledCount := 0;
+      for J := 0 to Dependency.OwnerDependencyList.Count - 1 do
+      begin
+        OwnerDependency := Dependency.OwnerDependencyList.Items[J];
+        if (OwnerDependency.Name = Package.Name) and
+           (OwnerDependency.Version = Package.Version) then
+          Continue;
+        if (OwnerDependency.FInstalled and not (OwnerDependency.FState = psUninstall))
+          or (OwnerDependency.FState = psInstall) then
+        begin
+          Inc(InstalledCount);
+          Break;
+        end;
+      end;
+      if InstalledCount > 0 then
+        Continue;
       MarkToUninstall(Package.Items[I], List);
     end;
   end;
 
 var
   List: TList;
-  OldState: TPackageState;
-  StateEvent: TChangeStateEvent;
 begin
   if FState = Value then
     Exit;
   List := TList.Create;
-  OldState := FState;
-  FState := Value;
-  StateEvent := FOwner.FOwner.FOwner.FOnChangeState;
-  if Assigned(StateEvent) then
-    StateEvent(FOwner.FOwner.FOwner, Self);
-  if Value = psInstall then
-    MarkToInstall(Self)
-  else if ((Value = psUninstall) and FInstalled) or (OldState = psInstall) then
-    MarkToUninstall(Self, List);
+  if FInstalled and not (Value = psUninstall) then
+    MarkReset(Self)
+  else if Value = psInstall then
+      MarkToInstall(Self)
+  else if ((Value = psUninstall) and FInstalled) or (FState = psInstall) then
+    MarkToUninstall(Self, List)
+  else
+    FState := Value;
   List.Free;
 end;
 
@@ -414,6 +506,45 @@ end;
 function TCategoryList.GetCategory(Index: Integer): TCategory;
 begin
   Result := TCategory(FList.Items[Index]);
+end;
+
+{ TPackageList }
+
+function TPackageList.Add(Item: TPackage): Integer;
+begin
+  Result := FList.Add(Item);
+end;
+
+procedure TPackageList.Clear;
+begin
+  FList.Clear;
+end;
+
+function TPackageList.Count: Integer;
+begin
+  Result := FList.Count;
+end;
+
+constructor TPackageList.Create;
+begin
+  FList := TList.Create;
+end;
+
+procedure TPackageList.Delete(Index: Integer);
+begin
+  FList.Delete(Index);
+end;
+
+destructor TPackageList.Destroy;
+begin
+  Clear;
+  FList.Free;
+  inherited;
+end;
+
+function TPackageList.GetPackage(Index: Integer): TPackage;
+begin
+  Result := TPackage(FList.Items[Index]);
 end;
 
 end.

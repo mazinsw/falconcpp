@@ -5,7 +5,8 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, NativeTreeView, ImgList, ExtCtrls, StdCtrls, ComCtrls,
-  RichEditViewer, FileDownload, XMLDoc, XMLIntf, UPkgClasses, rbtree;
+  RichEditViewer, FileDownload, XMLDoc, XMLIntf, UPkgClasses, rbtree, Contnrs,
+  ThreadFileDownload;
 
 const
   {$EXTERNALSYM PBS_MARQUEE}
@@ -14,6 +15,58 @@ const
   PBM_SETMARQUEE = WM_USER+10;
 
 type
+  TPkgFinishEvent = procedure(Sender: TObject; Sucess: Boolean) of object;
+  TThreadInstallPkg = class(TThread)
+  private
+    FFileName: string;
+    FOnStart: TNotifyEvent;
+    FOnFinish: TPkgFinishEvent;
+    FSucess: Boolean;
+    procedure DoStart;
+    procedure DoFinish;
+  protected
+    procedure Execute; override;
+  public
+    constructor Create(FileName: string);
+    property OnStart: TNotifyEvent read FOnStart write FOnStart;
+    property OnFinish: TPkgFinishEvent read FOnFinish write FOnFinish;
+  end;
+
+  TInstallPkg = class
+    FFileName: string;
+    FOnStart: TNotifyEvent;
+    FOnFinish: TPkgFinishEvent;
+    FBusy: Boolean;
+    procedure ThreadOnStart(Sender: TObject);
+    procedure ThreadOnFinish(Sender: TObject; Sucess: Boolean);
+  public
+    property FileName: string read FFileName write FFileName;
+    procedure Start;
+    property Busy: Boolean read FBusy write FBusy;
+    property OnStart: TNotifyEvent read FOnStart write FOnStart;
+    property OnFinish: TPkgFinishEvent read FOnFinish write FOnFinish;
+  end;
+
+  TThreadUninstallPkg = class(TThreadInstallPkg)
+  protected
+    procedure Execute; override;
+  end;
+
+  TUninstallPkg = class
+    FName: string;
+    FOnStart: TNotifyEvent;
+    FOnFinish: TPkgFinishEvent;
+    FBusy: Boolean;
+    procedure ThreadOnStart(Sender: TObject);
+    procedure ThreadOnFinish(Sender: TObject; Sucess: Boolean);
+  public
+    property Name: string read FName write FName;
+    procedure Start;
+    property Busy: Boolean read FBusy write FBusy;
+    property OnStart: TNotifyEvent read FOnStart write FOnStart;
+    property OnFinish: TPkgFinishEvent read FOnFinish write FOnFinish;
+  end;
+
   TFrmPkgDownload = class(TForm)
     ImageList16x16: TImageList;
     GroupBox1: TGroupBox;
@@ -40,13 +93,17 @@ type
     CheckBox2: TCheckBox;
     Button1: TButton;
     Button2: TButton;
+    FileDownloadPkg: TFileDownload;
+    Label6: TLabel;
+    EditSearch: TEdit;
     procedure FormResize(Sender: TObject);
     procedure FileDownloadXMLProgress(Sender: TObject; ReceivedBytes,
       CalculatedFileSize: Cardinal);
     procedure FileDownloadXMLStart(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure FileDownloadXMLFinish(Sender: TObject; Canceled: Boolean);
+    procedure FileDownloadXMLFinish(Sender: TObject; State: TDownloadState;
+      Canceled: Boolean);
     procedure TreeViewPackagesGetText(Sender: TBaseNativeTreeView;
       Node: PNativeNode; Column: TColumnIndex; TextType: TVSTTextType;
       var CellText: WideString);
@@ -60,21 +117,47 @@ type
     procedure CheckBox1Click(Sender: TObject);
     procedure TreeViewPackagesChecked(Sender: TBaseNativeTreeView;
       Node: PNativeNode);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure FileDownloadPkgFinish(Sender: TObject; State: TDownloadState;
+      Canceled: Boolean);
+    procedure TreeViewPackagesChecking(Sender: TBaseNativeTreeView;
+      Node: PNativeNode; var NewState: TCheckState; var Allowed: Boolean);
+    procedure Button1Click(Sender: TObject);
+    procedure FileDownloadPkgStart(Sender: TObject);
+    procedure FileDownloadPkgProgress(Sender: TObject; ReceivedBytes,
+      CalculatedFileSize: Cardinal);
+    procedure Button2Click(Sender: TObject);
+    procedure EditSearchChange(Sender: TObject);
   private
     { Private declarations }
     InstalledCount: Integer;
     Ms: TMemoryStream;
     CategoryList: TCategoryList;
-    marquee: Boolean;
+    Marqueue, CloseOnFinish: Boolean;
     LoadingPkg: Integer;
     InstallList: TRBTree;
     UninstallList: TRBTree;
+    InstallQueue: TQueue;
+    InstallPkgQueue: TQueue;
+    InstalingList: TPackageList;
+    UninstallQueue: TQueue;
+    UninstalingList: TPackageList;
+    ConfigRoot, DownloadedPackagesRoot: string;
+    InstallPkg: TInstallPkg;
+    UninstallPkg: TUninstallPkg;
     procedure DownloadPackageList;
     procedure ReloadPackages;
     procedure SearchPackage(const S: string);
-    procedure UpdateState;
     procedure ChangePackageState(Sender: TObject; Pkg: TPackage);
     procedure UpdateButtonsCaption;
+    function DownloadPackageFromQueue: Boolean;
+    procedure InstallDownloadedPackages;
+    function UninstallPackageFromQueue: Boolean;
+    procedure UninstallPackages;
+    procedure InstallPkgFinish(Sender: TObject; Sucess: Boolean);
+    procedure InstallPkgStart(Sender: TObject);
+    procedure UninstallPkgFinish(Sender: TObject; Sucess: Boolean);
+    procedure UninstallPkgStart(Sender: TObject);
   protected
     procedure CreateParams(var Params: TCreateParams); override;
   public
@@ -88,7 +171,7 @@ function InstallPackages(ParentWindow: HWND): Integer;
 
 implementation
 
-uses UInstaller, UFrmPkgMan;
+uses UInstaller, UFrmPkgMan, ShlObj, UUninstaller;
 
 {$R *.dfm}
 
@@ -121,14 +204,9 @@ begin
   FileDownloadXML.Start(Ms);
 end;
 
-procedure TFrmPkgDownload.UpdateState;
-begin
-
-end;
-
 procedure TFrmPkgDownload.SearchPackage(const S: string);
 var
-  I, J, K, PkgCount, LibCount: Integer;
+  I, J, K, PkgCount, LibCount, CatCount: Integer;
   PCategory, PLibrary, PPackage: PNativeNode;
   CategoryItem: TCategory;
   LibraryItem: TLibrary;
@@ -136,6 +214,7 @@ var
 begin
   Inc(LoadingPkg);
   TreeViewPackages.Clear;
+  CatCount := 0;
   for I := 0 to CategoryList.Count - 1 do
   begin
     CategoryItem := CategoryList.Items[I];
@@ -153,7 +232,8 @@ begin
         PackageItem := LibraryItem.Items[K];
         PackageItem.Data := nil;
         if (not CheckBox1.Checked and not PackageItem.Installed) or
-          (not CheckBox2.Checked and PackageItem.Installed) then
+          (not CheckBox2.Checked and PackageItem.Installed) or
+          ((S <> '') and (Pos(S, UpperCase(PackageItem.Name)) = 0)) then
           Continue;
         Inc(PkgCount);
         PPackage := TreeViewPackages.AddChild(PLibrary, PackageItem);
@@ -177,7 +257,20 @@ begin
         Inc(LibCount);
     end;
     if LibCount = 0 then
-      TreeViewPackages.DeleteNode(PCategory);
+      TreeViewPackages.DeleteNode(PCategory)
+    else
+      Inc(CatCount);
+  end;
+  if (CatCount = 1) then
+  begin
+    PCategory := TreeViewPackages.GetFirst;
+    TreeViewPackages.Expanded[PCategory] := True;
+    LibCount := TreeViewPackages.ChildCount[PCategory];
+    if LibCount < 3 then
+    begin
+      PLibrary := TreeViewPackages.GetFirstChild(PCategory);
+      TreeViewPackages.Expanded[PLibrary] := True;
+    end;
   end;
   Dec(LoadingPkg);
 end;
@@ -306,7 +399,10 @@ begin
     DependencyItem := TDependency(BuildDependencyList.Items[I]);
     PackageItem := TPackage(pkgList.Items[DependencyItem.Name + ' ' + DependencyItem.Version]);
     if PackageItem <> nil then
-      DependencyItem.Package.Add(PackageItem)
+    begin
+      DependencyItem.Package.Add(PackageItem);
+      PackageItem.OwnerDependencyList.Add(DependencyItem.Package);
+    end
     else
       raise Exception.CreateFmt('Dependency "%s %s" to "%s %s" not found',
         [DependencyItem.Name, DependencyItem.Version,
@@ -316,7 +412,6 @@ begin
   BuildDependencyList.Free;
   XMLDoc.Free;
   LoadDone;
-  UpdateState;
   SearchPackage('');
 end;
 
@@ -342,7 +437,10 @@ begin
   CheckBox2.Top := Button1.Top;
   Label3.Top := CheckBox1.Top + CheckBox1.Height - Label3.Height;
   TreeViewPackages.Height := Label3.Top - TreeViewPackages.Top - TreeViewPackages.Left;
+  EditSearch.Top := Button2.Top + (Button2.Height -  EditSearch.Height) div 2;
+  Label6.Top := EditSearch.Top + (EditSearch.Height -  Label6.Height) div 2;
   BtnCancel.Left := Panel2.Width - BtnCancel.Width - ProgressBar1.Left;
+  TextDesc.Height := GroupBox2.ClientHeight - TextDesc.Top - TextDesc.Left;
   ProgressBar1.Width := BtnCancel.Left - 3 * ProgressBar1.Left;
 end;
 
@@ -351,9 +449,9 @@ procedure TFrmPkgDownload.FileDownloadXMLProgress(Sender: TObject;
 begin
   if CalculatedFileSize > 0 then
   begin
-    if marquee then
+    if Marqueue then
     begin
-      marquee := False;
+      Marqueue := False;
       ProgressbarSetNormal(ProgressBar1);
     end;
     ProgressBar1.Position := Round((ReceivedBytes / CalculatedFileSize) * 100);
@@ -369,9 +467,9 @@ end;
 procedure TFrmPkgDownload.FileDownloadXMLStart(Sender: TObject);
 begin
   ProgressBar1.Position := 0;
-  if not marquee then
+  if not Marqueue then
   begin
-    marquee := True;
+    Marqueue := True;
     ProgressbarSetMarqueue(ProgressBar1);
   end;
   Panel2.Visible := True;
@@ -388,35 +486,36 @@ begin
     Button1.Caption := Format('Install %d package...', [InstallList.Count])
   else
     Button1.Caption := Format('Install %d packages...', [InstallList.Count]);
-  Button1.Enabled := InstallList.Count > 0;
+  Button1.Enabled := (InstallList.Count > 0) and not FileDownloadPkg.IsBusy and
+    not (InstallPkgQueue.Count > 0);
   if UninstallList.Count = 0 then
     Button2.Caption := 'Delete packages...'
   else if UninstallList.Count = 1 then
     Button2.Caption := Format('Delete %d package...', [UninstallList.Count])
   else
     Button2.Caption := Format('Delete %d packages...', [UninstallList.Count]);
-  Button2.Enabled := UninstallList.Count > 0;
+  Button2.Enabled := (UninstallList.Count > 0) and not (UninstallQueue.Count > 0);
 end;
 
 procedure TFrmPkgDownload.ChangePackageState(Sender: TObject; Pkg: TPackage);
 var
   Node: PNativeNode;
 begin
-  if Pkg.Data = nil then
-    Exit;
   Inc(LoadingPkg);
   Node := Pkg.Data;
   if Pkg.Installed then
   begin
     if Pkg.State = psUninstall then
     begin
-      TreeViewPackages.CheckState[Node] := csUncheckedNormal;
+      if Node <> nil then
+        TreeViewPackages.CheckState[Node] := csUncheckedNormal;
       UninstallList.Add(Pkg.Name + ' ' + Pkg.Version, Pkg);
       InstallList.Delete(Pkg.Name + ' ' + Pkg.Version);
     end
     else
     begin
-      TreeViewPackages.CheckState[Node] := csCheckedNormal;
+      if Node <> nil then
+        TreeViewPackages.CheckState[Node] := csCheckedNormal;
       UninstallList.Delete(Pkg.Name + ' ' + Pkg.Version);
       if Pkg.State = psInstall then
         InstallList.Add(Pkg.Name + ' ' + Pkg.Version, Pkg);
@@ -426,12 +525,14 @@ begin
   begin
     if Pkg.State = psInstall then
     begin
-      TreeViewPackages.CheckState[Node] := csCheckedNormal;
+      if Node <> nil then
+        TreeViewPackages.CheckState[Node] := csCheckedNormal;
       InstallList.Add(Pkg.Name + ' ' + Pkg.Version, Pkg);
     end
     else
     begin
-      TreeViewPackages.CheckState[Node] := csUncheckedNormal;
+      if Node <> nil then
+        TreeViewPackages.CheckState[Node] := csUncheckedNormal;
       InstallList.Delete(Pkg.Name + ' ' + Pkg.Version);
     end;
   end;
@@ -441,28 +542,58 @@ end;
 
 procedure TFrmPkgDownload.FormCreate(Sender: TObject);
 begin
+  ConfigRoot := IncludeTrailingPathDelimiter(GetSpecialFolder(CSIDL_APPDATA))
+                     + 'Falcon\';
+  DownloadedPackagesRoot := ConfigRoot + 'Downloaded packages\';
+  if not DirectoryExists(DownloadedPackagesRoot) then
+    ForceDirectories(DownloadedPackagesRoot);
   Ms := TMemoryStream.Create;
   InstallList := TRBTree.Create;
+  InstalingList := TPackageList.Create;
+  InstallQueue := TQueue.Create;
+  InstallPkgQueue := TQueue.Create;
+
   UninstallList := TRBTree.Create;
+  UninstalingList := TPackageList.Create;
+  UninstallQueue := TQueue.Create;
   CategoryList := TCategoryList.Create;
   CategoryList.OnChangeState := ChangePackageState;
+  InstallPkg := TInstallPkg.Create;
+  InstallPkg.OnStart := InstallPkgStart;
+  InstallPkg.OnFinish := InstallPkgFinish;
+  UninstallPkg := TUninstallPkg.Create;
+  UninstallPkg.OnStart := UninstallPkgStart;
+  UninstallPkg.OnFinish := UninstallPkgFinish;
   DownloadPackageList;
 end;
 
 procedure TFrmPkgDownload.FormDestroy(Sender: TObject);
 begin
+  UninstallPkg.Free;
+  InstallPkg.Free;
   CategoryList.Free;
+  UninstallQueue.Free;
+  UninstalingList.Free;
   UninstallList.Free;
+  InstallPkgQueue.Free;
+  InstallQueue.Free;
+  InstalingList.Free;
   InstallList.Free;
   Ms.Free;
 end;
 
 procedure TFrmPkgDownload.FileDownloadXMLFinish(Sender: TObject;
-  Canceled: Boolean);
+   State: TDownloadState; Canceled: Boolean);
 begin
-  if marquee then
+  if CloseOnFinish then
   begin
-    marquee := False;
+    if not FileDownloadPkg.IsBusy then
+      Close;
+    Exit;
+  end;
+  if Marqueue then
+  begin
+    Marqueue := False;
     ProgressbarSetNormal(ProgressBar1);
   end;
   if not Canceled and (Ms.Size > 0) then
@@ -648,6 +779,500 @@ begin
     else
       TPackage(Data).State := psNone;
   end;
+end;
+
+procedure TFrmPkgDownload.FormClose(Sender: TObject;
+  var Action: TCloseAction);
+var
+  I: Integer;
+begin
+  if CloseOnFinish and (FileDownloadXML.IsBusy or FileDownloadPkg.IsBusy) then
+  begin
+    Action := caNone;
+    Exit;
+  end;
+  if FileDownloadXML.IsBusy or FileDownloadPkg.IsBusy then
+  begin
+    I := IDYES;
+    if FileDownloadPkg.IsBusy then
+     I := MessageBox(Handle, 'Do you cancel package installation?',
+      PChar(Caption), MB_YESNOCANCEL+MB_DEFBUTTON2);
+    Action := caNone;
+    if I = IDYES then
+    begin
+      CloseOnFinish := True;
+      FileDownloadXML.Stop;
+      FileDownloadPkg.Stop;
+    end;
+    Exit;
+  end;
+  Action := caFree;
+end;
+
+procedure TFrmPkgDownload.TreeViewPackagesChecking(
+  Sender: TBaseNativeTreeView; Node: PNativeNode;
+  var NewState: TCheckState; var Allowed: Boolean);
+var
+  Data: TObject;
+begin
+  if LoadingPkg > 0 then
+    Exit;
+  Data := TObject(Sender.GetNodeData(Node)^);
+  if Data is TPackage then
+  begin
+    if TPackage(Data).InstaledPackage(TPackage(Data).Name) then
+    begin
+      Allowed := False;
+      MessageBox(Handle, 'Package already installed!', PChar(Caption), MB_ICONINFORMATION);
+      Exit;
+    end
+    else if (NewState = csUncheckedNormal) and ((TPackage(Data).Installed and
+      (TPackage(Data).State <> psUninstall)) or
+      (TPackage(Data).State = psInstall)) and not TPackage(Data).CanUninstall then
+    begin
+      Allowed := False;
+      MessageBox(Handle, 'Package cannot be uninstalled, others packages depends on!', PChar(Caption), MB_ICONINFORMATION);
+      Exit;
+    end;
+  end;
+end;
+
+procedure TFrmPkgDownload.InstallDownloadedPackages;
+var
+  Package: TPackage;
+  file_fpk: string;
+begin
+  if InstallPkgQueue.Count > 0 then
+  begin
+    Package := TPackage(InstallPkgQueue.Peek);
+    file_fpk := DownloadedPackagesRoot + Package.Name + ' ' +
+      Package.Version + '.fpk';
+    if not FileExists(file_fpk) then
+    begin
+      MessageBox(Handle, PChar(Format('Error file %s not found', [file_fpk])),
+        PChar(Caption), MB_ICONERROR);
+      LabelProgresss.Caption := Format('Error file %s not found.',
+        [Package.Name + ' ' + Package.Version + '.fpk']);
+      ProgressBar1.Position := 0;
+      BtnCancel.Enabled := False;
+      Button1.Enabled := True;
+      while InstallPkgQueue.Count > 0 do InstallPkgQueue.Pop;
+      InstalingList.Clear;
+      Exit; // error
+    end;
+    ProgressBar1.Position := Round(50 * ((InstalingList.Count - InstallQueue.Count)
+      / InstalingList.Count) + 50 * (InstalingList.Count - InstallPkgQueue.Count) / InstalingList.Count);
+    LabelProgresss.Caption := Format('Installing package %s...',
+      [Package.Name + ' ' + Package.Version]);
+    InstallPkg.FileName := file_fpk;
+    InstallPkg.Start;
+  end
+  else
+  begin
+    Inc(InstalledCount, InstalingList.Count);
+    InstalingList.Clear;
+    UpdateButtonsCaption;
+    LabelProgresss.Caption := 'Done packages installation.';
+    ProgressBar1.Position := 0;
+    BtnCancel.Enabled := False;
+  end;
+end;
+
+function TFrmPkgDownload.DownloadPackageFromQueue: Boolean;
+var
+  Package: TPackage;
+begin
+  Result := InstallQueue.Count > 0;
+  if not Result or FileDownloadPkg.IsBusy then
+    Exit;
+  Package := TPackage(InstallQueue.Peek);
+  FileDownloadPkg.URL := Package.URL;
+  FileDownloadPkg.FileName := DownloadedPackagesRoot + Package.Name + ' ' +
+    Package.Version + '.fpk' + FileDownloadPkg.PartExt;
+  FileDownloadPkg.Start;
+end;
+
+procedure TFrmPkgDownload.Button1Click(Sender: TObject);
+var
+  Node: PRBNode;
+  TempList: TPackageList;
+  Package: TPackage;
+  Depends: Boolean;
+  I, J, K: Integer;
+begin
+  Node := InstallList.First;
+  if Node = nil then
+    Exit;
+  TempList := TPackageList.Create;
+  while Node <> InstallList.Last do
+  begin
+    TempList.Add(TPackage(Node^.Data));
+    RBInc(Node);
+  end;
+  TempList.Add(TPackage(Node^.Data));
+  I := TempList.Count - 1;
+  while TempList.Count > 0 do
+  begin
+    Package := TempList.Items[I];
+    K := I;
+    Depends := False;
+    for J := 0 to Package.Count - 1 do
+    begin
+      for K := 0 to TempList.Count - 1 do
+      begin
+        if K = I then
+          Continue;
+        if TempList.Items[K] = Package.Items[J] then
+        begin
+          Depends := True;
+          Break;
+        end;
+      end;
+      if Depends then
+        Break;
+    end;
+    if not Depends then
+    begin
+      InstalingList.Add(Package);
+      InstallQueue.Push(Package);
+      TempList.Delete(I);
+      Dec(I);
+      if I < 0 then
+        I := TempList.Count - 1;
+    end
+    else
+      I := K;
+  end;
+  TempList.Free;
+  Button1.Enabled := False;
+  DownloadPackageFromQueue;
+end;
+
+procedure TFrmPkgDownload.UninstallPackages;
+var
+  Package: TPackage;
+begin
+  { TODO -oMazin -c : implements on thread 22/09/2012 17:00:06 }
+  if UninstallQueue.Count > 0 then
+  begin
+    Package := TPackage(UninstallQueue.Peek);
+    ProgressBar1.Position := Round(100 * ((UninstalingList.Count - UninstallQueue.Count)
+      / UninstalingList.Count));
+    LabelProgresss.Caption := Format('Uninstalling package %s...',
+      [Package.Name + ' ' + Package.Version]);
+    UninstallPkg.Name := Package.Name;
+    UninstallPkg.Start;
+    Exit;
+  end;
+  UninstalingList.Clear;
+  UpdateButtonsCaption;
+  //Inc(UninstalledCount, InstalingList.Count);
+  LabelProgresss.Caption := 'Done packages uninstalled.';
+  ProgressBar1.Position := 0;
+  BtnCancel.Enabled := False;
+end;
+
+function TFrmPkgDownload.UninstallPackageFromQueue: Boolean;
+//var
+//  Package: TPackage;
+begin
+  Result := UninstallQueue.Count > 0;
+  if not Result{ or ThreadUninstall.IsBusy} then
+    Exit;
+  //Package := TPackage(UninstallQueue.Peek);
+  UninstallPackages;
+end;
+
+procedure TFrmPkgDownload.Button2Click(Sender: TObject);
+var
+  Node: PRBNode;
+  TempList: TPackageList;
+  Package: TPackage;
+  OthersDepends: Boolean;
+  I, J, K: Integer;
+begin
+  Node := UninstallList.First;
+  if Node = nil then
+    Exit;
+  TempList := TPackageList.Create;
+  while Node <> UninstallList.Last do
+  begin
+    TempList.Add(TPackage(Node^.Data));
+    RBInc(Node);
+  end;
+  TempList.Add(TPackage(Node^.Data));
+  I := 0;
+  while TempList.Count > 0 do
+  begin
+    Package := TempList.Items[I];
+    K := I;
+    OthersDepends := False;
+    for J := 0 to Package.OwnerDependencyList.Count - 1 do
+    begin
+      for K := 0 to TempList.Count - 1 do
+      begin
+        if K = I then
+          Continue;
+        if TempList.Items[K] = Package.OwnerDependencyList.Items[J] then
+        begin
+          OthersDepends := True;
+          Break;
+        end;
+      end;
+      if OthersDepends then
+        Break;
+    end;
+    if not OthersDepends then
+    begin
+      UninstalingList.Add(Package);
+      UninstallQueue.Push(Package);
+      TempList.Delete(I);
+      if I > TempList.Count - 1 then
+        I := 0;
+    end
+    else
+      I := K;
+  end;
+  TempList.Free;
+  Button2.Enabled := False;
+  UninstallPackageFromQueue;
+end;
+
+procedure TFrmPkgDownload.FileDownloadPkgStart(Sender: TObject);
+var
+  Package: TPackage;
+begin
+  BtnCancel.Enabled := True;
+  if Marqueue then
+    ProgressbarSetNormal(ProgressBar1);
+  ProgressBar1.Position := Round(50 * ((InstalingList.Count - InstallQueue.Count)
+    / InstalingList.Count));
+  Package := TPackage(InstallQueue.Peek);
+  LabelProgresss.Caption := Format('Downloading package %s...',
+    [Package.Name + ' ' + Package.Version]);
+end;
+
+procedure TFrmPkgDownload.FileDownloadPkgProgress(Sender: TObject;
+  ReceivedBytes, CalculatedFileSize: Cardinal);
+var
+  Package: TPackage;
+  StartPos: Double;
+begin
+  BtnCancel.Enabled := True;
+  if Marqueue then
+    ProgressbarSetNormal(ProgressBar1);
+  StartPos := 50 * ((InstalingList.Count - InstallQueue.Count) / InstalingList.Count);
+  if CalculatedFileSize > 0 then
+    ProgressBar1.Position := Round(StartPos + (50 / InstalingList.Count) *
+      (ReceivedBytes / CalculatedFileSize))
+  else
+    ProgressBar1.Position := Round(StartPos);
+  Package := TPackage(InstallQueue.Peek);
+  if CalculatedFileSize > 0 then
+    LabelProgresss.Caption := Format('Downloading package %s - %.1f%%...',
+      [Package.Name + ' ' + Package.Version,  100 * (ReceivedBytes / CalculatedFileSize)])
+  else
+    LabelProgresss.Caption := Format('Downloading package %s...',
+      [Package.Name + ' ' + Package.Version]);
+end;
+
+procedure TFrmPkgDownload.FileDownloadPkgFinish(Sender: TObject;
+   State: TDownloadState; Canceled: Boolean);
+var
+  Package: TPackage;
+  file_fpk, file_part: string;
+begin
+  if CloseOnFinish then
+  begin
+    if not FileDownloadXML.IsBusy then
+      Close;
+    Exit;
+  end;
+  if Canceled then
+  begin
+    Button1.Enabled := True;
+    Exit;
+  end;
+  Package := TPackage(InstallQueue.Peek);
+  if State <> dsError then
+  begin
+    file_fpk := DownloadedPackagesRoot + Package.Name + ' ' +
+      Package.Version + '.fpk';
+    file_part := DownloadedPackagesRoot + Package.Name + ' ' +
+      Package.Version + '.fpk' + FileDownloadPkg.PartExt;
+    if (State = dsDownloaded) and FileExists(file_part) and FileExists(file_fpk) and (FileDownloadPkg.PartExt <> '') then
+      DeleteFile(file_fpk); // delete old version
+    if (State = dsAlreadyExist) or ((State = dsDownloaded) and (not FileExists(file_part) or RenameFile(file_part, file_fpk))) then
+    begin
+      InstallPkgQueue.Push(Package);
+      InstallQueue.Pop;
+    end;
+  end;
+  ProgressBar1.Position := Round(50 * ((InstalingList.Count - InstallQueue.Count)
+    / InstalingList.Count));
+  if not DownloadPackageFromQueue and (InstallPkgQueue.Count > 0) then
+    InstallDownloadedPackages;
+end;
+
+procedure TFrmPkgDownload.InstallPkgStart(Sender: TObject);
+begin
+  //
+end;
+
+procedure TFrmPkgDownload.InstallPkgFinish(Sender: TObject; Sucess: Boolean);
+var
+  Package: TPackage;
+begin
+  Package := TPackage(InstallPkgQueue.Peek);
+  if not Sucess then
+  begin
+    MessageBox(Handle, PChar(Format('Error on install %s package',
+      [Package.Name + ' ' + Package.Version])), PChar(Caption), MB_ICONERROR);
+    LabelProgresss.Caption := Format('Error on install %s package.',
+      [Package.Name + ' ' + Package.Version]);
+    ProgressBar1.Position := 0;
+    BtnCancel.Enabled := False;
+    Button1.Enabled := True;
+    while InstallPkgQueue.Count > 0 do InstallPkgQueue.Pop;
+    InstalingList.Clear;
+    Exit; // install error
+  end;
+  InstallList.Delete(Package.Name + ' ' + Package.Version);
+  Package.Installed := True;
+  Package.State := psNone;
+  if Package.Data <> nil then
+    TreeViewPackages.InvalidateNode(Package.Data);
+  InstallPkgQueue.Pop;
+  UpdateButtonsCaption;
+  InstallDownloadedPackages;
+end;
+
+procedure TFrmPkgDownload.UninstallPkgStart(Sender: TObject);
+begin
+//
+end;
+
+procedure TFrmPkgDownload.UninstallPkgFinish(Sender: TObject;
+  Sucess: Boolean);
+var
+  Package: TPackage;
+begin
+  Package := TPackage(UninstallQueue.Peek);
+  if not Sucess then
+  begin
+    MessageBox(Handle, PChar(Format('Error on uninstall %s package',
+      [Package.Name + ' ' + Package.Version])), PChar(Caption), MB_ICONERROR);
+    LabelProgresss.Caption := Format('Error on uninstall %s package.',
+      [Package.Name + ' ' + Package.Version]);
+    BtnCancel.Enabled := False;
+    Button2.Enabled := True;
+    ProgressBar1.Position := 0;
+    while UninstallQueue.Count > 0 do UninstallQueue.Pop;
+    UninstalingList.Clear;
+    Exit; // uninstall error
+  end;
+  UninstallList.Delete(Package.Name + ' ' + Package.Version);
+  Package.Installed := False;
+  Package.State := psNone;
+  if Package.Data <> nil then
+    TreeViewPackages.InvalidateNode(Package.Data);
+  UninstallQueue.Pop;
+  UpdateButtonsCaption;
+  UninstallPackages;
+end;
+
+{ TThreadInstallPkg }
+
+constructor TThreadInstallPkg.Create(FileName: string);
+begin
+  inherited Create(True);
+  FreeOnTerminate := True;
+  FFileName := FileName;
+end;
+
+procedure TThreadInstallPkg.DoFinish;
+begin
+  if Assigned(FOnFinish) then
+    FOnFinish(Self, FSucess);
+end;
+
+procedure TThreadInstallPkg.DoStart;
+begin
+  if Assigned(FOnStart) then
+    FOnStart(Self);
+end;
+
+procedure TThreadInstallPkg.Execute;
+begin
+  Synchronize(DoStart);
+  FSucess := LoadPackageFile(FFileName, True);
+  Synchronize(DoFinish);
+end;
+
+{ TThreadUninstallPkg }
+
+procedure TThreadUninstallPkg.Execute;
+begin
+  Synchronize(DoStart);
+  FSucess := UninstallPackage(FFileName, 0, True);
+  Synchronize(DoFinish);
+end;
+
+{ TInstallPkg }
+
+procedure TInstallPkg.Start;
+var
+  ThreadInstall: TThreadInstallPkg;
+begin
+  ThreadInstall := TThreadInstallPkg.Create(FFileName);
+  ThreadInstall.OnStart := ThreadOnStart;
+  ThreadInstall.OnFinish := ThreadOnFinish;
+  ThreadInstall.Resume;
+end;
+
+procedure TInstallPkg.ThreadOnFinish(Sender: TObject; Sucess: Boolean);
+begin
+  FBusy := False;
+  if Assigned(FOnFinish) then
+    FOnFinish(Self, Sucess);
+end;
+
+procedure TInstallPkg.ThreadOnStart(Sender: TObject);
+begin
+  FBusy := True;
+  if Assigned(FOnStart) then
+    FOnStart(Self);
+end;
+
+{ TUninstallPkg }
+
+procedure TUninstallPkg.Start;
+var
+  ThreadUninstall: TThreadUninstallPkg;
+begin
+  ThreadUninstall := TThreadUninstallPkg.Create(FName);
+  ThreadUninstall.OnStart := ThreadOnStart;
+  ThreadUninstall.OnFinish := ThreadOnFinish;
+  ThreadUninstall.Resume;
+end;
+
+procedure TUninstallPkg.ThreadOnFinish(Sender: TObject; Sucess: Boolean);
+begin
+  FBusy := False;
+  if Assigned(FOnFinish) then
+    FOnFinish(Self, Sucess);
+end;
+
+procedure TUninstallPkg.ThreadOnStart(Sender: TObject);
+begin
+  FBusy := True;
+  if Assigned(FOnStart) then
+    FOnStart(Self);
+end;
+
+procedure TFrmPkgDownload.EditSearchChange(Sender: TObject);
+begin
+  SearchPackage(UpperCase(Trim(EditSearch.Text)));
 end;
 
 end.

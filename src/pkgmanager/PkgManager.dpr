@@ -26,7 +26,9 @@ uses
   UFrmPkgDownload in 'UFrmPkgDownload.pas' {FrmPkgDownload},
   UPkgClasses in 'UPkgClasses.pas',
   UFrmHelp in 'UFrmHelp.pas' {FrmHelp},
-  rbtree in '..\falconcpp\rbtree.pas';
+  rbtree in '..\falconcpp\rbtree.pas',
+  FastcodePatch in '..\others\nativehint\FastcodePatch.pas',
+  NativeHintWindow in '..\others\nativehint\NativeHintWindow.pas';
 
 var
   Silent: Boolean;

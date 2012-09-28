@@ -23,7 +23,7 @@ uses
   SynEditExport, SynExportHTML, SynExportTeX, ThreadLoadTokenFiles, DebugConsts,
   XMLDoc, XMLIntf, BreakPoint, HintTree, DebugWatch, 
   UParseMsgs, SynEditMiscClasses, TBXStatusBars, XPPanels, ModernTabs,
-  VistaAltFixUnit, TB2Toolbar;
+  VistaAltFixUnit, TB2Toolbar, ThreadFileDownload;
 
 const
   MAX_OUTLINE_TREE_IMAGES = 27;
@@ -468,7 +468,8 @@ type
     procedure TextEditorMouseDown(Sender: TObject;
       Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure TimerStartUpdateTimer(Sender: TObject);
-    procedure UpdateDownloadFinish(Sender: TObject; Canceled: Boolean);
+    procedure UpdateDownloadFinish(Sender: TObject;  State: TDownloadState;
+      Canceled: Boolean);
     procedure TreeViewProjectsAddition(Sender: TObject; Node: TTreeNode);
     procedure FormShow(Sender: TObject);
     procedure ViewRestoreDefClick(Sender: TObject);
@@ -4724,7 +4725,7 @@ begin
 end;
 
 procedure TFrmFalconMain.UpdateDownloadFinish(Sender: TObject;
-  Canceled: Boolean);
+   State: TDownloadState; Canceled: Boolean);
 begin
   if not Canceled and not XMLOpened then
   begin
@@ -7659,8 +7660,8 @@ var
   token: TTokenClass;
   dbgc: TDebugCommand;
 begin
-  //AddMessage(Value, DebugCmdNames[Command] + ' - ' + Name, Value, Line,
-  //  0, 0, mitGoto);
+  AddMessage(Value, DebugCmdNames[Command] + ' - ' + Name, Value, Line,
+    0, 0, mitGoto);
   case Command of
     dcBreakpoint:
       begin

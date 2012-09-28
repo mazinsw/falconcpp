@@ -871,7 +871,7 @@ begin
   DirFrom := IncludeTrailingPathDelimiter(DirFrom);
   FromName := DirFrom + ExtractFileName(FileName);
   FromName := ChangeFileExt(FromName, Extension);
-  if not FileExists(FromName) then
+  if not FileExists(FromName) or not FileExists(FileName) then
     Exit;
   TokenFile := TTokenFile.Create(Self);
   if not TokenFile.LoadFromFile(FileName, FromName) then

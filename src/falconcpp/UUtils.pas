@@ -59,6 +59,7 @@ procedure SwitchToThisWindow(hWnd: HWND; fAltTab: BOOL); stdcall;
 function GetTickTime(ticks: Cardinal; fmt: string): string;
 procedure GetNameAndVersion(const S: string; var aName, aVersion: string);
 procedure SearchCompilers(List: TStrings; var PathCompiler: string);
+function TranslateSpecialChars(const S: string): string;
 function ExecuteFile(Handle: HWND; const Filename, Paramaters,
   Directory: string; Options: TExecuteFileOptions): Integer;
 procedure LoadFontNames(List: TStrings);
@@ -308,6 +309,47 @@ begin
   if FileExists(IncludeTrailingPathDelimiter(path) + 'bin\gcc.exe') and
     (List.IndexOf(path) < 0) then
     List.Add(path);
+end;
+
+function TranslateSpecialChars(const S: string): string;
+var
+  ptr, buf: PChar;
+begin
+  ptr := PChar(S);
+  Result := S;
+  buf := PChar(Result);
+  if ptr^ = #0 then
+    Exit;
+  while ptr^ <> #0 do
+  begin
+    if ptr^ = '\' then
+    begin
+      case (ptr + 1)^ of
+        'n':
+        begin
+          Inc(ptr);
+          buf^ := #13;
+        end;
+        't':
+        begin
+          Inc(ptr);
+          buf^ := #9;
+        end;
+      else
+        if (ptr + 1)^ <> #0 then
+        begin
+          Inc(ptr);
+          buf^ := ptr^;
+        end;
+      end;
+    end
+    else
+      buf^ := ptr^;
+    Inc(ptr);
+    Inc(buf);
+  end;
+  buf^ := #0;
+  Result := StrPas(buf);
 end;
 
 procedure BitmapToAlpha(bmp: TBitmap; Color: TColor = clFuchsia);

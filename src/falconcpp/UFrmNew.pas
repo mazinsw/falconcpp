@@ -247,6 +247,15 @@ begin
     end
     else
       FraPrjOpt.RGrpType.ItemIndex := Template.CompilerType;
+    FraPrjOpt.PanelIcon.Visible := not (Template.AppType in [APPTYPE_DLL, APPTYPE_LIB]);
+    FraPrjOpt.LblDescIcon.Visible := not (Template.AppType in [APPTYPE_DLL, APPTYPE_LIB]);
+    FraPrjOpt.BtnChgIcon.Visible := not (Template.AppType in [APPTYPE_DLL, APPTYPE_LIB]);
+    FraPrjOpt.GrbApp.Visible := not (Template.AppType in [APPTYPE_LIB]);
+    if FraPrjOpt.GrbApp.Visible then
+      FraPrjOpt.GrbProj.Top := 168
+    else
+      FraPrjOpt.GrbProj.Top := FraPrjOpt.GrbApp.Top;
+    FraPrjOpt.RGrpType.Enabled := Template.CompilerType = USER_DEFINED;
   end;
   FraPrjOpt.EditComp.Text := GetCompanyName;
   FraProjs.Parent := nil;

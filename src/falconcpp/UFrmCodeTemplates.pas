@@ -82,7 +82,7 @@ begin
   ListViewTemplates.Columns.Items[1].Caption := STR_FRM_PROMPT_CODE[2];
   BtnAdd.Hint := STR_FRM_PROP[34];
   BtnRem.Hint := STR_FRM_PROP[35];
-  BtnEdit.Hint := STR_FRM_PROP[70];
+  BtnEdit.Hint := STR_FRM_PROP[56];
   Label2.Caption := STR_FRM_CODE_TEMPL[2];
   BtnOk.Caption := STR_FRM_PROP[14];
 end;

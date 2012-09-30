@@ -130,13 +130,13 @@ const
   CONST_STR_MENU_TOOL: array[1..MAX_MENU_TOOL] of string = (
   //Tools Menu
     'Environment Options...',
-    'Compiler Options',
+    'Compiler Options...',
     'Editor Options...',
     '',
     'Template Creator...',
     'Package Creator...',
     '',
-    'Packages'
+    'Packages...'
     );
 
   MAX_MENU_HELP = 6;
@@ -332,7 +332,7 @@ const
     'Outline',
     //Tabs Down
     'Messages',
-    'Chat',
+    '', // Old chat
     //Messages List
     'File',
     'Line',
@@ -384,7 +384,7 @@ const
     'Continue'
     );
 
-  MAX_FRM_PROP = 70;
+  MAX_FRM_PROP = 56;
   CONST_STR_FRM_PROP: array[1..MAX_FRM_PROP] of string = (
     //Properties Form
     'Application',
@@ -440,28 +440,13 @@ const
     'Params:',
     'Properties',
     'Application Type',
-    'Application Console',
+    'Console Application',
     'Windows Application',
     'Dinamic Link Library',
     'Static Library',
     'Enable theme',
     'Requires admin level',
     'Create linked library',
-    //Sheet Network
-    'Network',
-    'Network programming (not implemented)',
-    'Type',
-    'Server',
-    'Client',
-    'Client options',
-    'Port',
-    'Auto reconnect',
-    'Authentication',
-    'User',
-    'Password',
-    'Server options',
-    'Disconnect',
-    'Connect',
     'Select folder to include',
     'Edit selected'
     );
@@ -487,7 +472,7 @@ const
 
   MAX_FRM_FIND = 34;
   CONST_STR_FRM_FIND: array[1..MAX_FRM_FIND] of string = (
-    //New Project Form
+    //Find/Replace Form
     'Find and replace',
     '&Find',
     '&Replace',
@@ -812,6 +797,35 @@ const
     'File'
     );
 
+  MAX_FRM_UPD = 25;
+  CONST_STR_FRM_UPD: array[1..MAX_FRM_UPD] of string = (
+    'Application Update',
+    'Looking for updates',
+    '&Update',
+    'Falcon C++ is open, do you want to close it!',
+    'Update failed',
+    'Conection problem.',
+    'Upgrade completed successfully.',
+    'Upgrade completed',
+    'Download failed: try again.',
+    'Download error',
+    'Downloading 0%...',
+    'Connecting...',
+    'Downloading...',
+    'Locating new version of the Falcon C++...',
+    'Changes:',
+    'XML Format error',
+    'No update available',
+    'This version is newer than the repository',
+    'Installed version is already the newest version',
+    'Update available',
+    'New version available: %s',
+    '&Close',
+    '&Ok',
+    '&Cancel',
+    'Installing...'
+    );
+
   //Translate mingw messages  ' =
   MAX_CMPMSG = 139;
   CONST_STR_CMPMSG: array[1..MAX_CMPMSG] of string = (
@@ -925,7 +939,6 @@ const
     '%s:%d: warning: left-hand operand of comma expression has no effect',
     '%s:%d: warning: assignment from incompatible pointer type',
     '%s:%d: warning: initializer-string for array of chars is too long',
-    // 10/10/2011
     '%s: no resources',
     '%s:%d: error: invalid application of ''%s'' to incomplete type ''%s''',
     '%s:%d: error: void value not ignored as it ought to be',
@@ -955,35 +968,6 @@ const
     '%s:%d: error: request for member ''%s'' in something not a structure or union',
     '%s:%d: error: conflicting types for ''%s''',
     '%s:%d: note: previous definition of ''%s'' was here'
-    );
-
-  MAX_FRM_UPD = 25;
-  CONST_STR_FRM_UPD: array[1..MAX_FRM_UPD] of string = (
-    'Application Update',
-    'Looking for updates',
-    '&Update',
-    'Falcon C++ is open, close it!',
-    'Update failed',
-    'Conection problem.',
-    'Upgrade completed successfully.',
-    'Upgrade completed',
-    'Download failed: try again.',
-    'Download error',
-    'Downloading 0%...',
-    'Connecting...',
-    'Downloading...',
-    'Locating new version of the Falcon C++...',
-    'Changes:',
-    'XML Format error',
-    'No update available',
-    'This version is newer than the repository',
-    'Installed version is already the newest version',
-    'Update available',
-    'New version available: %s',
-    '&Close',
-    '&Ok',
-    '&Cancel',
-    'Installing...'
     );
 
 type
@@ -1145,13 +1129,10 @@ begin
       STR_MENU_TOOL[I] := CONST_STR_MENU_TOOL[I];
     for I := 1 to MAX_MENU_HELP do
       STR_MENU_HELP[I] := CONST_STR_MENU_HELP[I];
-    //sub menu new
     for I := 1 to MAX_NEW_MENU do
       STR_NEW_MENU[I] := CONST_STR_NEW_MENU[I];
-    //sub menu import
     for I := 1 to MAX_IMPORT_MENU do
       STR_IMPORT_MENU[I] := CONST_STR_IMPORT_MENU[I];
-    //sub menu toolars
     for I := 1 to MAX_VIEWTOOLBAR_MENU do
       STR_VIEWTOOLBAR_MENU[I] := CONST_STR_VIEWTOOLBAR_MENU[I];
 
@@ -1310,6 +1291,7 @@ var
 begin
   Result := False;
   Temp := '';
+  { Find language name }
   for I := 0 to FList.Count - 1 do
   begin
     LangProp := TLanguageProperty(FList.Objects[I]);
@@ -1320,7 +1302,6 @@ begin
       Break;
     end;
   end;
-
   if not FileExists(Temp) then
   begin
     if FCurrent.Name = 'English' then
@@ -1333,7 +1314,7 @@ begin
     Exit;
   end;
   ini := TIniFile.Create(Temp);
-  //init
+
   for I := 1 to MAX_MENUS do //1
     STR_MENUS[I] := ReadStr(I, CONST_STR_MENUS[I]);
   for I := 1 to MAX_MENU_FILE do //109
@@ -1353,12 +1334,12 @@ begin
   for I := 1 to MAX_MENU_HELP do //854
     STR_MENU_HELP[I] := ReadStr(I + 853, CONST_STR_MENU_HELP[I]);
 
+
   for I := 1 to MAX_NEW_MENU do //959
     STR_NEW_MENU[I] := ReadStr(I + 958, CONST_STR_NEW_MENU[I]);
   for I := 1 to MAX_IMPORT_MENU do //970
     STR_IMPORT_MENU[I] := ReadStr(I + 969, CONST_STR_IMPORT_MENU[I]);
 
-  //sub menu toolars
   for I := 1 to MAX_VIEWTOOLBAR_MENU do //978
     STR_VIEWTOOLBAR_MENU[I] := ReadStr(I + 977, CONST_STR_VIEWTOOLBAR_MENU[I]);
 
@@ -1404,11 +1385,7 @@ begin
     STR_FRM_FIND[I] := ReadStr(I + 4200, CONST_STR_FRM_FIND[I]);
   STR_FRM_FIND[30] := StringReplace(STR_FRM_FIND[30], '\n', #13, [rfReplaceAll]);
   for I := 1 to MAX_FRM_EDITOR_OPT do //4333
-  begin
-    STR_FRM_EDITOR_OPT[I] := ReadStr(I + 4332, CONST_STR_FRM_EDITOR_OPT[I]);
-    STR_FRM_EDITOR_OPT[I] := StringReplace(STR_FRM_EDITOR_OPT[I], '\n', #13,
-      [rfReplaceAll]);
-  end;
+    STR_FRM_EDITOR_OPT[I] := TranslateSpecialChars(ReadStr(I + 4332, CONST_STR_FRM_EDITOR_OPT[I]));
   for I := 1 to MAX_FRM_ENV_OPT do //4569
     STR_FRM_ENV_OPT[I] := ReadStr(I + 4568, CONST_STR_FRM_ENV_OPT[I]);
   for I := 1 to MAX_FRM_CODE_TEMPL do //4704
@@ -1421,7 +1398,7 @@ begin
     STR_FRM_GOTOLINE[I] := ReadStr(I + 5014, CONST_STR_FRM_GOTOLINE[I]);
   for I := 1 to MAX_FRM_GOTOFUNC do //5117
     STR_FRM_GOTOFUNC[I] := ReadStr(I + 5116, CONST_STR_FRM_GOTOFUNC[I]);
-  //end
+
   ini.Free;
   UpdateForms;
 end;

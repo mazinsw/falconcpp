@@ -4,7 +4,7 @@ interface
 
 uses
     Windows, Messages, StdCtrls, ExtCtrls, RichEditViewer, Classes, SysUtils,
-    Controls, Forms, UInstaller, LoadImage;
+    Controls, Forms, UInstaller, LoadImage, FormEffect, PNGImage;
 
 const
   WM_UPDATESTEP = WM_USER + $0110;
@@ -61,6 +61,7 @@ var
   Lsc: String;
   Rs: TResourceStream;
   Ms: TMemoryStream;
+  png: TPNGObject;
 begin
   Ms := TMemoryStream.Create;
   Caption := Format('%s Installation', [Installer.Name]);
@@ -69,12 +70,18 @@ begin
   Screen.Cursors[crHandPoint] := LoadCursor(0, IDC_HAND);
   Prompt := True;
   FraWelc := TFraWelc.Create(Self);
+  png := GetPNGResource('LOGOPKG');
+  FraWelc.ImageLogo.Picture.Assign(png);
+  png.Free;
   FraWelc.LblMsg.Caption :=
     Format('Welcome to the %s Package Installation Wizard', [Installer.Name]);
   FraWelc.TextHelp.Caption :=
     Format('This wizard will guide you through the instalation of %s.',
     [Installer.Name]);
   FraSteps := TFraSteps.Create(Self);
+  png := GetPNGResource('PKGLOGO');
+  FraSteps.PkgImage.Picture.Assign(png);
+  png.Free;
   if Installer.TarFileExist(Installer.Picture, Ms) then
   begin
     LoadImageFromStream(FraSteps.PkgImage.Picture, Ms);

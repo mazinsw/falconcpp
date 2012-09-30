@@ -357,13 +357,13 @@ Section "$(NAME_SecMinGW)" SecMinGW
   
   ;Install MinGW Packages
   DetailPrint "$(DESC_InstMinGW)"
-  !insertmacro INST_PKG "mingw32-make 3.81.fpk" "$(DESC_InstMake)"
   !insertmacro INST_PKG "mingw-runtime 3.16.fpk" "$(DESC_InstRuntime)"
-  !insertmacro INST_PKG "binutils 2.19.1.fpk" "$(DESC_InstBinutils)"
-  !insertmacro INST_PKG "gdb 6.8.fpk" "$(DESC_InstGDB)"
-  !insertmacro INST_PKG "w32api 3.13.fpk" "$(DESC_InstW32API)"
   !insertmacro INST_PKG "gcc-core 4.4.1.fpk" "$(DESC_InstGCC_Core)"
   !insertmacro INST_PKG "gcc-g++ 4.4.1.fpk" "$(DESC_InstGCC_GPP)"
+  !insertmacro INST_PKG "gdb 6.8.fpk" "$(DESC_InstGDB)"
+  !insertmacro INST_PKG "binutils 2.19.1.fpk" "$(DESC_InstBinutils)"
+  !insertmacro INST_PKG "mingw32-make 3.81.fpk" "$(DESC_InstMake)"
+  !insertmacro INST_PKG "w32api 3.13.fpk" "$(DESC_InstW32API)"
   
   ;Delete installeds packages
   Delete "$INSTDIR\mingw32-make 3.81.fpk"

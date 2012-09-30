@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, NativeTreeView, ImgList, ExtCtrls, StdCtrls, ComCtrls,
   RichEditViewer, FileDownload, XMLDoc, XMLIntf, UPkgClasses, rbtree, Contnrs,
-  ThreadFileDownload;
+  ThreadFileDownload, FormEffect;
 
 const
   {$EXTERNALSYM PBS_MARQUEE}
@@ -542,6 +542,8 @@ end;
 
 procedure TFrmPkgDownload.FormCreate(Sender: TObject);
 begin
+  ConvertTo32BitImageList(ImageList16x16);
+  AddImages(ImageList16x16, 'IMAGES_16x16');
   ConfigRoot := IncludeTrailingPathDelimiter(GetSpecialFolder(CSIDL_APPDATA))
                      + 'Falcon\';
   DownloadedPackagesRoot := ConfigRoot + 'Downloaded packages\';

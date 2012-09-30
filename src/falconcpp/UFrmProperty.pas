@@ -427,13 +427,13 @@ begin
   SBtnAdd.Hint := STR_FRM_PROP[34];
   SBtnAddInc.Hint := STR_FRM_PROP[34];
   SBtnRem.Hint := STR_FRM_PROP[35];
-  SBtnEdit.Hint := STR_FRM_PROP[70];
+  SBtnEdit.Hint := STR_FRM_PROP[56];
   SBtnDelInc.Hint := STR_FRM_PROP[35];
   SBtnUp.Hint := STR_FRM_PROP[36];
   SBtnUpInc.Hint := STR_FRM_PROP[36];
   SBtnDown.Hint := STR_FRM_PROP[37];
   SBtnDownInc.Hint := STR_FRM_PROP[37];
-  SBtnEditInc.Hint := STR_FRM_PROP[70];
+  SBtnEditInc.Hint := STR_FRM_PROP[56];
   GrbIncs.Caption := STR_FRM_PROP[38];
   GrbClean.Caption := STR_FRM_PROP[39];
   CLBClean.Items.Strings[0] := STR_FRM_PROP[40];
@@ -676,7 +676,7 @@ begin
   begin
     ProjDir := ExtractFilePath(Project.FileName);
     Direct := ProjDir;
-    if BrowseDialog(Handle, STR_FRM_PROP[69], Direct) then
+    if BrowseDialog(Handle, STR_FRM_PROP[55], Direct) then
     begin
       Direct := ExtractRelativePath(ProjDir, Direct);
       if (Pos('\', Direct) > 0) then

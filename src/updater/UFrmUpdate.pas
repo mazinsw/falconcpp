@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Classes, Controls, Forms, StdCtrls,
-  ExtCtrls, FileDownload, UUtils, IniFiles;
+  ExtCtrls, FileDownload, UUtils, IniFiles, ThreadFileDownload;
 
 type
 
@@ -27,11 +27,13 @@ type
     procedure FormKeyPress(Sender: TObject; var Key: Char);
     function AppOpened(const WndClass: String): Boolean;
     procedure BtnCancelClick(Sender: TObject);
-    procedure UpdateDownloadFinish(Sender: TObject; Canceled: Boolean);
+    procedure UpdateDownloadFinish(Sender: TObject; State: TDownloadState;
+      Canceled: Boolean);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure ExecutorInstallFinish(Sender: TObject);
     procedure BtnUpdateClick(Sender: TObject);
-    procedure FileDownloadFinish(Sender: TObject; Canceled: Boolean);
+    procedure FileDownloadFinish(Sender: TObject; State: TDownloadState;
+      Canceled: Boolean);
     procedure FileDownloadProgress(Sender: TObject; ReceivedBytes,
       CalculatedFileSize: Cardinal);
     procedure FileDownloadStart(Sender: TObject);
@@ -150,7 +152,7 @@ begin
 end;
 
 procedure TFrmUpdate.UpdateDownloadFinish(Sender: TObject;
-  Canceled: Boolean);
+  State: TDownloadState; Canceled: Boolean);
 begin
   if (Stage = uwCancel) then
   begin
@@ -222,7 +224,7 @@ begin
 end;
 
 procedure TFrmUpdate.FileDownloadFinish(Sender: TObject;
-  Canceled: Boolean);
+  State: TDownloadState; Canceled: Boolean);
 var
   Extracted: Boolean;
   ExtractedFileName: String;

@@ -1,22 +1,22 @@
 object FraProjs: TFraProjs
   Left = 0
   Top = 0
-  Width = 493
-  Height = 312
+  Width = 521
+  Height = 337
   TabOrder = 0
   object PanelControls: TPanel
     Left = 0
     Top = 0
-    Width = 493
-    Height = 312
+    Width = 521
+    Height = 337
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
     object GrBoxDesc: TGroupBox
-      Left = 352
+      Left = 376
       Top = 8
       Width = 137
-      Height = 284
+      Height = 305
       Caption = 'Description'
       TabOrder = 0
       object ImageProj: TImage
@@ -29,7 +29,7 @@ object FraProjs: TFraProjs
         Left = 8
         Top = 136
         Width = 121
-        Height = 145
+        Height = 161
         TabStop = False
         BorderStyle = bsNone
         Color = clBtnFace
@@ -63,8 +63,8 @@ object FraProjs: TFraProjs
     end
     object Panel1: TPanel
       Left = 0
-      Top = 293
-      Width = 493
+      Top = 318
+      Width = 521
       Height = 19
       Align = alBottom
       BevelOuter = bvNone
@@ -82,7 +82,7 @@ object FraProjs: TFraProjs
       object Panel2: TPanel
         Left = 107
         Top = 3
-        Width = 383
+        Width = 411
         Height = 13
         Align = alClient
         AutoSize = True
@@ -92,7 +92,7 @@ object FraProjs: TFraProjs
         object Bevel1: TBevel
           Left = 3
           Top = 3
-          Width = 377
+          Width = 405
           Height = 7
           Align = alClient
           Shape = bsBottomLine
@@ -102,14 +102,16 @@ object FraProjs: TFraProjs
     object PageControl: TModernPageControl
       Left = 8
       Top = 8
-      Width = 337
-      Height = 285
+      Width = 361
+      Height = 305
       NormalColor = clWhite
       FocusedColor = 15973017
+      ParentColor = False
       ShowCloseButton = False
       TabIndex = -1
       TabOrder = 2
       TabStop = True
+      FixedTabWidth = True
       OnMouseMove = ProjectListMouseMove
       OnPageChange = PageControlPageChange
     end

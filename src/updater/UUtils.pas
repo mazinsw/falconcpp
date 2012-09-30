@@ -16,7 +16,7 @@ const
   PBM_SETMARQUEE = WM_USER+10;
   CSIDL_COMMON_APPDATA = $0023;
   MAX_STR_FRM_UPD = 25;
-  CONST_STR_FRM_UPD: array[1..MAX_STR_FRM_UPD] of String = (
+  CONST_STR_FRM_UPD: array[1..MAX_STR_FRM_UPD] of string = (
     'Application Update',
     'Looking for updates',
     '&Update',

@@ -1,22 +1,22 @@
 object FraPrjOpt: TFraPrjOpt
   Left = 0
   Top = 0
-  Width = 493
-  Height = 312
+  Width = 521
+  Height = 337
   TabOrder = 0
   object PanelControls: TPanel
     Left = 0
     Top = 0
-    Width = 493
-    Height = 312
+    Width = 521
+    Height = 337
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
     object GrbProj: TGroupBox
       Left = 8
-      Top = 152
-      Width = 473
-      Height = 139
+      Top = 168
+      Width = 505
+      Height = 145
       Caption = 'Project'
       TabOrder = 0
       object LblName: TLabel
@@ -29,8 +29,8 @@ object FraPrjOpt: TFraPrjOpt
       object RGrpType: TRadioGroup
         Left = 8
         Top = 64
-        Width = 121
-        Height = 65
+        Width = 185
+        Height = 73
         Caption = 'Compiler Type'
         ItemIndex = 0
         Items.Strings = (
@@ -41,17 +41,17 @@ object FraPrjOpt: TFraPrjOpt
       object EditProjName: TEdit
         Left = 8
         Top = 32
-        Width = 121
+        Width = 185
         Height = 21
         TabOrder = 1
         OnChange = EditProjNameChange
         OnKeyPress = EditProjNameKeyPress
       end
       object GrbOptmz: TGroupBox
-        Left = 144
-        Top = 24
+        Left = 208
+        Top = 26
         Width = 169
-        Height = 105
+        Height = 111
         Caption = 'Optimizations'
         TabOrder = 2
         object CHBMinSize: TCheckBox
@@ -89,15 +89,17 @@ object FraPrjOpt: TFraPrjOpt
     object GrbApp: TGroupBox
       Left = 8
       Top = 8
-      Width = 473
-      Height = 129
+      Width = 505
+      Height = 145
       Caption = 'Application'
       TabOrder = 1
       object LblDescIcon: TLabel
-        Left = 8
+        Left = 11
         Top = 77
-        Width = 93
+        Width = 145
         Height = 13
+        Alignment = taCenter
+        AutoSize = False
         Caption = 'Application Icon'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -107,7 +109,7 @@ object FraPrjOpt: TFraPrjOpt
         ParentFont = False
       end
       object PanelIcon: TPanel
-        Left = 23
+        Left = 55
         Top = 23
         Width = 51
         Height = 51
@@ -164,7 +166,7 @@ object FraPrjOpt: TFraPrjOpt
         end
       end
       object BtnChgIcon: TButton
-        Left = 16
+        Left = 48
         Top = 94
         Width = 65
         Height = 20
@@ -186,39 +188,39 @@ object FraPrjOpt: TFraPrjOpt
       object GrBInfo: TGroupBox
         Left = 168
         Top = 32
-        Width = 297
-        Height = 89
+        Width = 329
+        Height = 104
         TabOrder = 3
         object LblCompa: TLabel
           Left = 8
-          Top = 5
+          Top = 8
           Width = 44
           Height = 13
           Caption = 'Company'
         end
         object LblDesc: TLabel
           Left = 8
-          Top = 45
+          Top = 55
           Width = 53
           Height = 13
           Caption = 'Description'
         end
         object LblVers: TLabel
-          Left = 168
-          Top = 5
+          Left = 184
+          Top = 8
           Width = 35
           Height = 13
           Caption = 'Version'
         end
         object LblProdName: TLabel
-          Left = 168
-          Top = 45
+          Left = 184
+          Top = 55
           Width = 68
           Height = 13
           Caption = 'Product Name'
         end
         object Bevel2: TBevel
-          Left = 148
+          Left = 164
           Top = 6
           Width = 1
           Height = 78
@@ -226,30 +228,30 @@ object FraPrjOpt: TFraPrjOpt
         end
         object EditComp: TEdit
           Left = 8
-          Top = 20
-          Width = 121
+          Top = 23
+          Width = 137
           Height = 21
           TabOrder = 0
         end
         object EditDesc: TEdit
           Left = 8
-          Top = 60
-          Width = 121
+          Top = 70
+          Width = 137
           Height = 21
           TabOrder = 1
         end
         object EditVer: TEdit
-          Left = 168
-          Top = 20
-          Width = 121
+          Left = 184
+          Top = 23
+          Width = 137
           Height = 21
           TabOrder = 2
           Text = '1.0.0.0'
         end
         object EditProdName: TEdit
-          Left = 168
-          Top = 60
-          Width = 121
+          Left = 184
+          Top = 70
+          Width = 137
           Height = 21
           TabOrder = 3
         end
@@ -257,8 +259,8 @@ object FraPrjOpt: TFraPrjOpt
     end
     object Panel1: TPanel
       Left = 0
-      Top = 293
-      Width = 493
+      Top = 318
+      Width = 521
       Height = 19
       Align = alBottom
       BevelOuter = bvNone
@@ -276,7 +278,7 @@ object FraPrjOpt: TFraPrjOpt
       object Panel2: TPanel
         Left = 107
         Top = 3
-        Width = 383
+        Width = 411
         Height = 13
         Align = alClient
         AutoSize = True
@@ -286,7 +288,7 @@ object FraPrjOpt: TFraPrjOpt
         object Bevel1: TBevel
           Left = 3
           Top = 3
-          Width = 377
+          Width = 405
           Height = 7
           Align = alClient
           Shape = bsBottomLine
@@ -295,8 +297,8 @@ object FraPrjOpt: TFraPrjOpt
     end
   end
   object PUMIcon: TPopupMenu
-    Left = 112
-    Top = 72
+    Left = 136
+    Top = 112
     object ChangeIcon1: TMenuItem
       Caption = 'Change Icon'
       OnClick = BtnChgIconClick

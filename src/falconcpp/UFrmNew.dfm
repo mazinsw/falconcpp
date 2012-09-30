@@ -1,10 +1,10 @@
 object FrmNewProj: TFrmNewProj
-  Left = 478
-  Top = 352
+  Left = 637
+  Top = 305
   BorderStyle = bsDialog
   Caption = 'New Project'
-  ClientHeight = 357
-  ClientWidth = 493
+  ClientHeight = 384
+  ClientWidth = 521
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -22,22 +22,22 @@ object FrmNewProj: TFrmNewProj
   object PainelFra: TPanel
     Left = 0
     Top = 0
-    Width = 493
-    Height = 324
+    Width = 521
+    Height = 351
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
   end
   object PainelBtns: TPanel
     Left = 0
-    Top = 324
-    Width = 493
+    Top = 351
+    Width = 521
     Height = 33
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 1
     object BtnProx: TButton
-      Left = 234
+      Left = 262
       Top = -1
       Width = 75
       Height = 23
@@ -53,7 +53,7 @@ object FrmNewProj: TFrmNewProj
       OnClick = BtnProxClick
     end
     object BtnCan: TButton
-      Left = 408
+      Left = 436
       Top = -1
       Width = 75
       Height = 23
@@ -68,7 +68,7 @@ object FrmNewProj: TFrmNewProj
       OnClick = BtnCanClick
     end
     object BtnVoltar: TButton
-      Left = 159
+      Left = 187
       Top = -1
       Width = 75
       Height = 23
@@ -84,7 +84,7 @@ object FrmNewProj: TFrmNewProj
       OnClick = BtnVoltarClick
     end
     object BtnFnsh: TButton
-      Left = 320
+      Left = 348
       Top = -1
       Width = 75
       Height = 23

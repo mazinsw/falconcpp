@@ -18,11 +18,11 @@ type
     TSLicence: TTabSheet;
     TSDevelopers: TTabSheet;
     TSTranslator: TTabSheet;
-    Memo1: TMemo;
+    EditLicense: TMemo;
     TSTesters: TTabSheet;
-    RichEditViewer1: TRichEditViewer;
-    RichEditViewer2: TRichEditViewer;
+    EditTesters: TRichEditViewer;
     EditTranslators: TRichEditViewer;
+    EditDevelopers: TRichEditViewer;
     procedure BtnOkClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);

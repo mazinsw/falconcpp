@@ -92,7 +92,7 @@ object FormAbout: TFormAbout
       TabOrder = 0
       object TSLicence: TTabSheet
         Caption = 'Licence'
-        object Memo1: TMemo
+        object EditLicense: TMemo
           Left = 0
           Top = 0
           Width = 435
@@ -1552,14 +1552,14 @@ object FormAbout: TFormAbout
       object TSDevelopers: TTabSheet
         Caption = 'Developers'
         ImageIndex = 1
-        object EditTranslators: TRichEditViewer
+        object EditDevelopers: TRichEditViewer
           Left = 0
           Top = 0
           Width = 435
           Height = 236
           Align = alClient
           Lines.Strings = (
-            'Mazinsw: mailto:mazin.z@hotmail.com    '#13)
+            'Mazinsw: mailto:mazin.z@hotmail.com     '#13)
           ReadOnly = True
           ScrollBars = ssVertical
           TabOrder = 0
@@ -1568,14 +1568,14 @@ object FormAbout: TFormAbout
       object TSTranslator: TTabSheet
         Caption = 'Translators'
         ImageIndex = 2
-        object RichEditViewer2: TRichEditViewer
+        object EditTranslators: TRichEditViewer
           Left = 0
           Top = 0
           Width = 435
           Height = 236
           Align = alClient
           Lines.Strings = (
-            'Mazinsw: mailto:mazin.z@hotmail.com      '#13)
+            'Mazinsw: mailto:mazin.z@hotmail.com       '#13)
           ReadOnly = True
           ScrollBars = ssVertical
           TabOrder = 0
@@ -1584,14 +1584,14 @@ object FormAbout: TFormAbout
       object TSTesters: TTabSheet
         Caption = 'Testers'
         ImageIndex = 3
-        object RichEditViewer1: TRichEditViewer
+        object EditTesters: TRichEditViewer
           Left = 0
           Top = 0
           Width = 435
           Height = 236
           Align = alClient
           Lines.Strings = (
-            'Marcos Castro: mailto:marcoscastro87@hotmail.com    '#13
+            'Marcos Castro: mailto:marcoscastro87@hotmail.com     '#13
             'Gilvan Veras: mailto:gilvanokra@hotmail.com '#13)
           ReadOnly = True
           ScrollBars = ssVertical

@@ -1,0 +1,991 @@
+[FALCON]
+
+#Language definitions
+LangID=1033
+LangName=English(Default)
+ImageIndex=28
+
+#Translated by
+Name=Your Name
+Email=email@email.com
+Version=your translate version
+
+#Main Form
+#Top Menu
+1=&File
+2=&Edit
+3=&Search
+4=&View
+5=&Project
+6=&Run
+7=Tools
+8=&Help
+
+#File Menu
+109=&New
+110=&Open...
+111=&Reopen
+#-----------
+113=&Save
+114=Save &As...
+115=Save All
+#-----------
+117=Import
+118=Export
+#-----------
+120=&Close
+121=C&lose All
+122=Re&move
+#-----------
+124=&Print
+#-----------
+126=&Exit
+
+#Edit Menu
+221=Undo
+222=Redo
+#-----------
+224=Cut
+225=Copy
+226=Paste
+#-----------
+228=Swap header/source
+#-----------
+230=Delete
+231=Select All
+#-----------
+233=Toggle Bookmarks
+234=Goto Bookmarks
+#-----------
+236=Indent
+237=Unindent
+#-----------
+239=Format
+
+#Search Menu
+334=Find...
+335=Find Next
+336=Find Previous
+337=Find in Files...
+338=Replace...
+339=Incremental Search...
+#-----------
+341=Goto Funcion...
+342=Goto Previous Function
+343=Goto Next Function
+344=Goto Line Number...
+
+#View Menu
+391=Project Manager
+392=Statusbar
+393=Outline
+394=Compiler Output
+395=Toolbars
+396=Themes
+397=Zoom
+#-----------
+399=Full Screen
+#-----------
+401=Restore Default
+
+#Project Menu
+435=Add...
+436=Remove...
+#-----------
+438=Build
+#-----------
+440=Properties...
+
+#Run Menu
+541=Run
+542=Compile
+543=Execute
+#-----------
+545=Toggle Breakpoint
+546=Step Into
+547=Step Over
+548=Step Return
+549=Run to Cursor
+550=Stop
+
+#Tools Menu
+646=Environment Options...
+647=Compiler Options...
+648=Editor Options...
+#-----------
+650=Template Creator...
+651=Package Creator...
+#-----------
+653=Packages...
+
+#Help Menu
+854=Falcon Help
+855=Tip of the Day...
+#-----------
+857=Update
+#-----------
+859=About...
+
+#submenu New from File Menu
+959=&Project...
+960=C File
+961=C++ File
+962=Header File
+963=Resource File
+964=Empty File
+#-----------
+966=Folder
+
+#submenu Import from File Menu
+970=Dev-C++ Project
+971=Code::Blocks Project
+972=MS Visual C++ Project
+
+#submenu Toolbars from View Menu
+978=Default Bar
+979=Edit Bar
+980=Search Bar
+981=Compiler Bar
+982=Navigator Bar
+983=Project Bar
+984=Help Bar
+985=Debug Bar
+
+#DefaultBar ToolBar
+1067=New
+1068=Open
+1069=Remove
+#-----------
+1071=Save
+1072=Save All
+
+#EditBar ToolBar
+1080=Undo
+1081=Redo
+
+#NavigatorBar ToolBar
+1089=Previous Page
+1090=Next Page
+#------------
+1092=Toggle Bookmarks
+1093=Goto Bookmarks
+
+#CompilerBar ToolBar
+1098=Run
+1099=Compile
+1100=Execute
+#------------
+1102=Stop
+
+#HelpBar ToolBar
+1110=Help
+1111=Context Help
+
+#ProjectBar ToolBar
+1119=New Project
+1120=Properties
+
+#DebugBar Toolbar
+1128=Step Into
+1129=Step Over
+1130=Step Return
+
+#SearchBar Toolbar
+1138=Find
+1139=Replace
+#------------
+1141=Goto Line Number
+
+#PopupMenu from Project List
+1181=&New
+#------------
+1183=Edit
+1184=Open
+#------------
+1186=Add to project
+1187=Remove
+1188=Rename
+1189=Delete from disk
+#------------
+1191=Property...
+
+#PopupMenu from Editor
+1291=Open declaration
+#------------
+1293=Complete class at cursor
+1294=Swap header/source
+#------------
+1296=Undo
+1297=Redo
+#------------
+1299=Cut
+1300=Copy
+1301=Paste
+1302=Delete
+1303=Select All
+#------------
+1305=Tools
+#------------
+1307=Toggle Bookmarks
+1308=Goto Bookmarks
+#------------
+1310=Properties...
+
+#PopupMenu from Tabs
+1351=&Close
+1352=Close &all
+1353=Close all others
+#------------
+1355=Save
+1356=Save all
+#------------
+1358=Swap header/source
+#------------
+1360=Tabs at top
+1361=Tabs at bottom
+#------------
+1363=Properties...
+
+#PopupMenu from Messages
+1375=Copy
+1376=Copy original message
+#------------
+1378=Original message
+#------------
+1380=Goto line
+1381=Clear
+
+#Tabs Left
+1405=Projects
+1406=Explorer
+
+#Tabs Right
+1407=Outline
+
+#Tabs Down
+1408=Messages
+
+#Messages List
+1410=File
+1411=Line
+1412=Notification
+
+#Others
+1413=Empty project
+1414=Save changes to "%s"?
+
+#Filters
+1415=Falcon project file
+1416=All types
+
+#default FileName
+1417=NewFile
+1418=NewFolder
+1419=main
+1420=resource
+
+#Others
+1421=Running
+1422=Compiling
+1423=Building
+1424=Delete file "%s" from project?
+1425=Delete "%s" from disk?
+1426=Generic error
+1427=Project
+
+#splash screen
+1428=Translated by: %s
+1429=Creating standard templates...
+1430=Loading Templates...
+1431=Loading Projects...
+1432=Creating standard tools...
+1433=Setting Environment Variable...
+1434=Preparing to Launch Application...
+1435=(Empty)
+1436=Clear History
+1437=Loading History...
+1438=File %s not found
+
+#Filters
+1439=All known files
+1440=Loading all installed packages...
+1441=Checking for new installed packages...
+1442=dddd, d of mmmm of yyyy t
+
+#compilation messages
+1443=Compilation sucess in %s seconds
+1444=Compilation failed
+1445=Adding messages %d/%d
+1446=Parsing results %d/%d
+
+1447=Do you want to create it?
+1448=Debugging
+1449=Loading configurations...
+1450=Compiler was not detected!
+1451=Can't import %s project!
+1452=%s Project
+1453=This file has been modified by another program.\nDo you want to reload it?
+1454=Variables
+1455=Continue
+
+#Property Form
+#Tabs
+1528=Application
+1529=Version Info
+1530=Compiler
+1531=Run
+
+#Sheet Application
+1532=Application settings
+1533=Project name:
+1534=Tarjet:
+1535=Icon:
+1536=Double click to change application icon
+1537=Load Icon...
+1538=Output settings
+1539=Target file extension:
+1540=Includes all files into project
+#2.3.2.0
+1573=Properties
+1574=Application Type
+1575=Console Application
+1576=Windows Application
+1577=Dinamic Link Library
+1578=Static Library
+1579=Enable theme
+1580=Requires admin level
+1581=Create linked library
+#3.2.0.0
+1582=Select folder to include
+1583=Edit selected
+#Btns
+1541=&Ok
+1542=&Cancel
+1543=Apply
+
+#Sheet Version Info
+1544=Include version information in project
+1545=Version numbers
+1546=Major version
+1547=Minor version
+1548=Release
+1549=Build
+1550=Auto increment build number
+1551=Language
+1552=Locale:
+1553=Key
+1554=Value
+
+#Sheet Compiler
+1555=Compiler Type
+1556=Optmizations
+1557=Minimize Size
+1558=Show Warnings
+1559=Optimize speed
+1560=Libraries
+1561=Add
+1562=Delete selected
+1563=Move to up
+1564=Move to Down
+1565=Includes
+1566=Cleaning
+1567=Delete objects before compilation
+1568=Delete objects after compilation
+1569=Delete makefile after compilation
+1570=Delete resources after compilation
+
+#Sheet Run
+1571=Application
+1572=Params:
+
+#New Project Form
+1673=New Project
+1674=< Back
+1675=Next >
+1676=Finish
+#Projects Frame
+1677=Description
+1678=Falcon C++ Project Wizard
+#Project Options Frame
+1679=Change
+1680=Application Icon
+1681=Company
+1682=Version
+1683=Product Name
+1684=Name
+
+#Update Frame
+4001=Application Update
+4002=Looking for updates
+4003=&Update
+4004=Falcon C++ is open, do you want to close it!
+4005=Update failed
+4006=Conection problem.
+4007=Upgrade completed successfully.
+4008=Upgrade completed
+4009=Download failed: try again.
+4010=Download error
+4011=Downloading 0%...
+4012=Connecting...
+4013=Downloading...
+#Get Version Frame
+4014=Locating new version of the Falcon C++...
+#Update Frame
+4015=Changes:
+4016=XML Format error
+4017=No update available
+4018=This version is newer than the repository
+4019=Installed version is already the newest version
+4020=Update available
+4021=New version available: %s
+4022=&Close
+4023=&Ok
+4024=&Cancel
+4025=Installing...
+
+#Find/Replace Form
+4201=Find and replace
+4202=&Find
+4203=&Replace
+4204=Fin&d in files
+4205=Find:
+4206=Replace with:
+4207=Replace
+4208=In selection
+4209=Replace All
+4210=More
+4211=Less
+4212=Find Next
+4213=Cancel
+4214=Search options
+4215=Match &case
+4216=Match whole &word only
+4217=Wrap aroun&d
+4218=Search mode
+4219=Normal
+4220=Extended (\n, \r, \t, \0, \x...)
+4221=Regular expression
+4222=Direction
+4223=Up
+4224=Down
+4225=Transparency
+4226=Opacity
+4227=Search in
+4228=Project
+4229=Selected object
+4230=Can't find the text:\n"%s"
+4231=%d occurrences were replaced.
+4232=Stop
+4233=Find '%s' in file '%s'
+4234=Found '%s' in line %d, column %d
+
+#Editor Options Form
+4333=Editor Options
+#General Sheet
+4334=General
+4335=Editor Options
+4336=Auto Indent
+#4337
+4338=Insert Mode
+4339=Group Undo
+4340=Keep Trailing Spaces
+4341=Show Line Characters
+4342=Scroll Hint
+4343=Tab Indent/Unindent
+4344=Smart Tabs
+4345=Use Tab Character
+4346=Enhanced Home Key
+4347=Max Undo:
+4348=Tab Width:
+4349=Highligth matching braces/parentheses
+4350=Normal Color
+4351=Error Color
+4352=Background Color
+4353=Highligth current line
+4354=Color
+4355=Link click
+4356=Restore Default
+#Display Sheet
+4357=Display
+4358=Editor font:
+4359=Size:
+4360=Sample:
+4361=Margin and gutter
+4362=Show right margin
+4363=Show gutter
+4364=Show line gutter
+4365=Gradient gutter
+4366=Right margin:
+4367=Gutter width:
+#Colors Sheet
+4368=Colors
+4369=Type:
+4370=Defined sintax:
+4371=Save sintax
+4372=Delete sintax
+4373=Foreground:
+4374=Background:
+4375=Styles
+4376=Bold
+4377=Italic
+4378=Underlined
+4379=New Sintax
+#Formatter
+4380=Formatter
+#Style
+4381=Style
+4382=Custom
+4383=Preview
+4384=Sample
+#Indentation
+4385=Indentation
+4386=Force using TABs
+4387=Indent classes (keywords public:, protected: and private:)
+4388=Indent switches (keyword case:)
+4389=Indent case: statements in switches (commands case:)
+4390=Indent brackets
+4391=Indent blocks
+4392=Indent namespaces
+4393=Indent labels
+4394=Indent mult-line preprocessor definitions
+4395=Indent single line comments
+#hints
+4396=Indent using tab characters.
+4397=Indent 'class' and 'struct' blocks so that the blocks 'public:', 'protected:' and 'private:' are indented. The struct blocks are\nindented only if an access modifier is declared somewhere in the struct. The entire block is indented. This option is \neffective for C++ files only.
+4398=Indent 'switch' blocks so that the 'case X:' statements are indented in the switch block. The entire case block is indented.
+4399=Indent 'case X:' blocks from the 'case X:' headers. Case statements not enclosed in blocks are NOT indented.
+4400=Add extra indentation to namespace blocks.
+4401=Add extra indentation to labels so they appear 1 indent less than the current indentation, \nrather than being flushed to the left (the default).
+4402=Indent multi-line preprocessor definitions ending with a backslash. Should be used with --convert-tabs for proper results. \nDoes a pretty good job, but cannot perform miracles in obfuscated preprocessor definitions. Without this option the \npreprocessor statements remain unchanged.
+4403=Indent C++ comments beginning in column one. By default C++ comments beginning in column one are not indented. \nThis option will allow the comments to be indented with the code.
+#Padding sheet
+4404=Padding
+4405=Pad empty lines around header blocks ('if' 'while' ..)
+4406=Break closing header blocks
+4407=Insert space padding around operators
+4408=Insert space padding around parenthesis on the outside
+4409=Insert space padding around parenthesis on the inside
+4410=Parenthesis header padding
+4411=Remove extra space padding around parenthesis
+4412=Delete empty lines
+4413=Fill empty lines with the whitespace of their previous lines
+#hints
+4414=Pad empty lines around header blocks (e.g. 'if', 'for', 'while'...).
+4415=Pad empty lines around header blocks (e.g. 'if', 'for', 'while'...). Treat closing header blocks (e.g. 'else', 'catch') as \nstand-alone blocks.
+4416=Insert space padding around operators. Any end of line comments will remain in the original column, if possible. \nNote that there is no option to unpad. Once padded, they stay padded.
+4417=Insert space padding around parenthesis on the outside only. Any end of line comments will remain in the original column, \nif possible.
+4418=Insert space padding around parenthesis on the inside only. Any end of line comments will remain in the original column, \nif possible.
+4419=Insert space padding after paren headers only (e.g. 'if', 'for', 'while'...). Any end of line comments will remain in the \noriginal column, if possible.
+4420=Remove extra space padding around parenthesis on the inside and outside. Any end of line comments will remain in the \noriginal column, if possible.
+4421=Delete empty lines within a function or method. Empty lines outside of functions or methods are NOT deleted.
+4422=Fill empty lines with the white space of the previous line.
+#Formatting
+4423=Formatting
+4424=Brackets style:
+4425=None
+4426=Break
+4427=Attach
+4428=Linux
+4429=Break closing headers brackets
+4430=Break 'else if()' header combinations into separate lines
+4431=Add brackets
+4432=Add one line brackets
+4433=Don't break one-line blocks
+4434=Don't break complex statements and multiple statements residing in a single line
+4435=Convert TABs to spaces
+#hints
+4436=When used with brackets=attach, brackets=linux, this breaks closing headers (e.g. 'else', 'catch', ...) from their\nimmediately preceding closing brackets. Closing header brackets are always broken with broken brackets, horstmann \nbrackets, indented blocks, and indented brackets.
+4437=Break "else if" header combinations into separate lines. This option has no effect if keep one line statements is used, the\n"else if" statements will remain as they are.\nIf this option is NOT used, "else if" header combinations will be placed on a single line.
+4438=Add brackets to unbracketed one line conditional statements (e.g. 'if', 'for', 'while'...). The statement must be on a single \nline. The brackets will be added according to the currently requested predefined style or bracket type. If no style or \nbracket type is requested the brackets will be attached. If add one line brackets is also used the result will be one line \nbrackets.
+4439=Add one line brackets to unbracketed one line conditional statements  (e.g. 'if', 'for', 'while'...). The statement must be on\na single line. The option implies keep one line blocks and will not break the one line blocks.
+4440=Don't break one-line blocks.
+4441=Don't break complex statements and multiple statements residing on a single line.
+4442=Converts tabs into spaces in the non-indentation part of the line. The number of spaces inserted will maintain the spacing \nof the tab. The current setting for spaces per tab is used. It may not produce the expected results if convert-tabs is used\nwhen changing spaces per tab. Tabs are not replaced in quotes.
+4443=Pointer align:
+4444=None
+4445=Type
+4446=Middle
+4447=Name
+#hints
+4448=Attach a pointer or reference operator (* or &) to either the variable type (left) or variable name (right), or place it\nbetween the type and name (middle). The spacing between the type and name will be preserved, if possible. To format\nreferences separately use the following align-reference option.
+#Code Resources
+4449=Code Resources
+4450=Automatic features
+4451=Code completion
+4452=Code parameters
+4453=Tooltip expression evaluation
+4454=Tooltip symbol
+4455=&Delay:
+4456=%.1f sec
+4457=Completion List Colors
+4458=Constant Symbol:
+4459=Function Symbol:
+4460=&Variable Symbol:
+4461=Type Symbol:
+4462=Typedef Symbol:
+4463=Preprocessor:
+4464=Selected:
+4465=Background:
+4466=Code Templates
+4467=Custom Code Template File:
+4468=Open
+4469=Edit
+
+#Form Environment Options
+4569=Environment Options
+#General
+4570=General
+4571=Default to C++ on new file
+4572=Show toolbars in full screen
+4573=Remove file on close
+4574=One click to open file
+4575=Check for updates automatically
+4576=Create layout files
+4577=Ask if you want to delete the project file
+4578=Run console applications in console runner
+4579=Auto open
+4580=All projects files
+4581=All files of last section
+4582=Only last open file
+4583=Only first project
+4584=None
+#Interface
+4585=Interface
+4586=Max files in reopen menu
+4587=Language:
+4588=Show splash screen
+4589=Theme
+#Files and Directories
+4590=Files and Directories
+4591=Alternative configuration file
+4592=Configuration file
+4593=User's default directory
+4594=Templates directory
+4595=Language files directory
+4596=Projects directory
+4597=Help/Documentation directory
+4598=Examples directory
+4599=Open
+4600=View
+4601=Select
+4602=Select directory
+4603=Restart application to apply changes
+4604=Configuration files
+
+#Form Code Templates
+4704=Templates
+4705=Code
+4706=Invalid Name!
+4707=Name already exist
+4708=Add Code Template
+4709=Edit Code Template
+
+#Form Prompt Code Templates
+4808=Name
+4809=Description
+
+#About Form
+4909=About
+4910=Compatibility: %s
+4911=Licence
+4912=Developers
+4913=Translators
+4914=Testers
+
+#Form Goto Line
+5015=Goto Line
+5016=Line (%d - %d):
+
+#Form Goto Function
+5117=Goto Function
+5118=Function name
+5119=Name
+5120=Return type
+5121=Line
+5122=File
+
+#mingw messages - optional
+#order Order{1,3,2} on init of string
+#example
+# 1  2  3                          4
+#%s:%d:%d: error: invalid suffix "%s" on integer constant
+#253=Order{4,2}invalid suffix "%s" on integer constant, on Line %d
+
+#%s: In function '%s':
+1785=%s: In function '%s':
+#%s:%d: warning: implicit declaration of function '%s'
+1786=%s:%d: warning: implicit declaration of function '%s'
+#%s:%d: warning: assignment makes pointer from integer without a cast
+1787=%s:%d: warning: assignment makes pointer from integer without a cast
+#%s:%d:%d: error: invalid suffix "%s" on integer constant
+1788=%s:%d:%d: error: invalid suffix "%s" on integer constant
+#%s:%d: warning: unused variable '%s'
+1789=%s:%d: warning: unused variable '%s'
+#%s:%d: error: '%s' was not declared in this scope
+1790=%s:%d: error: '%s' was not declared in this scope
+#%s:%d: error: expected '%s' before '%s'
+1791=%s:%d: error: expected '%s' before '%s'
+#%s:%d:%d: error: macro "%s" passed %d arguments, but takes just %d
+1792=%s:%d:%d: error: macro "%s" passed %d arguments, but takes just %d
+#%s:%d:%d: error: macro "%s" requires %d arguments, but only %d given
+1793=%s:%d:%d: error: macro "%s" requires %d arguments, but only %d given
+#%s:%d: error: at this point in file
+1794=%s:%d: error: at this point in file
+#%s:%d: error: too many arguments to function '%s'
+1795=%s:%d: error: too many arguments to function '%s'
+#%s:%d: error: '%s' undeclared (first use in this function)
+1796=%s:%d: error: '%s' undeclared (first use in this function)
+#%s:%d: error: expected '%s' before numeric constant
+1797=Order{3}Era esperado '%s' antes do numero
+#%s:%d: error: (Each undeclared identifier is reported only once for each function it appears in.)
+1798=%s:%d: error: (Each undeclared identifier is reported only once for each function it appears in.)
+#%s:%d: warning: statement has no effect
+1799=%s:%d: warning: statement has no effect
+#%s:%d: warning: passing argument %d of '%s' makes integer from pointer without a cast
+1800=%s:%d: warning: passing argument %d of '%s' makes integer from pointer without a cast
+#%s:%d: note: expected '%s' but argument is of type '%s'
+1801=%s:%d: note: expected '%s' but argument is of type '%s'
+#%s:%d: error: invalid conversion from '%s' to '%s'
+1802=%s:%d: error: invalid conversion from '%s' to '%s'
+#%s:%d: error:   initializing argument %d of '%s'
+1803=%s:%d: error:   initializing argument %d of '%s'
+#%s:%d: error: too few arguments to function '%s'
+1804=%s:%d: error: too few arguments to function '%s'
+#%s:%s:%s: undefined reference to `%s'
+1805=%s:%s:%s: undefined reference to `%s'
+#%s:%d: error: cannot convert '%s' to '%s' for argument '%s' to '%s'
+1806=%s:%d: error: cannot convert '%s' to '%s' for argument '%s' to '%s'
+#%s:%d: warning: value computed is not used
+1807=%s:%d: warning: value computed is not used
+#%s:%d: warning: '%s' is used uninitialized in this function
+1808=%s:%d: warning: '%s' is used uninitialized in this function
+#%s:%d: error: base operand of '%s' has non-pointer type '%s'
+1809=%s:%d: error: base operand of '%s' has non-pointer type '%s'
+#%s:%d:%d: error: %s: No such file or directory
+1810=%s:%d:%d: error: %s: No such file or directory
+#%s:%d: error: '%s' does not name a type
+1811=%s:%d: error: '%s' does not name a type
+#%s:%d: error: expected initializer before '%s'
+1812=%s:%d: error: expected initializer before '%s'
+#%s:%d: error: a function-definition is not allowed here before '%s' token expected '%s' at end of input
+1813=%s:%d: error: a function-definition is not allowed here before '%s' token expected '%s' at end of input
+#%s:%d: warning: return makes integer from pointer without a cast
+1814=%s:%d: warning: return makes integer from pointer without a cast
+#%s:%d: warning: overflow in implicit constant conversion
+1815=%s:%d: warning: overflow in implicit constant conversion
+#%s:%d: warning: integer constant is too large for '%s' type
+1816=%s:%d: warning: integer constant is too large for '%s' type
+#%s:%d:%d: warning: integer constant is too large for its type
+1817=%s:%d:%d: warning: integer constant is too large for its type
+#%s:%d: warning: this decimal constant is unsigned only in ISO C90
+1818=%s:%d: warning: this decimal constant is unsigned only in ISO C90
+#%s:%d: error: expected '%s' before '%s' token
+1819=%s:%d: error: expected '%s' before '%s' token
+#%s:%d: error: expected expression before '%s' token
+1820=%s:%d: error: expected expression before '%s' token
+#%s:%d: note: '%s' was declared here
+1821=%s:%d: note: '%s' was declared here
+#%s:%d: warning: statement with no effect
+1822=%s:%d: warning: statement with no effect
+#%s:%d: error: lvalue required as left operand of assignment
+1823=%s:%d: error: lvalue required as left operand of assignment
+#%s:%d: warning: type defaults to '%s' in declaration of '%s'
+1824=%s:%d: warning: type defaults to '%s' in declaration of '%s'
+#%s:%d: warning: initialization makes integer from pointer without a cast
+1825=%s:%d: warning: initialization makes integer from pointer without a cast
+#%s:%d:%d: warning: character constant too long for its type
+1826=%s:%d:%d: warning: character constant too long for its type
+#%s:%d: error: expected identifier or '%s' before numeric constant
+1827=%s:%d: error: expected identifier or '%s' before numeric constant
+#%s:%d: error: expected '=', ',', ';', 'asm' or '__attribute__' before '%s'
+1828=%s:%d: error: expected '=', ',', ';', 'asm' or '__attribute__' before '%s'
+#%s:%d: warning: label '%s' defined but not used
+1829=%s:%d: warning: label '%s' defined but not used
+#%s:%d: error: '%s' has no member named '%s'
+1830=%s:%d: error: '%s' has no member named '%s'
+#%s:%d: error: array subscript is not an integer
+1831=%s:%d: error: array subscript is not an integer
+#%s:%d: warning: too few arguments for format
+1832=%s:%d: warning: too few arguments for format
+#%s:%d: warning: format '%s' expects type '%s', but argument %d has type '%s'
+1833=%s:%d: warning: format '%s' expects type '%s', but argument %d has type '%s'
+#%s:%d: error: switch quantity not an integer
+1834=%s:%d: error: switch quantity not an integer
+#%s:%d: error: incompatible type for argument %d of '%s'
+1835=%s:%d: error: incompatible type for argument %d of '%s'
+#%s:%d: error: expected statement before '%s' token
+1836=%s:%d: error: expected statement before '%s' token
+#%s:%d: warning: control reaches end of non-void function
+1837=%s:%d: warning: control reaches end of non-void function
+#%s:%d: warning: '%s' may be used uninitialized in this function
+1838=%s:%d: warning: '%s' may be used uninitialized in this function
+#%s:%d: warning: missing braces around initializer
+1839=%s:%d: warning: missing braces around initializer
+#%s:%d: warning: (near initialization for '%s')
+1840=%s:%d: warning: (near initialization for '%s')
+#%s:%d: warning: statement is a reference, not call, to function '%s'
+1841=%s:%d: warning: statement is a reference, not call, to function '%s'
+#%s:%d: error: case label '%s' not within a switch statement
+1842=%s:%d: error: case label '%s' not within a switch statement
+#%s:%d: error: expected primary-expression before '%s' token
+1843=%s:%d: error: expected primary-expression before '%s' token
+#%s:%d: warning: no return statement in function returning non-void
+1844=%s:%d: warning: no return statement in function returning non-void
+#%s:%d: error: expected unqualified-id before '%s'
+1845=%s:%d: error: expected unqualified-id before '%s'
+#%s:%d: warning: array subscript is above array bounds
+1846=%s:%d: warning: array subscript is above array bounds
+#%s:%d: warning: suggest parentheses around assignment used as truth value
+1847=%s:%d: warning: suggest parentheses around assignment used as truth value
+#%s:%d: error: storage size of '%s' isn't known
+1848=%s:%d: error: storage size of '%s' isn't known
+#%s:%d: error: invalid application of '%s' to incomplete type '%s' 
+1849=%s:%d: error: invalid application of '%s' to incomplete type '%s' 
+#%s:%d: warning: incompatible implicit declaration of built-in function '%s'
+1850=%s:%d: warning: incompatible implicit declaration of built-in function '%s'
+#%s:%d: warning: comparison between signed and unsigned integer expressions
+1851=%s:%d: warning: comparison between signed and unsigned integer expressions
+#%s:%d: warning: deprecated conversion from string constant to '%s'
+1852=%s:%d: warning: deprecated conversion from string constant to '%s'
+#%s:%d: error: expected class-name before '%s' token
+1853=%s:%d: error: expected class-name before '%s' token
+#%s:%d: error: ISO C++ forbids declaration of '%s' with no type
+1854=%s:%d: error: ISO C++ forbids declaration of '%s' with no type
+#%s:%s: error: typedef '%s' is initialized (use decltype instead)
+1855=%s:%s: error: typedef '%s' is initialized (use decltype instead)
+#%s:%d: error: expected constructor, destructor, or type conversion before '%s' token
+1856=%s:%d: error: expected constructor, destructor, or type conversion before '%s' token
+#%s:%d: error: expected initializer before '%s' token
+1857=%s:%d: error: expected initializer before '%s' token
+#%s:%d: error: expected constructor, destructor, or type conversion before '%s'
+1858=%s:%d: error: expected constructor, destructor, or type conversion before '%s'
+#In file included from %s:%d:
+1859=In file included from %s:%d:
+#%s:%s:(%s): first defined here
+1860=%s:%s:(%s): first defined here
+#%s:%d: warning: enumeration value '%s' not handled in switch
+1861=%s:%d: warning: enumeration value '%s' not handled in switch
+#%s: In member function '%s':
+1862=%s: In member function '%s':
+#%s:%d: error: stray '%s' in program
+1863=%s:%d: error: stray '%s' in program
+#%s:%d: error: expected '%s' at end of input
+1864=%s:%d: error: expected '%s' at end of input
+#%s:%d: warning: field width should have type '%s', but argument %d has type '%s'
+1865=%s:%d: warning: field width should have type '%s', but argument %d has type '%s'
+#%s:%d: error: subscripted value is neither array nor pointer
+1866=%s:%d: error: subscripted value is neither array nor pointer
+#%s:%d: error: array type has incomplete element type
+1867=%s:%d: error: array type has incomplete element type
+#%s:%d: warning: too many arguments for format
+1868=%s:%d: warning: too many arguments for format
+#%s:%d: warning: operation on '%s' may be undefined
+1869=%s:%d: warning: operation on '%s' may be undefined
+#%s:%d:%d: error: unterminated comment
+1870=%s:%d:%d: error: unterminated comment
+#%s:%d:%d: warning: "%s" within comment
+1871=%s:%d:%d: warning: "%s" within comment
+#%s:%d:%d: warning: missing terminating %s character
+1872=%s:%d:%d: warning: missing terminating %s character
+#%s: %s: No such file or directory
+1873=%s: %s: No such file or directory
+#%s:%d: error: missing terminating %s character
+1874=%s:%d: error: missing terminating %s character
+#%s:%d: error: array size missing in '%s'
+1875=%s:%d: error: array size missing in '%s'
+#%s:%d: warning: passing argument %d of '%s' from incompatible pointer type
+1876=%s:%d: warning: passing argument %d of '%s' from incompatible pointer type
+#%s:%d: warning: return type defaults to '%s'
+1877=%s:%d: warning: return type defaults to '%s'
+#%s:%d: error: expected identifier or '%s' before '%s' token
+1878=%s:%d: error: expected identifier or '%s' before '%s' token
+#%s:%d: error: expected identifier or '%s' at end of input
+1879=%s:%d: error: expected identifier or '%s' at end of input
+#%s:%d: error: expected specifier-qualifier-list before '%s'
+1880=%s:%d: error: expected specifier-qualifier-list before '%s'
+#%s:%d: warning: declaration does not declare anything
+1881=%s:%d: warning: declaration does not declare anything
+#%s:%d: error: bit-field '%s' width not an integer constant
+1882=%s:%d: error: bit-field '%s' width not an integer constant
+#%s:%d: error: '%s' undeclared here (not in a function)
+1883=%s:%d: error: '%s' undeclared here (not in a function)
+#%s: warning: '%s' after last input file has no effect
+1884=%s: warning: '%s' after last input file has no effect
+#%s: no input files
+1885=%s: no input files
+#%s: preprocessing failed.
+1886=%s: preprocessing failed.
+#%s:%d: error: zero width for bit-field '%s'
+1887=%s:%d: error: zero width for bit-field '%s'
+#%s:%d: error: width of '%s' exceeds its type
+1888=%s:%d: error: width of '%s' exceeds its type
+#%s:%d: warning: braces around scalar initializer
+1889=%s:%d: warning: braces around scalar initializer
+#%s:%d: warning: initialization from incompatible pointer type
+1890=%s:%d: warning: initialization from incompatible pointer type
+#%s:%d: warning: excess elements in scalar initializer
+1891=%s:%d: warning: excess elements in scalar initializer
+#%s:%d: warning: left-hand operand of comma expression has no effect
+1892=%s:%d: warning: left-hand operand of comma expression has no effect
+#%s:%d: warning: assignment from incompatible pointer type
+1893=%s:%d: warning: assignment from incompatible pointer type
+#%s:%d: warning: initializer-string for array of chars is too long
+1894=%s:%d: warning: initializer-string for array of chars is too long
+#%s: no resources
+1895=%s: no resources
+#%s:%d: error: invalid application of '%s' to incomplete type '%s'
+1896=%s:%d: error: invalid application of '%s' to incomplete type '%s'
+#%s:%d: error: void value not ignored as it ought to be
+1897=%s:%d: error: void value not ignored as it ought to be
+#Creating library file: %s
+1898=Creating library file: %s
+#%s:%d: warning: useless type name in empty declaration
+1899=%s:%d: warning: useless type name in empty declaration
+#%s:%d: warning: unknown conversion type character '%s' in format
+1900=%s:%d: warning: unknown conversion type character '%s' in format
+#%s:%d: error: parameter name omitted
+1901=%s:%d: error: parameter name omitted
+#%s:%d: error: expected declaration specifiers before '%s'
+1902=%s:%d: error: expected declaration specifiers before '%s'
+#%s:%d: error: old-style parameter declarations in prototyped function definition
+1903=%s:%d: error: old-style parameter declarations in prototyped function definition
+#%s:%d: warning: empty declaration
+1904=%s:%d: warning: empty declaration
+#%s:%d: error: expected declaration specifiers before '%s' token
+1905=%s:%d: error: expected declaration specifiers before '%s' token
+#%s:%d: error: expected declaration specifiers or '%s' before '%s'
+1906=%s:%d: error: expected declaration specifiers or '%s' before '%s'
+#%s:%d: error: storage class specified for parameter '%s'
+1907=%s:%d: error: storage class specified for parameter '%s'
+#%s:%d: error: duplicate member '%s'
+1908=%s:%d: error: duplicate member '%s'
+#%s:%d: error: expected '%s' before string constant
+1909=%s:%d: error: expected '%s' before string constant
+#%s:%d: error: called object '%s' is not a function
+1910=%s:%d: error: called object '%s' is not a function
+#%s:%d: Error: too many memory references for `%s'
+1911=%s:%d: Error: too many memory references for `%s'
+#%s:%d: warning: excess elements in array initializer
+1912=%s:%d: warning: excess elements in array initializer
+#%s:%d: error: size of array '%s' is too large
+1913=%s:%d: error: size of array '%s' is too large
+#%s:%d: error: incompatible types when assigning to type '%s' from type '%s'
+1914=%s:%d: error: incompatible types when assigning to type '%s' from type '%s'
+#%s:%d: error: invalid operands to binary %s (have '%s' and '%s')
+1815=%s:%d: error: invalid operands to binary %s (have '%s' and '%s')
+#%s:%d: warning: assuming signed overflow does not occur when assuming that %s is always %s
+1816=%s:%d: warning: assuming signed overflow does not occur when assuming that %s is always %s
+#%s:%s:(%s): more undefined references to `%s' follow
+1817=%s:%s:(%s): more undefined references to `%s' follow
+#%s:%d: warning: extended initializer lists only available with %s or %s
+1818=%s:%d: warning: extended initializer lists only available with %s or %s
+#%s:%d: error: type of formal parameter %d is incomplete
+1819=%s:%d: error: type of formal parameter %d is incomplete
+#%s:%d: warning: dereferencing '%s' pointer
+1820=%s:%d: warning: dereferencing '%s' pointer
+#%s:%d: error: request for member '%s' in something not a structure or union
+1821=%s:%d: error: request for member '%s' in something not a structure or union
+#%s:%d: error: conflicting types for '%s'
+1822=%s:%d: error: conflicting types for '%s'
+#%s:%d: note: previous definition of '%s' was here'
+1823=%s:%d: note: previous definition of '%s' was here'

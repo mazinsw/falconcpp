@@ -264,7 +264,6 @@ Version=2.0
 
 #Tabs Down
 1408=Mensagens
-1409=Bate-Papo
 
 #Messages List
 1410=Arquivo
@@ -281,7 +280,7 @@ Version=2.0
 
 #Subject New FileName
 1417=NovoArquivo
-1418=Nova Pasta
+1418=NovaPasta
 1419=Principal
 1420=Recurso
 
@@ -356,6 +355,9 @@ Version=2.0
 1579=Abilitar tema
 1580=Requer nível de administrador
 1581=Criar uma biblioteca ligada
+#3.2.0.0
+1582=Selecione uma pasta para incluir na compilação
+1583=Editar selecionado
 
 #Btns
 1541=Ok
@@ -397,24 +399,6 @@ Version=2.0
 1571=Aplicação
 1572=Parâmetros:
 
-#Sheet Network
-1582=Rede
-1583=Programação em rede
-1584=Tipo
-1585=Servidor
-1586=Cliente
-1587=Opções do cliente
-1588=Porta
-1589=Reconectar automaticamente
-1590=Autenticação
-1591=Usuário
-1592=Senha
-1593=Opções do servidor
-1594=Desconectar
-1595=Conectar
-1596=Selecione uma pasta para incluir na compilação
-1597=Editar selecionado
-
 #New Project Form
 1673=Novo Projeto
 1674=< Voltar
@@ -455,7 +439,10 @@ Version=2.0
 4019=A versão instalada ja é a versão mais nova
 4020=Atualização disponível
 4021=Nova atualização disponível: %s
-4022=Instalando...
+4022=&Fechar
+4023=&Ok
+4024=&Cancelar
+4025=Instalando...
 
 #FrmFind
 4201=Localizar e substituir
@@ -725,7 +712,6 @@ Version=2.0
 #%s:%d:%d: error: invalid suffix "%s" on integer constant
 #253=Order{4,2}invalid suffix "%s" on integer constant, on Line %d
 
-
 #%s: In function '%s':
 1785=Order{2}Na função '%s':
 #%s:%d: warning: implicit declaration of function '%s'
@@ -946,7 +932,6 @@ Version=2.0
 1893=Atribuição com tipo de ponteiro incompatíveis
 #%s:%d: warning: initializer-string for array of chars is too long
 1894=A string de inicialização para o vetor de caracteres é muito grande
-#----------------------
 #%s: no resources
 1895=Sem recursos
 #%s:%d: error: invalid application of '%s' to incomplete type '%s'
@@ -988,12 +973,20 @@ Version=2.0
 #%s:%d: error: incompatible types when assigning to type '%s' from type '%s'
 1914=Order{3,4}Tipos incompatíveis na atribuição para o tipo '%s' apartir do tipo '%s'
 #%s:%d: error: invalid operands to binary %s (have '%s' and '%s')
+1915=Order{3,4}Operandos inválidos para %s binários (tem '%s' e '%s')
 #%s:%d: warning: assuming signed overflow does not occur when assuming that %s is always %s
+1916=Order{3,4}Assumindo estouro com sinal não ocorre quando assumindo que %s é sempre %s
 #%s:%s:(%s): more undefined references to `%s' follow
+1917=Order{3}Mais referências indefinidas para '%s' seguidamente
 #%s:%d: warning: extended initializer lists only available with %s or %s
+1918=Order{3,4}Listas de inicializadoes estendidos disponível apenas com %s ou %s
 #%s:%d: error: type of formal parameter %d is incomplete
+1919=Order{3}Tipo do parâmetro formal %d está incompleto
 #%s:%d: warning: dereferencing '%s' pointer
+1920=Order{3}Desreferenciando o ponteiro '%s'
 #%s:%d: error: request for member '%s' in something not a structure or union
+1921=Order{3}Requisição do membro '%s' em algo quen não é uma estrutura ou união
 #%s:%d: error: conflicting types for '%s'
+1922=Order{3}Conflitos de tipos para '%s'
 #%s:%d: note: previous definition of '%s' was here'
-
+1923=Order{3}Definição anterior de '%s' foi aqui

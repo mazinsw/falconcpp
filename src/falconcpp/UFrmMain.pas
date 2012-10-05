@@ -720,6 +720,8 @@ type
       DisplayRect: TRect; Token: TTokenClass; State: TCustomDrawState);
     procedure TextEditorUpdateStatusBar(Sender: TObject);
     procedure ExecutorStart(Sender: TObject);
+    function FillTreeViewV2(Sibling, Parent: TTreeNode; Token: TTokenClass;
+      DeleteNext: Boolean = False): TTreeNode;
   public
     { Public declarations }
     LastSearch: TSearchItem;
@@ -1750,20 +1752,85 @@ begin
   FTemplates := aTemplates;
 end;
 
+function TFrmFalconMain.FillTreeViewV2(Sibling, Parent: TTreeNode;
+  Token: TTokenClass; DeleteNext: Boolean): TTreeNode;
+var
+  I: Integer;
+  Temp: TTreeNode;
+  S: string;
+  Avance: Boolean;
+begin
+  if Assigned(Parent) then
+    Sibling := Parent.getFirstChild;
+  for I := 0 to Token.Count - 1 do
+  begin
+    Avance := False;
+    if not (Token.Items[I].Token in [tkParams, tkScope, tkScopeClass, tkUsing]) then
+    begin
+      Avance := True;
+      if Token.Items[I].Token in [tkFunction, tkProtoType, tkConstructor, tkDestructor] then
+      begin
+        if Token.Items[I].Token in [tkConstructor, tkDestructor] then
+        begin
+          S := GetFuncScope(Token.Items[I]) +
+            Token.Items[I].Name + GetFuncProtoTypes(Token.Items[I]);
+
+        end
+        else
+        begin
+          S := Token.Items[I].Name +
+            GetFuncProtoTypes(Token.Items[I]) + ' : ' + Token.Items[I].Flag;
+        end;
+      end
+      else
+        S := Token.Items[I].Name;
+      if not Assigned(Sibling) then
+        Sibling := TreeViewOutline.Items.AddChildObject(Parent, S, Token.Items[I])
+      else
+      begin
+        Sibling.Data := Token.Items[I];
+        Sibling.Text := S;
+      end;
+      Token.Items[I].Data := Sibling;
+      Sibling.ImageIndex := GetTokenImageIndex(Token.Items[I], OutlineImages);
+      Sibling.SelectedIndex := Sibling.ImageIndex;
+    end;
+
+    if not (Token.Items[I].Token in [tkParams, tkScope, tkFunction,
+      tkConstructor, tkDestructor]) then
+    begin
+      FillTreeViewV2(nil, Sibling, Token.Items[I], True);
+    end;
+    if Avance then
+      Sibling := Sibling.getNextSibling;
+  end;
+  if DeleteNext then
+  begin
+    while Assigned(Sibling) do
+    begin
+      Temp := Sibling;
+      Sibling := Sibling.getNextSibling;
+      Temp.Delete;
+    end;
+    Result := nil;
+  end
+  else if Assigned(Parent) then
+    Result := Parent.getNextSibling
+  else
+    Result := Sibling;
+end;
+
 procedure TFrmFalconMain.FillTreeView(Node: TTreeNode; Token: TTokenClass);
 var
   I: Integer;
   Mode: TTokenSearchMode;
 begin
   Mode := [];
-  if Token.Token = tkTreeObjList then
-    if Token.Count <= 25 then
+  if (Token.Token = tkTreeObjList) and (Token.Count <= 25) then
       Mode := Mode + [tkTreeObjList];
-  if Token.Token = tkVarConsList then
-    if Token.Count <= 25 then
+  if (Token.Token = tkVarConsList) and (Token.Count <= 25) then
       Mode := Mode + [tkVarConsList];
-  if Token.Token = tkFuncProList then
-    if Token.Count <= 25 then
+  if (Token.Token = tkFuncProList) and (Token.Count <= 25) then
       Mode := Mode + [tkFuncProList];
 
   if not (Token.Token in Mode) and
@@ -2728,6 +2795,8 @@ begin
       ProjProp := Sheet.SourceFile.Project;
     BoldTreeNode(ProjProp.Node, True);
     //Reload Tokens ?
+    if not DebugReader.Running then
+      TreeViewOutline.Items.Clear;
     if not IsLoading then
     begin
       FindedTokenFile := FilesParsed.ItemOfByFileName(Prop.FileName);
@@ -5802,11 +5871,106 @@ end;
 
 procedure TFrmFalconMain.UpdateActiveFileToken(NewToken: TTokenFile;
   Reload: Boolean = False);
+
+  procedure FillTreeObj(var Sibling, Parent: TTreeNode; DeleteNext: Boolean);
+  begin
+    Parent := nil;
+    if Assigned(Sibling) and
+      (TTokenClass(Sibling.Data).Token = tkTreeObjList) then
+    begin
+      Parent := Sibling;
+      Sibling := Sibling.getNextSibling;
+      if ActiveEditingFile.TreeObjs.Count <= 25 then
+      begin
+        Parent.Delete;
+        Parent := nil;
+      end
+      else
+      begin
+        Parent.Data := ActiveEditingFile.TreeObjs;
+        ActiveEditingFile.TreeObjs.Data := Parent;
+      end;
+    end
+    else if ActiveEditingFile.TreeObjs.Count > 25 then
+    begin
+      Parent := TreeViewOutline.Items.InsertObject(Sibling,
+        ActiveEditingFile.TreeObjs.Name, ActiveEditingFile.TreeObjs);
+      ActiveEditingFile.TreeObjs.Data := Parent;
+      Parent.ImageIndex := GetTokenImageIndex(ActiveEditingFile.TreeObjs, OutlineImages);
+      Parent.SelectedIndex := Parent.ImageIndex;
+    end;
+    Sibling := FillTreeViewV2(Sibling, Parent, ActiveEditingFile.TreeObjs, DeleteNext);
+  end;
+
+  procedure FillVarConst(var Sibling, Parent: TTreeNode; DeleteNext: Boolean);
+  begin
+    Parent := nil;
+    if Assigned(Sibling) and
+      (TTokenClass(Sibling.Data).Token = tkVarConsList) then
+    begin
+      Parent := Sibling;
+      Sibling := Sibling.getNextSibling;
+      if ActiveEditingFile.VarConsts.Count <= 25 then
+      begin
+        Parent.Delete;
+        Parent := nil;
+      end
+      else
+      begin
+        Parent.Data := ActiveEditingFile.VarConsts;
+        ActiveEditingFile.VarConsts.Data := Parent;
+      end;
+    end
+    else if ActiveEditingFile.VarConsts.Count > 25 then
+    begin
+      Parent := TreeViewOutline.Items.InsertObject(Sibling,
+        ActiveEditingFile.VarConsts.Name, ActiveEditingFile.VarConsts);
+      ActiveEditingFile.VarConsts.Data := Parent;
+      Parent.ImageIndex := GetTokenImageIndex(ActiveEditingFile.VarConsts, OutlineImages);
+      Parent.SelectedIndex := Parent.ImageIndex;
+    end;
+    Sibling := FillTreeViewV2(Sibling, Parent, ActiveEditingFile.VarConsts, DeleteNext);
+  end;
+
+  procedure FillFuncProc(var Sibling, Parent: TTreeNode; DeleteNext: Boolean);
+  begin
+    Parent := nil;
+    if Assigned(Sibling) and
+      (TTokenClass(Sibling.Data).Token = tkFuncProList) then
+    begin
+      Parent := Sibling;
+      Sibling := Sibling.getNextSibling;
+      if ActiveEditingFile.FuncObjs.Count <= 25 then
+      begin
+        Parent.Delete;
+        Parent := nil;
+      end
+      else
+      begin
+        Parent.Data := ActiveEditingFile.FuncObjs;
+        ActiveEditingFile.FuncObjs.Data := Parent;
+      end;
+    end
+    else if ActiveEditingFile.FuncObjs.Count > 25 then
+    begin
+      Parent := TreeViewOutline.Items.InsertObject(Sibling,
+        ActiveEditingFile.FuncObjs.Name, ActiveEditingFile.FuncObjs);
+      ActiveEditingFile.FuncObjs.Data := Parent;
+      Parent.ImageIndex := GetTokenImageIndex(ActiveEditingFile.FuncObjs, OutlineImages);
+      Parent.SelectedIndex := Parent.ImageIndex;
+    end;
+    Sibling := FillTreeViewV2(Sibling, Parent, ActiveEditingFile.FuncObjs, DeleteNext);
+  end;
+
 var
   TokenFileItem, FindedTokenFile: TTokenFile;
   sheet: TSourceFileSheet;
+  Sibling, Parent: TTreeNode;
+  Adcdi: TTVAdvancedCustomDrawItemEvent;
 begin
   FindedTokenFile := FilesParsed.ItemOfByFileName(NewToken.FileName);
+  Adcdi := TreeViewOutline.OnAdvancedCustomDrawItem;
+  TreeViewOutline.OnAdvancedCustomDrawItem := nil;
   if FindedTokenFile = nil then //not parsed
   begin
     TokenFileItem := TTokenFile.Create(FilesParsed);
@@ -5822,8 +5986,11 @@ begin
   if FindedTokenFile = nil then
     FilesParsed.Add(TokenFileItem);
   if DebugReader.Running then
+  begin
+    TreeViewOutline.OnAdvancedCustomDrawItem := Adcdi;
     Exit;
-  TreeViewOutline.Items.Clear;
+  end;
+  {TreeViewOutline.Items.Clear;
   if ViewOutline.Checked then
   begin
     FillTreeView(nil, ActiveEditingFile.Includes);
@@ -5831,7 +5998,108 @@ begin
     FillTreeView(nil, ActiveEditingFile.TreeObjs);
     FillTreeView(nil, ActiveEditingFile.VarConsts);
     FillTreeView(nil, ActiveEditingFile.FuncObjs);
+  end;}
+  if ViewOutline.Checked then
+  begin
+    Sibling := TreeViewOutline.Items.GetFirstNode;
+    Parent := nil;
+    if Assigned(Sibling) and
+      (TTokenClass(Sibling.Data).Token = tkIncludeList) then
+    begin
+      Parent := Sibling;
+      Sibling := Sibling.getNextSibling;
+      if ActiveEditingFile.Includes.Count = 0 then
+      begin
+        Parent.Delete;
+        Parent := nil;
+      end
+      else
+      begin
+        Parent.Data := ActiveEditingFile.Includes;
+        ActiveEditingFile.Includes.Data := Parent;
+      end;
+    end
+    else if ActiveEditingFile.Includes.Count > 0 then
+    begin
+      Parent := TreeViewOutline.Items.AddObjectFirst(Sibling,
+        ActiveEditingFile.Includes.Name, ActiveEditingFile.Includes);
+      ActiveEditingFile.Includes.Data := Parent;
+      Parent.ImageIndex := GetTokenImageIndex(ActiveEditingFile.Includes, OutlineImages);
+      Parent.SelectedIndex := Parent.ImageIndex;
+    end;
+    if Assigned(Parent) then
+      FillTreeViewV2(nil, Parent, ActiveEditingFile.Includes);
+    Parent := nil;
+    if Assigned(Sibling) and
+      (TTokenClass(Sibling.Data).Token = tkDefineList) then
+    begin
+      Parent := Sibling;
+      Sibling := Sibling.getNextSibling;
+      if ActiveEditingFile.Defines.Count = 0 then
+      begin
+        Parent.Delete;
+        Parent := nil;
+      end
+      else
+      begin
+        Parent.Data := ActiveEditingFile.Defines;
+        ActiveEditingFile.Defines.Data := Parent;
+      end;
+    end
+    else if ActiveEditingFile.Defines.Count > 0 then
+    begin
+      Parent := TreeViewOutline.Items.InsertObject(Sibling,
+        ActiveEditingFile.Defines.Name, ActiveEditingFile.Defines);
+      ActiveEditingFile.Defines.Data := Parent;
+      Parent.ImageIndex := GetTokenImageIndex(ActiveEditingFile.Defines, OutlineImages);
+      Parent.SelectedIndex := Parent.ImageIndex;
+    end;
+    if Assigned(Parent) then
+      FillTreeViewV2(nil, Parent, ActiveEditingFile.Defines);
+
+    if ActiveEditingFile.TreeObjs.Count > 25 then
+    begin
+      FillTreeObj(Sibling, Parent, False);
+      if (ActiveEditingFile.VarConsts.Count > 25) or
+         (ActiveEditingFile.FuncObjs.Count <= 25) then
+      begin
+        FillVarConst(Sibling, Parent, False);
+        FillFuncProc(Sibling, Parent, True);
+      end
+      else
+      begin
+        FillFuncProc(Sibling, Parent, False);
+        FillVarConst(Sibling, Parent, True);
+      end;
+    end
+    else
+    begin
+      if (ActiveEditingFile.VarConsts.Count > 25) or
+         (ActiveEditingFile.FuncObjs.Count <= 25) then
+      begin
+        FillVarConst(Sibling, Parent, False);
+        if (ActiveEditingFile.FuncObjs.Count > 25) then
+        begin
+          FillFuncProc(Sibling, Parent, False);
+          FillTreeObj(Sibling, Parent, True);
+        end
+        else
+        begin
+          FillTreeObj(Sibling, Parent, False);
+          FillFuncProc(Sibling, Parent, True);
+        end;
+      end
+      else
+      begin
+        FillFuncProc(Sibling, Parent, False);
+        FillTreeObj(Sibling, Parent, False);
+        FillVarConst(Sibling, Parent, True);
+      end;
+    end;
+
   end;
+  TreeViewOutline.OnAdvancedCustomDrawItem := Adcdi;
+  TreeViewOutline.Invalidate;
   if GetActiveSheet(sheet) then
     DetectScope(sheet.Memo);
 end;
@@ -7660,8 +7928,8 @@ var
   token: TTokenClass;
   dbgc: TDebugCommand;
 begin
-  AddMessage(Value, DebugCmdNames[Command] + ' - ' + Name, Value, Line,
-    0, 0, mitGoto);
+  //AddMessage(Value, DebugCmdNames[Command] + ' - ' + Name, Value, Line,
+  //  0, 0, mitGoto);
   case Command of
     dcBreakpoint:
       begin
@@ -7734,6 +8002,7 @@ begin
         end;
         DebugHint.Cancel;
         CanShowHintTip := False;
+        CommandQueue.Clear;
       end;
     dcNextLine:
       begin
@@ -7741,6 +8010,7 @@ begin
           Exit;
         UpdateActiveDebugLine(fp, Line);
         UpdateDebugActiveVariables(Line, True);
+        CommandQueue.Clear;
       end;
     dcOnAddWatch, dcOnWatchPoint:
       begin
@@ -7752,6 +8022,7 @@ begin
           Index := WatchList.UpdateID(Name, Line);
         if Index >= 0 then
           DebugParser.Fill(Name + ' = ' + Value, nil);
+        CommandQueue.Clear;
       end;
     dcPrint:
       begin

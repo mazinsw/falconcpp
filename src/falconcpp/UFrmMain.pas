@@ -6099,7 +6099,6 @@ begin
 
   end;
   TreeViewOutline.OnAdvancedCustomDrawItem := Adcdi;
-  TreeViewOutline.Invalidate;
   if GetActiveSheet(sheet) then
     DetectScope(sheet.Memo);
 end;

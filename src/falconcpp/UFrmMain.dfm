@@ -1355,26 +1355,31 @@ object FrmFalconMain: TFrmFalconMain
         Caption = 'Outline'
         ImageIndex = 56
         PageControl = PageControlOutline
-        object TreeViewOutline: TTreeView
+        object TreeViewOutline: TNativeTreeView
           Left = 0
           Top = 0
           Width = 175
           Height = 502
           Align = alClient
-          BorderWidth = 1
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -11
-          Font.Name = 'Tahoma'
-          Font.Style = []
-          HideSelection = False
+          Header.AutoSizeIndex = 0
+          Header.Font.Charset = DEFAULT_CHARSET
+          Header.Font.Color = clWindowText
+          Header.Font.Height = -11
+          Header.Font.Name = 'MS Sans Serif'
+          Header.Font.Style = []
+          Header.MainColumn = -1
           Images = ImgListOutLine
-          Indent = 27
-          ParentFont = False
-          ReadOnly = True
+          NodeDataSize = 4
           TabOrder = 0
-          OnAdvancedCustomDrawItem = TreeViewOutlineAdvancedCustomDrawItem
-          OnDblClick = TreeViewOutlineDblClick
+          TreeOptions.MiscOptions = [toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning]
+          TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowRoot, toShowTreeLines, toThemeAware, toUseBlendedImages, toUseExplorerTheme, toHideTreeLinesIfThemed]
+          TreeOptions.SelectionOptions = [toFullRowSelect]
+          OnDblClick = TreeViewOutline_DblClick
+          OnDrawText = TreeViewOutlineDrawText
+          OnFreeNode = TreeViewOutlineFreeNode
+          OnGetText = TreeViewOutlineGetText
+          OnGetImageIndex = TreeViewOutlineGetImageIndex
+          Columns = <>
         end
       end
     end

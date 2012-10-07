@@ -4,13 +4,13 @@ interface
 
 uses
   Windows, Messages, Classes, Forms, Controls, Graphics, SysUtils, ComCtrls,
-  ExtCtrls, TokenList, TokenHint, DebugReader;
+  ExtCtrls, TokenList, TokenHint, DebugReader, NativeTreeView;
 
 type
   THintTreeTip = class(TTokenHintTip);
   THintTree = class(TCustomControl)
   private
-    TreeView: TTreeView;
+    TreeView: TNativeTreeView;
     DebugParser: TDebugParser;
     FFocusDelay: Integer;
     fptr: PChar;
@@ -28,6 +28,11 @@ type
     procedure ActivateHint(Rect: TRect);
     procedure SetImageList(Value: TImageList);
     procedure TreeViewKeyPress(Sender: TObject; var Key: Char);
+    procedure TreeViewGetText(Sender: TBaseNativeTreeView; Node: PNativeNode; Column: TColumnIndex;
+      TextType: TVSTTextType; var CellText: UnicodeString);
+    procedure TreeViewGetImageIndex(Sender: TBaseNativeTreeView; Node: PNativeNode; Kind: TVTImageKind; Column: TColumnIndex;
+      var Ghosted: Boolean; var ImageIndex: Integer);
+    procedure TreeViewFreeNode(Sender: TBaseNativeTreeView; Node: PNativeNode);
     procedure HintMouseMove(Sender: TObject; Shift: TShiftState;
       X, Y: Integer);
     procedure TimerEvent(Sender: TObject);
@@ -60,20 +65,26 @@ begin
   Color := $E1FFFF;
   Canvas.Font := Screen.HintFont;
   Canvas.Brush.Style := bsClear;
-  TreeView := TTreeView.Create(Self);
+  TreeView := TNativeTreeView.Create(Self);
   DebugParser.TreeView := TreeView;
   TreeView.Parent := Self;
   //TreeView.AutoExpand := True;
   TreeView.BorderStyle := bsNone;
   TreeView.Align := alClient;
   TreeView.Color := $E1FFFF;
-  TreeView.ReadOnly := True;
+  TreeView.NodeDataSize := 4;
+  TreeView.TreeOptions.MiscOptions := TreeView.TreeOptions.MiscOptions - [toEditOnClick];
+  TreeView.TreeOptions.PaintOptions := TreeView.TreeOptions.PaintOptions - [toUseExplorerTheme, toHideTreeLinesIfThemed];
+  TreeView.TreeOptions.SelectionOptions := TreeView.TreeOptions.SelectionOptions + [toFullRowSelect];
   TreeView.OnKeyPress := TreeViewKeyPress;
   TreeView.OnMouseMove := HintMouseMove;
+  TreeView.OnGetText := TreeViewGetText;
+  TreeView.OnGetImageIndex := TreeViewGetImageIndex;
+  TreeView.OnFreeNode := TreeViewFreeNode;
   OnMouseMove := HintMouseMove;
   TreeViewOldProc := TreeView.WindowProc;
   TreeView.WindowProc := TreeViewProc;
-  TreeView.DoubleBuffered := True;
+  //TreeView.DoubleBuffered := True;
   Timer := TTimer.Create(nil);
   Timer.Enabled := False;
   FocusDelay := 500;
@@ -237,12 +248,12 @@ procedure THintTree.UpdateHint(const S: string; X, Y: Integer;
 var
   R, ItemRect: TRect;
   newWidth, newHeight, I, MultIdent: Integer;
-  Item: TTreeNode;
+  Item, Child: PNativeNode;
 begin
   if S <> FValue then
   begin
     FValue := S;
-    TreeView.Items.Clear;
+    TreeView.Clear;
     fptr := PChar(FValue);
     DebugParser.Clear;
     DebugParser.Fill(FValue, Token);
@@ -252,27 +263,31 @@ begin
     FWindowMode := False;
     UpdateStyle;
   end;
-  Item := TreeView.Items.GetFirstNode;
+  Item := TreeView.GetFirst;
   if Assigned(Item) then
   begin
-    ItemRect := Item.DisplayRect(False);
-    newWidth := Canvas.TextWidth(Item.Text);
+    ItemRect := TreeView.GetDisplayRect(Item, -1, False);
+    newWidth := Canvas.TextWidth(TNodeObject(TreeView.GetNodeData(Item)^).Caption);
     MultIdent := 1;
-    for I := 0 to Item.Count - 1 do
+    Child := TreeView.GetFirstChild(Item);
+    while Child <> nil do
     begin
       MultIdent := 2;
-      if Canvas.TextWidth(Item.Item[I].Text) > newWidth then
-        newWidth := Canvas.TextWidth(Item.Item[I].Text);
+      I := Canvas.TextWidth(TNodeObject(TreeView.GetNodeData(Child)^).Caption);
+      if I > newWidth then
+        newWidth := I;
+      Child := TreeView.GetNextSibling(Child);
     end;
-    Inc(newWidth, (TreeView.Indent + TreeView.Images.Width) * MultIdent + 20);
-    newHeight := (Item.Count + 1) * (ItemRect.Bottom - ItemRect.Top) + 1;
+    Inc(newWidth, (Integer(TreeView.Indent) + TreeView.Images.Width) * MultIdent + 30);
+    newHeight := (Integer(TreeView.ChildCount[Item]) + 1) * Integer(TreeView.DefaultNodeHeight);
     R := Rect(X, Y, X + newWidth, Y + newHeight);
-    TreeView.ShowRoot := TreeView.Items.Count > 1;
+    //TreeView.ShowRoot := TreeView.Items.Count > 1;
   end
   else
     Exit;
   AdjustHintRect(R);
-  Item.Expanded := True;
+  TreeView.Expanded[Item] := True;
+  TreeView.Realign;
   if not Activated then
     ActivateHint(R);
 end;
@@ -288,7 +303,8 @@ end;
 
 function THintTree.GetClickable: Boolean;
 begin
-  Result := FActivated and (TreeView.Items.Count > 1);
+  Result := FActivated and (TreeView.GetFirst <> nil) and
+    (TreeView.GetFirstChild(TreeView.GetFirst) <> nil);
 end;
 
 procedure THintTree.SetFocusDelay(Value: Integer);
@@ -330,6 +346,35 @@ begin
     R.Bottom := R.Top + newHeight - 4;
     AdjustHintRect(R);
   end;
+end;
+
+procedure THintTree.TreeViewGetText(Sender: TBaseNativeTreeView;
+  Node: PNativeNode; Column: TColumnIndex; TextType: TVSTTextType;
+  var CellText: UnicodeString);
+var
+  NodeObject: TNodeObject;
+begin
+  NodeObject := TNodeObject(TreeView.GetNodeData(Node)^);
+  CellText := NodeObject.Caption;
+end;
+
+procedure THintTree.TreeViewGetImageIndex(Sender: TBaseNativeTreeView;
+  Node: PNativeNode; Kind: TVTImageKind; Column: TColumnIndex;
+  var Ghosted: Boolean; var ImageIndex: Integer);
+var
+  NodeObject: TNodeObject;
+begin
+  NodeObject := TNodeObject(TreeView.GetNodeData(Node)^);
+  ImageIndex := NodeObject.ImageIndex;
+end;
+
+procedure THintTree.TreeViewFreeNode(Sender: TBaseNativeTreeView;
+  Node: PNativeNode);
+var
+  NodeObject: TNodeObject;
+begin
+  NodeObject := TNodeObject(TreeView.GetNodeData(Node)^);
+  NodeObject.Free;
 end;
 
 end.

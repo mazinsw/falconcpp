@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, NativeTreeView, ImgList, ExtCtrls, StdCtrls, ComCtrls,
   RichEditViewer, FileDownload, XMLDoc, XMLIntf, UPkgClasses, rbtree, Contnrs,
-  ThreadFileDownload, FormEffect;
+  ThreadFileDownload, FormEffect, PNGImage;
 
 const
   {$EXTERNALSYM PBS_MARQUEE}
@@ -76,7 +76,6 @@ type
     ProgressBar1: TProgressBar;
     BtnCancel: TButton;
     LabelProgresss: TLabel;
-    Bevel1: TBevel;
     GroupBox2: TGroupBox;
     Image1: TImage;
     TextDesc: TRichEditViewer;
@@ -96,6 +95,7 @@ type
     FileDownloadPkg: TFileDownload;
     Label6: TLabel;
     EditSearch: TEdit;
+    Splitter1: TSplitter;
     procedure FormResize(Sender: TObject);
     procedure FileDownloadXMLProgress(Sender: TObject; ReceivedBytes,
       CalculatedFileSize: Cardinal);
@@ -128,6 +128,9 @@ type
       CalculatedFileSize: Cardinal);
     procedure Button2Click(Sender: TObject);
     procedure EditSearchChange(Sender: TObject);
+    procedure Splitter1Moved(Sender: TObject);
+    procedure Splitter1CanResize(Sender: TObject; var NewSize: Integer;
+      var Accept: Boolean);
   private
     { Private declarations }
     InstalledCount: Integer;
@@ -145,6 +148,7 @@ type
     ConfigRoot, DownloadedPackagesRoot: string;
     InstallPkg: TInstallPkg;
     UninstallPkg: TUninstallPkg;
+    PkgImg: TPNGObject;
     procedure DownloadPackageList;
     procedure ReloadPackages;
     procedure SearchPackage(const S: string);
@@ -442,6 +446,7 @@ begin
   BtnCancel.Left := Panel2.Width - BtnCancel.Width - ProgressBar1.Left;
   TextDesc.Height := GroupBox2.ClientHeight - TextDesc.Top - TextDesc.Left;
   ProgressBar1.Width := BtnCancel.Left - 3 * ProgressBar1.Left;
+  TextDesc.Width := GroupBox2.Width - TextDesc.Left * 2;
 end;
 
 procedure TFrmPkgDownload.FileDownloadXMLProgress(Sender: TObject;
@@ -542,6 +547,7 @@ end;
 
 procedure TFrmPkgDownload.FormCreate(Sender: TObject);
 begin
+  PkgImg := GetPNGResource('PKGIMG');
   ConvertTo32BitImageList(ImageList16x16);
   AddImages(ImageList16x16, 'IMAGES_16x16');
   ConfigRoot := IncludeTrailingPathDelimiter(GetSpecialFolder(CSIDL_APPDATA))
@@ -571,6 +577,7 @@ end;
 
 procedure TFrmPkgDownload.FormDestroy(Sender: TObject);
 begin
+  PkgImg.Free;
   UninstallPkg.Free;
   InstallPkg.Free;
   CategoryList.Free;
@@ -681,7 +688,8 @@ begin
   if Data is TPackage then
   begin
     GroupBox2.Visible := True;
-    Bevel1.Visible := True;
+    Splitter1.Visible := True;
+    Image1.Picture.Assign(PkgImg);
     FormResize(Self);
     LabelName.Caption := TPackage(Data).Name;
     LabelVersion.Caption := TPackage(Data).Version;
@@ -695,7 +703,7 @@ begin
   else
   begin
     GroupBox2.Visible := False;
-    Bevel1.Visible := False;
+    Splitter1.Visible := False;
     FormResize(Self);
   end;
 end;
@@ -1275,6 +1283,17 @@ end;
 procedure TFrmPkgDownload.EditSearchChange(Sender: TObject);
 begin
   SearchPackage(UpperCase(Trim(EditSearch.Text)));
+end;
+
+procedure TFrmPkgDownload.Splitter1Moved(Sender: TObject);
+begin
+  FormResize(Sender);
+end;
+
+procedure TFrmPkgDownload.Splitter1CanResize(Sender: TObject;
+  var NewSize: Integer; var Accept: Boolean);
+begin
+  Accept := (NewSize > 219) and (ClientWidth - NewSize > 530);
 end;
 
 end.

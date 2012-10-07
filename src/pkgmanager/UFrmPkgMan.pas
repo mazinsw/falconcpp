@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Controls, Forms, Graphics,
   Dialogs, Menus, ComCtrls, ToolWin, ImgList, StdCtrls, PNGImage,
-  RichEditViewer, FormEffect, IniFiles, ShellApi, ExtCtrls;
+  RichEditViewer, FormEffect, IniFiles, ShellApi, ExtCtrls, Clipbrd;
 
 const
   WM_RELOADPKG  = WM_USER + $0112;
@@ -65,6 +65,9 @@ type
     TextDesc: TRichEditViewer;
     ImgPkgList: TImageList;
     LblSite: TLabel;
+    PopupMenu1: TPopupMenu;
+    OpenFolder1: TMenuItem;
+    CopyFileName1: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure PkgListProc(var Msg: TMessage);
     procedure ReloadPackages(var Message: TMessage); message WM_RELOADPKG;
@@ -84,9 +87,13 @@ type
       Y: Integer);
     procedure TbUninstallClick(Sender: TObject);
     procedure TbHelpClick(Sender: TObject);
+    procedure CopyFileName1Click(Sender: TObject);
+    procedure FileListChange(Sender: TObject; Node: TTreeNode);
+    procedure OpenFolder1Click(Sender: TObject);
   private
     { Private declarations }
     PkgListWndProc: TWndMethod;
+    function GetPathFromNode(Node: TTreeNode): string;
   public
     { Public declarations }
     function PackageInstalled(const Name, Version: string): Boolean;
@@ -412,6 +419,8 @@ procedure TFrmPkgMan.PkgListSelectItem(Sender: TObject; Item: TListItem;
 var
   PkgInfo: TPkgItem;
 begin
+  Splitter1.Visible := Selected;
+  InfoPanel.Visible := Selected;
   TbUninstall.Enabled := Selected;
   Uninstall1.Enabled := Selected;
   TbCheck.Enabled := Selected;
@@ -503,6 +512,53 @@ procedure TFrmPkgMan.TbHelpClick(Sender: TObject);
 begin
   FrmHelp := TFrmHelp.CreateParented(Handle);
   FrmHelp.ShowModal;
+end;
+
+function TFrmPkgMan.GetPathFromNode(Node: TTreeNode): string;
+var
+  Parent: TTreeNode;
+begin
+  Parent := Node;
+  Result := '';
+  while Parent <> nil do
+  begin
+    Result := '\' + Parent.Text + Result;
+    Parent := Parent.Parent;
+  end;
+  if Pos(':', Result) > 0 then
+    Exit;
+  Result := ExcludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName))
+    + Result;
+end;
+
+procedure TFrmPkgMan.CopyFileName1Click(Sender: TObject);
+begin
+  Clipboard.AsText := GetPathFromNode(FileList.Selected);
+end;
+
+procedure TFrmPkgMan.FileListChange(Sender: TObject; Node: TTreeNode);
+begin
+  CopyFileName1.Enabled := Node <> nil;
+  OpenFolder1.Enabled := Node <> nil;
+end;
+
+procedure TFrmPkgMan.OpenFolder1Click(Sender: TObject);
+var
+  FileName: string;
+begin
+  FileName := GetPathFromNode(FileList.Selected);
+  if not FileExists(FileName) and DirectoryExists(FileName) then
+  begin
+    if DirectoryExists(FileName) then
+      ShellExecute(0, 'open', PChar(FileName), nil, nil, SW_SHOW);
+  end
+  else if FileExists(FileName) then
+  begin
+    if FileExists(FileName) then
+      ShellExecute(0, 'open', 'explorer.exe',
+        PChar('/select, "' + FileName + '"'), nil, SW_SHOW);
+    //Edit;
+  end;
 end;
 
 end.

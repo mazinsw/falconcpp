@@ -54,6 +54,13 @@ type
     Count: integer;
   end;
 
+  TNodeObject = class
+  public
+    ImageIndex: Integer;
+    Caption: string;
+    Data: Pointer;
+  end;
+
   PTokenRec = ^TTokenRec;
   PTokenRecList = ^PTokenRec;
   TTokenRec = packed record

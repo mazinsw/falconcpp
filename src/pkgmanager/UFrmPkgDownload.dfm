@@ -18,19 +18,20 @@ object FrmPkgDownload: TFrmPkgDownload
   OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 13
-  object Bevel1: TBevel
-    Left = 513
+  object Splitter1: TSplitter
+    Left = 516
     Top = 41
-    Width = 10
+    Width = 7
     Height = 369
     Align = alRight
-    Shape = bsSpacer
     Visible = False
+    OnCanResize = Splitter1CanResize
+    OnMoved = Splitter1Moved
   end
   object GroupBox1: TGroupBox
     Left = 0
     Top = 41
-    Width = 513
+    Width = 516
     Height = 369
     Align = alClient
     Caption = 'Packages'

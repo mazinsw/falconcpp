@@ -739,13 +739,15 @@ begin
       Break;
     S := FileList.Strings[0];
     TokenFile := nil;
+    FileObj := TFileObject(FileList.Objects[0]);
     if S <> '-' then
     begin
+      S := FileObj.FileName;
       if FileExists(S) and (ItemOfByFileName(S) = nil) then
       begin
         TokenFile := TTokenFile.Create(Self);
         TokenFile.FileName := S;
-        TokenFile.Data := FileList.Objects[0];
+        TokenFile.Data := FileObj.ID;
         Text.LoadFromFile(S);
         fParser.Parse(Text.Text, TokenFile);
         if fCancel then
@@ -759,7 +761,6 @@ begin
     end
     else
     begin
-      FileObj := TFileObject(FileList.Objects[0]);
       S := FileObj.FileName;
       if ItemOfByFileName(S) = nil then
       begin

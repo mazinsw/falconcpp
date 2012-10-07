@@ -3,7 +3,7 @@ unit DebugReader;
 interface
 
 uses
-  Windows, SysUtils, Classes, regexp_tregexpr, Dialogs, ComCtrls,
+  Windows, SysUtils, Classes, regexp_tregexpr, Dialogs, NativeTreeView,
   TokenList, TokenUtils;
 
 type
@@ -141,16 +141,16 @@ type
   private
     FText: string;
     fptr: PChar;
-    FTreeView: TTreeView;
+    FTreeView: TNativeTreeView;
     procedure SkipPair(openPair, closePair: Char);
     procedure SkipString(commaChar: Char);
     function SearchVariable(const Name: string;
-      Parent: TTreeNode; Index: Integer): TTreeNode;
-    procedure Parse(Parent: TTreeNode; Token: TTokenClass);
+      Parent: PNativeNode; Index: Integer): PNativeNode;
+    procedure Parse(Parent: PNativeNode; Token: TTokenClass);
   public
     procedure Clear;
     procedure Fill(const S: string; token: TTokenClass);
-    property TreeView: TTreeView read FTreeView write FTreeView;
+    property TreeView: TNativeTreeView read FTreeView write FTreeView;
   end;
 
 implementation
@@ -709,47 +709,65 @@ begin
 end;
 
 function TDebugParser.SearchVariable(const Name: string;
-  Parent: TTreeNode; Index: Integer): TTreeNode;
+  Parent: PNativeNode; Index: Integer): PNativeNode;
+
+  function GetChild(Node: PNativeNode; Index: Integer): PNativeNode;
+  var
+    Child: PNativeNode;
+    I: Integer;
+  begin
+    Child := TreeView.GetFirstChild(Node);
+    for I := 0 to TreeView.ChildCount[Node] - 1 do
+    begin
+      if I = Index then
+        Break;
+      Child := TreeView.GetNextSibling(Child);
+    end;
+    Result := Child;
+  end;
+
 var
   Item: TWatchVariable;
-  Node: TTreeNode;
+  Node, Child: PNativeNode;
 begin
   Result := nil;
   if Assigned(Parent) then
   begin
-    if (Index < Parent.Count) and (Index >= 0) then
+    if (Index < TreeView.ChildCount[Parent]) and (Index >= 0) then
     begin
-      Item := TWatchVariable(Parent.Item[Index].Data);
+      Child := GetChild(Parent, Index);
+      Item := TWatchVariable(TNodeObject(TreeView.GetNodeData(Child)^).Data);
       if Name = Item.Name then
       begin
-        Result := Parent.Item[Index];
+        Result := Child;
         Exit;
       end;
     end;
   end
   else
   begin //level 0
-    Node := TreeView.Items.GetFirstNode;
+    Node := TreeView.GetFirst;
     while Node <> nil do
     begin
-      Item := TWatchVariable(Node.Data);
+      Item := TWatchVariable(TNodeObject(TreeView.GetNodeData(Node)^).Data);
       if Name = Item.Name then
       begin
         Result := Node;
         Exit;
       end;
-      Node := Node.getNextSibling;
+      Node := TreeView.GetNextSibling(Node);
     end;
   end;
 end;
 
-procedure TDebugParser.Parse(Parent: TTreeNode; Token: TTokenClass);
+procedure TDebugParser.Parse(Parent: PNativeNode; Token: TTokenClass);
 
   function AddVar(const Name, Value: string; var childToken: TTokenClass;
-    Index: Integer): TTreeNode;
+    Index: Integer): PNativeNode;
   var
     tempToken: TTokenClass;
     watchVar: TWatchVariable;
+    NodeObject: TNodeObject;
   begin
     tempToken := nil;
     childToken := Token;
@@ -766,19 +784,22 @@ procedure TDebugParser.Parse(Parent: TTreeNode; Token: TTokenClass);
     Result := SearchVariable(Name, Parent, Index);
     if not Assigned(Result) then
     begin
+      NodeObject := TNodeObject.Create;
+      Result := FTreeView.AddChild(Parent, NodeObject);
       if Value = '' then
-        Result := FTreeView.Items.AddChild(Parent, Name)
+        NodeObject.Caption := Name
       else
-        Result := FTreeView.Items.AddChild(Parent, Name + ' = ' + Value);
+        NodeObject.Caption := Name + ' = ' + Value;
       watchVar := TWatchVariable.Create;
     end
     else
     begin
+      NodeObject := TNodeObject(TreeView.GetNodeData(Result)^);
       if Value = '' then
-        Result.Text := Name
+        NodeObject.Caption := Name
       else
-        Result.Text := Name + ' = ' + Value;
-      watchVar := TWatchVariable(Result.Data);
+        NodeObject.Caption := Name + ' = ' + Value;
+      watchVar := TWatchVariable(NodeObject.Data);
     end;
     watchVar.Name := Name;
     watchVar.Value := Value;
@@ -790,16 +811,15 @@ procedure TDebugParser.Parse(Parent: TTreeNode; Token: TTokenClass);
       watchVar.SelStart := TTokenClass(tempToken).SelStart;
       watchVar.SelLength := TTokenClass(tempToken).SelLength;
     end;
-    Result.ImageIndex := 0;
-    Result.SelectedIndex := Result.ImageIndex;
-    Result.Data := watchVar;
+    NodeObject.ImageIndex := 0;
+    NodeObject.Data := watchVar;
   end;
 
 var
   VarName, VarValue: string;
   EqFind: Boolean;
   closePair: Char;
-  Item: TTreeNode;
+  Item: PNativeNode;
   childToken: TTokenClass;
   IVector, Len, Index: Integer;
   ptrB, ptrE: PChar;
@@ -897,17 +917,24 @@ end;
 procedure TDebugParser.Clear;
 var
   I: Integer;
+  Node: PNativeNode;
 begin
-  for I := 0 to FTreeView.Items.Count - 1 do
-    TWatchVariable(FTreeView.Items.Item[I].Data).Free;
-  TreeView.Items.Clear;
+  Node := TreeView.GetFirst;
+  while Node <> nil do
+  begin
+    TWatchVariable(TNodeObject(TreeView.GetNodeData(Node)^).Data).Free;
+    Node := TreeView.GetNext(Node)
+  end;
+  TreeView.Clear;
 end;
 
 procedure TDebugParser.Fill(const S: string; token: TTokenClass);
 begin
   FText := S;
   fptr := PChar(FText);
+  TreeView.BeginUpdate;
   Parse(nil, token);
+  TreeView.EndUpdate;
 end;
 
 end.

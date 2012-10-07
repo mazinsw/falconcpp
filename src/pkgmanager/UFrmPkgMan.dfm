@@ -20,6 +20,7 @@ object FrmPkgMan: TFrmPkgMan
     Left = 185
     Top = 58
     Height = 465
+    Visible = False
   end
   object StatusBar: TStatusBar
     Left = 0
@@ -36,6 +37,7 @@ object FrmPkgMan: TFrmPkgMan
     Align = alLeft
     BevelOuter = bvNone
     TabOrder = 1
+    Visible = False
     object PageControl: TPageControl
       Left = 0
       Top = 0
@@ -168,7 +170,11 @@ object FrmPkgMan: TFrmPkgMan
           Align = alClient
           Images = ImgListMenu
           Indent = 19
+          PopupMenu = PopupMenu1
+          ReadOnly = True
+          RightClickSelect = True
           TabOrder = 0
+          OnChange = FileListChange
         end
       end
     end
@@ -189,6 +195,7 @@ object FrmPkgMan: TFrmPkgMan
       Height = 461
       Align = alClient
       Columns = <>
+      HideSelection = False
       IconOptions.AutoArrange = True
       LargeImages = ImgPkgList
       ReadOnly = True
@@ -376,7 +383,7 @@ object FrmPkgMan: TFrmPkgMan
     Left = 440
     Top = 16
     Bitmap = {
-      494C010109000E000C0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010109000E00140010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000003000000001002000000000000030
       0000000000000000000000000000000000000000000080808000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -790,5 +797,21 @@ object FrmPkgMan: TFrmPkgMan
     Width = 48
     Left = 512
     Top = 16
+  end
+  object PopupMenu1: TPopupMenu
+    Left = 204
+    Top = 122
+    object OpenFolder1: TMenuItem
+      Caption = 'Open Folder'
+      Enabled = False
+      ShortCut = 13
+      OnClick = OpenFolder1Click
+    end
+    object CopyFileName1: TMenuItem
+      Caption = 'Copy FileName'
+      Enabled = False
+      ShortCut = 16451
+      OnClick = CopyFileName1Click
+    end
   end
 end

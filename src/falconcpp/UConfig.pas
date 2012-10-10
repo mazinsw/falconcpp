@@ -303,7 +303,7 @@ begin
     KeepTrailingSpaces := ini.ReadBool('EditorOptions', 'KeepTrailingSpaces', True);
 
     ScrollHint := ini.ReadBool('EditorOptions', 'ScrollHint', True);
-    SmartTabs := ini.ReadBool('EditorOptions', 'SmartTabs', False);
+    SmartTabs := ini.ReadBool('EditorOptions', 'SmartTabs', True);
     TabIndentUnindent := ini.ReadBool('EditorOptions', 'TabIndentUnindent', True);
     UseTabChar := ini.ReadBool('EditorOptions', 'UseTabChar', False);
     EnhancedHomeKey := ini.ReadBool('EditorOptions', 'EnhancedHomeKey', False);
@@ -324,7 +324,7 @@ begin
     LinkColor := StringToColor(ini.ReadString('EditorOptions', 'LinkColor', 'clBlue'));
     //display
     FontName := ini.ReadString('EditorOptions', 'FontName', 'Courier New');
-    FontSize := ini.ReadInteger('EditorOptions', 'FontSize', 12);
+    FontSize := ini.ReadInteger('EditorOptions', 'FontSize', 10);
     ShowRightMargin := ini.ReadBool('EditorOptions', 'ShowRightMargin', True);
     RightMargin := ini.ReadInteger('EditorOptions', 'RightMargin', 80);
     ShowGutter := ini.ReadBool('EditorOptions', 'ShowGutter', True);

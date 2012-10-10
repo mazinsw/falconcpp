@@ -731,7 +731,7 @@ type
       DisplayRect: TRect; Token: TTokenClass; State: TCustomDrawState);
     procedure TextEditorUpdateStatusBar(Sender: TObject);
     procedure ExecutorStart(Sender: TObject);
-    function FillTreeViewV2(Sibling, Parent: PNativeNode; Token: TTokenClass;
+    function FillTreeViewV2(Parent: PNativeNode; Token: TTokenClass;
       DeleteNext: Boolean = False): PNativeNode;
     procedure PaintTokenItemV2(const ToCanvas: TCanvas; DisplayRect: TRect;
       Token: TTokenClass; Selected, Focused: Boolean; var DefaultDraw: Boolean);
@@ -1765,16 +1765,18 @@ begin
   FTemplates := aTemplates;
 end;
 
-function TFrmFalconMain.FillTreeViewV2(Sibling, Parent: PNativeNode;
+function TFrmFalconMain.FillTreeViewV2(Parent: PNativeNode;
   Token: TTokenClass; DeleteNext: Boolean): PNativeNode;
 var
   I: Integer;
   S: string;
   NodeObject: TNodeObject;
+  Node: PNativeNode;
 begin
   Result := nil;
   for I := 0 to Token.Count - 1 do
   begin
+    Node := Parent;
     if not (Token.Items[I].Token in [tkParams, tkScope, tkScopeClass, tkUsing]) then
     begin
       if Token.Items[I].Token in [tkFunction, tkProtoType, tkConstructor, tkDestructor] then
@@ -1796,15 +1798,15 @@ begin
       NodeObject := TNodeObject.Create;
       NodeObject.Data := Token.Items[I];
       NodeObject.Caption := S;
-      Sibling := TreeViewOutline.AddChild(Parent, NodeObject);
-      Token.Items[I].Data := Sibling;
+      Node := TreeViewOutline.AddChild(Parent, NodeObject);
+      Token.Items[I].Data := Node;
       NodeObject.ImageIndex := GetTokenImageIndex(Token.Items[I], OutlineImages);
     end;
 
     if not (Token.Items[I].Token in [tkParams, tkScope, tkFunction,
       tkConstructor, tkDestructor]) then
     begin
-      FillTreeViewV2(nil, Sibling, Token.Items[I], True);
+      FillTreeViewV2(Node, Token.Items[I], True);
     end;
   end;
 end;
@@ -5918,9 +5920,9 @@ procedure TFrmFalconMain.UpdateActiveFileToken(NewToken: TTokenFile;
       NodeObject.ImageIndex := GetTokenImageIndex(TokenList, OutlineImages);
     end;
     if not Static then
-      FillTreeViewV2(nil, Parent, TokenList)
+      FillTreeViewV2(Parent, TokenList)
     else if Assigned(Parent) then
-      FillTreeViewV2(nil, Parent, TokenList);
+      FillTreeViewV2(Parent, TokenList);
   end;
 
   {procedure FillTokenList(var Sibling, Parent: PNativeNode;

@@ -1300,8 +1300,8 @@ object FrmFalconMain: TFrmFalconMain
           DragMode = dmAutomatic
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
-          Font.Height = -11
-          Font.Name = 'MS Sans Serif'
+          Font.Height = -12
+          Font.Name = 'Segoe UI'
           Font.Style = []
           HideSelection = False
           Images = ImgListMenus
@@ -1361,6 +1361,11 @@ object FrmFalconMain: TFrmFalconMain
           Width = 175
           Height = 502
           Align = alClient
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -12
+          Font.Name = 'Segoe UI'
+          Font.Style = []
           Header.AutoSizeIndex = 0
           Header.Font.Charset = DEFAULT_CHARSET
           Header.Font.Color = clWindowText
@@ -1370,7 +1375,9 @@ object FrmFalconMain: TFrmFalconMain
           Header.MainColumn = -1
           Images = ImgListOutLine
           NodeDataSize = 4
+          ParentFont = False
           TabOrder = 0
+          TextMargin = 1
           TreeOptions.MiscOptions = [toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning]
           TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowRoot, toShowTreeLines, toThemeAware, toUseBlendedImages, toUseExplorerTheme, toHideTreeLinesIfThemed]
           TreeOptions.SelectionOptions = [toFullRowSelect]

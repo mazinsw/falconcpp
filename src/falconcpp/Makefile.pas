@@ -145,7 +145,7 @@ begin
   if Source.Count > 0 then
   begin
     S := ChangeFileExt(Source.Strings[0], '.o');
-    if (ConvertAnsiToOem(S) <> S) then
+    if (ConvertAnsiToOem(S) <> S) or (Pos(' ', S) > 0) then
       ShowAnsiOBJS := True;
     S := EscapeString(ConvertAnsiToOem(S));
     if (Source.Count + Resources.Count) > 1 then
@@ -156,7 +156,7 @@ begin
     for I := 1 to Source.Count - 2 do
     begin
       S := ChangeFileExt(Source.Strings[I], '.o');
-      if (ConvertAnsiToOem(S) <> S) then
+      if (ConvertAnsiToOem(S) <> S) or (Pos(' ', S) > 0) then
         ShowAnsiOBJS := True;
       S := EscapeString(ConvertAnsiToOem(S));
       OutFile.Add('        ' + S + ' \');
@@ -166,13 +166,13 @@ begin
       if Source.Count > 1 then
       begin
         S := ChangeFileExt(Source.Strings[Source.Count - 1], '.o');
-        if (ConvertAnsiToOem(S) <> S) then
+        if (ConvertAnsiToOem(S) <> S) or (Pos(' ', S) > 0) then
           ShowAnsiOBJS := True;
         S := EscapeString(ConvertAnsiToOem(S));
         OutFile.Add('        ' + S + ' \');
       end;
       S := ChangeFileExt(Resources.Strings[0], '.res');
-      if (ConvertAnsiToOem(S) <> S) then
+      if (ConvertAnsiToOem(S) <> S) or (Pos(' ', S) > 0) then
         ShowAnsiOBJS := True;
       S := EscapeString(ConvertAnsiToOem(S));
       OutFile.Add('        ' + S);
@@ -180,7 +180,7 @@ begin
     else if Source.Count > 1 then
     begin
       S := ChangeFileExt(Source.Strings[Source.Count - 1], '.o');
-      if (ConvertAnsiToOem(S) <> S) then
+      if (ConvertAnsiToOem(S) <> S) or (Pos(' ', S) > 0) then
         ShowAnsiOBJS := True;
       S := EscapeString(ConvertAnsiToOem(S));
       OutFile.Add('        ' + S);
@@ -189,7 +189,7 @@ begin
   else if Resources.Count = 1 then
   begin
     S := ChangeFileExt(Resources.Strings[0], '.res');
-    if (ConvertAnsiToOem(S) <> S) then
+    if (ConvertAnsiToOem(S) <> S) or (Pos(' ', S) > 0) then
       ShowAnsiOBJS := True;
     S := EscapeString(ConvertAnsiToOem(S));
     OutFile.Add('OBJS   =' + S);

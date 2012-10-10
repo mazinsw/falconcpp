@@ -1618,7 +1618,7 @@ procedure TFrmEditorOptions.Button1Click(Sender: TObject);
 begin
   CboEditFont.ItemIndex := CboEditFont.Items.IndexOf('Courier New');
   CboEditFontSelect(Sender);
-  CboSize.Text := '12';
+  CboSize.Text := '10';
   CboSizeChange(Sender);
   ChbShowRMrgn.Checked := True;
   ChbShowgtt.Checked := True;
@@ -1638,7 +1638,7 @@ begin
   //-------------------------
   ChbScrollHint.Checked := True;
   ChbTabUnOrIndt.Checked := True;
-  ChbSmartTabs.Checked := False;
+  ChbSmartTabs.Checked := True;
   ChbUseTabChar.Checked := False;
   ChbEnhHomeKey.Checked := False;
   ChbShowLineChars.Checked := False;

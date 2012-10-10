@@ -312,44 +312,8 @@ begin
 end;
 
 function TranslateSpecialChars(const S: string): string;
-var
-  ptr, buf: PChar;
 begin
-  ptr := PChar(S);
-  Result := S;
-  buf := PChar(Result);
-  if ptr^ = #0 then
-    Exit;
-  while ptr^ <> #0 do
-  begin
-    if ptr^ = '\' then
-    begin
-      case (ptr + 1)^ of
-        'n':
-        begin
-          Inc(ptr);
-          buf^ := #13;
-        end;
-        't':
-        begin
-          Inc(ptr);
-          buf^ := #9;
-        end;
-      else
-        if (ptr + 1)^ <> #0 then
-        begin
-          Inc(ptr);
-          buf^ := ptr^;
-        end;
-      end;
-    end
-    else
-      buf^ := ptr^;
-    Inc(ptr);
-    Inc(buf);
-  end;
-  buf^ := #0;
-  Result := StrPas(buf);
+  Result := StringReplace(S, '\n', #13, [rfReplaceAll]);
 end;
 
 procedure BitmapToAlpha(bmp: TBitmap; Color: TColor = clFuchsia);

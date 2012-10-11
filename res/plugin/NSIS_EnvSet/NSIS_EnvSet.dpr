@@ -63,14 +63,9 @@ var
 begin
   Result := False;
   Path := GetEnvironmentVariableA('PATH');
-  I := Pos(Value, Path);
+  I := Pos(UpperCase(Value), UpperCase(Path));
   if I = 0 then
-  begin
-    if Path[Length(Path)] = ';' then
-      Result := SetGlobalEnvironmentA('PATH', Path + Value, False)
-    else
-      Result := SetGlobalEnvironmentA('PATH', Path + ';' + Value, False);
-  end;
+    Result := SetGlobalEnvironmentA('PATH', Value + ';' + Path, False);
 end; { AddVariableToPathA }
 
 function DelVariableOfPathA(const Value: String): Boolean;

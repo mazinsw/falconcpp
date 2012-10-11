@@ -393,7 +393,7 @@ begin
           Result := '';
           Exit;
         end;
-      '(': Result := Result + '(' + GetWordPair('(', ')') + ')';
+      '(': Result := Result + '(' + GetWordPair(cStart, cEnd) + ')';
     else
       if fptr^ in SpaceChars + LineChars then
         Result := Trim(Result) + ' '
@@ -742,9 +742,9 @@ begin
       '=': HasEqual := True; //int a = 3;
       ',', ';', ':', '}', ')': //} is a error
         begin
-          TempWord := GetFirstWord(RetType); //check for return case
+          TempWord := GetFirstWord(RetType); //check for return, case, else,...
           if (CountWords(RetType + Asterisk + ' ' + VarName) > 1) and
-            not StringIn(TempWord, ['return', 'case', 'else']) then
+            not StringIn(TempWord, ['return', 'case', 'else', 'delete', 'new']) then
           begin
             Len := Length(Vector);
             if (Len > 48) then
@@ -1376,9 +1376,6 @@ begin
               scope := GetTokenByName(Top, 'Scope', tkScope);
               if Assigned(scope) then
                 scope.SelLength := fCurrPos - scope.SelStart;
-            //DoTokenLog('SelStart: ' + IntToStr(scope.SelStart) + ' - ' +
-            //  'SelLength: ' + IntToStr(scope.SelLength) + ' - ' +
-            //  'SelLine: ' + IntToStr(scope.SelLine));
             end;
             I := Top.Level;
             if fLevel = I then
@@ -1603,6 +1600,7 @@ begin
         begin
           Vector := Vector + '[' + GetWordPair('[', ']') + ']';
         end;
+      '=': HasEqual := True; //int a = 3;
       '{': // struct point pt[?] = {{1, 2}, {3, 4}}; ? is 2
         begin
           if HasEqual then //count elements
@@ -1677,7 +1675,7 @@ begin
     DoProgress;
     Inc(fptr);
     Inc(fCurrPos);
-  until fptr^ in [#0, ')'];
+  until fptr^ in [#0, ')', ';'];
   if (fptr^ = #0) or (Trim(RetType) = '') then
     Exit;
   RetType := Trim(RetType);
@@ -1937,7 +1935,7 @@ begin
       #10: Inc(fCurrLine); //LF
       #13: ; //skip
     else
-      if (fptr^ in LetterChars + DigitChars) or (SpaceSepOnly and not (fptr^ in SpaceChars)) then
+      if (fptr^ in LetterChars + DigitChars) or (SpaceSepOnly and (fptr^ in SpaceChars)) then
         TokenName := TokenName + fptr^
       else if fptr^ in SpaceChars + ['(', ')', ','] then
         Break;
@@ -2147,7 +2145,8 @@ begin
           end
           else if PairCount = 0 then
           begin
-            ProcessFunction(StartPos, StartLine, CurrStr, IsDestructor);
+            if TempWord <> 'for' then
+              ProcessFunction(StartPos, StartLine, CurrStr, IsDestructor);
           end
           else
             SkipPair('(', ')', [';', '{', '}']);

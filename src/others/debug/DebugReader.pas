@@ -733,7 +733,7 @@ begin
   Result := nil;
   if Assigned(Parent) then
   begin
-    if (Index < TreeView.ChildCount[Parent]) and (Index >= 0) then
+    if (Index < Integer(TreeView.ChildCount[Parent])) and (Index >= 0) then
     begin
       Child := GetChild(Parent, Index);
       Item := TWatchVariable(TNodeObject(TreeView.GetNodeData(Child)^).Data);
@@ -916,7 +916,6 @@ end;
 
 procedure TDebugParser.Clear;
 var
-  I: Integer;
   Node: PNativeNode;
 begin
   Node := TreeView.GetFirst;

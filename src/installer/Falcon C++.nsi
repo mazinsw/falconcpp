@@ -11,6 +11,7 @@
   !define MUI_FINISHPAGE_RUN_TEXT "Falcon C++"
   !define MUI_FINISHPAGE_RUN_FUNCTION "LaunchLink"
 
+!addplugindir "..\..\res\plugin\"
 ;--------------------------------
 ; define
   !define PROJECT_NAME "Falcon C++"

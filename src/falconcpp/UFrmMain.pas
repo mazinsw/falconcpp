@@ -4657,9 +4657,11 @@ procedure TFrmFalconMain.TextEditorKeyPress(Sender: TObject;
   var Key: Char);
 var
   sheet: TSourceFileSheet;
-  emptyLine: Boolean;
-  str, LineStr: string;
-  bStart, caret: TBufferCoord;
+  emptyLine, replaceLine: Boolean;
+  str, LineStr, S: string;
+  p: PChar;
+  i, j, SpaceCount1: Integer;
+  bStart: TBufferCoord;
 begin
   LastKeyPressed := Key;
   if GetActiveSheet(sheet) then
@@ -4680,6 +4682,7 @@ begin
     begin
       emptyLine := False;
       LineStr := '';
+      j := 0;
       if sheet.Memo.SelAvail then
       begin
         bStart.Line := sheet.Memo.BlockBegin.Line;
@@ -4694,28 +4697,57 @@ begin
       begin
         LineStr := sheet.Memo.Lines.Strings[bStart.Line - 1];
         LineStr := Copy(LineStr, 1, bStart.Char - 1);
-        if Trim(LineStr) = '' then
-          emptyLine := True;
+        p := PChar(LineStr);
+        if p^ <> #0 then
+          repeat
+            if not (p^ in [#9, #32]) then Break;
+            if p^ = #9 then
+              Inc(j, sheet.Memo.TabWidth)
+            else
+              Inc(j);
+            Inc(p);
+          until p^ = #0;
+        emptyLine := p^ = #0;
       end;
       if emptyLine then
       begin
-        Key := #0;
-        caret := sheet.Memo.CaretXY;
-        str := '}';
-        if Config.Editor.UseTabChar then
+        replaceLine := False;
+        SpaceCount1 := j;
+        if sheet.Memo.Lines.Count >= bStart.Line - 1 then
         begin
-          str := #13 + StringOfChar(#9, bStart.Char - 1) + str;
-          str := #13 + StringOfChar(#9, bStart.Char) + str;
-        end
-        else
-        begin
-          str := #13 + StringOfChar(' ', bStart.Char - 1) + str;
-          str := #13 + StringOfChar(' ', bStart.Char - 1 +
-            Config.Editor.TabWidth) + str;
+          LineStr := sheet.Memo.Lines.Strings[bStart.Line - 2];
+          p := PChar(LineStr);
+          i := 0;
+          if p^ <> #0 then
+            repeat
+              if not (p^ in [#9, #32]) then Break;
+              if p^ = #9 then
+                Inc(i, sheet.Memo.TabWidth)
+              else
+                Inc(i);
+              Inc(p);
+            until p^ = #0;
+          replaceLine := j <> i;
+          SpaceCount1 := i;
         end;
-        sheet.Memo.SelText := '{' + str;
+        Key := #0;
+        S := GetLeftSpacing(SpaceCount1, sheet.Memo.TabWidth, sheet.Memo.WantTabs and not (eoTabsToSpaces in sheet.Memo.Options));
+        str := '{' + #13 + S + GetLeftSpacing(sheet.Memo.TabWidth,
+          sheet.Memo.TabWidth, sheet.Memo.WantTabs and not (eoTabsToSpaces in sheet.Memo.Options)) + #13 + S + '}';
+        sheet.Memo.BeginUpdate;
+        bStart.Char := Length(S) + 1;
+        if replaceLine then
+        begin
+          if sheet.Memo.SelAvail then
+            sheet.Memo.SetCaretAndSelection(bStart, bStart, sheet.Memo.BlockEnd)
+          else
+            sheet.Memo.CaretX := bStart.Char;
+        end;
+        sheet.Memo.SelText := str;
+        sheet.Memo.EndUpdate;
         Inc(bStart.Line);
-        Inc(bStart.Char, Config.Editor.TabWidth);
+        bStart.Char := Length(GetLeftSpacing(SpaceCount1 + sheet.Memo.TabWidth,
+          sheet.Memo.TabWidth, sheet.Memo.WantTabs and not (eoTabsToSpaces in sheet.Memo.Options))) + 1;
         sheet.Memo.CaretXY := bStart;
       end
       else

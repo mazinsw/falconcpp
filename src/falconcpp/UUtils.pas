@@ -60,6 +60,7 @@ function GetTickTime(ticks: Cardinal; fmt: string): string;
 procedure GetNameAndVersion(const S: string; var aName, aVersion: string);
 procedure SearchCompilers(List: TStrings; var PathCompiler: string);
 function TranslateSpecialChars(const S: string): string;
+function GetLeftSpacing(CharCount, TabWidth: Integer; WantTabs: Boolean): string;
 function ExecuteFile(Handle: HWND; const Filename, Paramaters,
   Directory: string; Options: TExecuteFileOptions): Integer;
 procedure LoadFontNames(List: TStrings);
@@ -316,6 +317,13 @@ begin
   Result := StringReplace(S, '\n', #13, [rfReplaceAll]);
 end;
 
+function GetLeftSpacing(CharCount, TabWidth: Integer; WantTabs: Boolean): string;
+begin
+  if (WantTabs) and (CharCount>=TabWidth) then
+      Result:=StringOfChar(#9,CharCount div TabWidth)+StringOfChar(#32,CharCount mod TabWidth)
+  else Result:=StringOfChar(#32,CharCount);
+end;
+
 procedure BitmapToAlpha(bmp: TBitmap; Color: TColor = clFuchsia);
 var
   ColorSL: pRGBALine;
@@ -503,30 +511,24 @@ end;
 
 function CanUpdate(UpdateXML: string): Boolean;
 var
-  XMLDoc: TXMLDocument;
+  XMLDoc: IXMLDocument;
   Node, FalconNode: IXMLNode;
   SiteVersion: TVersion;
 begin
   Result := False;
   if not FileExists(UpdateXML) then
     Exit;
-  XMLDoc := TXMLDocument.Create(FrmFalconMain);
   try
-    XMLDoc.LoadFromFile(UpdateXML);
+    XMLDoc := LoadXMLDocument(UpdateXML);
   except
-    XMLDoc.Free;
     Exit;
   end;
-  XMLDoc.Options := XMLDoc.Options + [doNodeAutoIndent];
-  XMLDoc.NodeIndentStr := '    ';
-
   //tag FalconCPP
   FalconNode := XMLDoc.ChildNodes.FindNode('FalconCPP');
   Node := FalconNode.ChildNodes.FindNode('Core');
   SiteVersion := ParseVersion(Node.Attributes['Version']);
   if (CompareVersion(SiteVersion, FrmFalconMain.FalconVersion) = 1) then
     Result := True;
-  XMLDoc.Free;
 end;
 
 function GetUserFolderPath(nFolder: Integer = CSIDL_PERSONAL): string;

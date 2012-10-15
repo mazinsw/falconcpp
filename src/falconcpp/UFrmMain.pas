@@ -636,6 +636,10 @@ type
     LastMousePos: TPoint;
     LastWordHintStart: Integer;
 
+    // search history
+    FSearchList: TStrings;
+    FReplaceList: TStrings;
+
     //for ThreadTokenFiles
     IsLoadingSrcFiles: Boolean;
     LoadTokenMode: Integer;
@@ -656,7 +660,7 @@ type
     ThreadTokenFiles: TThreadTokenFiles;
     HintTip: TTokenHintTip; //mouse over hint
     HintParams: TTokenHintParams;
-    FAutoComplete: TSynAutoComplete; //auto complete
+    FAutoComplete: TSynAutoCompleteTemplate; //auto complete
 
     //debug
     DebugReader: TDebugReader;
@@ -769,7 +773,9 @@ type
     property Config: TConfig read FConfig;
     property IsLoading: Boolean read FIsLoading write FIsLoading;
     property AppRoot: string read FAppRoot;
-    property AutoComplete: TSynAutoComplete read FAutoComplete;
+    property AutoComplete: TSynAutoCompleteTemplate read FAutoComplete;
+    property SearchList: TStrings read FSearchList;
+    property ReplaceList: TStrings read FReplaceList;
   end;
 
   { TParserThread }
@@ -1084,6 +1090,8 @@ var
   Proj: TProjectFile;
 begin
   IsLoading := True;
+  FSearchList := TStringList.Create;
+  FReplaceList := TStringList.Create;
   FConfig := TConfig.Create;
   FAppRoot := ExtractFilePath(Application.ExeName);
   FConfigRoot := GetUserFolderPath(CSIDL_APPDATA) + 'Falcon\';
@@ -1133,7 +1141,7 @@ begin
   DebugParser.TreeView := TreeViewOutline;
   DebugHint := THintTree.Create(Self); //hint with a treeview
   DebugHint.ImageList := ImageListDebug;
-  FAutoComplete := TSynAutoComplete.Create(Self); //Ctrl+J
+  FAutoComplete := TSynAutoCompleteTemplate.Create(Self); //Ctrl+J
   //Load default auto complete
   Rs := TResourceStream.Create(HInstance, 'AUTOCOMPLETE', RT_RCDATA);
   Rs.Position := 0;
@@ -1234,6 +1242,16 @@ begin
   LastSearch.Direction := ini.ReadBool('Search', 'DirectionDown', True);
   LastSearch.Transparence := ini.ReadBool('Search', 'Transparence', True);
   LastSearch.Opacite := ini.ReadInteger('Search', 'Opacite', 100);
+  // load search history
+  HistList := TStringList.Create;
+  ini.ReadSection('SearchHistory', HistList);
+  for I := 0 to HistList.Count - 1 do
+    FSearchList.Add(ini.ReadString('SearchHistory', HistList.Strings[I], ''));
+  HistList.Clear;
+  ini.ReadSection('ReplaceHistory', HistList);
+  for I := 0 to HistList.Count - 1 do
+    FReplaceList.Add(ini.ReadString('ReplaceHistory', HistList.Strings[I], ''));
+  HistList.Free;
   //load view menu check
   ViewProjMan.Checked := ini.ReadBool('View', 'ProjMan', True);
   ViewItemClick(ViewProjMan);
@@ -1469,6 +1487,19 @@ begin
     ini.WriteBool('Search', 'DirectionDown', LastSearch.Direction);
     ini.WriteBool('Search', 'Transparence', LastSearch.Transparence);
     ini.WriteInteger('Search', 'Opacite', LastSearch.Opacite);
+    // save search/replace history
+    for I := 0 to FSearchList.Count - 1 do
+    begin
+      if I = 10 then
+        Break;
+      ini.WriteString('SearchHistory', 'Item' + IntToStr(I + 1), FSearchList.Strings[I]);
+    end;
+    for I := 0 to FReplaceList.Count - 1 do
+    begin
+      if I = 10 then
+        Break;
+      ini.WriteString('ReplaceHistory', 'Item' + IntToStr(I + 1), FReplaceList.Strings[I]);
+    end;
     //save view menu check
     ini.WriteBool('View', 'ProjMan', ViewProjMan.Checked);
     ini.WriteBool('View', 'StatusBar', ViewStatusBar.Checked);
@@ -5014,6 +5045,8 @@ end;
 
 procedure TFrmFalconMain.FormDestroy(Sender: TObject);
 begin
+  FSearchList.Free;
+  FReplaceList.Free;
   DebugParser.Free;
   DebugReader.Free;
   CommandQueue.Free;

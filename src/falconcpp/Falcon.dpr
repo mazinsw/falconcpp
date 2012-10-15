@@ -47,7 +47,6 @@ uses
   TokenHint in '..\others\cppparser\TokenHint.pas',
   TokenList in '..\others\cppparser\TokenList.pas',
   TokenUtils in '..\others\cppparser\TokenUtils.pas',
-  regexp_tregexpr in '..\others\regexp\regexp_tregexpr.pas',
   UFrmGotoFunction in 'UFrmGotoFunction.pas' {FormGotoFunction},
   UFrmGotoLine in 'UFrmGotoLine.pas' {FormGotoLine},
   HintTree in '..\others\hinttree\HintTree.pas',

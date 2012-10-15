@@ -3,7 +3,7 @@ unit DebugReader;
 interface
 
 uses
-  Windows, SysUtils, Classes, regexp_tregexpr, Dialogs, NativeTreeView,
+  Windows, SysUtils, Classes, SynRegExpr, Dialogs, NativeTreeView,
   TokenList, TokenUtils;
 
 type

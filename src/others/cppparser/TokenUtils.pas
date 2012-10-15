@@ -578,7 +578,7 @@ begin
         tkScopeClass, tkNamespace:
         FillCompletionTreeNoRepeat(InsertList, ShowList,
           Token.Items[I], SelStart, CompletionColors, TokenList,
-          ScopeClass, IncludeParams, UseList);
+          ScopeClass, False, UseList);
     end;
   end;
 end;
@@ -734,6 +734,8 @@ begin
   Result := '';
   Separator := '.';
   Next := Token;
+  if (Next.Token = tkClass) then
+      Separator := '::';
   {while}if Assigned(Next.Parent) and not (Next.Parent.Token in [tkIncludeList,
     tkDefineList, tkTreeObjList,
       tkVarConsList, tkFuncProList,
@@ -745,7 +747,9 @@ begin
     begin
       Separator := '::';
       Next := Next.Parent;
-    end;
+    end
+    else if (Next.Token = tkNamespace) then
+      Separator := '::';
     Result := Next.Name + Separator + Result;
   end;
 end;

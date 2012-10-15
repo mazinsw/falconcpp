@@ -41,7 +41,7 @@ type
     procedure CreateParams(var Params: TCreateParams); override;
   public
     { Public declarations }
-    AutoComplete: TSynAutoComplete;
+    AutoComplete: TSynAutoCompleteTemplate;
     procedure UpdateLangNow;
   end;
 
@@ -94,7 +94,7 @@ var
   Item: TListItem;
   Rs: TResourceStream;
 begin
-  AutoComplete := TSynAutoComplete.Create(Self);
+  AutoComplete := TSynAutoCompleteTemplate.Create(Self);
   SynTemplates.Highlighter := FrmEditorOptions.SynCpp;
 
   Rs := TResourceStream.Create(HInstance, 'AUTOCOMPLETE', RT_RCDATA);

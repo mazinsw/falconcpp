@@ -785,7 +785,6 @@ begin
       Sheet.Memo.Lines.SaveToFile(FileName);
       if sheet.Memo.Modified and not Project.Saved and IsNew then
         Project.SomeFileChanged := True;
-      IsNew := False;
       sheet.Memo.Modified := False;
       if not FSaved then
         FSaved := True;
@@ -1062,7 +1061,10 @@ var
   Resources: TTemplateResources;
 begin
   if not (FileType = FILE_TYPE_PROJECT) then
+  begin
     Save; //save .c or .cpp file
+    Exit;
+  end;
   //save all files with folders
   AllFiles := TStringList.Create;
   GetFiles(AllFiles, True);
@@ -1116,6 +1118,7 @@ procedure TProjectFile.LoadFromFile(const FileName: string);
         FileProp := NewSourceFile(FILE_TYPE_FOLDER, NO_COMPILER, NodeFileName,
           NodeFileName, '', '', Parent, True, False);
         FileProp.Saved := True;
+        FileProp.IsNew := False;
         LoadFiles(Temp, FileProp);
       end
       else if (Temp.NodeName = 'File') then
@@ -1146,6 +1149,8 @@ var
   StrIcon, Temp: string;
   Stream: TStream;
 begin
+  IsNew := False;
+
   XMLDoc := TXMLDocument.Create(FrmFalconMain);
   try
     XMLDoc.LoadFromFile(FileName);
@@ -1710,6 +1715,7 @@ begin
     Exit;
   end;
   XMLDoc.Free;
+  IsNew := False;
 end;
 
 procedure TProjectFile.Save;
@@ -1722,13 +1728,11 @@ begin
   if not FSaved or (Modified or not FileExists(FileName) or FileChangedInDisk) then
   begin
     Compiled := False;
-    begin
-      TProjectFile(Self).PropertyChanged := False;
-      TProjectFile(Self).SaveToFile(FileName);
-      if not FSaved then
-        FSaved := True;
-      IsNew := False;
-    end;
+    PropertyChanged := False;
+    SaveToFile(FileName);
+    if not FSaved then
+      FSaved := True;
+    IsNew := False;
     FFileDateTime := FileDateTime(FileName);
   end;
 end;

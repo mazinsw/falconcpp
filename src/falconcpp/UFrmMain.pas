@@ -1438,7 +1438,7 @@ begin
       case R of
         mrYes:
           begin
-            if not ProjProp.Saved then
+            if not ProjProp.Saved or ProjProp.IsNew then
             begin
               if not SaveProject(ProjProp, smSave) then
               begin
@@ -2508,9 +2508,7 @@ begin
       mrYes:
         begin
           if FileProp.Modified then
-          begin
             FileProp.Project.Compiled := False;
-          end;
           FileProp.Save;
         end;
       mrCancel: Exit;
@@ -2611,6 +2609,7 @@ begin
       ProjProp.CompilerType := GetCompiler(ProjProp.FileType);
     end;
     ProjProp.Saved := True;
+    ProjProp.IsNew := False;
     if SaveMode = smSaveAs then
       ProjProp.SaveAs(FileName)
     else
@@ -2633,7 +2632,7 @@ begin
   if not GetActiveFile(FileProp) then
     Exit;
   ProjProp := FileProp.Project;
-  if not ProjProp.Saved then
+  if not ProjProp.Saved or ProjProp.IsNew then
   begin
     SaveProject(ProjProp, smSave);
   end
@@ -2765,7 +2764,7 @@ begin
               Source := ExtractRelativePath(SourcePath,
                 ProjectFile.BreakpointCursor.FileName);
               Source := StringReplace(Source, '\', '/', [rfReplaceAll]);
-              DebugReader.SendCommand(GDB_BREAK, Source + ':' +
+              DebugReader.SendCommand(GDB_BREAK, DoubleQuotedStr(Source) + ':' +
                 IntToStr(ProjectFile.BreakpointCursor.Line));
             end;
             for I := 0 to List.Count - 1 do
@@ -2775,7 +2774,7 @@ begin
               Source := StringReplace(Source, '\', '/', [rfReplaceAll]);
               for J := 0 to Breakpoint.Count - 1 do
               begin
-                DebugReader.SendCommand(GDB_BREAK, Source + ':' +
+                DebugReader.SendCommand(GDB_BREAK, DoubleQuotedStr(Source) + ':' +
                   IntToStr(Breakpoint.Items[J].Line));
               end;
             end;
@@ -3175,8 +3174,7 @@ begin
         case I of
           mrYes:
             begin
-              FileSaveClick(Self);
-              if not ProjProp.Saved then
+              if not SaveProject(ProjProp, smSave) then
                 Exit;
             end;
           mrCancel: Exit;
@@ -3228,6 +3226,14 @@ begin
   begin
     if not FromDisk then
     begin
+      if Config.Environment.AskForDeleteFile then
+      begin
+        I := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[20],
+          [FileProp.Name])), 'Falcon C++',
+          MB_YESNO + MB_ICONQUESTION);
+        if I <> mrYes then
+          Exit;
+      end;
       if FileProp.Modified and FileProp.Saved then
       begin //modified
         I := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[10],
@@ -3236,14 +3242,6 @@ begin
         case I of
           mrYes: FileProp.Save;
         end; //case
-      end;
-      if Config.Environment.AskForDeleteFile then
-      begin
-        I := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[20],
-          [FileProp.Name])), 'Falcon C++',
-          MB_YESNO + MB_ICONQUESTION);
-        if I <> mrYes then
-          Exit;
       end;
     end
     else
@@ -4250,7 +4248,7 @@ begin
   while Sibling <> nil do
   begin
     ProjProp := TProjectFile(Sibling.Data);
-    if not ProjProp.Saved then
+    if not ProjProp.Saved or ProjProp.IsNew then
       SaveProject(ProjProp, smSave)
     else
     begin
@@ -4268,10 +4266,7 @@ var
 begin
   if GetActiveFile(FileProp) then
   begin
-    if (FileProp is TProjectFile) then
-      ProjProp := TProjectFile(FileProp)
-    else
-      ProjProp := FileProp.Project;
+    ProjProp := FileProp.Project;
     if SaveProject(ProjProp, smSaveAs) then
     begin
       //update status bar
@@ -7811,7 +7806,7 @@ begin
       SourcePath := ExtractFilePath(fprop.Project.FileName);
       Source := ExtractRelativePath(SourcePath, fprop.FileName);
       Source := StringReplace(Source, '\', '/', [rfReplaceAll]);
-      DebugReader.SendCommand(GDB_BREAK, Source + ':' + IntToStr(aLine));
+      DebugReader.SendCommand(GDB_BREAK, DoubleQuotedStr(Source) + ':' + IntToStr(aLine));
     end;
   end;
   fprop.Breakpoint.ToogleBreakpoint(aLine);
@@ -8347,7 +8342,7 @@ begin
       SourcePath := ExtractFilePath(ProjProp.FileName);
       Source := ExtractRelativePath(SourcePath, FileProp.FileName);
       Source := StringReplace(Source, '\', '/', [rfReplaceAll]);
-      DebugReader.SendCommand(GDB_BREAK, Source + ':' +
+      DebugReader.SendCommand(GDB_BREAK, DoubleQuotedStr(Source) + ':' +
         IntToStr(ProjProp.BreakpointCursor.Line));
       DebugReader.SendCommand(GDB_CONTINUE);
       Exit;

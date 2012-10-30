@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, Classes, Forms, Controls, Graphics, SysUtils, ComCtrls,
-  ExtCtrls, TokenList, TokenHint, DebugReader, NativeTreeView;
+  ExtCtrls, TokenList, TokenHint, DebugReader, NativeTreeView, StdCtrls;
 
 type
   THintTreeTip = class(TTokenHintTip);
@@ -56,7 +56,7 @@ type
 
 implementation
 
-uses Types;
+uses Types, Math;
 
 constructor THintTree.Create(AOwner: TComponent);
 begin
@@ -74,7 +74,7 @@ begin
   TreeView.Color := $E1FFFF;
   TreeView.NodeDataSize := 4;
   TreeView.TreeOptions.MiscOptions := TreeView.TreeOptions.MiscOptions - [toEditOnClick];
-  TreeView.TreeOptions.PaintOptions := TreeView.TreeOptions.PaintOptions - [toUseExplorerTheme, toHideTreeLinesIfThemed];
+  TreeView.TreeOptions.PaintOptions := TreeView.TreeOptions.PaintOptions + [toThemeAware, toUseExplorerTheme, toHideTreeLinesIfThemed];
   TreeView.TreeOptions.SelectionOptions := TreeView.TreeOptions.SelectionOptions + [toFullRowSelect];
   TreeView.OnKeyPress := TreeViewKeyPress;
   TreeView.OnMouseMove := HintMouseMove;
@@ -270,6 +270,16 @@ begin
     newWidth := Canvas.TextWidth(TNodeObject(TreeView.GetNodeData(Item)^).Caption);
     MultIdent := 1;
     Child := TreeView.GetFirstChild(Item);
+    if Child = nil then
+    begin
+      TreeView.ScrollBarOptions.ScrollBars := ssNone;
+      TreeView.Indent := 2;
+    end
+    else
+    begin
+      TreeView.ScrollBarOptions.ScrollBars := ssBoth;
+      TreeView.Indent := 18;
+    end;
     while Child <> nil do
     begin
       MultIdent := 2;
@@ -278,8 +288,10 @@ begin
         newWidth := I;
       Child := TreeView.GetNextSibling(Child);
     end;
-    Inc(newWidth, (Integer(TreeView.Indent) + TreeView.Images.Width) * MultIdent + 30);
-    newHeight := (Integer(TreeView.ChildCount[Item]) + 1) * Integer(TreeView.DefaultNodeHeight);
+    Inc(newWidth, Integer(TreeView.Indent) + (TreeView.Images.Width) * MultIdent + 20);
+    newHeight := Min(Integer(TreeView.ChildCount[Item]) + 1, 11) * Integer(TreeView.DefaultNodeHeight);
+    if Integer(TreeView.ChildCount[Item]) + 1 > 11 then
+      Inc(newWidth, GetSystemMetrics(SM_CXVSCROLL));
     R := Rect(X, Y, X + newWidth, Y + newHeight);
     //TreeView.ShowRoot := TreeView.Items.Count > 1;
   end

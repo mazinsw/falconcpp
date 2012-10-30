@@ -97,6 +97,7 @@ function BrowseDialog(Handle: HWND; const Title: string;
 function HumanToBool(Resp: string): Boolean;
 function BoolToHuman(Question: Boolean): string;
 function GetFullFileName(Name: string): string;
+function LinuxSpace(const S: string): string;
 function DoubleQuotedStr(const S: string): string;
 
 function EditorGotoXY(Memo: TSynMemo; X, Y: Integer): Boolean;

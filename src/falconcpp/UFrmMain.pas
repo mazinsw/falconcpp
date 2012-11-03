@@ -57,6 +57,7 @@ const
     13 //destructor
     );
   WM_RELOADFTM = WM_USER + $1008;
+  WM_REPARSEFILES = WM_RELOADFTM + 1;
   MINLINE_TOENABLE_GOTOLINE = 3;
 
 type
@@ -422,6 +423,7 @@ type
     procedure ToolsClick(Sender: TObject);
     procedure SendDataCopyData(var Msg: TWMCopyData); message WM_COPYDATA;
     procedure ReloadTemplates(var message: TMessage); message WM_RELOADFTM;
+    procedure ReparseFiles(var message: TMessage); message WM_REPARSEFILES;
     procedure TreeViewProjectsProc(var Msg: TMessage);
     procedure TreeViewOutlineProc(var Msg: TMessage);
     procedure PanelEditorMessagesProc(var Msg: TMessage);
@@ -1796,6 +1798,30 @@ begin
   FTemplates := aTemplates;
 end;
 
+procedure TFrmFalconMain.ReparseFiles(var message: TMessage);
+var
+  SourceFileList: TStringList;
+begin
+  SourceFileList := TStringList.Create;
+  if FindFiles(Config.Compiler.Path + '\include\', '*.h', SourceFileList) then
+  begin
+    IsLoadingSrcFiles := True;
+    if not ThreadFilesParsed.Busy then
+    begin
+      ThreadTokenFiles.Free;
+      ThreadTokenFiles := TThreadTokenFiles.Create;
+      ThreadTokenFiles.OnStart := ParserStart;
+      ThreadTokenFiles.OnProgress := ParserProgress;
+      ThreadTokenFiles.OnFinish := ParserFinish;
+      ThreadTokenFiles.Start(ParseAllFiles, SourceFileList,
+        Config.Compiler.Path + '\include\', ConfigRoot + 'include\', '.h.prs');
+    end
+    else
+      ThreadTokenFiles.AddFiles(SourceFileList);
+  end;
+  SourceFileList.Free;
+end;
+
 function TFrmFalconMain.FillTreeViewV2(Parent: PNativeNode;
   Token: TTokenClass; DeleteNext: Boolean): PNativeNode;
 var
@@ -2609,11 +2635,11 @@ begin
       ProjProp.CompilerType := GetCompiler(ProjProp.FileType);
     end;
     ProjProp.Saved := True;
-    ProjProp.IsNew := False;
     if SaveMode = smSaveAs then
       ProjProp.SaveAs(FileName)
     else
     begin
+      ProjProp.IsNew := False;
       ProjProp.FileName := FileName;
       ProjProp.SaveAll;
       ProjProp.Save;
@@ -4597,12 +4623,12 @@ begin
         Config.Compiler.Version + '\include\c++\' + S);
     if SearchSourceFile(FileName, Prop) then
     begin
-      Prop.Edit;
+      Prop.Edit.Memo.ReadOnly := True;
       Exit;
     end;
     if FileExists(FileName) then
     begin
-      OpenFile(FileName).Edit;
+      OpenFile(FileName).Edit.Memo.ReadOnly := True;
     end
     else
       MessageBox(Handle, PChar(Format(STR_FRM_MAIN[34], [S])), 'Falcon C++',
@@ -4629,7 +4655,15 @@ begin
     if SearchSourceFile(TokenFileItem.FileName, Prop) then
       Prop.Edit
     else //non opened. open
-      TSourceFile(OpenFile(TokenFileItem.FileName)).Edit;
+    begin
+      sheet := TSourceFile(OpenFile(TokenFileItem.FileName)).Edit;
+      if TokenFileItem.StaticFile then
+      begin
+        sheet.Memo.ReadOnly := True;
+        sheet.SourceFile.ReadOnly := True;
+        sheet.Font.Color := clGrayText;
+      end;
+    end;
     SelectToken(Token);
   end;
 end;
@@ -5066,6 +5100,10 @@ begin
       begin
         PanelOutline.Visible := TTBXItem(Sender).Checked and
           (PageControlEditor.ActivePageIndex >= 0);
+        if PanelOutline.Visible then
+          UpdateActiveFileToken(ActiveEditingFile)
+        else
+          TreeViewOutline.Clear;
       end;
   end;
 end;
@@ -5962,7 +6000,7 @@ begin
 end;
 
 procedure TFrmFalconMain.UpdateActiveFileToken(NewToken: TTokenFile;
-  Reload: Boolean = False);
+  Reload: Boolean);
 
   procedure FillTokenList(var Sibling, Parent: PNativeNode;
     TokenList: TTokenClass; TokenType: TTkType; Static, DeleteNext: Boolean);
@@ -5984,43 +6022,6 @@ procedure TFrmFalconMain.UpdateActiveFileToken(NewToken: TTokenFile;
     else if Assigned(Parent) then
       FillTreeViewV2(Parent, TokenList);
   end;
-
-  {procedure FillTokenList(var Sibling, Parent: PNativeNode;
-    TokenList: TTokenClass; TokenType: TTkType; Static, DeleteNext: Boolean);
-  var
-    NodeObject: TNodeObject;
-  begin
-    Parent := nil;
-    if Assigned(Sibling) and
-      (TTokenClass(TNodeObject(TreeViewOutline.GetNodeData(Sibling)^).Data).Token = TokenType) then
-    begin
-      Parent := Sibling;
-      Sibling := TreeViewOutline.GetNextSibling(Sibling);
-      if ((TokenList.Count <= 25) and not Static) or (Static and (TokenList.Count = 0)) then
-      begin
-        TreeViewOutline.DeleteNode(Parent);
-        Parent := nil;
-      end
-      else
-      begin
-        TNodeObject(TreeViewOutline.GetNodeData(Parent)^).Data := TokenList;
-        TokenList.Data := Parent;
-      end;
-    end
-    else if ((TokenList.Count > 25) and not Static) or (Static and (TokenList.Count > 0)) then
-    begin
-      NodeObject := TNodeObject.Create;
-      NodeObject.Data := TokenList;
-      NodeObject.Caption := TokenList.Name;
-      Parent := TreeViewOutline.InsertNode(Sibling, amInsertBefore, NodeObject);
-      TokenList.Data := Parent;
-      NodeObject.ImageIndex := GetTokenImageIndex(TokenList, OutlineImages);
-    end;
-    if not Static then
-      Sibling := FillTreeViewV2(Sibling, Parent, TokenList, DeleteNext)
-    else if Assigned(Parent) then
-      FillTreeViewV2(nil, Parent, TokenList);
-  end;}
 
   procedure ReloadTreeViewV2(var Sibling, Parent: PNativeNode);
   begin
@@ -6089,9 +6090,7 @@ begin
   if FindedTokenFile = nil then
     FilesParsed.Add(TokenFileItem);
   if DebugReader.Running then
-  begin
     Exit;
-  end;
   if ViewOutline.Checked then
   begin
     TreeViewOutline.BeginUpdate;

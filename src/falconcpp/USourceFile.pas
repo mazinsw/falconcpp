@@ -93,6 +93,7 @@ type
     FProject: TProjectFile;
     FSaved: Boolean;
     FIsNew: Boolean;
+    FReadOnly: Boolean;
   protected
     procedure SetProject(Value: TProjectFile); virtual;
     procedure SetFileType(Value: Integer); virtual;
@@ -115,6 +116,7 @@ type
     property FileType: Integer read FFileType write SetFileType;
     property Saved: Boolean read FSaved write FSaved;
     property IsNew: Boolean read FIsNew write FIsNew;
+    property ReadOnly: Boolean read FReadOnly write FReadOnly;
   end;
 
   TSourceFile = class(TSourceBase)
@@ -132,6 +134,7 @@ type
     procedure SetFileName(Value: string); override;
   public
     procedure MoveFileTo(const Path: string);
+    procedure CopyFileTo(const Path: string);
     procedure DeleteOfDisk; override;
     procedure Delete; override;
     procedure Save; override;
@@ -241,6 +244,8 @@ type
 
   TProjectSource = class(TProjectBase);
   TProjectFile = class(TProjectBase, IContainer)
+  private
+    procedure UpdateTarget(Value: string);
   protected
     function GetFileName: string; override;
     procedure SetFileName(Value: string); override;
@@ -253,6 +258,7 @@ type
     procedure SaveToFile(const FileName: string);
     procedure Save; override;
     procedure MoveSavedFilesTo(const Path: string);
+    procedure CopySavedFilesTo(const Path: string);
     procedure SaveAs(const FileName: string); override;
     function NeedBuild: Boolean; override;
     function FilesChanged: Boolean;
@@ -291,10 +297,14 @@ type
     property SourceFile: TSourceFile read FSourceFile;
   end;
 
+  EFileMoveError = class(Exception);
+
 implementation
 
 uses UFrmMain, UUtils, UConfig;
 
+const
+  filemoveError = 'Can''t move file ''%s'' to ''%s.''';
 
 { TSourceBase }
 
@@ -306,6 +316,7 @@ begin
   FProject := Value.FProject;
   FSaved := Value.FSaved;
   FIsNew := Value.FIsNew;
+  FReadOnly := Value.FReadOnly;
 end;
 
 constructor TSourceBase.Create(Node: TTreeNode);
@@ -814,12 +825,16 @@ begin
       BtnSave.Enabled := False;
       Sheet.Caption := Self.Caption;
     end;
+    if Node.Text <> Self.Name then
+      Node.Text := Self.Name;
   end;
 end;
 
 procedure TSourceFile.MoveFileTo(const Path: string);
 var
   FromFileName, ToFileName: string;
+  I: Integer;
+  SrcFile: TSourceFile;
 begin
   ToFileName := ExtractRelativePath(FileName, Path) + Name;
   if ExtractFileDrive(ToFileName) = '' then
@@ -828,7 +843,62 @@ begin
   FromFileName := ExcludeTrailingPathDelimiter(FileName);
   if FromFileName = ToFileName then
     Exit;
-  RenameFile(FromFileName, ToFileName);
+  if RenameFile(FromFileName, ToFileName) then
+    Exit;
+  if (FileType = FILE_TYPE_FOLDER) then
+  begin
+    CreateDir(ToFileName);
+    for I := 0 to Node.Count - 1 do
+    begin
+      SrcFile := TSourceFile(Node.Item[I].Data);
+      if SrcFile.Saved then
+        SrcFile.MoveFileTo(ToFileName + '\');
+    end;
+    RemoveDir(FromFileName);
+  end
+  else
+    raise EFilerError.CreateFmt(filemoveError, [FromFileName, ToFileName]);
+end;
+
+procedure TSourceFile.CopyFileTo(const Path: string);
+var
+  FromFileName, ToFileName: string;
+  I: Integer;
+  SrcFile: TSourceFile;
+  Sheet: TSourceFileSheet;
+begin
+  ToFileName := ExtractRelativePath(FileName, Path) + Name;
+  if ExtractFileDrive(ToFileName) = '' then
+    ToFileName := ExtractFilePath(FileName) + ToFileName;
+  ToFileName := ExpandFileName(ToFileName);
+  FromFileName := ExcludeTrailingPathDelimiter(FileName);
+  if FromFileName = ToFileName then
+    Exit;
+  if FileType = FILE_TYPE_FOLDER then
+  begin
+    CreateDir(ToFileName);
+    for I := 0 to Node.Count - 1 do
+    begin
+      SrcFile := TSourceFile(Node.Item[I].Data);
+      if SrcFile.Saved then
+        SrcFile.CopyFileTo(Path + Name + '\');
+    end;
+  end
+  else
+  begin
+    if GetSheet(Sheet) then
+    begin
+      Sheet.Memo.Lines.SaveToFile(ToFileName);
+      if sheet.Memo.Modified and not Project.Saved and IsNew then
+        Project.SomeFileChanged := True;
+      sheet.Memo.Modified := False;
+      if not FSaved then
+        FSaved := True;
+      FFileDateTime := FileDateTime(ToFileName);
+    end
+    else
+      CopyFile(PChar(FromFileName), PChar(ToFileName), FALSE);
+  end;
 end;
 
 {TProjectBase}
@@ -1734,7 +1804,35 @@ begin
       FSaved := True;
     IsNew := False;
     FFileDateTime := FileDateTime(FileName);
+    if Node.Text <> Name then
+      Node.Text := Name;
   end;
+end;
+
+procedure TProjectFile.SaveAs(const FileName: string);
+begin
+  if CompareText(FileName, FFileName) <> 0 then
+  begin
+    if Saved and not Editing and FileExists(FFileName) then
+    begin
+      if IsNew then
+        RenameFile(FFileName, FileName)
+      else
+        CopyFile(PChar(FFileName), PChar(FileName), FALSE);
+    end;
+    if IsNew then
+      MoveSavedFilesTo(ExtractFilePath(FileName))
+    else
+      CopySavedFilesTo(ExtractFilePath(FileName));
+    UpdateTarget(FileName);
+    FFileName := FileName;
+  end
+  else if Saved and not IsModified and not IsNew then
+    Exit;
+  FIsNew := False;
+  SaveAll;
+  if FileType = FILE_TYPE_PROJECT then
+    Save;
 end;
 
 function TProjectFile.NeedBuild: Boolean;
@@ -1895,14 +1993,6 @@ begin
   end;
 end;
 
-procedure TProjectFile.SaveAs(const FileName: string);
-begin
-  FFileName := FileName;
-  { TODO -oMazin -c : Copy All Saved Files To 26/08/2012 18:21:08 }
-  SaveAll;
-  Save;
-end;
-
 function TProjectFile.GetFileName: string;
 begin
   Result := FFileName;
@@ -1921,6 +2011,41 @@ begin
   end;
 end;
 
+procedure TProjectFile.CopySavedFilesTo(const Path: string);
+var
+  I: Integer;
+  SrcFile: TSourceFile;
+begin
+  for I := 0 to Node.Count - 1 do
+  begin
+    SrcFile := TSourceFile(Node.Item[I].Data);
+    if SrcFile.Saved then
+      SrcFile.CopyFileTo(Path);
+  end;
+end;
+
+procedure TProjectFile.UpdateTarget(Value: string);
+begin
+// update equal target
+  if (AppType = APPTYPE_LIB) then
+  begin
+    if CompareText('lib' + ExtractName(FileName), ExtractName(Target)) = 0 then
+    begin
+      Target := 'lib' + ExtractName(Value) + ExtractFileExt(Target);
+      PropertyChanged := True;
+    end;
+  end
+  else
+  begin
+    if (Target <> '') and
+      (CompareText(ExtractName(FileName), ExtractName(Target)) = 0) then
+    begin
+      Target := ExtractName(Value) + ExtractFileExt(Target);
+      PropertyChanged := True;
+    end;
+  end;
+end;
+
 procedure TProjectFile.SetFileName(Value: string);
 var
   Sheet: TSourceFileSheet;
@@ -1933,24 +2058,7 @@ begin
       Exit;
     FrmFalconMain.RenameFileInHistory(FileName, Value);
   end;
-  // update equal target
-  if (AppType = APPTYPE_LIB) then
-  begin
-    if CompareText('lib' + ExtractName(FileName), ExtractName(Project.Target)) = 0 then
-    begin
-      Target := 'lib' + ExtractName(Value) + ExtractFileExt(Project.Target);
-      PropertyChanged := True;
-    end;
-  end
-  else
-  begin
-    if (Project.Target <> '') and
-      (CompareText(ExtractName(FileName), ExtractName(Project.Target)) = 0) then
-    begin
-      Target := ExtractName(Value) + ExtractFileExt(Project.Target);
-      PropertyChanged := True;
-    end;
-  end;
+  UpdateTarget(Value);
   MoveSavedFilesTo(ExtractFilePath(Value));
   FFileName := Value;
   Node.Text := Name;
@@ -2089,6 +2197,9 @@ begin
     //-------------- Code Resources -----------------//
     FSynMemo.Options := Options;
   end;
+  FSynMemo.ReadOnly := SourceFile.ReadOnly;
+  if SourceFile.ReadOnly then
+    Font.Color := clGrayText;
   FSynMemo.Parent := Self;
   FSynMemo.Align := alClient;
   FSynMemo.WantTabs := True;

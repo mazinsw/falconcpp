@@ -372,7 +372,7 @@ begin
     FileClose(Handle);
     Exit;
   end;
-
+  FStaticFile := True;
   FModified := FileDate <> Header.DateOfFile;
   Clear;
   FParsedFileDate := Header.DateOfFile;

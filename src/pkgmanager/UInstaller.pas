@@ -10,7 +10,8 @@ const
   CSIDL_PROGRAM_FILES = $0026;
   WM_RELOADFTM = WM_USER + $1008;
   WM_RELOADPKG  = WM_USER + $0112;
-
+  WM_REPARSEFILES = WM_RELOADFTM + 1;
+  
 type
   TShortCuts = packed record
     Caption: TStringList;
@@ -48,6 +49,7 @@ type
     FOverridePackage: Boolean;
     FUseTemplateIcon: Boolean;
     FSilent: Boolean;
+    FReparse: Boolean;
 
     FDestination: TStringList;
     FSource: TStringList;
@@ -86,6 +88,7 @@ type
     property FinishMsg: String read FFinishMsg write FFinishMsg;
     property Reboot: Boolean read FReboot write FReboot;
     property Silent: Boolean read FSilent write FSilent;
+    property Reparse: Boolean read FReparse write FReparse;
     property ShowPkgManager: Boolean read FShowPkgManager write FShowPkgManager;
     property LocateUpdate: Boolean read FLocateUpdate write FLocateUpdate;
     property Picture: String read FPicture write FPicture;
@@ -104,16 +107,18 @@ procedure Execute(S: String);
 function GetFalconDir: String;
 function FindFiles(Search: String; Finded:TStrings): Boolean;
 procedure ConvertTo32BitImageList(const ImageList: TImageList);
-function LoadPackageFile(FileName: String; Silent: Boolean = False): Boolean;
+function LoadPackageFile(FileName: String; Silent: Boolean = False;
+  Reparse: Boolean = True): Boolean;
 function GetSpecialFolder(ID: Integer): String;
 
 implementation
 
 uses UFrmLoad, SysUtils, ShlObj, UFrmWizard;
 
-function LoadPackageFile(FileName: String; Silent: Boolean = False): Boolean;
+function LoadPackageFile(FileName: String; Silent, Reparse: Boolean): Boolean;
 begin
   Installer := TInstaller.Create;
+  Installer.Reparse := Reparse;
   Installer.Silent := Silent;
   Result := Installer.Open(FileName);
   if not Result then
@@ -373,6 +378,7 @@ end;
 constructor TInstaller.Create;
 begin
   inherited;
+  FReparse := True; 
   FRootFolder := '';
   FDestination := TStringList.Create;
   FSource := TStringList.Create;
@@ -860,6 +866,9 @@ begin
   FalconHandle := FindWindow('TFrmFalconMain', nil);
   if FalconHandle <> 0 then
     PostMessage(FalconHandle, WM_RELOADFTM, 0, 0);
+  //reparse all installed header files
+  if (FalconHandle <> 0) and Reparse then
+    PostMessage(FalconHandle, WM_REPARSEFILES, 0, 0);
   //reload all falcon packages
   PkgHandle := FindWindow('TFrmPkgMan', nil);
   if PkgHandle <> 0 then

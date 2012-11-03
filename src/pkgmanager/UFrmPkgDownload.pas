@@ -22,6 +22,7 @@ type
     FOnStart: TNotifyEvent;
     FOnFinish: TPkgFinishEvent;
     FSucess: Boolean;
+    FReparse: Boolean;
     procedure DoStart;
     procedure DoFinish;
   protected
@@ -41,7 +42,7 @@ type
     procedure ThreadOnFinish(Sender: TObject; Sucess: Boolean);
   public
     property FileName: string read FFileName write FFileName;
-    procedure Start;
+    procedure Start(Reparse: Boolean = False);
     property Busy: Boolean read FBusy write FBusy;
     property OnStart: TNotifyEvent read FOnStart write FOnStart;
     property OnFinish: TPkgFinishEvent read FOnFinish write FOnFinish;
@@ -875,7 +876,7 @@ begin
     LabelProgresss.Caption := Format('Installing package %s...',
       [Package.Name + ' ' + Package.Version]);
     InstallPkg.FileName := file_fpk;
-    InstallPkg.Start;
+    InstallPkg.Start(InstallPkgQueue.Count = 1);
   end
   else
   begin
@@ -1215,7 +1216,7 @@ end;
 procedure TThreadInstallPkg.Execute;
 begin
   Synchronize(DoStart);
-  FSucess := LoadPackageFile(FFileName, True);
+  FSucess := LoadPackageFile(FFileName, True, FReparse);
   Synchronize(DoFinish);
 end;
 
@@ -1230,13 +1231,14 @@ end;
 
 { TInstallPkg }
 
-procedure TInstallPkg.Start;
+procedure TInstallPkg.Start(Reparse: Boolean = False);
 var
   ThreadInstall: TThreadInstallPkg;
 begin
   ThreadInstall := TThreadInstallPkg.Create(FFileName);
   ThreadInstall.OnStart := ThreadOnStart;
   ThreadInstall.OnFinish := ThreadOnFinish;
+  ThreadInstall.FReparse := Reparse;
   ThreadInstall.Resume;
 end;
 

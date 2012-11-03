@@ -4623,12 +4623,15 @@ begin
         Config.Compiler.Version + '\include\c++\' + S);
     if SearchSourceFile(FileName, Prop) then
     begin
-      Prop.Edit.Memo.ReadOnly := True;
+      Prop.Edit;
       Exit;
     end;
     if FileExists(FileName) then
     begin
-      OpenFile(FileName).Edit.Memo.ReadOnly := True;
+      sheet := OpenFile(FileName).Edit;
+      sheet.Memo.ReadOnly := True;
+      sheet.SourceFile.ReadOnly := True;
+      sheet.Font.Color := clGrayText;
     end
     else
       MessageBox(Handle, PChar(Format(STR_FRM_MAIN[34], [S])), 'Falcon C++',

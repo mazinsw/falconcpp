@@ -2644,6 +2644,7 @@ begin
       ProjProp.SaveAll;
       ProjProp.Save;
     end;
+    UpdateMenuItems([rmFile]);
     Result := True;
   end;
 end;
@@ -3802,6 +3803,7 @@ begin
   else if FileExists(Temp) then
   begin
     FileProp := OpenFile(Temp);
+    FileProp.ReadOnly := True;
   end
   else
     Exit;
@@ -4660,12 +4662,12 @@ begin
     else //non opened. open
     begin
       sheet := TSourceFile(OpenFile(TokenFileItem.FileName)).Edit;
-      if TokenFileItem.StaticFile then
-      begin
-        sheet.Memo.ReadOnly := True;
-        sheet.SourceFile.ReadOnly := True;
-        sheet.Font.Color := clGrayText;
-      end;
+      //if TokenFileItem.StaticFile then
+      //begin
+      sheet.Memo.ReadOnly := True;
+      sheet.SourceFile.ReadOnly := True;
+      sheet.Font.Color := clGrayText;
+     //end;
     end;
     SelectToken(Token);
   end;
@@ -6761,7 +6763,7 @@ begin
         Value := Value + '();'
       else if NextChar in DigitChars + ArithmChars + CloseBraceChars + [';'] then
         Value := Value + '()'
-      else
+      else if NextChar <> '(' then
         Value := Value + '(';
       LastKeyPressed := '(';
     end

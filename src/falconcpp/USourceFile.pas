@@ -545,7 +545,7 @@ var
   Temp: string;
   Sheet: TSourceFileSheet;
 begin
-  if (CompareText(Name, Value) = 0) or (Value = '') then
+  if (Name = Value) or (Value = '') then
     Exit;
   if (FileType <> FILE_TYPE_FOLDER) then
   begin

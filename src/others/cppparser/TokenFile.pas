@@ -1848,7 +1848,7 @@ begin
   GetStringsFields(Fields, List);
   if List.Count = 0 then
   begin
-    //search function() or class()
+    //search function() or class() or prototype()
     Result := SearchSource(S, TokenFile, TokenFileItem, Token, SelStart,
       ParamsList, True);
     if ParamsList.Count > 0 then
@@ -1889,7 +1889,9 @@ begin
       begin
         List.Free;
         Exit;
-      end;
+      end
+      else if (List.Count = 0) and (Token.Token in [tkTypedefProto]) then
+        ParamsList.AddObject('', Token);
     end;
   end;
   for I := 0 to List.Count - 1 do
@@ -1969,7 +1971,7 @@ begin
         List.Free;
         Exit;
       end
-      //base of type of var or function is an prototype and last fild
+      //base of type of var or function is an prototype and last field
       else if (Token.Token in [tkTypedefProto]) and (I = List.Count - 1) then
         ParamsList.AddObject('', Token)
       //base of type of var is class, struct or union

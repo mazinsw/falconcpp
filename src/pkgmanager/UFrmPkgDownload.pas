@@ -316,10 +316,10 @@ var
   RootNode, CategoryNode, LibraryNode, PackageNode, DependencyNode: IXMLNode;
   CategoryItem: TCategory;
   LibraryItem: TLibrary;
-  PackageItem: TPackage;
+  PackageItem, OtherPackageVersion: TPackage;
   DependencyItem: TDependency;
   BuildDependencyList: TList;
-  I: Integer;
+  I, J: Integer;
   fmt: TFormatSettings;
   pkgList: TRBTree;
 begin
@@ -407,6 +407,19 @@ begin
     begin
       DependencyItem.Package.Add(PackageItem);
       PackageItem.OwnerDependencyList.Add(DependencyItem.Package);
+      for J := 0 to PackageItem.Owner.Count - 1 do
+      begin
+        if PackageItem.Owner.Items[J].Name <> PackageItem.Name then
+          Continue;
+        if PackageItem.Owner.Items[J].Version = PackageItem.Version then
+          Continue;
+        if TPackage.ComparePkgVersion(PackageItem.Owner.Items[J].Version,
+          PackageItem.Version) >= 0 then
+        begin
+          OtherPackageVersion := PackageItem.Owner.Items[J];
+          OtherPackageVersion.OwnerDependencyList.Add(DependencyItem.Package);
+        end;
+      end;
     end
     else
       raise Exception.CreateFmt('Dependency "%s %s" to "%s %s" not found',
@@ -493,14 +506,15 @@ begin
   else
     Button1.Caption := Format('Install %d packages...', [InstallList.Count]);
   Button1.Enabled := (InstallList.Count > 0) and not FileDownloadPkg.IsBusy and
-    not (InstallPkgQueue.Count > 0);
+    not (InstallPkgQueue.Count > 0) and (UninstallList.Count = 0) and
+      (UninstallQueue.Count = 0);
   if UninstallList.Count = 0 then
     Button2.Caption := 'Delete packages...'
   else if UninstallList.Count = 1 then
     Button2.Caption := Format('Delete %d package...', [UninstallList.Count])
   else
     Button2.Caption := Format('Delete %d packages...', [UninstallList.Count]);
-  Button2.Enabled := (UninstallList.Count > 0) and not (UninstallQueue.Count > 0);
+  Button2.Enabled := (UninstallList.Count > 0) and (UninstallQueue.Count = 0);
 end;
 
 procedure TFrmPkgDownload.ChangePackageState(Sender: TObject; Pkg: TPackage);
@@ -837,12 +851,18 @@ begin
       MessageBox(Handle, 'Package already installed!', PChar(Caption), MB_ICONINFORMATION);
       Exit;
     end
+    else if not TPackage(Data).CanInstall then
+    begin
+      Allowed := False;
+      MessageBox(Handle, 'Package cannot be installed, a lowest dependency version already installed!', PChar(Caption), MB_ICONINFORMATION);
+      Exit;
+    end
     else if (NewState = csUncheckedNormal) and ((TPackage(Data).Installed and
       (TPackage(Data).State <> psUninstall)) or
       (TPackage(Data).State = psInstall)) and not TPackage(Data).CanUninstall then
     begin
       Allowed := False;
-      MessageBox(Handle, 'Package cannot be uninstalled, others packages depends on!', PChar(Caption), MB_ICONINFORMATION);
+      MessageBox(Handle, 'Package cannot be uninstalled, other packages depend on!', PChar(Caption), MB_ICONINFORMATION);
       Exit;
     end;
   end;
@@ -933,7 +953,7 @@ begin
       begin
         if K = I then
           Continue;
-        if TempList.Items[K] = Package.Items[J] then
+        if TempList.Items[K].Name = Package.Items[J].Name then
         begin
           Depends := True;
           Break;
@@ -1024,7 +1044,7 @@ begin
       begin
         if K = I then
           Continue;
-        if TempList.Items[K] = Package.OwnerDependencyList.Items[J] then
+        if TempList.Items[K].Name = Package.OwnerDependencyList.Items[J].Name then
         begin
           OthersDepends := True;
           Break;

@@ -109,6 +109,8 @@ type
     FOwnerDependencyList: TPackageList;
     procedure SetState(Value: TPackageState);
     function GetPackage(Index: Integer): TPackage;
+    function MarkToInstall(Package: TPackage; SelectRecent: Boolean = False;
+      Simulate: Boolean = False): Boolean;
   public
     property Owner: TLibrary read FOwner write FOwner;
     property Name: string read FName write FName;
@@ -124,6 +126,8 @@ type
     property OwnerDependencyList: TPackageList read FOwnerDependencyList;
     function InstaledPackage(const Name: string): Boolean;
     function CanUninstall: Boolean;
+    class function ComparePkgVersion(const Ver1, Ver2: string): Integer;
+    function CanInstall: Boolean;
     function Add(Item: TPackage): Integer;
     constructor Create;
     destructor Destroy; override;
@@ -299,6 +303,71 @@ begin
   FList.Clear;
 end;
 
+class function TPackage.ComparePkgVersion(const Ver1, Ver2: string): Integer;
+var
+  v1, v2: Integer;
+  s1, s2: string;
+  ptr1, ptr2: PChar;
+begin
+  ptr1 := PChar(Ver1);
+  ptr2 := PChar(Ver2);
+  while (ptr1^ <> #0) and (ptr2^ <> #0) do
+  begin
+    s1 := '';
+    s2 := '';
+    while ptr1^ in ['0'..'9'] do
+    begin
+      s1 := s1 + ptr1^;
+      Inc(ptr1);
+    end;
+    while ptr2^ in ['0'..'9'] do
+    begin
+      s2 := s2 + ptr2^;
+      Inc(ptr2);
+    end;
+    if (Length(s1) > 0) and (Length(s2) > 0) then
+    begin
+      v1 := StrToInt(s1);
+      v2 := StrToInt(s2);
+      if v1 > v2 then
+      begin
+        Result := 1;
+        Exit;
+      end
+      else if v1 < v2 then
+      begin
+        Result := -1;
+        Exit;
+      end;
+    end
+    else if Length(s1) > 0 then
+    begin
+      Result := 1;
+      Exit;
+    end
+    else if Length(s2) > 0 then
+    begin
+      Result := -1;
+      Exit;
+    end;
+    if (ptr1^ > ptr2^) then
+    begin
+      Result := 1;
+      Exit;
+    end
+    else if (ptr1^ < ptr2^) then
+    begin
+      Result := -1;
+      Exit;
+    end
+    else if ptr1^ = #0 then
+      Break;
+    Inc(ptr1);
+    Inc(ptr2);
+  end;
+  Result := 0;
+end;
+
 function TPackage.Count: Integer;
 begin
   Result := FList.Count;
@@ -343,35 +412,94 @@ begin
   Result := False;
 end;
 
-procedure TPackage.SetState(Value: TPackageState);
+function TPackage.CanInstall: Boolean;
+begin
+  Result := MarkToInstall(Self, False, True);
+end;
 
-  procedure MarkToInstall(Package: TPackage);
-  var
-    I: Integer;
-    StateEvent: TChangeStateEvent;
+function TPackage.MarkToInstall(Package: TPackage; SelectRecent, Simulate: Boolean): Boolean;
+var
+  I, C: Integer;
+  lPackage: TPackage;
+  StateEvent: TChangeStateEvent;
+begin
+  Result := True;
+  StateEvent := Owner.Owner.Owner.OnChangeState;
+  if (Package.FState = psInstall) or
+    (Package.FInstalled and (Package.State <> psUninstall)) then
+    Exit;
+  if SelectRecent then
   begin
-    StateEvent := Owner.Owner.Owner.OnChangeState;
-    if (Package.FState = psInstall) or
-      (Package.FInstalled and (Package.State <> psUninstall)) then
-      Exit;
+    lPackage := Package;
+    for I := 0 to lPackage.Owner.Count - 1 do
+    begin
+      if (CompareText(lPackage.Name, lPackage.Owner.Items[I].Name) <> 0) then
+        Continue;
+      C := ComparePkgVersion(lPackage.Owner.Items[I].Version, lPackage.Version);
+      if C > 0 then
+      begin
+        Package := Package.Owner.Items[I];
+        if (Package.FState = psInstall) or
+          (Package.FInstalled and (Package.State <> psUninstall)) then
+          Exit;
+      end
+      else if (C < 0) and ((lPackage.Owner.Items[I].FState = psInstall) or
+        (lPackage.Owner.Items[I].FInstalled and (lPackage.Owner.Items[I].State <> psUninstall))) then
+      begin
+        Result := False;
+        Exit;
+        //raise Exception.CreateFmt('Can''t install ''%s %s'', a lowest version alreay installed!',
+        //  [Package.Name, Package.Version]);
+      end;
+    end;
+  end;
+  if not Simulate then
+  begin
     if Package.FInstalled then
       Package.FState := psNone
     else
       Package.FState := psInstall;
-    if Assigned(StateEvent) then
-      StateEvent(FOwner.FOwner.FOwner, Package);
-    for I := 0 to Package.Count - 1 do
-      MarkToInstall(Package.Items[I]);
   end;
+  for I := 0 to Package.Count - 1 do
+  begin
+    Result := MarkToInstall(Package.Items[I], True, Simulate);
+    if not Result then
+      Exit;
+  end;
+  if not Simulate and Assigned(StateEvent) then
+    StateEvent(FOwner.FOwner.FOwner, Package);
+end;
 
-  procedure MarkReset(Package: TPackage);
+procedure TPackage.SetState(Value: TPackageState);
+
+
+
+  procedure MarkReset(Package: TPackage; SelectRecent: Boolean = False);
   var
-    I: Integer;
+    I, C: Integer;
+    lPackage: TPackage;
     StateEvent: TChangeStateEvent;
   begin
     if ((Package.FState = psInstall) and not Package.FInstalled) or
         (Package.FInstalled and (Package.State <> psUninstall) and (Value <> psNone)) then
         Exit;
+    if SelectRecent and ((Value <> psNone) or (Package.State = psUninstall)) then
+    begin
+      lPackage := Package;
+      for I := 0 to lPackage.Owner.Count - 1 do
+      begin
+        if (CompareText(lPackage.Name, lPackage.Owner.Items[I].Name) <> 0) then
+          Continue;
+        C := ComparePkgVersion(lPackage.Owner.Items[I].Version, lPackage.Version);
+        if C > 0 then
+        begin
+          Package := Package.Owner.Items[I];
+          if ((Package.FState = psInstall) and not Package.FInstalled) or
+            (Package.FInstalled and (Package.State <> psUninstall) and (Value <> psNone)) then
+            Exit;
+        end;
+      end;
+    end;
     StateEvent := Owner.Owner.Owner.OnChangeState;
     if not Package.FInstalled then
       Package.FState := psInstall
@@ -380,7 +508,7 @@ procedure TPackage.SetState(Value: TPackageState);
     if Assigned(StateEvent) then
       StateEvent(FOwner.FOwner.FOwner, Package);
     for I := 0 to Package.Count - 1 do
-      MarkReset(Package.Items[I]);
+      MarkReset(Package.Items[I], True);
   end;
 
   procedure MarkToUninstall(Package: TPackage; List: TList);
@@ -396,6 +524,17 @@ procedure TPackage.SetState(Value: TPackageState);
     for I := 0 to Package.Count - 1 do
     begin
       Dependency := Package.Items[I];
+      // get any highest dependency installed version to uninstall
+      for J := 0 to Dependency.Owner.Count - 1 do
+      begin
+        if (CompareText(Dependency.Name, Dependency.Owner.Items[J].Name) <> 0) then
+          Continue;
+        if (Dependency.FInstalled and not (Dependency.FState = psUninstall))
+          or (Dependency.FState = psInstall) then
+          Break;
+        if ComparePkgVersion(Dependency.Owner.Items[J].Version, Dependency.Version) > 0 then
+          Dependency := Dependency.Owner.Items[J];
+      end;
       if (Dependency.FState = psUninstall) or (not Dependency.FInstalled and
         not (Dependency.FState = psInstall)) then
         Continue;
@@ -403,11 +542,12 @@ procedure TPackage.SetState(Value: TPackageState);
       for J := 0 to Dependency.OwnerDependencyList.Count - 1 do
       begin
         OwnerDependency := Dependency.OwnerDependencyList.Items[J];
+        // same package then continue, only different dependency owner are checked
         if (OwnerDependency.Name = Package.Name) and
            (OwnerDependency.Version = Package.Version) then
           Continue;
         if (OwnerDependency.FInstalled and not (OwnerDependency.FState = psUninstall))
-          or (OwnerDependency.FState = psInstall) then
+            or (OwnerDependency.FState = psInstall) then
         begin
           Inc(InstalledCount);
           Break;
@@ -415,7 +555,7 @@ procedure TPackage.SetState(Value: TPackageState);
       end;
       if InstalledCount > 0 then
         Continue;
-      MarkToUninstall(Package.Items[I], List);
+      MarkToUninstall(Dependency, List);
     end;
   end;
 

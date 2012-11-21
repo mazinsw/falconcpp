@@ -258,7 +258,7 @@ SectionGroup "${PROJECT_NAME}" GroupFalcon
     ;write language id
     SetShellVarContext current
     CreateDirectory "$APPDATA\Falcon"
-    WriteINIStr "$APPDATA\Falcon\Config.ini" "CONFIG" "LangID" $LANGUAGE
+    WriteINIStr "$APPDATA\Falcon\Config.ini" "EnvironmentOptions" "LanguageID" $LANGUAGE
     
     ;Custom Code Template
     SetOutPath "$APPDATA\Falcon"

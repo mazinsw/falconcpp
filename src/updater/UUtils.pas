@@ -423,7 +423,7 @@ var
 begin
   Result := '';
   ini := TIniFile.Create(ConfigPath + 'Config.ini');
-  UserLangID := ini.ReadInteger('CONFIG', 'LangID', GetSystemDefaultLangID);
+  UserLangID := ini.ReadInteger('EnvironmentOptions', 'LanguageID', GetSystemDefaultLangID);
   ini.Free;
   Files := TStringList.Create;
   FindFiles(AppRoot + 'Lang\*.lng', Files);

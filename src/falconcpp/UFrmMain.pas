@@ -3867,15 +3867,28 @@ var
   I: Integer;
   SrcDir, FolderName, ParentPath: string;
 begin
-  if Parent.FileType = FILE_TYPE_PROJECT then
-    ParentPath := ExtractFilePath(Parent.FileName)
-  else if Parent.FileType = FILE_TYPE_FOLDER then
+  while True do
   begin
-    Parent.Save;
-    ParentPath := Parent.FileName;
-  end
-  else
-    Exit;
+    if Parent.FileType = FILE_TYPE_PROJECT then
+    begin
+      ParentPath := ExtractFilePath(Parent.FileName);
+      Break;
+    end
+    else if Parent.FileType = FILE_TYPE_FOLDER then
+    begin
+      Parent.Save;
+      ParentPath := Parent.FileName;
+      Break;
+    end
+    else if (Parent.Node.Parent <> nil) then
+      Parent := TSourceFile(Parent.Node.Parent.Data)
+    else
+    begin
+      Files.Clear;
+      Exit;
+    end;
+  end;
+  
   for I := Files.Count - 1 downto 0 do
   begin
     OwnerFile := Parent;
@@ -7211,7 +7224,7 @@ begin
   P := Mouse.CursorPos;
   P := PageControlEditor.ScreenToClient(P);
   I := PageControlEditor.IndexOfTabAt(P.X, P.Y);
-  if I > -1 then
+  if (I > -1) or (PageControlEditor.DirectionOfNavAt(P.X, P.Y) <> 0) then
     Exit;
   //Get folder of active file or project
   SelFile := nil;

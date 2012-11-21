@@ -84,3 +84,4 @@ main.cpp:17: error: no matching function for call to 'Button::Button(Window*)'
 button.h:6: note: candidates are: Button::Button()
 button.cpp:5: error: declaration of 'Control parent' shadows a parameter
 main.c:7: error: within this context
+4.21.c:40: note: previous declaration of 'ordena' was here

@@ -731,7 +731,7 @@ Version=2.0
 #%s:%d:%d: error: macro "%s" requires %d arguments, but only %d given
 1793=Order{4,5,6}A função "%s" requer %d argumentos, e só foi passado %d
 #%s:%d: error: at this point in file
-1794=Erro Neste ponto do arquivo
+1794=Erro neste ponto do arquivo
 #%s:%d: error: too many arguments to function '%s'
 1795=Order{3}Há mais argumentos que o necessário na função '%s'
 #%s:%d: error: '%s' undeclared (first use in this function)

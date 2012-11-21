@@ -2,8 +2,15 @@
 <FalconCPP>
 	<Core Version="3.2.0.0">
 		<File Name="Falcon.exe" URL="https://downloads.sourceforge.net/project/falconcpp/Binaries/3.2.0.0/Falcon C++-3.2.0.0.zip">
-			Date: 2012/10/01
-			
+			Date: 2012/11/21
+			Install packages easily
+			Site updated: falconcpp.sourceforge.net
+			Search with regular expression enabled
+			Tab navigation and tab moving
+			Indentation enhancement
+			Add references files to project
+			Fix goto function, memory access error
+			Parse new installed files when install a new package
 		</File>
 	</Core>
 	<Packages>

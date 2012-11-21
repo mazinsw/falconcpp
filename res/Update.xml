@@ -8,7 +8,7 @@
 			Search with regular expression enabled
 			Tab navigation and tab moving
 			Indentation enhancement
-			Add references files to project
+			Add referenced files to project
 			Fix goto function, memory access error
 			Parse new installed files when install a new package
 		</File>

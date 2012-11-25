@@ -368,7 +368,7 @@ const
     'Loading all installed packages...',
     'Checking for new installed packages...',
     'dddd, d of mmmm of yyyy t',
-    'Compilation sucess in %s seconds',
+    'Compilation success in %s seconds',
     'Compilation failed',
     'Adding messages %d/%d',
     'Parsing results %d/%d',

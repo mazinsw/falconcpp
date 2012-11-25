@@ -313,7 +313,7 @@ Version=your translate version
 1442=dddd, d of mmmm of yyyy t
 
 #compilation messages
-1443=Compilation sucess in %s seconds
+1443=Compilation success in %s seconds
 1444=Compilation failed
 1445=Adding messages %d/%d
 1446=Parsing results %d/%d

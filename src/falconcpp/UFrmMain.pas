@@ -4756,6 +4756,32 @@ begin
       sheet.Memo.SelText := ']';
       sheet.Memo.CaretX := sheet.Memo.CaretX - 1;
     end
+    else if Key = ')' then
+    begin
+      if sheet.Memo.Lines.Count >= sheet.Memo.CaretY then
+      begin
+        LineStr := sheet.Memo.Lines.Strings[sheet.Memo.CaretY - 1];
+        LineStr := Copy(LineStr, sheet.Memo.CaretX, Length(LineStr));
+        if (LineStr <> '') and (LineStr[1] = ')') then
+        begin
+          Key := #0;
+          sheet.Memo.CaretX := sheet.Memo.CaretX + 1;
+        end;
+      end;
+    end
+    else if Key = ']' then
+    begin
+      if sheet.Memo.Lines.Count >= sheet.Memo.CaretY then
+      begin
+        LineStr := sheet.Memo.Lines.Strings[sheet.Memo.CaretY - 1];
+        LineStr := Copy(LineStr, sheet.Memo.CaretX, Length(LineStr));
+        if (LineStr <> '') and (LineStr[1] = ']') then
+        begin
+          Key := #0;
+          sheet.Memo.CaretX := sheet.Memo.CaretX + 1;
+        end;
+      end;
+    end
     else if Key = '{' then
     begin
       emptyLine := False;
@@ -8368,6 +8394,7 @@ begin
     if ProjProp.NeedBuild then
     begin
       FCompilationStopped := False;
+      RunNow := True;
       ProjProp.Build;
     end
     else

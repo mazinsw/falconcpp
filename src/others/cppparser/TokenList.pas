@@ -6,7 +6,7 @@ uses
   Classes, Dialogs;
 
 const
-  Sign = 'FCP 2.3';
+  Sign = 'FCP 3.2';
 
 type
   TTkType = (
@@ -41,7 +41,8 @@ type
     tkParams,
     tkScope,
     tkScopeClass,
-    tkUsing
+    tkUsing,
+    tkValue
     );
 
   TTokenSearchMode = set of TTkType;
@@ -116,14 +117,8 @@ type
     //procedure LoadFromTokenRec(TokenRec: PTokenRec);
     destructor Destroy; override;
     function Add(Item: TTokenClass): Integer;
-    procedure Fill(SelLine: Integer;
-      SelLength: Integer;
-      SelStart: Integer;
-      Level: Integer;
-      Token: TTkType;
-      Name: string;
-      Flag: string
-      );
+    procedure Fill(SelLine: Integer; SelLength: Integer; SelStart: Integer;
+      Level: Integer; Token: TTkType; Name: string; Flag: string);
     procedure Clear;
     function Count: Integer;
     procedure Delete(Index: Integer);
@@ -169,25 +164,7 @@ type
     destructor Destroy; override;
   end;
 
-{  procedure AddTokenChild(Token, Child: PTokenRec);
-  procedure FillToken(Token: PTokenRec;
-                      Line: Integer; //Line of word in file
-                      Start: Integer; //Start of word in file
-                      SelLen: Word; //Length of Selection
-                      Level: Word; //Level of block
-                      TkType: TTkType; //Type of Object
-                      Name : String;
-                      Flag : String
-                    );
-  function NewToken: PTokenRec;
-  procedure FreeToken(Token: PTokenRec);
-  procedure SaveToken(const FileName: String; Token: PTokenRec);
-  function LoadToken(const FileName: String): PTokenRec;
 
-  procedure SaveFileParsedToken(const FileName: String;
-                                FileDate: TDateTime;
-                                Token: array of PTokenRec);
-  function LoadFileParsed(const FileName: String; var Token: PTokenRec): Boolean;}
 implementation
 
 uses SysUtils, TokenUtils;
@@ -303,14 +280,8 @@ begin
   Result := FList.Add(Item);
 end;
 
-procedure TTokenClass.Fill(SelLine: Integer;
-  SelLength: Integer;
-  SelStart: Integer;
-  Level: Integer;
-  Token: TTkType;
-  Name: string;
-  Flag: string
-  );
+procedure TTokenClass.Fill(SelLine: Integer; SelLength: Integer;
+  SelStart: Integer; Level: Integer; Token: TTkType; Name: string; Flag: string);
 begin
   FSelLine := SelLine;
   FSelLength := SelLength;
@@ -660,212 +631,5 @@ begin
   FList.Free;
   inherited Destroy;
 end;
-
-{File Parsed Functions}
-
-{procedure AddTokenChild(Token, Child: PTokenRec);
-var
-  NewItems: PTokenRecList;
-begin
-  GetMem(NewItems, (Token^.Count + 1)*Sizeof(PTokenRec));
-  if Token^.Count > 0 then
-  begin
-    Move(Token^.Items^, NewItems^, Token^.Count*Sizeof(PTokenRec));
-    FreeMem(Token^.Items);
-  end;
-  Token^.Items := NewItems;
-  Inc(NewItems, Token^.Count);
-  NewItems^ := Child;
-  Inc(Token^.Count);
-end;
-
-procedure FillToken(Token: PTokenRec;
-                    Line: Integer; //Line of word in file
-                    Start: Integer; //Start of word in file
-                    SelLen: Word; //Length of Selection
-                    Level: Word; //block level
-                    TkType: TTkType; //Type of Object
-                    Name : String;
-                    Flag : String
-                    );
-begin
-  Token^.Line := Line;
-  Token^.Start := Start;
-  Token^.SelLen := SelLen;
-  Token^.Level := Level;
-  Token^.Token := TkType;
-  Token^.Len1 := Length(Name);
-  Token^.Name := Name;
-  Token^.Len2 := Length(Flag);
-  Token^.Flag := Flag;
-end;
-
-function NewToken: PTokenRec;
-begin
-  GetMem(Result, Sizeof(TTokenRec));
-  FillChar(Result^, Sizeof(TTokenRec), 0);
-end;
-
-procedure FreeToken(Token: PTokenRec);
-var
-  I: Integer;
-  Items: PTokenRecList;
-begin
-  Items := Token^.Items;
-  for I:= 0 to Token^.Count - 1 do
-  begin
-    FreeToken(Items^);
-    Inc(Items);
-  end;
-  if Token^.Count > 0 then
-    FreeMem(Token^.Items);
-  FreeMem(Token);
-end;
-
-procedure SaveTokenRecursive(Handle: Integer; Token: PTokenRec);
-var
-  I: Integer;
-  Items: PTokenRecList;
-begin
-  FileWrite(Handle, Token^.Count, SizeOf(Word));
-  FileWrite(Handle, Token^.Line, SizeOf(Integer));
-  FileWrite(Handle, Token^.Start, SizeOf(Integer));
-  FileWrite(Handle, Token^.SelLen, SizeOf(Word));
-  FileWrite(Handle, Token^.Level, SizeOf(Word));
-  FileWrite(Handle, Token^.Token, SizeOf(TTkType));
-  FileWrite(Handle, Token^.Len1, SizeOf(Word));
-  FileWrite(Handle, PChar(Token^.Name)^, Token^.Len1);
-  FileWrite(Handle, Token^.Len2, SizeOf(Word));
-  FileWrite(Handle, PChar(Token^.Flag)^, Token^.Len2);
-  Items := Token^.Items;
-  for I:= 0 to Token^.Count - 1 do
-  begin
-    SaveTokenRecursive(Handle, Items^);
-    Inc(Items);
-  end;
-end;
-
-procedure SaveToken(const FileName: String; Token: PTokenRec);
-var
-  Handle: Integer;
-  Count: Word;
-begin
-  Handle := FileCreate(FileName);
-  if Handle = 0 then Exit;
-  Count := 1;
-  FileWrite(Handle, Count, SizeOf(Word));
-  SaveTokenRecursive(Handle, Token);
-  FileClose(Handle);
-end;
-
-procedure SaveFileParsedToken(const FileName: String;
-                    FileDate: TDateTime;
-                    Token: array of PTokenRec);
-var
-  Handle, I: Integer;
-  Header: TSimpleFileToken;
-begin
-  Handle := FileCreate(FileName);
-  if Handle = 0 then Exit;
-  Move(Sign, Header.Sign, Sizeof(Header.Sign));
-  Header.DateOfFile := FileDate;
-  Header.Count := Length(Token);
-  FileWrite(Handle, Header, SizeOf(TSimpleFileToken));
-  for I:= 0 to Header.Count - 1 do
-    SaveTokenRecursive(Handle, Token[I]);
-  FileClose(Handle);
-end;
-
-procedure LoadTokenRecursive(Handle: Integer; Token: PTokenRec);
-var
-  I: Integer;
-  Buffer: array[0..4095] of Char;
-  NewItems: PTokenRecList;
-begin
-  NewItems := nil;
-  FileRead(Handle, Token^.Count, SizeOf(Word));
-  FileRead(Handle, Token^.Line, SizeOf(Integer));
-  FileRead(Handle, Token^.Start, SizeOf(Integer));
-  FileRead(Handle, Token^.SelLen, SizeOf(Word));
-  FileRead(Handle, Token^.Level, SizeOf(Word));
-  FileRead(Handle, Token^.Token, SizeOf(TTkType));
-  FileRead(Handle, Token^.Len1, SizeOf(Word));
-  Buffer[Token^.Len1] := #0;
-  FileRead(Handle, Buffer, Token^.Len1);
-  Token^.Name := StrPas(Buffer);
-  FileRead(Handle, Token^.Len2, SizeOf(Word));
-  Buffer[Token^.Len2] := #0;
-  FileRead(Handle, Buffer, Token^.Len2);
-  Token^.Flag := StrPas(Buffer);
-  if Token^.Count > 0 then
-  begin
-    GetMem(NewItems, Token^.Count*Sizeof(PTokenRec));
-    Token^.Items := NewItems;
-  end;
-
-  for I:= 0 to Token^.Count - 1 do
-  begin
-    NewItems^ := NewToken;
-    LoadTokenRecursive(Handle, NewItems^);
-    Inc(NewItems);
-  end;
-end;
-
-function LoadToken(const FileName: String): PTokenRec; overload;
-var
-  Handle, I: Integer;
-  Count: Word;
-  Token: PTokenRec;
-begin
-  Result := nil;
-  Token := nil;
-  Count := 0;
-  if not FileExists(FileName) then Exit;
-  Handle := FileOpen(FileName, fmOpenRead);
-  if Handle = 0 then Exit;
-  FileRead(Handle, Count, SizeOf(Word));
-  for I:= 0 to Count - 1 do
-  begin
-    Token := NewToken;
-    LoadTokenRecursive(Handle, Token);
-  end;
-  FileClose(Handle);
-  Result := Token;
-end;
-
-function LoadFileParsed(const FileName: String; var Token: PTokenRec): Boolean;
-var
-  Handle, I: Integer;
-  Header: TSimpleFileToken;
-  NewItems: PTokenRecList;
-begin
-  Result := False;
-  if not FileExists(FileName) then Exit;
-  Handle := FileOpen(FileName, fmOpenRead);
-  if Handle = 0 then Exit;
-  FileRead(Handle, Header, SizeOf(TSimpleFileToken));
-  if not CompareMem(Pointer(@Header.Sign), PChar(Sign), Sizeof(Header.Sign)) then
-  begin
-    FileClose(Handle);
-    Exit;
-  end;
-  Token := NewToken;
-  Token^.Count := Header.Count;
-  FillToken(Token, 0, 0, 0, 0, tkRoot, 'Root', '');
-  NewItems := nil;
-  if Token^.Count > 0 then
-  begin
-    GetMem(NewItems, Token^.Count*Sizeof(PTokenRec));
-    Token^.Items := NewItems;
-  end;
-  for I:= 0 to Token^.Count - 1 do
-  begin
-    NewItems^ := NewToken;
-    LoadTokenRecursive(Handle, NewItems^);
-    Inc(NewItems);
-  end;
-  FileClose(Handle);
-  Result := True;
-end; }
 
 end.

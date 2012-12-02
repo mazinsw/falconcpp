@@ -83,7 +83,7 @@ type
 
     procedure NextValidChar;
     function AddToken(const S, Flag: string; TkType: TTkType; Line, Start,
-      Count, Level: Integer): TTokenClass;
+      Len, Level: Integer): TTokenClass;
   public
     property Canceled: Boolean read fCancel;
     property Busy: Boolean read fBusy;
@@ -528,7 +528,7 @@ end;
 
 procedure TCppParser.ProcessTypedef(StartPos, StartLine: Integer; const S: string);
 var
-  RetType, RetTypeFunc, Asterisk, AstrkFunc, TempWord, TypeName: string;
+  RetType, RetTypeFunc, AccessChars, AstrkFunc, TempWord, TypeName: string;
   I, Len: Integer;
   CanGetName, ChangedCurrPos: Boolean;
   typeProto, aParams: TTokenClass;
@@ -556,16 +556,18 @@ begin
   end;
   CanGetName := True;
   ChangedCurrPos := False;
-  Asterisk := '';
+  AccessChars := '';
   I := Pos('*', RetType);
+  if I = 0 then
+    I := Pos('&', RetType);
   if I > 0 then
   begin
-    Asterisk := Copy(RetType, I, Length(RetType) - I + 1); //copy ** from int **
+    AccessChars := Copy(RetType, I, Length(RetType) - I + 1); //copy ** from int **
     RetType := Copy(RetType, 1, I - 1); //copy type only ex: int
   end;
-  Asterisk := TrimAll(Asterisk);
+  AccessChars := TrimAll(AccessChars);
   RetTypeFunc := RetType;
-  AstrkFunc := Asterisk;
+  AstrkFunc := AccessChars;
   if fptr^ <> '(' then
     TypeName := GetLastWord(TempWord);
   repeat
@@ -586,7 +588,7 @@ begin
           if not CanGetName then //params
           begin
             TypeName := Trim(TypeName);
-            TempWord := '(' + GetPriorWord(TypeName) + Asterisk + '): ' +
+            TempWord := '(' + GetPriorWord(TypeName) + AccessChars + '): ' +
               RetTypeFunc + AstrkFunc;
             TypeName := GetLastWord(TypeName);
             Len := Length(TypeName);
@@ -618,8 +620,8 @@ begin
           else
           begin //(*PROTONAME)
             RetTypeFunc := RetType + ' ' + TypeName;
-            AstrkFunc := Asterisk;
-            Asterisk := '';
+            AstrkFunc := AccessChars;
+            AccessChars := '';
             TypeName := '';
             ChangedCurrPos := True;
           end;
@@ -637,7 +639,7 @@ begin
             Exit;
           end
           else //make a new rettype to add
-            TempWord := RetType + Asterisk;
+            TempWord := RetType + AccessChars;
           Len := Length(TypeName);
           if Len > 0 then
             AddToken(TypeName, TempWord, tkTypedef, StartLine, StartPos,
@@ -645,7 +647,7 @@ begin
           if fptr^ = ';' then
             Break;
           TypeName := '';
-          Asterisk := '';
+          AccessChars := '';
           AstrkFunc := '';
           RetTypeFunc := RetType;
           ChangedCurrPos := True;
@@ -662,10 +664,12 @@ begin
         end;
         TypeName := TypeName + fptr^;
       end
-      else if fptr^ in SpaceChars + LineChars + ['*'] then
+      else if fptr^ in SpaceChars + LineChars + ['*', '&'] then
       begin
         if fptr^ = '*' then
-          Asterisk := Asterisk + '*';
+          AccessChars := AccessChars + '*'
+        else if fptr^ = '&' then
+          AccessChars := AccessChars + '&';
         TypeName := Trim(TypeName) + ' ';
         ChangedCurrPos := True;
       end;
@@ -677,18 +681,20 @@ end;
 
 procedure TCppParser.ProcessVariable(StartPos, StartLine: Integer; const S: string);
 var
-  RetType, Asterisk, VarName, Vector, TempWord: string;
+  RetType, AccessChars, VarName, Vector, TempWord: string;
   HasEqual, HasVector, ChangeCurrPos: Boolean;
   I, Len: Integer;
 begin
   HasEqual := False;
   VarName := GetLastWord(S); //var name
   RetType := GetPriorWord(S); //var type
-  Asterisk := '';
+  AccessChars := '';
   I := Pos('*', RetType);
+  if I = 0 then
+    I := Pos('&', RetType);
   if I > 0 then
   begin
-    Asterisk := Copy(RetType, I, Length(RetType) - I + 1);
+    AccessChars := Copy(RetType, I, Length(RetType) - I + 1);
     RetType := Copy(RetType, 1, I - 1);
   end;
   Vector := '';
@@ -743,7 +749,7 @@ begin
       ',', ';', ':', '}', ')': //} is a error
         begin
           TempWord := GetFirstWord(RetType); //check for return, case, else,...
-          if (CountWords(RetType + Asterisk + ' ' + VarName) > 1) and
+          if (CountWords(RetType + AccessChars + ' ' + VarName) > 1) and
             not StringIn(TempWord, ['return', 'case', 'else', 'delete', 'new']) then
           begin
             Len := Length(Vector);
@@ -752,17 +758,17 @@ begin
             Len := Length(VarName);
             if StringIn(RetType, ['class', 'struct']) then
             begin
-              AddToken(VarName, RetType + Asterisk + Vector, tkForward,
+              AddToken(VarName, RetType + AccessChars + Vector, tkForward,
                 StartLine, StartPos, Len, fLevel);
             end
             else if StringIn(GetFirstWord(RetType), ['using']) then
             begin
-              AddToken(VarName, RetType + Asterisk + Vector, tkUsing,
+              AddToken(VarName, RetType + AccessChars + Vector, tkUsing,
                 StartLine, StartPos, Len, fLevel);
             end
             else if (Len > 0) and not IsNumber(Trim(VarName)) then
             begin
-              AddToken(VarName, RetType + Asterisk + Vector, tkVariable,
+              AddToken(VarName, RetType + AccessChars + Vector, tkVariable,
                 StartLine, StartPos, Len, fLevel);
             end;
           end;
@@ -771,7 +777,7 @@ begin
           ChangeCurrPos := True;
           if fptr^ = ':' then
             HasVector := True; //struct bit separated
-          Asterisk := '';
+          AccessChars := '';
           VarName := '';
           Vector := '';
           if fptr^ in [';', '}', ')'] then
@@ -797,9 +803,9 @@ begin
           end;
           VarName := VarName + fptr^;
         end
-        else if fptr^ = '*' then
+        else if fptr^ in ['*', '&'] then
         begin
-          Asterisk := Asterisk + '*';
+          AccessChars := AccessChars + fptr^;
           ChangeCurrPos := True;
         end;
       end;
@@ -812,7 +818,7 @@ end;
 procedure TCppParser.ProcessStruct(Typedef: Boolean; StartPos,
   StartLine: Integer; const S: string);
 var
-  RetType, StructName, Asterisk, CurrStr, TempWord,
+  RetType, StructName, AccessChars, CurrStr, TempWord,
     LastName, Ancestor: string;
   I, PairCount: Integer;
   scope: TTokenClass;
@@ -822,7 +828,7 @@ begin
   ChangedCurrPos := True;
   StructName := S;
   CurrStr := '';
-  Asterisk := '';
+  AccessChars := '';
   RetType := '';
   PairCount := 0;
   Ancestor := '';
@@ -949,11 +955,11 @@ begin
                     fLast.SelLine := StartLine;
                     fLast.SelStart := StartPos;
                     fLast.SelLength := I;
-                    fLast.Flag := fLast.Flag + Asterisk;
+                    fLast.Flag := fLast.Flag + AccessChars;
                     fLast.Token := tkTypeStruct;
                   end
                   else
-                    AddToken(CurrStr, LastName + Asterisk, tkTypeStruct, StartLine, StartPos, I, fLevel);
+                    AddToken(CurrStr, LastName + AccessChars, tkTypeStruct, StartLine, StartPos, I, fLevel);
                 end
                 else
                 begin
@@ -965,20 +971,20 @@ begin
             begin
               if Length(CurrStr) > 0 then
                 ProcessVariable(StartPos, StartLine, 'struct ' + StructName +
-                  Asterisk + ' ' + CurrStr);
+                  AccessChars + ' ' + CurrStr);
               CanExit := True;
             end;
           end
           else
           begin
-            ProcessVariable(StartPos, StartLine, RetType + Asterisk + ' ' +
+            ProcessVariable(StartPos, StartLine, RetType + AccessChars + ' ' +
               CurrStr);
           end;
           CurrStr := '';
           RetType := '';
-          Asterisk := '';
+          AccessChars := '';
         end;
-      '(': ProcessFunction(StartPos, StartLine, RetType + Asterisk + ' ' +
+      '(': ProcessFunction(StartPos, StartLine, RetType + AccessChars + ' ' +
           CurrStr);
       ';':
         begin
@@ -999,11 +1005,11 @@ begin
                     fLast.SelLine := StartLine;
                     fLast.SelStart := StartPos;
                     fLast.SelLength := I;
-                    fLast.Flag := Asterisk;
+                    fLast.Flag := AccessChars;
                     fLast.Token := tkTypeStruct;
                   end
                   else
-                    AddToken(CurrStr, 'struct ' + fLast.Name + Asterisk, tkTypeStruct, StartLine, StartPos, I, fLevel);
+                    AddToken(CurrStr, 'struct ' + fLast.Name + AccessChars, tkTypeStruct, StartLine, StartPos, I, fLevel);
                 end
                 else
                   AddToken(CurrStr, '', tkTypeStruct, StartLine, StartPos, I, fLevel);
@@ -1013,18 +1019,18 @@ begin
             begin
               if Length(CurrStr) > 0 then //variable with struct type
                 ProcessVariable(StartPos, StartLine, 'struct ' + StructName +
-                  Asterisk + ' ' + CurrStr);
+                  AccessChars + ' ' + CurrStr);
             end;
             CanExit := True;
           end
           else
           begin
-            ProcessVariable(StartPos, StartLine, RetType + Asterisk + ' ' +
+            ProcessVariable(StartPos, StartLine, RetType + AccessChars + ' ' +
               CurrStr);
           end;
           CurrStr := '';
           RetType := '';
-          Asterisk := '';
+          AccessChars := '';
         end;
     else
       if fptr^ in LetterChars + DigitChars then
@@ -1037,9 +1043,9 @@ begin
         end;
         CurrStr := CurrStr + fptr^;
       end
-      else if fptr^ = '*' then
+      else if fptr^ in ['*', '&'] then
       begin
-        Asterisk := Asterisk + '*';
+        AccessChars := AccessChars + fptr^;
         ChangedCurrPos := True;
       end
       else if fptr^ in SpaceChars + LineChars then
@@ -1062,7 +1068,7 @@ end;
 procedure TCppParser.ProcessUnion(Typedef: Boolean; StartPos,
   StartLine: Integer; const S: string);
 var
-  RetType, StructName, Asterisk, CurrStr, TempWord,
+  RetType, StructName, AccessChars, CurrStr, TempWord,
     LastName, Ancestor: string;
   I, PairCount: Integer;
   CanExit, ChangedCurrPos: Boolean;
@@ -1072,7 +1078,7 @@ begin
   ChangedCurrPos := True;
   StructName := S;
   CurrStr := '';
-  Asterisk := '';
+  AccessChars := '';
   RetType := '';
   PairCount := 0;
   Ancestor := '';
@@ -1186,11 +1192,11 @@ begin
                     fLast.SelLine := StartLine;
                     fLast.SelStart := StartPos;
                     fLast.SelLength := I;
-                    fLast.Flag := fLast.Flag + Asterisk;
+                    fLast.Flag := fLast.Flag + AccessChars;
                     fLast.Token := tkTypeUnion;
                   end
                   else
-                    AddToken(CurrStr, LastName + Asterisk, tkTypeUnion, StartLine, StartPos, I, fLevel);
+                    AddToken(CurrStr, LastName + AccessChars, tkTypeUnion, StartLine, StartPos, I, fLevel);
                 end
                 else
                 begin
@@ -1202,20 +1208,20 @@ begin
             begin
               if Length(CurrStr) > 0 then
                 ProcessVariable(StartPos, StartLine, 'union ' + StructName +
-                  Asterisk + ' ' + CurrStr);
+                  AccessChars + ' ' + CurrStr);
               CanExit := True;
             end;
           end
           else
           begin
-            ProcessVariable(StartPos, StartLine, RetType + Asterisk + ' ' +
+            ProcessVariable(StartPos, StartLine, RetType + AccessChars + ' ' +
               CurrStr);
           end;
           CurrStr := '';
           RetType := '';
-          Asterisk := '';
+          AccessChars := '';
         end;
-      '(': ProcessFunction(StartPos, StartLine, RetType + Asterisk + ' ' +
+      '(': ProcessFunction(StartPos, StartLine, RetType + AccessChars + ' ' +
           CurrStr);
       ';':
         begin
@@ -1236,11 +1242,11 @@ begin
                     fLast.SelLine := StartLine;
                     fLast.SelStart := StartPos;
                     fLast.SelLength := I;
-                    fLast.Flag := Asterisk;
+                    fLast.Flag := AccessChars;
                     fLast.Token := tkTypeUnion;
                   end
                   else
-                    AddToken(CurrStr, 'union ' + fLast.Name + Asterisk, tkTypeUnion, StartLine, StartPos, I, fLevel);
+                    AddToken(CurrStr, 'union ' + fLast.Name + AccessChars, tkTypeUnion, StartLine, StartPos, I, fLevel);
                 end
                 else
                   AddToken(CurrStr, '', tkTypeUnion, StartLine, StartPos, I, fLevel);
@@ -1250,18 +1256,18 @@ begin
             begin
               if Length(CurrStr) > 0 then //variable with struct type
                 ProcessVariable(StartPos, StartLine, 'union ' + StructName +
-                  Asterisk + ' ' + CurrStr);
+                  AccessChars + ' ' + CurrStr);
             end;
             CanExit := True;
           end
           else
           begin
-            ProcessVariable(StartPos, StartLine, RetType + Asterisk + ' ' +
+            ProcessVariable(StartPos, StartLine, RetType + AccessChars + ' ' +
               CurrStr);
           end;
           CurrStr := '';
           RetType := '';
-          Asterisk := '';
+          AccessChars := '';
         end;
     else
       if fptr^ in LetterChars + DigitChars then
@@ -1274,9 +1280,9 @@ begin
         end;
         CurrStr := CurrStr + fptr^;
       end
-      else if fptr^ = '*' then
+      else if fptr^ in ['*', '&'] then
       begin
-        Asterisk := Asterisk + '*';
+        AccessChars := AccessChars + fptr^;
         ChangedCurrPos := True;
       end
       else if fptr^ in SpaceChars + LineChars then
@@ -1299,7 +1305,7 @@ end;
 procedure TCppParser.ProcessEnum(Typedef: Boolean; StartPos,
   StartLine: Integer; const S: string);
 var
-  RetType, StructName, Asterisk, CurrStr, EnumValue,
+  RetType, StructName, AccessChars, CurrStr, EnumValue,
     LastName, Ancestor: string;
   I, PairCount: Integer;
   CanExit, ChangedCurrPos, HasEqual: Boolean;
@@ -1426,7 +1432,7 @@ begin
             begin
               if Length(CurrStr) > 0 then
                 ProcessVariable(StartPos, StartLine, 'enum ' + StructName +
-                  Asterisk + ' ' + CurrStr);
+                  AccessChars + ' ' + CurrStr);
               CanExit := True;
             end;
           end
@@ -1438,7 +1444,7 @@ begin
           CurrStr := '';
           RetType := '';
           EnumValue := '';
-          Asterisk := '';
+          AccessChars := '';
           HasEqual := False;
         end;
       ';':
@@ -1458,11 +1464,11 @@ begin
                   fLast.SelLine := StartLine;
                   fLast.SelStart := StartPos;
                   fLast.SelLength := I;
-                  fLast.Flag := Asterisk;
+                  fLast.Flag := AccessChars;
                   fLast.Token := tkTypeEnum;
                 end
                 else
-                  AddToken(CurrStr, 'enum ' + fLast.Name + Asterisk, tkTypeEnum,
+                  AddToken(CurrStr, 'enum ' + fLast.Name + AccessChars, tkTypeEnum,
                     StartLine, StartPos, I, fLevel);
               end
               else
@@ -1473,12 +1479,12 @@ begin
           begin
             if Length(CurrStr) > 0 then //variable with enum type
               ProcessVariable(StartPos, StartLine, 'enum ' + StructName +
-                Asterisk + ' ' + CurrStr);
+                AccessChars + ' ' + CurrStr);
           end;
           CanExit := True;
           CurrStr := '';
           RetType := '';
-          Asterisk := '';
+          AccessChars := '';
         end;
     else
       if not HasEqual then
@@ -1493,9 +1499,9 @@ begin
           end;
           CurrStr := CurrStr + fptr^;
         end
-        else if fptr^ = '*' then
+        else if fptr^ in ['*', '&'] then
         begin
-          Asterisk := Asterisk + '*';
+          AccessChars := AccessChars + fptr^;
           ChangedCurrPos := True;
         end
         else if fptr^ in SpaceChars + LineChars then
@@ -1562,11 +1568,13 @@ end;
 
 procedure TCppParser.ProcessParams(StartPos, StartLine: Integer);
 var
-  RetType, ParamName, Vector: string;
+  RetType, ParamName, Vector, EqualValue: string;
   lastLine, lastPos, I: Integer;
   Reposition, HasEqual: Boolean;
+  Item: TTokenClass;
 begin
   RetType := '';
+  EqualValue := '';
   Vector := '';
   if fptr^ = ')' then
     Exit;
@@ -1645,21 +1653,32 @@ begin
           end
           else
             RetType := GetPriorWord(RetType);
-          AddToken(ParamName, RetType + Vector, tkVariable,
+          Item := AddToken(ParamName, RetType + Vector, tkVariable,
             lastLine, lastPos, Length(ParamName), fLevel);
+          if HasEqual and (Length(Trim(EqualValue)) > 0) then
+          begin
+            Push(Item);
+            AddToken(Trim(EqualValue), '', tkValue, Item.SelLine, Item.SelStart,
+              Length(Trim(EqualValue)), Item.Level);
+            Pop;
+          end;
           RetType := '';
           Vector := '';
           HasEqual := False;
+          EqualValue:= '';
           Reposition := True;
         end;
     else //std::vector<int*>    ...
-      if fptr^ in LetterChars + DigitChars + [':', '<', '>', '*', '.'] then
+      if HasEqual then
       begin
-        if fptr^ in [':', '<', '>', '*'] then
+        EqualValue := EqualValue + fptr^;
+      end else if fptr^ in LetterChars + DigitChars + [':', '<', '>', '*', '&', '.'] then
+      begin
+        if fptr^ in [':', '<', '>', '*', '&'] then
           RetType := Trim(RetType) + fptr^
         else
           RetType := RetType + fptr^;
-        if Reposition or (fptr^ in ['*']) then
+        if Reposition or (fptr^ in ['*', '&']) then
         begin
           lastLine := fCurrLine;
           lastPos := fCurrPos;
@@ -1689,8 +1708,17 @@ begin
   else
     RetType := GetPriorWord(RetType);
   if (ParamName <> '') or ((ParamName = '') and (RetType <> 'void')) then
-    AddToken(ParamName, RetType + Vector, tkVariable,
+  begin
+    Item := AddToken(ParamName, RetType + Vector, tkVariable,
       lastLine, lastPos, Length(ParamName), fLevel);
+    if HasEqual and (Length(Trim(EqualValue)) > 0) then
+    begin
+      Push(Item);
+      AddToken(Trim(EqualValue), '', tkValue, Item.SelLine, Item.SelStart,
+        Length(Trim(EqualValue)), Item.Level);
+      Pop;
+    end;
+  end;
 end;
 
 function TCppParser.GetWordUntilFind(Chars: TSetOfChars): string;
@@ -1718,7 +1746,7 @@ begin
       '{': SkipPair('{', '}');
       '[': SkipPair('[', ']');
     else
-      if fptr^ in LetterChars + DigitChars + ['*', ',', '.', '-', ':', '\'] then
+      if fptr^ in LetterChars + DigitChars + ['*', '&', ',', '.', '-', ':', '\'] then
         Result := Result + fptr^
       else if fptr^ in LineChars + SpaceChars then
         Result := Result + ' ';
@@ -2060,7 +2088,7 @@ end;
 function TCppParser.Parse(const Src: string; TokenFile: Pointer): Boolean;
 var
   CurrStr, TempWord, Scope: string;
-  ChangedCurrPos, IsDestructor: Boolean;
+  ChangedCurrPos, IsDestructor, Assigning: Boolean;
   PairCount, StartPos, StartLine: Integer;
   lastFunc, scopeClass: TTokenClass;
 begin
@@ -2080,6 +2108,7 @@ begin
   StartLine := fCurrLine;
   ChangedCurrPos := True;
   IsDestructor := False;
+  Assigning := False;
   Scope := '';
   repeat
     case fptr^ of
@@ -2133,7 +2162,10 @@ begin
                 Inc(fCurrPos);
               end;
               NextValidChar;
-              Inc(StartPos, Pos('*', CurrStr));
+              if Pos('*', CurrStr) > 0 then
+                Inc(StartPos, Pos('*', CurrStr))
+              else if Pos('&', CurrStr) > 0 then
+                Inc(StartPos, Pos('&', CurrStr));
               TempWord := Trim(TempWord + ' ' + CurrStr);
               if fptr^ in [';', '['] then //?
                 ProcessVariable(StartPos, StartLine, TempWord)
@@ -2171,6 +2203,7 @@ begin
           ProcessVariable(StartPos, StartLine, CurrStr);
           CurrStr := '';
           IsDestructor := False;
+          Assigning := True;
         end;
       '{':
         begin //struct{, typedef ...{, switch(){, int main(){
@@ -2248,6 +2281,8 @@ begin
         end;
       ',', '[', ';': //int a; int a, b; int a[];
         begin
+          if fptr^ = ';' then
+            Assigning := False;
           TempWord := GetFirstWord(CurrStr);
           if TempWord = 'typedef' then
             ProcessTypedef(StartPos, StartLine, CurrStr)
@@ -2258,17 +2293,6 @@ begin
           CurrStr := '';
           ChangedCurrPos := True;
           IsDestructor := False;
-        end;
-      '<':
-        begin
-          TempWord := GetFirstWord(CurrStr);
-          if TempWord = 'template' then
-          begin
-          //DoTokenLog('Skip template' + TempWord);
-            SkipPair('<', '>');
-            CurrStr := '';
-            ChangedCurrPos := True;
-          end;
         end;
       ':':
         begin
@@ -2319,12 +2343,19 @@ begin
         end;
       #0: Break;
     else
-      if fptr^ in SpaceChars + LineChars then
+      if (fptr^ = '<') and (GetFirstWord(CurrStr) = 'template') then
+      begin
+        SkipPair('<', '>');
+        CurrStr := '';
+        ChangedCurrPos := True;
+      end
+      else if fptr^ in SpaceChars + LineChars then
       begin
         CurrStr := Trim(CurrStr) + ' ';
         ChangedCurrPos := True;
       end
-      else if fptr^ in LetterChars + DigitChars + ['*'] then
+      else if (fptr^ in LetterChars + DigitChars + ['*', '&', '<', '>']) and not
+        Assigning then
       begin
         CurrStr := CurrStr + fptr^;
         if ChangedCurrPos then
@@ -2333,7 +2364,7 @@ begin
           StartLine := fCurrLine;
           ChangedCurrPos := False;
         end;
-        if fptr^ = '*' then
+        if fptr^ in ['*', '&', '<', '>'] then
           ChangedCurrPos := True;
       end
     end;
@@ -2351,7 +2382,7 @@ begin
 end;
 
 function TCppParser.AddToken(const S, Flag: string; TkType: TTkType; Line, Start,
-  Count, Level: Integer): TTokenClass;
+  Len, Level: Integer): TTokenClass;
 var
   TokenClass: TTokenClass;
 begin
@@ -2359,7 +2390,7 @@ begin
   begin
     TokenClass := Top;
     Result := TTokenClass.Create(TokenClass);
-    Result.Fill(Line, Count, Start, Level, TkType, S, Flag);
+    Result.Fill(Line, Len, Start, Level, TkType, S, Flag);
     if TokenClass <> nil then
     begin
       TokenClass.Add(Result);
@@ -2385,7 +2416,7 @@ begin
         TokenClass := TTokenFile(fTokenFile).FuncObjs;
     end;
     Result := TTokenClass.Create(TokenClass);
-    Result.Fill(Line, Count, Start, Level, TkType, S, Flag);
+    Result.Fill(Line, Len, Start, Level, TkType, S, Flag);
     if TokenClass <> nil then
     begin
       TokenClass.Add(Result);

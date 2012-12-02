@@ -38,6 +38,7 @@ const
     '',
     '',
     '',
+    '',
     ''
     );
 
@@ -94,7 +95,8 @@ const
     'tkParams',
     'tkScope',
     'tkScopeClass',
-    'tkUsing'
+    'tkUsing',
+    'tkValue'
     );
 
   LetterChars: set of Char = ['A'..'Z', 'a'..'z', '_'];

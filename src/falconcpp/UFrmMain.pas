@@ -7746,6 +7746,7 @@ begin
           MB_ICONQUESTION or MB_YESNO) = IDYES then
         begin
           FileProp.Reload;
+          FileProp.Project.CompilePropertyChanged := True;
         end
         else
           FileProp.UpdateDate;

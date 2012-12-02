@@ -422,7 +422,7 @@ function GetFuncProto(Token: TTokenClass; GenName: Boolean): string;
 var
   I, X, VarNum, Len: Integer;
   Params: TTokenClass;
-  TypeName, Vector, Sep, ParamName: string;
+  TypeName, Vector, Sep, ParamName, BraceOpen, BraceClose: string;
 begin
   Result := '';
   Sep := '';
@@ -445,12 +445,19 @@ begin
       TypeName := Copy(TypeName, 1, X - 1);
     end;
     ParamName := Params.Items[I].Name;
+    BraceOpen := '';
+    BraceClose := '';
     if (ParamName = '') and GenName then
     begin
       ParamName := 'var' + IntToStr(VarNum);
       Inc(VarNum);
+    end
+    else if Params.Items[I].Count = 1 then
+    begin
+      BraceOpen := '[';
+      BraceClose := ']';
     end;
-    Result := Result + Sep + Trim(TypeName + ' ' + ParamName + Vector);
+    Result := Result + Sep + BraceOpen + Trim(TypeName + ' ' + ParamName + Vector) + BraceClose;
     Sep := ', ';
   end;
   Result := Trim(Result);

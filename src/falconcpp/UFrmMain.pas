@@ -2673,6 +2673,7 @@ begin
     end
     else
       FileProp.Save;
+    UpdateMenuItems([rmFile]);
   end;
 
 end;

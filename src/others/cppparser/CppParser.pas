@@ -2207,6 +2207,7 @@ begin
         end;
       '{':
         begin //struct{, typedef ...{, switch(){, int main(){
+          Assigning := False;
           TempWord := GetFirstWord(CurrStr);
           if TempWord = 'typedef' then
             ProcessTypedef(StartPos, StartLine, CurrStr)
@@ -2233,6 +2234,7 @@ begin
         end;
       '}':
         begin
+          Assigning := False;
           if fLevel > 0 then
             Dec(fLevel); //Level <<-
           if PairCount > 0 then

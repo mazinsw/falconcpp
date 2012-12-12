@@ -3175,10 +3175,39 @@ end;
 
 procedure TFrmFalconMain.TreeViewProjectsKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
+var
+  Node: TTreeNode;
 begin
-  if (Key = VK_F2) then
+  if Key = VK_F2 then
+  begin
     if (TreeViewProjects.SelectionCount = 1) then
       TreeViewProjects.Selected.EditText;
+  end
+  else if ([ssCtrl] = Shift) and (TreeViewProjects.SelectionCount = 1) then
+  begin
+    Node := TreeViewProjects.Selected;
+    if Key = VK_UP then
+    begin
+      if Node.getPrevSibling <> nil then
+      begin
+        Node.MoveTo(Node.getPrevSibling, naInsert);
+        TSourceFile(Node.Data).Project.PropertyChanged := True;
+        UpdateMenuItems([rmFile]);
+      end;
+    end
+    else if Key = VK_DOWN then
+    begin
+      if (Node.getNextSibling <> nil) then
+      begin
+        if (Node.getNextSibling.getNextSibling <> nil) then
+          Node.MoveTo(Node.getNextSibling.getNextSibling, naInsert)
+        else
+          Node.MoveTo(Node.getNextSibling, naAdd);
+        TSourceFile(Node.Data).Project.PropertyChanged := True;
+        UpdateMenuItems([rmFile]);
+      end;
+    end
+  end;
 end;
 
 function TFrmFalconMain.RemoveFile(FileProp: TSourceFile; FromDisk: Boolean): Boolean;
@@ -3186,6 +3215,7 @@ var
   Node: TTreeNode;
   ProjProp: TProjectFile;
   I: Integer;
+  Msg: string;
 begin
   Result := False;
   if FileProp is TProjectBase then //is project
@@ -3211,8 +3241,12 @@ begin
     end
     else
     begin
-      I := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[21],
-        [FileProp.Name])), 'Falcon C++', MB_YESNOCANCEL + MB_ICONEXCLAMATION);
+      if FileProp.FileType = FILE_TYPE_FOLDER then
+        Msg := STR_FRM_MAIN[53]
+      else
+        Msg := STR_FRM_MAIN[21];
+      I := MessageBox(Handle, PChar(Format(Msg, [FileProp.Name])), 'Falcon C++',
+        MB_YESNOCANCEL + MB_ICONEXCLAMATION);
       if I <> mrYes then
         Exit;
     end;
@@ -3256,8 +3290,11 @@ begin
     begin
       if Config.Environment.AskForDeleteFile then
       begin
-        I := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[20],
-          [FileProp.Name])), 'Falcon C++',
+        if FileProp.FileType = FILE_TYPE_FOLDER then
+          Msg := STR_FRM_MAIN[52]
+        else
+          Msg := STR_FRM_MAIN[20];
+        I := MessageBox(Handle, PChar(Format(Msg, [FileProp.Name])), 'Falcon C++',
           MB_YESNO + MB_ICONQUESTION);
         if I <> mrYes then
           Exit;
@@ -3274,8 +3311,12 @@ begin
     end
     else
     begin
-      I := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[21],
-        [FileProp.Name])), 'Falcon C++', MB_YESNOCANCEL + MB_ICONEXCLAMATION);
+      if FileProp.FileType = FILE_TYPE_FOLDER then
+        Msg := STR_FRM_MAIN[53]
+      else
+        Msg := STR_FRM_MAIN[21];
+      I := MessageBox(Handle, PChar(Format(Msg, [FileProp.Name])), 'Falcon C++',
+        MB_YESNOCANCEL + MB_ICONEXCLAMATION);
       if I <> mrYes then
         Exit;
     end;
@@ -4501,7 +4542,7 @@ var
   I, X, Y: Integer;
 begin
   CheckIfFilesHasChanged;
-  UpdateMenuItems([rmEdit, rmSearch]);
+  UpdateMenuItems([rmFile, rmEdit, rmSearch]);
   if GetActiveFile(FileProp) then
   begin
     StatusBar.Panels.Items[0].ImageIndex := FILE_IMG_LIST[FileProp.FileType];

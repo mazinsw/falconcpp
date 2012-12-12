@@ -327,6 +327,8 @@ Version=2.0
 1453=Este arquivo foi modificado por outro programa.\nDeseja carregá-lo?
 1454=Variáveis
 1455=Continuar
+1456=Deseja remover a pasta "%s" do projeto?
+1457=Deseja excluir a pasta "%s" do disco?
 
 #Property Form
 #Tabs
@@ -990,3 +992,29 @@ Version=2.0
 1922=Order{3}Conflitos de tipos para '%s'
 #%s:%d: note: previous definition of '%s' was here'
 1923=Order{3}Definição anterior de '%s' foi aqui
+#%s:%d: warning: useless storage class specifier in empty declaration
+1824=Especificador de classe de armazenamento inútil na declaração vazia
+#%s:%d: warning: '%s' was ignored in this declaration
+1825=Order{3}'%s' foi ignorada nesta declaração
+#%s:%d: error: overflow in array dimension
+1826=Dimensão do vetor muito grande
+#%s:%d: error: dereferencing pointer to incomplete type
+1827=Desreferenciando ponteiro para um tipo incompleto
+#%s:%d: error: no matching function for call to '%s'
+1828=Order{3}Nenhuma função correspondente para a chamada de '%s'
+#%s:%d: note: candidates are: %s
+1829=Order{3}Candidatos são: %s
+#%s:%d: error: declaration of '%s' shadows a parameter
+1830=Order{3}Declaração de '%s' esconde um parâmetro
+#%s:%d: error: within this context
+1831=Neste contexto
+#%s:%d: note: previous declaration of '%s' was here
+1832=Order{3}Declaração anterior de '%s' foi feita aqui
+#%s:%d: error: return-statement with a value, in function returning '%s'
+1833=Order{3}Declaração de retorno com um valor, em função retornando '%s'
+#%s:%d: error: passing '%s' as '%s' argument of '%s' discards qualifiers
+1834=Order{3,4,5}Passando '%s' como '%s' argumento de '%s' descarta qualificadores
+#%s:%d: error: template argument %d is invalid
+1835=Order{3}Argumento de modelo %d é inválido
+#%s:%d: error: expected unqualified-id before '%s' token
+1836=Order{3}Esperado um id não qualificado antes do símbolo '%s'

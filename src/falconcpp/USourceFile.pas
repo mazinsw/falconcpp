@@ -790,6 +790,9 @@ begin
   if (FileType <> FILE_TYPE_FOLDER) and (not FSaved or Modified or
     not FileExists(FileName) or FileChangedInDisk) then
   begin
+    // save parent folder
+    if (Node.Parent <> nil) and (TSourceBase(Node.Parent.Data).FileType = FILE_TYPE_FOLDER) then
+      TSourceBase(Node.Parent.Data).Save;
     Project.Compiled := False;
     if GetSheet(Sheet) then
     begin

@@ -393,9 +393,17 @@ begin
           Result := '';
           Exit;
         end;
-      '(': Result := Result + '(' + GetWordPair(cStart, cEnd) + ')';
     else
-      if fptr^ in SpaceChars + LineChars then
+      if fptr^ = cStart then
+      begin
+        Result := Result + cStart + GetWordPair(cStart, cEnd) + cEnd;
+        if fptr^ <> cEnd then
+        begin
+          Result := '';
+          Exit;
+        end;
+      end
+      else if fptr^ in SpaceChars + LineChars then
         Result := Trim(Result) + ' '
       else if not (fptr^ in [cStart, cEnd]) then
         Result := Result + fptr^;
@@ -750,7 +758,7 @@ begin
         begin
           TempWord := GetFirstWord(RetType); //check for return, case, else,...
           if (CountWords(RetType + AccessChars + ' ' + VarName) > 1) and
-            not StringIn(TempWord, ['return', 'case', 'else', 'delete', 'new']) then
+            not StringIn(TempWord, ['return', 'case', 'else', 'delete', 'new', 'throw']) then
           begin
             Len := Length(Vector);
             if (Len > 48) then
@@ -2203,7 +2211,7 @@ begin
           ProcessVariable(StartPos, StartLine, CurrStr);
           CurrStr := '';
           IsDestructor := False;
-          Assigning := True;
+          Assigning := fptr^ <> ';';
         end;
       '{':
         begin //struct{, typedef ...{, switch(){, int main(){
@@ -2356,17 +2364,26 @@ begin
         CurrStr := Trim(CurrStr) + ' ';
         ChangedCurrPos := True;
       end
-      else if (fptr^ in LetterChars + DigitChars + ['*', '&', '<', '>']) and not
-        Assigning then
+      else if (fptr^ in LetterChars + DigitChars + ['*', '&', '<'])
+        and not Assigning then
       begin
-        CurrStr := CurrStr + fptr^;
+        if (fptr^ in ['<']) then
+        begin
+          TempWord := GetWordPair('<', '>');
+          if fptr^ = '>' then
+            CurrStr := CurrStr + '<' + TempWord + '>'
+          else
+            CurrStr := '';
+        end
+        else
+          CurrStr := CurrStr + fptr^;
         if ChangedCurrPos then
         begin
           StartPos := fCurrPos;
           StartLine := fCurrLine;
           ChangedCurrPos := False;
         end;
-        if fptr^ in ['*', '&', '<', '>'] then
+        if fptr^ in ['*', '&', '>'] then
           ChangedCurrPos := True;
       end
     end;

@@ -327,6 +327,8 @@ Version=your translate version
 1453=This file has been modified by another program.\nDo you want to reload it?
 1454=Variables
 1455=Continue
+1456=Delete folder "%s" from project?
+1457=Delete folder "%s" from disk?
 
 #Property Form
 #Tabs
@@ -989,3 +991,29 @@ Version=your translate version
 1822=%s:%d: error: conflicting types for '%s'
 #%s:%d: note: previous definition of '%s' was here'
 1823=%s:%d: note: previous definition of '%s' was here'
+#%s:%d: warning: useless storage class specifier in empty declaration
+1824=%s:%d: warning: useless storage class specifier in empty declaration
+#%s:%d: warning: '%s' was ignored in this declaration
+1825=%s:%d: warning: '%s' was ignored in this declaration
+#%s:%d: error: overflow in array dimension
+1826=%s:%d: error: overflow in array dimension
+#%s:%d: error: dereferencing pointer to incomplete type
+1827=%s:%d: error: dereferencing pointer to incomplete type
+#%s:%d: error: no matching function for call to '%s'
+1828=%s:%d: error: no matching function for call to '%s'
+#%s:%d: note: candidates are: %s
+1829=%s:%d: note: candidates are: %s
+#%s:%d: error: declaration of '%s' shadows a parameter
+1830=%s:%d: error: declaration of '%s' shadows a parameter
+#%s:%d: error: within this context
+1831=%s:%d: error: within this context
+#%s:%d: note: previous declaration of '%s' was here
+1832=%s:%d: note: previous declaration of '%s' was here
+#%s:%d: error: return-statement with a value, in function returning '%s'
+1833=%s:%d: error: return-statement with a value, in function returning '%s'
+#%s:%d: error: passing '%s' as '%s' argument of '%s' discards qualifiers
+1834=%s:%d: error: passing '%s' as '%s' argument of '%s' discards qualifiers
+#%s:%d: error: template argument %d is invalid
+1835=%s:%d: error: template argument %d is invalid
+#%s:%d: error: expected unqualified-id before '%s' token
+1836=%s:%d: error: expected unqualified-id before '%s' token

@@ -549,7 +549,7 @@ begin
   begin
     if (SelStart >= 0) and (Token.Items[I].SelStart > SelStart) then
       Exit;
-    if (Token.Items[I].Token in [tkScope]) or
+    if (Token.Items[I].Name = '') or (Token.Items[I].Token in [tkScope]) or
       ((Token.Items[I].Token in [tkParams]) and not IncludeParams) then
     begin
       Continue;
@@ -1188,6 +1188,9 @@ begin
   if I > 0 then
     Result := Copy(Result, 1, I - 1);
   Result := GetLastWord(Result, True);
+  if (Result = 'inline') or (Result = 'static') or (Result = 'extern') or
+    (Result = 'virtual') then
+    Result := GetLastWord(GetAfterWord(Result), True);
 end;
 
 function StringToScopeClass(const S: string): TScopeClass;
@@ -1259,6 +1262,7 @@ begin
   Result := False;
   if not (ptr^ in DigitChars + ['b']) then
     Exit;
+  Result := (ptr^ in DigitChars);
   Inc(ptr);
   if ptr^ in ['x', 'X'] then
     Inc(ptr);

@@ -323,7 +323,7 @@ const
     'Clear'
     );
 
-  MAX_FRM_MAIN = 51;
+  MAX_FRM_MAIN = 53;
   CONST_STR_FRM_MAIN: array[1..MAX_FRM_MAIN] of string = (
     //Tabs Left
     'Projects',
@@ -381,7 +381,9 @@ const
     'This file has been modified by another program.'#13 +
     'Do you want to reload it?',
     'Variables',
-    'Continue'
+    'Continue',
+    'Delete folder "%s" from project?',
+    'Delete folder "%s" from disk?'
     );
 
   MAX_FRM_PROP = 56;
@@ -826,8 +828,8 @@ const
     'Installing...'
     );
 
-  //Translate mingw messages  ' =
-  MAX_CMPMSG = 139;
+  //Translate mingw messages
+  MAX_CMPMSG = 152;
   CONST_STR_CMPMSG: array[1..MAX_CMPMSG] of string = (
     '%s: In function ''%s'':',
     '%s:%d: warning: implicit declaration of function ''%s''',
@@ -967,8 +969,21 @@ const
     '%s:%d: warning: dereferencing ''%s'' pointer',
     '%s:%d: error: request for member ''%s'' in something not a structure or union',
     '%s:%d: error: conflicting types for ''%s''',
-    '%s:%d: note: previous definition of ''%s'' was here'
-    );
+    '%s:%d: note: previous definition of ''%s'' was here',
+    '%s:%d: warning: useless storage class specifier in empty declaration',
+    '%s:%d: warning: ''%s'' was ignored in this declaration',
+    '%s:%d: error: overflow in array dimension',
+    '%s:%d: error: dereferencing pointer to incomplete type',
+    '%s:%d: error: no matching function for call to ''%s''',
+    '%s:%d: note: candidates are: %s',
+    '%s:%d: error: declaration of ''%s'' shadows a parameter',
+    '%s:%d: error: within this context',
+    '%s:%d: note: previous declaration of ''%s'' was here',
+    '%s:%d: error: return-statement with a value, in function returning ''%s''',
+    '%s:%d: error: passing ''%s'' as ''%s'' argument of ''%s'' discards qualifiers',
+    '%s:%d: error: template argument %d is invalid',
+    '%s:%d: error: expected unqualified-id before ''%s'' token'
+  );
 
 type
   TLanguageProperty = class

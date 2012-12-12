@@ -4,8 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Menus, ExtCtrls, 
-  USourceFile, SynMemo, TBX;
+  Dialogs, Menus, ExtCtrls, USourceFile, SynMemo, TBX, SynEditTypes;
 
 type
   TToolMenuItem = class(TTBXItem)
@@ -117,7 +116,8 @@ begin
   FileProp := Sheet.SourceFile;
   //ProjProp := FileProp.Project;
   Memo := Sheet.Memo;
-
+  if Memo.ReadOnly then
+    Exit;
   Line := Memo.DisplayY;
   Column := Memo.DisplayX;
   SelText := Memo.SelText;
@@ -146,8 +146,16 @@ begin
         Temp := StringReplace(FileProp.Name, '.', '_', [rfReplaceAll]);
         Temp := StringReplace(Temp, ' ', '_', [rfReplaceAll]);
         Temp := UpperCase(Temp);
-        Memo.Text := '#ifndef _' + Temp + '_' + #13 + '#define _' + Temp + '_' +
-          #13 + Memo.Text + #13 + '#endif';
+        Memo.SetCaretAndSelection(BufferCoord(1, 1), BufferCoord(1, 1), BufferCoord(1, 1));
+        Memo.SelText := '#ifndef _' + Temp + '_' + #13 + '#define _' + Temp + '_' + #13;
+        SelText := '';
+        if Memo.Lines.Count > 0 then
+          SelText := Memo.Lines.Strings[Memo.Lines.Count - 1];
+        I := Length(SelText) + 1;
+        J := Memo.Lines.Count;
+        Memo.SetCaretAndSelection(BufferCoord(I, J), BufferCoord(I, J),
+          BufferCoord(I, J));
+        Memo.SelText := #13 + '#endif /* _' + Temp + '_ */';
         Memo.GotoLineAndCenter(Line + 2);
       end;
   else

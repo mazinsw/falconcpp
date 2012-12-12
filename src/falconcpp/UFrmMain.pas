@@ -4778,14 +4778,20 @@ procedure TFrmFalconMain.TextEditorKeyPress(Sender: TObject;
 var
   sheet: TSourceFileSheet;
   emptyLine, replaceLine: Boolean;
-  str, LineStr, S: string;
+  str, LineStr, S, token: string;
   p: PChar;
   i, j, SpaceCount1: Integer;
   bStart: TBufferCoord;
+  attri: TSynHighlighterAttributes;
 begin
   LastKeyPressed := Key;
   if GetActiveSheet(sheet) then
   begin
+    if sheet.Memo.GetHighlighterAttriAtRowCol(sheet.Memo.CaretXY, token, attri) then
+    begin
+      if (attri.Name = 'Comment') or (attri.Name = 'String') or (attri.Name = 'Character') then
+        Exit;
+    end;
     if Key = '(' then
     begin
       sheet.Memo.SelText := ')';

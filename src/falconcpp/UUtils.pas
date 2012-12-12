@@ -130,7 +130,7 @@ function IsNumber(Str: string): Boolean;
 
 implementation
 
-uses UFrmMain, ULanguages, UConfig;
+uses UFrmMain, ULanguages, UConfig, SynRegExpr;
 
 { ---------- Font Methods ---------- }
 
@@ -441,14 +441,15 @@ end;
 
 function ParseVersion(Version: string): TVersion;
 var
-  v1, v2, v3, v4: Integer;
+  RegExp: TRegExpr;
 begin
-  if sscanf('%d.%d.%d.%d', Version, [@v1, @v2, @v3, @v4]) then
+  RegExp := TRegExpr.Create;
+  if RegExp.Exec('([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)', Version) then
   begin
-    Result.Major := v1;
-    Result.Minor := v2;
-    Result.Release := v3;
-    Result.Build := v4;
+    Result.Major := StrToInt(RegExp.Match[1]);
+    Result.Minor := StrToInt(RegExp.Match[2]);
+    Result.Release := StrToInt(RegExp.Match[3]);
+    Result.Build := StrToInt(RegExp.Match[4]);
   end
   else
   begin
@@ -457,6 +458,7 @@ begin
     Result.Release := 0;
     Result.Build := 0;
   end;
+  RegExp.Free;
 end;
 
 function VersionToStr(Version: TVersion): string;

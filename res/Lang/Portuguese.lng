@@ -708,313 +708,312 @@ Version=2.0
 5122=Arquivo
 
 #mingw messages
-#orders Order{1,3,2} on init of string
-#example
-# 1  2  3                          4
-#%s:%d:%d: error: invalid suffix "%s" on integer constant
-#253=Order{4,2}invalid suffix "%s" on integer constant, on Line %d
+#translation example
 
-#%s: In function '%s':
-1785=Order{2}Na função '%s':
-#%s:%d: warning: implicit declaration of function '%s'
-1786=Order{3}A função '%s' não foi declarada
-#%s:%d: warning: assignment makes pointer from integer without a cast
+#   $1:$2:$3: error: invalid suffix "$4" on integer constant
+#1784=invalid suffix "$4" on integer constant, on Line $2
+
+#$1: In function '$2':
+1785=Na função '$2':
+#$1:$2: warning: implicit declaration of function '$3'
+1786=A função '$3' não foi declarada
+#$1:$2: warning: assignment makes pointer from integer without a cast
 1787=atribuição feita a um ponteiro a partir de um inteiro sem um cast
-#%s:%d:%d: error: invalid suffix "%s" on integer constant
-1788=Order{4}Sufixo "%s" inválido em uma constante inteira
-#%s:%d: warning: unused variable '%s'
-1789=Order{3}A variável '%s' não está sendo usada
-#%s:%d: error: '%s' was not declared in this scope
-1790=Order{3}'%s' não foi declarado anteriormente
-#%s:%d: error: expected '%s' before '%s'
-1791=order{3,4}Era esperado um '%s' antes de '%s'
-#%s:%d:%d: error: macro "%s" passed %d arguments, but takes just %d
-1792=Order{5,4,6}Foi passado %d argumentos para "%s", mas é necessário apenas %d
-#%s:%d:%d: error: macro "%s" requires %d arguments, but only %d given
-1793=Order{4,5,6}A função "%s" requer %d argumentos, e só foi passado %d
-#%s:%d: error: at this point in file
+#$1:$2:$3: error: invalid suffix "$4" on integer constant
+1788=Sufixo "$4" inválido em uma constante inteira
+#$1:$2: warning: unused variable '$3'
+1789=A variável '$3' não está sendo usada
+#$1:$2: error: '$3' was not declared in this scope
+1790='$3' não foi declarado anteriormente
+#$1:$2: error: expected '$3' before '$4'
+1791=Era esperado um '$3' antes de '$4'
+#$1:$2:$3: error: macro "$4" passed $5 arguments, but takes just $6
+1792=Foi passado $5 argumentos para "$4", mas é necessário apenas $6
+#$1:$2:$3: error: macro "$4" requires $5 arguments, but only $6 given
+1793=A função "$4" requer $5 argumentos, e só foi passado $6
+#$1:$2: error: at this point in file
 1794=Erro neste ponto do arquivo
-#%s:%d: error: too many arguments to function '%s'
-1795=Order{3}Há mais argumentos que o necessário na função '%s'
-#%s:%d: error: '%s' undeclared (first use in this function)
-1796=Order{3}'%s' não foi declarada para poder ser usada nesta função
-#%s:%d: error: expected '%s' before numeric constant
-1797=Order{3}Era esperado '%s' antes do numero
-#%s:%d: error: (Each undeclared identifier is reported only once for each function it appears in.)
+#$1:$2: error: too many arguments to function '$3'
+1795=Há mais argumentos que o necessário na função '$3'
+#$1:$2: error: '$3' undeclared (first use in this function)
+1796='$3' não foi declarada para poder ser usada nesta função
+#$1:$2: error: expected '$3' before numeric constant
+1797=Era esperado '$3' antes do número
+#$1:$2: error: (Each undeclared identifier is reported only once for each function it appears in.)
 1798=Cada identificador não declarado que aparece é relatado somente uma vez para cada função
-#%s:%d: warning: statement has no effect
+#$1:$2: warning: statement has no effect
 1799=Declaração sem efeito
-#%s:%d: warning: passing argument %d of '%s' makes integer from pointer without a cast
-1800=Order{3,4,3}A Passagem do %dº argumento na função '%s' está sendo feita por um ponteiro sem um cast, sendo que o %dº argumento é do tipo inteiro
-#%s:%d: note: expected '%s' but argument is of type '%s'
-1801=Order{3,4}Nota: era esperado '%s' mas o argumento passado é do tipo '%s'
-#%s:%d: error: invalid conversion from '%s' to '%s'
-1802=Order{3,4}Erro na coversão de '%s' para '%s'
-#%s:%d: error:   initializing argument %d of '%s'
-1803=Order{3,4}Erro na inicialização do argumento %d da função '%s'
-#%s:%d: error: too few arguments to function '%s'
-1804=Order{3}Pouco argumento para a função '%s'
-#%s:%s:%s: undefined reference to `%s'
-1805=Order{4}Referência não definida para '%s'
-#%s:%d: error: cannot convert '%s' to '%s' for argument '%s' to '%s'
-1806=Order{3,4,5,6}Não foi possível converter '%s' para '%s' para o argumento '%s' até '%s'
-#%s:%d: warning: value computed is not used
+#$1:$2: warning: passing argument $3 of '$4' makes integer from pointer without a cast
+1800=A Passagem do $3º argumento na função '$4' está sendo feita por um ponteiro sem um cast, sendo que o $3º argumento é do tipo inteiro
+#$1:$2: note: expected '$3' but argument is of type '$4'
+1801=Nota: era esperado '$3' mas o argumento passado é do tipo '$4'
+#$1:$2: error: invalid conversion from '$3' to '$4'
+1802=Erro na coversão de '$3' para '$4'
+#$1:$2: error:   initializing argument $3 of '$4'
+1803=Erro na inicialização do argumento $3 da função '$4'
+#$1:$2: error: too few arguments to function '$3'
+1804=Pouco argumento para a função '$3'
+#$1:$2:$3: undefined reference to `$4'
+1805=Referência não definida para '$4'
+#$1:$2: error: cannot convert '$3' to '$4' for argument '$5' to '$6'
+1806=Não foi possível converter '$3' para '$4' para o argumento '$5' até '$6'
+#$1:$2: warning: value computed is not used
 1807=Valor computado não está sendo usado
-#%s:%d: warning: '%s' is used uninitialized in this function
-1808=Order{3}'%s' está sendo usado sem ser inicializado nesta função
-#%s:%d: error: base operand of '%s' has non-pointer type '%s'
-1809=Order{3,4}Operando base de '%s' não é do tipo ponteiro '%s' 
-#%s:%d:%d: error: %s: No such file or directory
-1810=Order{4}O arquivo %s ou diretório não foi encontrado
-#%s:%d: error: '%s' does not name a type
-1811=Order{3}'%s' não é o nome de um tipo
-#%s:%d: error: expected initializer before '%s'
-1812=Order{3}Era esperado um inicializador antes de '%s'
-#%s:%d: error: a function-definition is not allowed here before '%s' token expected '%s' at end of input
-1813=Order{3,4}uma definição de função não é permitida aqui antes de '%s' sendo esperado '%s' no fim da entrada
-#%s:%d: warning: return makes integer from pointer without a cast
-1814=Está retornando um ponteiro ao invés de um inteiro, use pode usar um cast
-#%s:%d: warning: overflow in implicit constant conversion
+#$1:$2: warning: '$3' is used uninitialized in this function
+1808='$3' está sendo usado sem ser inicializado nesta função
+#$1:$2: error: base operand of '$3' has non-pointer type '$4'
+1809=Operando base de '$3' não é do tipo ponteiro '$4' 
+#$1:$2:$3: error: $4: No such file or directory
+1810=O arquivo $4 ou diretório não foi encontrado
+#$1:$2: error: '$3' does not name a type
+1811='$3' não é o nome de um tipo
+#$1:$2: error: expected initializer before '$3'
+1812=Era esperado um inicializador antes de '$3'
+#$1:$2: error: a function-definition is not allowed here before '$3' token expected '$4' at end of input
+1813=uma definição de função não é permitida aqui antes de '$3' sendo esperado '$4' no fim da entrada
+#$1:$2: warning: return makes integer from pointer without a cast
+1814=Está retornando um ponteiro ao invés de um inteiro, você pode usar um cast
+#$1:$2: warning: overflow in implicit constant conversion
 1815=Sobrecarregamento na conversão da constante
-#%s:%d: warning: integer constant is too large for '%s' type
-1816=Order{3}A constante inteira é muito grande para o tipo '%s'
-#%s:%d:%d: warning: integer constant is too large for its type
+#$1:$2: warning: integer constant is too large for '$3' type
+1816=A constante inteira é muito grande para o tipo '$3'
+#$1:$2:$3: warning: integer constant is too large for its type
 1817=A constante inteira é muito grande para esse tipo
-#%s:%d: warning: this decimal constant is unsigned only in ISO C90
+#$1:$2: warning: this decimal constant is unsigned only in ISO C90
 1818=Esta constante decimal é sem sinal somente no padrão ISO C90
-#%s:%d: error: expected '%s' before '%s' token
-1819=Order{3,4}Era esperado um '%s' antes do símbolo '%s'
-#%s:%d: error: expected expression before '%s' token
-1820=Order{3}Era esperado uma expressão antes do símbolo '%s'
-#%s:%d: note: '%s' was declared here
-1821=Order{3}'%s' foi declarada aqui
-#%s:%d: warning: statement with no effect
+#$1:$2: error: expected '$3' before '$4' token
+1819=Era esperado um '$3' antes do símbolo '$4'
+#$1:$2: error: expected expression before '$3' token
+1820=Era esperado uma expressão antes do símbolo '$3'
+#$1:$2: note: '$3' was declared here
+1821='$3' foi declarada aqui
+#$1:$2: warning: statement with no effect
 1822=Declaração sem nenhum efeito
-#%s:%d: error: lvalue required as left operand of assignment
+#$1:$2: error: lvalue required as left operand of assignment
 1823=É necessário uma variável para a atribuição
-#%s:%d: warning: type defaults to '%s' in declaration of '%s'
-1824=Order{3,4}Usando o tipo padrão '%s' na declaração de '%s'
-#%s:%d: warning: initialization makes integer from pointer without a cast
+#$1:$2: warning: type defaults to '$3' in declaration of '$4'
+1824=Usando o tipo padrão '$3' na declaração de '$4'
+#$1:$2: warning: initialization makes integer from pointer without a cast
 1825=Inicialização sendo feita a um inteiro a partir de um ponteiro sem um cast
-#%s:%d:%d: warning: character constant too long for its type
+#$1:$2:$3: warning: character constant too long for its type
 1826=Constante de caracteres muito grande para esse tipo
-#%s:%d: error: expected identifier or '%s' before numeric constant
-1827=Order{3}Era esperado um identificador ou '%s' antes da constante numérica
-#%s:%d: error: expected '=', ',', ';', 'asm' or '__attribute__' before '%s'
-1828=Order{3}Era esperado '=', ',', ';', 'asm' ou '__attribute__' antes de '%s'
-#%s:%d: warning: label '%s' defined but not used
-1829=Order{3}A indicação '%s' foi definida mas não está sendo usada
-#%s:%d: error: '%s' has no member named '%s'
-1830=Order{4,3}'%s' não faz parte de '%s'
-#%s:%d: error: array subscript is not an integer
+#$1:$2: error: expected identifier or '$3' before numeric constant
+1827=Era esperado um identificador ou '$3' antes da constante numérica
+#$1:$2: error: expected '=', ',', ';', 'asm' or '__attribute__' before '$3'
+1828=Era esperado '=', ',', ';', 'asm' ou '__attribute__' antes de '$3'
+#$1:$2: warning: label '$3' defined but not used
+1829=A indicação '$3' foi definida mas não está sendo usada
+#$1:$2: error: '$3' has no member named '$4'
+1830='$4' não faz parte de '$3'
+#$1:$2: error: array subscript is not an integer
 1831=O índice do vetor não é inteiro 
-#%s:%d: warning: too few arguments for format
+#$1:$2: warning: too few arguments for format
 1832=Pouco parâmetro para o formato
-#%s:%d: warning: format '%s' expects type '%s', but argument %d has type '%s'
-1833=Order{3,4,5,6}O formato '%s' é usado para o tipo '%s', mas o parametro %d é do tipo '%s'
-#%s:%d: error: switch quantity not an integer
+#$1:$2: warning: format '$3' expects type '$4', but argument $5 has type '$6'
+1833=O formato '$3' é usado para o tipo '$4', mas o parametro $5 é do tipo '$6'
+#$1:$2: error: switch quantity not an integer
 1834=O parâmetro do switch não é um inteiro
-#%s:%d: error: incompatible type for argument %d of '%s'
-1835=Order{3,4}Tipo incompatível com o parametro %d da função '%s'
-#%s:%d: error: expected statement before '%s' token
-1836=Order{3}Era esperado alguma expressão ou símbolo antes de '%s'
-#%s:%d: warning: control reaches end of non-void function
+#$1:$2: error: incompatible type for argument $3 of '$4'
+1835=Tipo incompatível com o parametro $3 da função '$4'
+#$1:$2: error: expected statement before '$3' token
+1836=Era esperado alguma expressão ou símbolo antes de '$3'
+#$1:$2: warning: control reaches end of non-void function
 1837=A função não está retornando nenhum valor
-#%s:%d: warning: '%s' may be used uninitialized in this function
-1838=Order{3}A variavel '%s' pode está sendo usada sem ser inicializada nesta função
-#%s:%d: warning: missing braces around initializer
+#$1:$2: warning: '$3' may be used uninitialized in this function
+1838=A variavel '$3' pode está sendo usada sem ser inicializada nesta função
+#$1:$2: warning: missing braces around initializer
 1839=Está faltando chaves em torno da inicialização
-#%s:%d: warning: (near initialization for '%s')
-1840=Order{3}Inicialização sendo feita apenas para '%s'
-#%s:%d: warning: statement is a reference, not call, to function '%s'
-1841=Order{3}A declaração está sendo usada como uma referência, e não como chamada da função '%s'
-#%s:%d: error: case label '%s' not within a switch statement
-1842=Order{3}A indicação do caso '%s', está fora da declaração do switch
-#%s:%d: error: expected primary-expression before '%s' token
-1843=Order{3}Era esperado uma expressão primária antes de '%s'
-#%s:%d: warning: no return statement in function returning non-void
+#$1:$2: warning: (near initialization for '$3')
+1840=Inicialização sendo feita apenas para '$3'
+#$1:$2: warning: statement is a reference, not call, to function '$3'
+1841=A declaração está sendo usada como uma referência, e não como chamada da função '$3'
+#$1:$2: error: case label '$3' not within a switch statement
+1842=A indicação do caso '$3', está fora da declaração do switch
+#$1:$2: error: expected primary-expression before '$3' token
+1843=Era esperado uma expressão primária antes de '$3'
+#$1:$2: warning: no return statement in function returning non-void
 1844=Esta função não é void e não foi encontrada uma expressão de retorno
-#%s:%d: error: expected unqualified-id before '%s'
-1845=Order{3}Era esperado um id incondicional antes de '%s'
-#%s:%d: warning: array subscript is above array bounds
+#$1:$2: error: expected unqualified-id before '$3'
+1845=Era esperado um id incondicional antes de '$3'
+#$1:$2: warning: array subscript is above array bounds
 1846=O índice usado está acima dos limites do vetor
-#%s:%d: warning: suggest parentheses around assignment used as truth value
+#$1:$2: warning: suggest parentheses around assignment used as truth value
 1847=Sugerimos que use parênteses em torno da expressão usada como valor verdade
-#%s:%d: error: storage size of '%s' isn't known
-1848=Order{3}Tamanho de armazenamento de '%s' não é conhecido
-#%s:%d: error: invalid application of '%s' to incomplete type '%s' 
-1849=Order{3,4}Aplicação inválida de '%s' para o tipo incompleto '%s'
-#%s:%d: warning: incompatible implicit declaration of built-in function '%s'
-1850=Order{3}Declaração implícita incompatível da função interna '%s' 
-#%s:%d: warning: comparison between signed and unsigned integer expressions
+#$1:$2: error: storage size of '$3' isn't known
+1848=Tamanho de armazenamento de '$3' não é conhecido
+#$1:$2: error: invalid application of '$3' to incomplete type '$4' 
+1849=Aplicação inválida de '$3' para o tipo incompleto '$4'
+#$1:$2: warning: incompatible implicit declaration of built-in function '$3'
+1850=Declaração implícita incompatível da função interna '$3' 
+#$1:$2: warning: comparison between signed and unsigned integer expressions
 1851=Comparação entre expressões inteiras com sinal e sem sinal
-#%s:%d: warning: deprecated conversion from string constant to '%s'
-1852=Order{3}Conversão obsoleto de uma string constante para '%s'
-#%s:%d: error: expected class-name before '%s' token
-1853=Order{3}Era esperado o nome da classe antes do símbolo '%s'
-#%s:%d: error: ISO C++ forbids declaration of '%s' with no type
-1854=Order{3}O padrão ISO C++ proíbe a declaração de '%s' sem um tipo
-#%s:%s: error: typedef '%s' is initialized (use decltype instead)
-1855=Order{3}typedef '%s' é inicializado (use decltype em vez disso)
-#%s:%d: error: expected constructor, destructor, or type conversion before '%s' token
-1856=Order{3}Era esperado um construtor, destruidor ou um tipo de conversão antes do símbolo '%s'
-#%s:%d: error: expected initializer before '%s' token
-1857=Order{3}Era esperado um inicializador antes do símbolo '%s'
-#%s:%d: error: expected constructor, destructor, or type conversion before '%s'
-1858=Order{3}Era esperado um construtor, destruidor ou um tipo de conversão antes de '%s'
-#In file included from %s:%d:
+#$1:$2: warning: deprecated conversion from string constant to '$3'
+1852=Conversão obsoleto de uma string constante para '$3'
+#$1:$2: error: expected class-name before '$3' token
+1853=Era esperado o nome da classe antes do símbolo '$3'
+#$1:$2: error: ISO C++ forbids declaration of '$3' with no type
+1854=O padrão ISO C++ proíbe a declaração de '$3' sem um tipo
+#$1:$2: error: typedef '$3' is initialized (use decltype instead)
+1855=typedef '$3' é inicializado (use decltype em vez disso)
+#$1:$2: error: expected constructor, destructor, or type conversion before '$3' token
+1856=Era esperado um construtor, destruidor ou um tipo de conversão antes do símbolo '$3'
+#$1:$2: error: expected initializer before '$3' token
+1857=Era esperado um inicializador antes do símbolo '$3'
+#$1:$2: error: expected constructor, destructor, or type conversion before '$3'
+1858=Era esperado um construtor, destruidor ou um tipo de conversão antes de '$3'
+#In file included from $1:$2:
 1859=Incluido no arquivo %s
-#%s:%s:(%s): first defined here
+#$1:$2:($3): first defined here
 1860=Primeiramente definido aqui
-#%s:%d: warning: enumeration value '%s' not handled in switch
-1861=Order{3}O valor da Enumeração '%s' não pode ser tratado no switch
-#%s: In member function '%s':
-1862=Na função membro '%s'
-#%s:%d: error: stray '%s' in program
-1863=Order{3}Caractere '%s' inválido no programa
-#%s:%d: error: expected '%s' at end of input
-1864=Order{3}Era esperado '%s' no fim da entrada
-#%s:%d: warning: field width should have type '%s', but argument %d has type '%s'
-1865=Order{3,4,5}A largura do campo deve ser do tipo '%s', mas o argumento %d é do tipo '%s' 
-#%s:%d: error: subscripted value is neither array nor pointer
+#$1:$2: warning: enumeration value '$3' not handled in switch
+1861=O valor da Enumeração '$3' não pode ser tratado no switch
+#$1: In member function '$2':
+1862=Na função membro '$2'
+#$1:$2: error: stray '$3' in program
+1863=Caractere '$3' inválido no programa
+#$1:$2: error: expected '$3' at end of input
+1864=Era esperado '$3' no fim da entrada
+#$1:$2: warning: field width should have type '$3', but argument $4 has type '$5'
+1865=A largura do campo deve ser do tipo '$3', mas o argumento $5 é do tipo '$5' 
+#$1:$2: error: subscripted value is neither array nor pointer
 1866=O valor subscrito não é nem o ponteiro do vetor
-#%s:%d: error: array type has incomplete element type
+#$1:$2: error: array type has incomplete element type
 1867=Tipo de vetor tem o tipo com quantidade de elementos incompletos
-#%s:%d: warning: too many arguments for format
+#$1:$2: warning: too many arguments for format
 1868=Muito argumento para o formato
-#%s:%d: warning: operation on '%s' may be undefined
-1869=Order{3}A operação em '%s' pode ser indefinida
-#%s:%d:%d: error: unterminated comment
+#$1:$2: warning: operation on '$3' may be undefined
+1869=A operação em '$3' pode ser indefinida
+#$1:$2:$3: error: unterminated comment
 1870=Comentário sem fim
-#%s:%d:%d: warning: "%s" within comment
-1871=Order{4}Tem um "%s" dentro do comentário
-#%s:%d:%d: warning: missing terminating %s character
-1872=Order{4}Falta encerrar a string com %s
-#%s: %s: No such file or directory
-1873=Order{2}Arquivo ou diretório '%s' não encontrado
-#%s:%d: error: missing terminating %s character
-1874=Order{3}Falta encerrar a string com %s
-#%s:%d: error: array size missing in '%s'
-1875=Order{3}Tamanho da matriz incompleta em '%s'
-#%s:%d: warning: passing argument %d of '%s' from incompatible pointer type
-1876=Order{3,4}O %dº argumento de '%d' é incompatível com o tipo de ponteiro
-#%s:%d: warning: return type defaults to '%s'
-1877=Order{3}Usando '%s' como tipo de retorno
-#%s:%d: error: expected identifier or '%s' before '%s' token
-1878=Order{3,4}Era esperado um identificador ou um '%s' antes de '%s'
-#%s:%d: error: expected identifier or '%s' at end of input
-1879=Order{3}Era esperado um identificador ou um '%s' no fim da entrada
-#%s:%d: error: expected specifier-qualifier-list before '%s'
-1880=Order{3}Era esperado um especificador-qualificador-lista antes de '%s'
-#%s:%d: warning: declaration does not declare anything
+#$1:$2:$3: warning: "$4" within comment
+1871=Tem um "$4" dentro do comentário
+#$1:$2:$3: warning: missing terminating $4 character
+1872=Falta encerrar a string com $4
+#$1: $2: No such file or directory
+1873=Arquivo ou diretório '$2' não encontrado
+#$1:$2: error: missing terminating $3 character
+1874=Falta encerrar a string com $3
+#$1:$2: error: array size missing in '$3'
+1875=Tamanho da matriz incompleta em '$3'
+#$1:$2: warning: passing argument $3 of '$4' from incompatible pointer type
+1876=O $3º argumento de '$4' é incompatível com o tipo de ponteiro
+#$1:$2: warning: return type defaults to '$3'
+1877=Usando '$3' como tipo de retorno
+#$1:$2: error: expected identifier or '$3' before '$4' token
+1878=Era esperado um identificador ou um '$3' antes de '$4'
+#$1:$2: error: expected identifier or '$3' at end of input
+1879=Era esperado um identificador ou um '$3' no fim da entrada
+#$1:$2: error: expected specifier-qualifier-list before '$3'
+1880=Era esperado um especificador-qualificador-lista antes de '$3'
+#$1:$2: warning: declaration does not declare anything
 1881=Essa declaração não declara nada
-#%s:%d: error: bit-field '%s' width not an integer constant
-1882=Order{3}A largura do campo de bit '%s', não é uma constante inteira
-#%s:%d: error: '%s' undeclared here (not in a function)
-1883=Order{3}'%s' não foi declarado aqui (não nesta função)
-#%s: warning: '%s' after last input file has no effect
-1884=Os parâmetros '%s' depois da última entrada do arquivo não tem efeito
-#%s: no input files
+#$1:$2: error: bit-field '$3' width not an integer constant
+1882=A largura do campo de bit '$3', não é uma constante inteira
+#$1:$2: error: '$3' undeclared here (not in a function)
+1883='$3' não foi declarado aqui (não nesta função)
+#$1: warning: '$2' after last input file has no effect
+1884=Os parâmetros '$2' depois da última entrada do arquivo não tem efeito
+#$1: no input files
 1885=Sem arquivos para compilar
-#%s: preprocessing failed.
+#$1: preprocessing failed.
 1886=Falha no pre-processamento
-#%s:%d: error: zero width for bit-field '%s'
-1887=Order{3}Largura zero para o campo de bits '%s'
-#%s:%d: error: width of '%s' exceeds its type
-1888=Order{3}A largura de '%s' excede o seu tipo
-#%s:%d: warning: braces around scalar initializer
+#$1:$2: error: zero width for bit-field '$3'
+1887=Largura zero para o campo de bits '$3'
+#$1:$2: error: width of '$3' exceeds its type
+1888=A largura de '$3' excede o seu tipo
+#$1:$2: warning: braces around scalar initializer
 1889=Use parenteses em torno do inicializador escalar
-#%s:%d: warning: initialization from incompatible pointer type
+#$1:$2: warning: initialization from incompatible pointer type
 1890=Inicialização com tipo de ponteiro incompatível 
-#%s:%d: warning: excess elements in scalar initializer
+#$1:$2: warning: excess elements in scalar initializer
 1891=Elementos em excesso no inicializador escalar
-#%s:%d: warning: left-hand operand of comma expression has no effect
+#$1:$2: warning: left-hand operand of comma expression has no effect
 1892=O operando do lado esquerdo da expressão com vírgula não tem nenhum efeito
-#%s:%d: warning: assignment from incompatible pointer type
+#$1:$2: warning: assignment from incompatible pointer type
 1893=Atribuição com tipo de ponteiro incompatíveis
-#%s:%d: warning: initializer-string for array of chars is too long
+#$1:$2: warning: initializer-string for array of chars is too long
 1894=A string de inicialização para o vetor de caracteres é muito grande
-#%s: no resources
+#$1: no resources
 1895=Sem recursos
-#%s:%d: error: invalid application of '%s' to incomplete type '%s'
-1896=Order{3,4}Aplicação inválida de '%s' para o tipo '%s' incompleto
-#%s:%d: error: void value not ignored as it ought to be
+#$1:$2: error: invalid application of '$3' to incomplete type '$4'
+1896=Aplicação inválida de '$3' para o tipo '$4' incompleto
+#$1:$2: error: void value not ignored as it ought to be
 1897=Valor vazio não ignorado como deveria ser
-#Creating library file: %s
+#Creating library file: $1
 1898=Criando arquivo de biblioteca
-#%s:%d: warning: useless type name in empty declaration
+#$1:$2: warning: useless type name in empty declaration
 1899=Nome do tipo inútil na declaração vazia
-#%s:%d: warning: unknown conversion type character '%s' in format
-1900=Order{3}Conversão desconhecida do tipo de caractere '%s' no formato
-#%s:%d: error: parameter name omitted
+#$1:$2: warning: unknown conversion type character '$3' in format
+1900=Conversão desconhecida do tipo de caractere '$3' no formato
+#$1:$2: error: parameter name omitted
 1901=Nome do parâmetro omitido
-#%s:%d: error: expected declaration specifiers before '%s'
-1902=Order{3}Era esperada a declaração de especificadores antes de '%s'
-#%s:%d: error: old-style parameter declarations in prototyped function definition
+#$1:$2: error: expected declaration specifiers before '$3'
+1902=Era esperada a declaração de especificadores antes de '$3'
+#$1:$2: error: old-style parameter declarations in prototyped function definition
 1903=Velho estilo de declarações de parâmetro na definição da função prototipada
-#%s:%d: warning: empty declaration
+#$1:$2: warning: empty declaration
 1904=Declaração vazia
-#%s:%d: error: expected declaration specifiers before '%s' token
-1905=Order{3}Esperada declaração de especificadores antes do simbolo '%s'
-#%s:%d: error: expected declaration specifiers or '%s' before '%s'
-1906=Order{3,4}Esperada declaração de especificadores ou '%s' antes de '%s'
-#%s:%d: error: storage class specified for parameter '%s'
-1907=Order{3}Classe de armazenamento especificado para o parâmetro '%s'
-#%s:%d: error: duplicate member '%s'
-1908=Order{3}Membro duplicado '%s'
-#%s:%d: error: expected '%s' before string constant
-1909=Order{3}Esperado '%s' antes string constante
-#%s:%d: error: called object '%s' is not a function
-1910=Order{3}Objeto chamado '%s' não é uma função
-#%s:%d: Error: too many memory references for `%s'
-1911=Order{3}Muitas referências de memória para '%s'
-#%s:%d: warning: excess elements in array initializer
+#$1:$2: error: expected declaration specifiers before '$3' token
+1905=Esperada declaração de especificadores antes do simbolo '$3'
+#$1:$2: error: expected declaration specifiers or '$3' before '$4'
+1906=Esperada declaração de especificadores ou '$3' antes de '$4'
+#$1:$2: error: storage class specified for parameter '$3'
+1907=Classe de armazenamento especificado para o parâmetro '$3'
+#$1:$2: error: duplicate member '$3'
+1908=Membro duplicado '$3'
+#$1:$2: error: expected '$3' before string constant
+1909=Esperado '$3' antes da string constante
+#$1:$2: error: called object '$3' is not a function
+1910=Objeto chamado '$3' não é uma função
+#$1:$2: Error: too many memory references for `$3'
+1911=Muitas referências de memória para '$3'
+#$1:$2: warning: excess elements in array initializer
 1912=Elementos em excesso no inicializador do vetor
-#%s:%d: error: size of array '%s' is too large
-1913=Order{3}O tamanho do vetor '%s' é muito grande
-#%s:%d: error: incompatible types when assigning to type '%s' from type '%s'
-1914=Order{3,4}Tipos incompatíveis na atribuição para o tipo '%s' apartir do tipo '%s'
-#%s:%d: error: invalid operands to binary %s (have '%s' and '%s')
-1915=Order{3,4}Operandos inválidos para %s binários (tem '%s' e '%s')
-#%s:%d: warning: assuming signed overflow does not occur when assuming that %s is always %s
-1916=Order{3,4}Assumindo estouro com sinal não ocorre quando assumindo que %s é sempre %s
-#%s:%s:(%s): more undefined references to `%s' follow
-1917=Order{3}Mais referências indefinidas para '%s' seguidamente
-#%s:%d: warning: extended initializer lists only available with %s or %s
-1918=Order{3,4}Listas de inicializadoes estendidos disponível apenas com %s ou %s
-#%s:%d: error: type of formal parameter %d is incomplete
-1919=Order{3}Tipo do parâmetro formal %d está incompleto
-#%s:%d: warning: dereferencing '%s' pointer
-1920=Order{3}Desreferenciando o ponteiro '%s'
-#%s:%d: error: request for member '%s' in something not a structure or union
-1921=Order{3}Requisição do membro '%s' em algo quen não é uma estrutura ou união
-#%s:%d: error: conflicting types for '%s'
-1922=Order{3}Conflitos de tipos para '%s'
-#%s:%d: note: previous definition of '%s' was here'
-1923=Order{3}Definição anterior de '%s' foi aqui
-#%s:%d: warning: useless storage class specifier in empty declaration
-1824=Especificador de classe de armazenamento inútil na declaração vazia
-#%s:%d: warning: '%s' was ignored in this declaration
-1825=Order{3}'%s' foi ignorada nesta declaração
-#%s:%d: error: overflow in array dimension
-1826=Dimensão do vetor muito grande
-#%s:%d: error: dereferencing pointer to incomplete type
-1827=Desreferenciando ponteiro para um tipo incompleto
-#%s:%d: error: no matching function for call to '%s'
-1828=Order{3}Nenhuma função correspondente para a chamada de '%s'
-#%s:%d: note: candidates are: %s
-1829=Order{3}Candidatos são: %s
-#%s:%d: error: declaration of '%s' shadows a parameter
-1830=Order{3}Declaração de '%s' esconde um parâmetro
-#%s:%d: error: within this context
-1831=Neste contexto
-#%s:%d: note: previous declaration of '%s' was here
-1832=Order{3}Declaração anterior de '%s' foi feita aqui
-#%s:%d: error: return-statement with a value, in function returning '%s'
-1833=Order{3}Declaração de retorno com um valor, em função retornando '%s'
-#%s:%d: error: passing '%s' as '%s' argument of '%s' discards qualifiers
-1834=Order{3,4,5}Passando '%s' como '%s' argumento de '%s' descarta qualificadores
-#%s:%d: error: template argument %d is invalid
-1835=Order{3}Argumento de modelo %d é inválido
-#%s:%d: error: expected unqualified-id before '%s' token
-1836=Order{3}Esperado um id não qualificado antes do símbolo '%s'
+#$1:$2: error: size of array '$3' is too large
+1913=O tamanho do vetor '$3' é muito grande
+#$1:$2: error: incompatible types when assigning to type '$3' from type '$4'
+1914=Tipos incompatíveis na atribuição para o tipo '$3' apartir do tipo '$4'
+#$1:$2: error: invalid operands to binary $3 (have '$4' and '$5')
+1915=Operandos inválidos para %s binários (tem '$3' e '$4')
+#$1:$2: warning: assuming signed overflow does not occur when assuming that $3 is always $4
+1916=Assumindo estouro com sinal não ocorre quando assumindo que $3 é sempre $4
+#$1:$2:($3): more undefined references to `$4' follow
+1917=Mais referências indefinidas para '$3' seguidamente
+#$1:$2: warning: extended initializer lists only available with $3 or $4
+1918=Listas de inicializadores estendidos disponível apenas com $3 ou $4
+#$1:$2: error: type of formal parameter $3 is incomplete
+1919=Tipo do parâmetro formal $3 está incompleto
+#$1:$2: warning: dereferencing '$3' pointer
+1920=Desreferenciando o ponteiro '$3'
+#$1:$2: error: request for member '$3' in something not a structure or union
+1921=Requisição do membro '$3' em algo quen não é uma estrutura ou união
+#$1:$2: error: conflicting types for '$3'
+1922=Conflitos de tipos para '$3'
+#$1:$2: note: previous definition of '$3' was here
+1923=Definição anterior de '$3' foi feita aqui
+#$1:$2: warning: useless storage class specifier in empty declaration
+1924=Especificador de classe de armazenamento inútil na declaração vazia
+#$1:$2: warning: '$3' was ignored in this declaration
+1925='$3' foi ignorada nesta declaração
+#$1:$2: error: overflow in array dimension
+1926=Dimensão do vetor muito grande
+#$1:$2: error: dereferencing pointer to incomplete type
+1927=Desreferenciando ponteiro para um tipo incompleto
+#$1:$2: error: no matching function for call to '$3'
+1928=Nenhuma função correspondente para a chamada de '$3'
+#$1:$2: note: candidates are: $3
+1929=Candidatos são: $3
+#$1:$2: error: declaration of '$3' shadows a parameter
+1930=Declaração de '$3' esconde um parâmetro
+#$1:$2: error: within this context
+1931=Neste contexto
+#$1:$2: note: previous declaration of '$3' was here
+1932=Declaração anterior de '$3' foi feita aqui
+#$1:$2: error: return-statement with a value, in function returning '$3'
+1933=Declaração de retorno com um valor, em função retornando '$3'
+#$1:$2: error: passing '$3' as '$4' argument of '$5' discards qualifiers
+1934=Passando '$3' como '$4' argumento de '$5' descarta qualificadores
+#$1:$2: error: template argument $3 is invalid
+1935=Argumento de modelo $3 é inválido
+#$1:$2: error: expected unqualified-id before '$3' token
+1936=Esperado um id não qualificado antes do símbolo '$3'

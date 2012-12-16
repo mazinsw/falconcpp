@@ -706,314 +706,313 @@ Version=your translate version
 5121=Line
 5122=File
 
-#mingw messages - optional
-#order Order{1,3,2} on init of string
-#example
-# 1  2  3                          4
-#%s:%d:%d: error: invalid suffix "%s" on integer constant
-#253=Order{4,2}invalid suffix "%s" on integer constant, on Line %d
+#mingw messages
+#translation example
 
-#%s: In function '%s':
-1785=%s: In function '%s':
-#%s:%d: warning: implicit declaration of function '%s'
-1786=%s:%d: warning: implicit declaration of function '%s'
-#%s:%d: warning: assignment makes pointer from integer without a cast
-1787=%s:%d: warning: assignment makes pointer from integer without a cast
-#%s:%d:%d: error: invalid suffix "%s" on integer constant
-1788=%s:%d:%d: error: invalid suffix "%s" on integer constant
-#%s:%d: warning: unused variable '%s'
-1789=%s:%d: warning: unused variable '%s'
-#%s:%d: error: '%s' was not declared in this scope
-1790=%s:%d: error: '%s' was not declared in this scope
-#%s:%d: error: expected '%s' before '%s'
-1791=%s:%d: error: expected '%s' before '%s'
-#%s:%d:%d: error: macro "%s" passed %d arguments, but takes just %d
-1792=%s:%d:%d: error: macro "%s" passed %d arguments, but takes just %d
-#%s:%d:%d: error: macro "%s" requires %d arguments, but only %d given
-1793=%s:%d:%d: error: macro "%s" requires %d arguments, but only %d given
-#%s:%d: error: at this point in file
-1794=%s:%d: error: at this point in file
-#%s:%d: error: too many arguments to function '%s'
-1795=%s:%d: error: too many arguments to function '%s'
-#%s:%d: error: '%s' undeclared (first use in this function)
-1796=%s:%d: error: '%s' undeclared (first use in this function)
-#%s:%d: error: expected '%s' before numeric constant
-1797=Order{3}Era esperado '%s' antes do numero
-#%s:%d: error: (Each undeclared identifier is reported only once for each function it appears in.)
-1798=%s:%d: error: (Each undeclared identifier is reported only once for each function it appears in.)
-#%s:%d: warning: statement has no effect
-1799=%s:%d: warning: statement has no effect
-#%s:%d: warning: passing argument %d of '%s' makes integer from pointer without a cast
-1800=%s:%d: warning: passing argument %d of '%s' makes integer from pointer without a cast
-#%s:%d: note: expected '%s' but argument is of type '%s'
-1801=%s:%d: note: expected '%s' but argument is of type '%s'
-#%s:%d: error: invalid conversion from '%s' to '%s'
-1802=%s:%d: error: invalid conversion from '%s' to '%s'
-#%s:%d: error:   initializing argument %d of '%s'
-1803=%s:%d: error:   initializing argument %d of '%s'
-#%s:%d: error: too few arguments to function '%s'
-1804=%s:%d: error: too few arguments to function '%s'
-#%s:%s:%s: undefined reference to `%s'
-1805=%s:%s:%s: undefined reference to `%s'
-#%s:%d: error: cannot convert '%s' to '%s' for argument '%s' to '%s'
-1806=%s:%d: error: cannot convert '%s' to '%s' for argument '%s' to '%s'
-#%s:%d: warning: value computed is not used
-1807=%s:%d: warning: value computed is not used
-#%s:%d: warning: '%s' is used uninitialized in this function
-1808=%s:%d: warning: '%s' is used uninitialized in this function
-#%s:%d: error: base operand of '%s' has non-pointer type '%s'
-1809=%s:%d: error: base operand of '%s' has non-pointer type '%s'
-#%s:%d:%d: error: %s: No such file or directory
-1810=%s:%d:%d: error: %s: No such file or directory
-#%s:%d: error: '%s' does not name a type
-1811=%s:%d: error: '%s' does not name a type
-#%s:%d: error: expected initializer before '%s'
-1812=%s:%d: error: expected initializer before '%s'
-#%s:%d: error: a function-definition is not allowed here before '%s' token expected '%s' at end of input
-1813=%s:%d: error: a function-definition is not allowed here before '%s' token expected '%s' at end of input
-#%s:%d: warning: return makes integer from pointer without a cast
-1814=%s:%d: warning: return makes integer from pointer without a cast
-#%s:%d: warning: overflow in implicit constant conversion
-1815=%s:%d: warning: overflow in implicit constant conversion
-#%s:%d: warning: integer constant is too large for '%s' type
-1816=%s:%d: warning: integer constant is too large for '%s' type
-#%s:%d:%d: warning: integer constant is too large for its type
-1817=%s:%d:%d: warning: integer constant is too large for its type
-#%s:%d: warning: this decimal constant is unsigned only in ISO C90
-1818=%s:%d: warning: this decimal constant is unsigned only in ISO C90
-#%s:%d: error: expected '%s' before '%s' token
-1819=%s:%d: error: expected '%s' before '%s' token
-#%s:%d: error: expected expression before '%s' token
-1820=%s:%d: error: expected expression before '%s' token
-#%s:%d: note: '%s' was declared here
-1821=%s:%d: note: '%s' was declared here
-#%s:%d: warning: statement with no effect
-1822=%s:%d: warning: statement with no effect
-#%s:%d: error: lvalue required as left operand of assignment
-1823=%s:%d: error: lvalue required as left operand of assignment
-#%s:%d: warning: type defaults to '%s' in declaration of '%s'
-1824=%s:%d: warning: type defaults to '%s' in declaration of '%s'
-#%s:%d: warning: initialization makes integer from pointer without a cast
-1825=%s:%d: warning: initialization makes integer from pointer without a cast
-#%s:%d:%d: warning: character constant too long for its type
-1826=%s:%d:%d: warning: character constant too long for its type
-#%s:%d: error: expected identifier or '%s' before numeric constant
-1827=%s:%d: error: expected identifier or '%s' before numeric constant
-#%s:%d: error: expected '=', ',', ';', 'asm' or '__attribute__' before '%s'
-1828=%s:%d: error: expected '=', ',', ';', 'asm' or '__attribute__' before '%s'
-#%s:%d: warning: label '%s' defined but not used
-1829=%s:%d: warning: label '%s' defined but not used
-#%s:%d: error: '%s' has no member named '%s'
-1830=%s:%d: error: '%s' has no member named '%s'
-#%s:%d: error: array subscript is not an integer
-1831=%s:%d: error: array subscript is not an integer
-#%s:%d: warning: too few arguments for format
-1832=%s:%d: warning: too few arguments for format
-#%s:%d: warning: format '%s' expects type '%s', but argument %d has type '%s'
-1833=%s:%d: warning: format '%s' expects type '%s', but argument %d has type '%s'
-#%s:%d: error: switch quantity not an integer
-1834=%s:%d: error: switch quantity not an integer
-#%s:%d: error: incompatible type for argument %d of '%s'
-1835=%s:%d: error: incompatible type for argument %d of '%s'
-#%s:%d: error: expected statement before '%s' token
-1836=%s:%d: error: expected statement before '%s' token
-#%s:%d: warning: control reaches end of non-void function
-1837=%s:%d: warning: control reaches end of non-void function
-#%s:%d: warning: '%s' may be used uninitialized in this function
-1838=%s:%d: warning: '%s' may be used uninitialized in this function
-#%s:%d: warning: missing braces around initializer
-1839=%s:%d: warning: missing braces around initializer
-#%s:%d: warning: (near initialization for '%s')
-1840=%s:%d: warning: (near initialization for '%s')
-#%s:%d: warning: statement is a reference, not call, to function '%s'
-1841=%s:%d: warning: statement is a reference, not call, to function '%s'
-#%s:%d: error: case label '%s' not within a switch statement
-1842=%s:%d: error: case label '%s' not within a switch statement
-#%s:%d: error: expected primary-expression before '%s' token
-1843=%s:%d: error: expected primary-expression before '%s' token
-#%s:%d: warning: no return statement in function returning non-void
-1844=%s:%d: warning: no return statement in function returning non-void
-#%s:%d: error: expected unqualified-id before '%s'
-1845=%s:%d: error: expected unqualified-id before '%s'
-#%s:%d: warning: array subscript is above array bounds
-1846=%s:%d: warning: array subscript is above array bounds
-#%s:%d: warning: suggest parentheses around assignment used as truth value
-1847=%s:%d: warning: suggest parentheses around assignment used as truth value
-#%s:%d: error: storage size of '%s' isn't known
-1848=%s:%d: error: storage size of '%s' isn't known
-#%s:%d: error: invalid application of '%s' to incomplete type '%s' 
-1849=%s:%d: error: invalid application of '%s' to incomplete type '%s' 
-#%s:%d: warning: incompatible implicit declaration of built-in function '%s'
-1850=%s:%d: warning: incompatible implicit declaration of built-in function '%s'
-#%s:%d: warning: comparison between signed and unsigned integer expressions
-1851=%s:%d: warning: comparison between signed and unsigned integer expressions
-#%s:%d: warning: deprecated conversion from string constant to '%s'
-1852=%s:%d: warning: deprecated conversion from string constant to '%s'
-#%s:%d: error: expected class-name before '%s' token
-1853=%s:%d: error: expected class-name before '%s' token
-#%s:%d: error: ISO C++ forbids declaration of '%s' with no type
-1854=%s:%d: error: ISO C++ forbids declaration of '%s' with no type
-#%s:%s: error: typedef '%s' is initialized (use decltype instead)
-1855=%s:%s: error: typedef '%s' is initialized (use decltype instead)
-#%s:%d: error: expected constructor, destructor, or type conversion before '%s' token
-1856=%s:%d: error: expected constructor, destructor, or type conversion before '%s' token
-#%s:%d: error: expected initializer before '%s' token
-1857=%s:%d: error: expected initializer before '%s' token
-#%s:%d: error: expected constructor, destructor, or type conversion before '%s'
-1858=%s:%d: error: expected constructor, destructor, or type conversion before '%s'
-#In file included from %s:%d:
-1859=In file included from %s:%d:
-#%s:%s:(%s): first defined here
-1860=%s:%s:(%s): first defined here
-#%s:%d: warning: enumeration value '%s' not handled in switch
-1861=%s:%d: warning: enumeration value '%s' not handled in switch
-#%s: In member function '%s':
-1862=%s: In member function '%s':
-#%s:%d: error: stray '%s' in program
-1863=%s:%d: error: stray '%s' in program
-#%s:%d: error: expected '%s' at end of input
-1864=%s:%d: error: expected '%s' at end of input
-#%s:%d: warning: field width should have type '%s', but argument %d has type '%s'
-1865=%s:%d: warning: field width should have type '%s', but argument %d has type '%s'
-#%s:%d: error: subscripted value is neither array nor pointer
-1866=%s:%d: error: subscripted value is neither array nor pointer
-#%s:%d: error: array type has incomplete element type
-1867=%s:%d: error: array type has incomplete element type
-#%s:%d: warning: too many arguments for format
-1868=%s:%d: warning: too many arguments for format
-#%s:%d: warning: operation on '%s' may be undefined
-1869=%s:%d: warning: operation on '%s' may be undefined
-#%s:%d:%d: error: unterminated comment
-1870=%s:%d:%d: error: unterminated comment
-#%s:%d:%d: warning: "%s" within comment
-1871=%s:%d:%d: warning: "%s" within comment
-#%s:%d:%d: warning: missing terminating %s character
-1872=%s:%d:%d: warning: missing terminating %s character
-#%s: %s: No such file or directory
-1873=%s: %s: No such file or directory
-#%s:%d: error: missing terminating %s character
-1874=%s:%d: error: missing terminating %s character
-#%s:%d: error: array size missing in '%s'
-1875=%s:%d: error: array size missing in '%s'
-#%s:%d: warning: passing argument %d of '%s' from incompatible pointer type
-1876=%s:%d: warning: passing argument %d of '%s' from incompatible pointer type
-#%s:%d: warning: return type defaults to '%s'
-1877=%s:%d: warning: return type defaults to '%s'
-#%s:%d: error: expected identifier or '%s' before '%s' token
-1878=%s:%d: error: expected identifier or '%s' before '%s' token
-#%s:%d: error: expected identifier or '%s' at end of input
-1879=%s:%d: error: expected identifier or '%s' at end of input
-#%s:%d: error: expected specifier-qualifier-list before '%s'
-1880=%s:%d: error: expected specifier-qualifier-list before '%s'
-#%s:%d: warning: declaration does not declare anything
-1881=%s:%d: warning: declaration does not declare anything
-#%s:%d: error: bit-field '%s' width not an integer constant
-1882=%s:%d: error: bit-field '%s' width not an integer constant
-#%s:%d: error: '%s' undeclared here (not in a function)
-1883=%s:%d: error: '%s' undeclared here (not in a function)
-#%s: warning: '%s' after last input file has no effect
-1884=%s: warning: '%s' after last input file has no effect
-#%s: no input files
-1885=%s: no input files
-#%s: preprocessing failed.
-1886=%s: preprocessing failed.
-#%s:%d: error: zero width for bit-field '%s'
-1887=%s:%d: error: zero width for bit-field '%s'
-#%s:%d: error: width of '%s' exceeds its type
-1888=%s:%d: error: width of '%s' exceeds its type
-#%s:%d: warning: braces around scalar initializer
-1889=%s:%d: warning: braces around scalar initializer
-#%s:%d: warning: initialization from incompatible pointer type
-1890=%s:%d: warning: initialization from incompatible pointer type
-#%s:%d: warning: excess elements in scalar initializer
-1891=%s:%d: warning: excess elements in scalar initializer
-#%s:%d: warning: left-hand operand of comma expression has no effect
-1892=%s:%d: warning: left-hand operand of comma expression has no effect
-#%s:%d: warning: assignment from incompatible pointer type
-1893=%s:%d: warning: assignment from incompatible pointer type
-#%s:%d: warning: initializer-string for array of chars is too long
-1894=%s:%d: warning: initializer-string for array of chars is too long
-#%s: no resources
-1895=%s: no resources
-#%s:%d: error: invalid application of '%s' to incomplete type '%s'
-1896=%s:%d: error: invalid application of '%s' to incomplete type '%s'
-#%s:%d: error: void value not ignored as it ought to be
-1897=%s:%d: error: void value not ignored as it ought to be
-#Creating library file: %s
-1898=Creating library file: %s
-#%s:%d: warning: useless type name in empty declaration
-1899=%s:%d: warning: useless type name in empty declaration
-#%s:%d: warning: unknown conversion type character '%s' in format
-1900=%s:%d: warning: unknown conversion type character '%s' in format
-#%s:%d: error: parameter name omitted
-1901=%s:%d: error: parameter name omitted
-#%s:%d: error: expected declaration specifiers before '%s'
-1902=%s:%d: error: expected declaration specifiers before '%s'
-#%s:%d: error: old-style parameter declarations in prototyped function definition
-1903=%s:%d: error: old-style parameter declarations in prototyped function definition
-#%s:%d: warning: empty declaration
-1904=%s:%d: warning: empty declaration
-#%s:%d: error: expected declaration specifiers before '%s' token
-1905=%s:%d: error: expected declaration specifiers before '%s' token
-#%s:%d: error: expected declaration specifiers or '%s' before '%s'
-1906=%s:%d: error: expected declaration specifiers or '%s' before '%s'
-#%s:%d: error: storage class specified for parameter '%s'
-1907=%s:%d: error: storage class specified for parameter '%s'
-#%s:%d: error: duplicate member '%s'
-1908=%s:%d: error: duplicate member '%s'
-#%s:%d: error: expected '%s' before string constant
-1909=%s:%d: error: expected '%s' before string constant
-#%s:%d: error: called object '%s' is not a function
-1910=%s:%d: error: called object '%s' is not a function
-#%s:%d: Error: too many memory references for `%s'
-1911=%s:%d: Error: too many memory references for `%s'
-#%s:%d: warning: excess elements in array initializer
-1912=%s:%d: warning: excess elements in array initializer
-#%s:%d: error: size of array '%s' is too large
-1913=%s:%d: error: size of array '%s' is too large
-#%s:%d: error: incompatible types when assigning to type '%s' from type '%s'
-1914=%s:%d: error: incompatible types when assigning to type '%s' from type '%s'
-#%s:%d: error: invalid operands to binary %s (have '%s' and '%s')
-1815=%s:%d: error: invalid operands to binary %s (have '%s' and '%s')
-#%s:%d: warning: assuming signed overflow does not occur when assuming that %s is always %s
-1816=%s:%d: warning: assuming signed overflow does not occur when assuming that %s is always %s
-#%s:%s:(%s): more undefined references to `%s' follow
-1817=%s:%s:(%s): more undefined references to `%s' follow
-#%s:%d: warning: extended initializer lists only available with %s or %s
-1818=%s:%d: warning: extended initializer lists only available with %s or %s
-#%s:%d: error: type of formal parameter %d is incomplete
-1819=%s:%d: error: type of formal parameter %d is incomplete
-#%s:%d: warning: dereferencing '%s' pointer
-1820=%s:%d: warning: dereferencing '%s' pointer
-#%s:%d: error: request for member '%s' in something not a structure or union
-1821=%s:%d: error: request for member '%s' in something not a structure or union
-#%s:%d: error: conflicting types for '%s'
-1822=%s:%d: error: conflicting types for '%s'
-#%s:%d: note: previous definition of '%s' was here'
-1823=%s:%d: note: previous definition of '%s' was here'
-#%s:%d: warning: useless storage class specifier in empty declaration
-1824=%s:%d: warning: useless storage class specifier in empty declaration
-#%s:%d: warning: '%s' was ignored in this declaration
-1825=%s:%d: warning: '%s' was ignored in this declaration
-#%s:%d: error: overflow in array dimension
-1826=%s:%d: error: overflow in array dimension
-#%s:%d: error: dereferencing pointer to incomplete type
-1827=%s:%d: error: dereferencing pointer to incomplete type
-#%s:%d: error: no matching function for call to '%s'
-1828=%s:%d: error: no matching function for call to '%s'
-#%s:%d: note: candidates are: %s
-1829=%s:%d: note: candidates are: %s
-#%s:%d: error: declaration of '%s' shadows a parameter
-1830=%s:%d: error: declaration of '%s' shadows a parameter
-#%s:%d: error: within this context
-1831=%s:%d: error: within this context
-#%s:%d: note: previous declaration of '%s' was here
-1832=%s:%d: note: previous declaration of '%s' was here
-#%s:%d: error: return-statement with a value, in function returning '%s'
-1833=%s:%d: error: return-statement with a value, in function returning '%s'
-#%s:%d: error: passing '%s' as '%s' argument of '%s' discards qualifiers
-1834=%s:%d: error: passing '%s' as '%s' argument of '%s' discards qualifiers
-#%s:%d: error: template argument %d is invalid
-1835=%s:%d: error: template argument %d is invalid
-#%s:%d: error: expected unqualified-id before '%s' token
-1836=%s:%d: error: expected unqualified-id before '%s' token
+#   $1:$2:$3: error: invalid suffix "$4" on integer constant
+#1784=invalid suffix "$4" on integer constant, on Line $2
+
+#$1: In function '$2':
+1785=In function '$2':
+#$1:$2: warning: implicit declaration of function '$3'
+1786=implicit declaration of function '$3'
+#$1:$2: warning: assignment makes pointer from integer without a cast
+1787=assignment makes pointer from integer without a cast
+#$1:$2:$3: error: invalid suffix "$4" on integer constant
+1788=invalid suffix "$4" on integer constant
+#$1:$2: warning: unused variable '$3'
+1789=unused variable '$3'
+#$1:$2: error: '$3' was not declared in this scope
+1790='$3' was not declared in this scope
+#$1:$2: error: expected '$3' before '$4'
+1791=expected '$3' before '$4'
+#$1:$2:$3: error: macro "$4" passed $5 arguments, but takes just $6
+1792=macro "$4" passed $5 arguments, but takes just $6
+#$1:$2:$3: error: macro "$4" requires $5 arguments, but only $6 given
+1793=macro "$4" requires $5 arguments, but only $6 given
+#$1:$2: error: at this point in file
+1794=at this point in file
+#$1:$2: error: too many arguments to function '$3'
+1795=too many arguments to function '$3'
+#$1:$2: error: '$3' undeclared (first use in this function)
+1796='$3' undeclared (first use in this function)
+#$1:$2: error: expected '$3' before numeric constant
+1797=expected '$3' before numeric constant
+#$1:$2: error: (Each undeclared identifier is reported only once for each function it appears in.)
+1798=(Each undeclared identifier is reported only once for each function it appears in.)
+#$1:$2: warning: statement has no effect
+1799=statement has no effect
+#$1:$2: warning: passing argument $3 of '$4' makes integer from pointer without a cast
+1800=passing argument $3 of '$4' makes integer from pointer without a cast
+#$1:$2: note: expected '$3' but argument is of type '$4'
+1801=expected '$3' but argument is of type '$4'
+#$1:$2: error: invalid conversion from '$3' to '$4'
+1802=invalid conversion from '$3' to '$4'
+#$1:$2: error:   initializing argument $3 of '$4'
+1803=  initializing argument $3 of '$4'
+#$1:$2: error: too few arguments to function '$3'
+1804=too few arguments to function '$3'
+#$1:$2:$3: undefined reference to `$4'
+1805=undefined reference to `$4'
+#$1:$2: error: cannot convert '$3' to '$4' for argument '$5' to '$6'
+1806=cannot convert '$3' to '$4' for argument '$5' to '$6'
+#$1:$2: warning: value computed is not used
+1807=value computed is not used
+#$1:$2: warning: '$3' is used uninitialized in this function
+1808='$3' is used uninitialized in this function
+#$1:$2: error: base operand of '$3' has non-pointer type '$4'
+1809=base operand of '$3' has non-pointer type '$4'
+#$1:$2:$3: error: $4: No such file or directory
+1810=$4: No such file or directory
+#$1:$2: error: '$3' does not name a type
+1811='$3' does not name a type
+#$1:$2: error: expected initializer before '$3'
+1812=expected initializer before '$3'
+#$1:$2: error: a function-definition is not allowed here before '$3' token expected '$4' at end of input
+1813=a function-definition is not allowed here before '$3' token expected '$4' at end of input
+#$1:$2: warning: return makes integer from pointer without a cast
+1814=return makes integer from pointer without a cast
+#$1:$2: warning: overflow in implicit constant conversion
+1815=overflow in implicit constant conversion
+#$1:$2: warning: integer constant is too large for '$3' type
+1816=integer constant is too large for '$3' type
+#$1:$2:$3: warning: integer constant is too large for its type
+1817=integer constant is too large for its type
+#$1:$2: warning: this decimal constant is unsigned only in ISO C90
+1818=this decimal constant is unsigned only in ISO C90
+#$1:$2: error: expected '$3' before '$4' token
+1819=expected '$3' before '$4' token
+#$1:$2: error: expected expression before '$3' token
+1820=expected expression before '$3' token
+#$1:$2: note: '$3' was declared here
+1821='$3' was declared here
+#$1:$2: warning: statement with no effect
+1822=statement with no effect
+#$1:$2: error: lvalue required as left operand of assignment
+1823=lvalue required as left operand of assignment
+#$1:$2: warning: type defaults to '$3' in declaration of '$4'
+1824=type defaults to '$3' in declaration of '$4'
+#$1:$2: warning: initialization makes integer from pointer without a cast
+1825=initialization makes integer from pointer without a cast
+#$1:$2:$3: warning: character constant too long for its type
+1826=character constant too long for its type
+#$1:$2: error: expected identifier or '$3' before numeric constant
+1827=expected identifier or '$3' before numeric constant
+#$1:$2: error: expected '=', ',', ';', 'asm' or '__attribute__' before '$3'
+1828=expected '=', ',', ';', 'asm' or '__attribute__' before '$3'
+#$1:$2: warning: label '$3' defined but not used
+1829=label '$3' defined but not used
+#$1:$2: error: '$3' has no member named '$4'
+1830='$3' has no member named '$4'
+#$1:$2: error: array subscript is not an integer
+1831=array subscript is not an integer
+#$1:$2: warning: too few arguments for format
+1832=too few arguments for format
+#$1:$2: warning: format '$3' expects type '$4', but argument $5 has type '$6'
+1833=format '$3' expects type '$4', but argument $5 has type '$6'
+#$1:$2: error: switch quantity not an integer
+1834=switch quantity not an integer
+#$1:$2: error: incompatible type for argument $3 of '$4'
+1835=incompatible type for argument $3 of '$4'
+#$1:$2: error: expected statement before '$3' token
+1836=expected statement before '$3' token
+#$1:$2: warning: control reaches end of non-void function
+1837=control reaches end of non-void function
+#$1:$2: warning: '$3' may be used uninitialized in this function
+1838='$3' may be used uninitialized in this function
+#$1:$2: warning: missing braces around initializer
+1839=missing braces around initializer
+#$1:$2: warning: (near initialization for '$3')
+1840=(near initialization for '$3')
+#$1:$2: warning: statement is a reference, not call, to function '$3'
+1841=statement is a reference, not call, to function '$3'
+#$1:$2: error: case label '$3' not within a switch statement
+1842=case label '$3' not within a switch statement
+#$1:$2: error: expected primary-expression before '$3' token
+1843=expected primary-expression before '$3' token
+#$1:$2: warning: no return statement in function returning non-void
+1844=no return statement in function returning non-void
+#$1:$2: error: expected unqualified-id before '$3'
+1845=expected unqualified-id before '$3'
+#$1:$2: warning: array subscript is above array bounds
+1846=array subscript is above array bounds
+#$1:$2: warning: suggest parentheses around assignment used as truth value
+1847=suggest parentheses around assignment used as truth value
+#$1:$2: error: storage size of '$3' isn't known
+1848=storage size of '$3' isn't known
+#$1:$2: error: invalid application of '$3' to incomplete type '$4' 
+1849=invalid application of '$3' to incomplete type '$4' 
+#$1:$2: warning: incompatible implicit declaration of built-in function '$3'
+1850=incompatible implicit declaration of built-in function '$3'
+#$1:$2: warning: comparison between signed and unsigned integer expressions
+1851=comparison between signed and unsigned integer expressions
+#$1:$2: warning: deprecated conversion from string constant to '$3'
+1852=deprecated conversion from string constant to '$3'
+#$1:$2: error: expected class-name before '$3' token
+1853=expected class-name before '$3' token
+#$1:$2: error: ISO C++ forbids declaration of '$3' with no type
+1854=ISO C++ forbids declaration of '$3' with no type
+#$1:$2: error: typedef '$3' is initialized (use decltype instead)
+1855=typedef '$3' is initialized (use decltype instead)
+#$1:$2: error: expected constructor, destructor, or type conversion before '$3' token
+1856=expected constructor, destructor, or type conversion before '$3' token
+#$1:$2: error: expected initializer before '$3' token
+1857=expected initializer before '$3' token
+#$1:$2: error: expected constructor, destructor, or type conversion before '$3'
+1858=expected constructor, destructor, or type conversion before '$3'
+#In file included from $1:$2:
+1859=file included from $1:$2:
+#$1:$2:($3): first defined here
+1860=first defined here
+#$1:$2: warning: enumeration value '$3' not handled in switch
+1861=enumeration value '$3' not handled in switch
+#$1: In member function '$2':
+1862=In member function '$2':
+#$1:$2: error: stray '$3' in program
+1863=stray '$3' in program
+#$1:$2: error: expected '$3' at end of input
+1864=expected '$3' at end of input
+#$1:$2: warning: field width should have type '$3', but argument $4 has type '$5'
+1865=field width should have type '$3', but argument $4 has type '$5'
+#$1:$2: error: subscripted value is neither array nor pointer
+1866=subscripted value is neither array nor pointer
+#$1:$2: error: array type has incomplete element type
+1867=array type has incomplete element type
+#$1:$2: warning: too many arguments for format
+1868=too many arguments for format
+#$1:$2: warning: operation on '$3' may be undefined
+1869=operation on '$3' may be undefined
+#$1:$2:$3: error: unterminated comment
+1870=unterminated comment
+#$1:$2:$3: warning: "$4" within comment
+1871="$4" within comment
+#$1:$2:$3: warning: missing terminating $4 character
+1872=missing terminating $4 character
+#$1: $2: No such file or directory
+1873=$2: No such file or directory
+#$1:$2: error: missing terminating $3 character
+1874=missing terminating $3 character
+#$1:$2: error: array size missing in '$3'
+1875=array size missing in '$3'
+#$1:$2: warning: passing argument $3 of '$4' from incompatible pointer type
+1876=passing argument $3 of '$4' from incompatible pointer type
+#$1:$2: warning: return type defaults to '$3'
+1877=return type defaults to '$3'
+#$1:$2: error: expected identifier or '$3' before '$4' token
+1878=expected identifier or '$3' before '$4' token
+#$1:$2: error: expected identifier or '$3' at end of input
+1879=expected identifier or '$3' at end of input
+#$1:$2: error: expected specifier-qualifier-list before '$3'
+1880=expected specifier-qualifier-list before '$3'
+#$1:$2: warning: declaration does not declare anything
+1881=declaration does not declare anything
+#$1:$2: error: bit-field '$3' width not an integer constant
+1882=bit-field '$3' width not an integer constant
+#$1:$2: error: '$3' undeclared here (not in a function)
+1883='$3' undeclared here (not in a function)
+#$1: warning: '$2' after last input file has no effect
+1884='$2' after last input file has no effect
+#$1: no input files
+1885=no input files
+#$1: preprocessing failed.
+1886=preprocessing failed.
+#$1:$2: error: zero width for bit-field '$3'
+1887=zero width for bit-field '$3'
+#$1:$2: error: width of '$3' exceeds its type
+1888=width of '$3' exceeds its type
+#$1:$2: warning: braces around scalar initializer
+1889=braces around scalar initializer
+#$1:$2: warning: initialization from incompatible pointer type
+1890=initialization from incompatible pointer type
+#$1:$2: warning: excess elements in scalar initializer
+1891=excess elements in scalar initializer
+#$1:$2: warning: left-hand operand of comma expression has no effect
+1892=left-hand operand of comma expression has no effect
+#$1:$2: warning: assignment from incompatible pointer type
+1893=assignment from incompatible pointer type
+#$1:$2: warning: initializer-string for array of chars is too long
+1894=initializer-string for array of chars is too long
+#$1: no resources
+1895=no resources
+#$1:$2: error: invalid application of '$3' to incomplete type '$4'
+1896=invalid application of '$3' to incomplete type '$4'
+#$1:$2: error: void value not ignored as it ought to be
+1897=void value not ignored as it ought to be
+#Creating library file: $1
+1898=Creating library file
+#$1:$2: warning: useless type name in empty declaration
+1899=useless type name in empty declaration
+#$1:$2: warning: unknown conversion type character '$3' in format
+1900=unknown conversion type character '$3' in format
+#$1:$2: error: parameter name omitted
+1901=parameter name omitted
+#$1:$2: error: expected declaration specifiers before '$3'
+1902=expected declaration specifiers before '$3'
+#$1:$2: error: old-style parameter declarations in prototyped function definition
+1903=old-style parameter declarations in prototyped function definition
+#$1:$2: warning: empty declaration
+1904=empty declaration
+#$1:$2: error: expected declaration specifiers before '$3' token
+1905=expected declaration specifiers before '$3' token
+#$1:$2: error: expected declaration specifiers or '$3' before '$4'
+1906=expected declaration specifiers or '$3' before '$4'
+#$1:$2: error: storage class specified for parameter '$3'
+1907=storage class specified for parameter '$3'
+#$1:$2: error: duplicate member '$3'
+1908=duplicate member '$3'
+#$1:$2: error: expected '$3' before string constant
+1909=expected '$3' before string constant
+#$1:$2: error: called object '$3' is not a function
+1910=called object '$3' is not a function
+#$1:$2: Error: too many memory references for `$3'
+1911=too many memory references for `$3'
+#$1:$2: warning: excess elements in array initializer
+1912=excess elements in array initializer
+#$1:$2: error: size of array '$3' is too large
+1913=size of array '$3' is too large
+#$1:$2: error: incompatible types when assigning to type '$3' from type '$4'
+1914=incompatible types when assigning to type '$3' from type '$4'
+#$1:$2: error: invalid operands to binary $3 (have '$4' and '$5')
+1915=invalid operands to binary $3 (have '$4' and '$5')
+#$1:$2: warning: assuming signed overflow does not occur when assuming that $3 is always $4
+1916=assuming signed overflow does not occur when assuming that $3 is always $4
+#$1:$2:($3): more undefined references to `$4' follow
+1917=more undefined references to `$4' follow
+#$1:$2: warning: extended initializer lists only available with $3 or $4
+1918=extended initializer lists only available with $3 or $4
+#$1:$2: error: type of formal parameter $3 is incomplete
+1919=type of formal parameter $3 is incomplete
+#$1:$2: warning: dereferencing '$3' pointer
+1920=dereferencing '$3' pointer
+#$1:$2: error: request for member '$3' in something not a structure or union
+1921=request for member '$3' in something not a structure or union
+#$1:$2: error: conflicting types for '$3'
+1922=conflicting types for '$3'
+#$1:$2: note: previous definition of '$3' was here
+1923=previous definition of '$3' was here
+#$1:$2: warning: useless storage class specifier in empty declaration
+1924=useless storage class specifier in empty declaration
+#$1:$2: warning: '$3' was ignored in this declaration
+1925='$3' was ignored in this declaration
+#$1:$2: error: overflow in array dimension
+1926=overflow in array dimension
+#$1:$2: error: dereferencing pointer to incomplete type
+1927=dereferencing pointer to incomplete type
+#$1:$2: error: no matching function for call to '$3'
+1928=no matching function for call to '$3'
+#$1:$2: note: candidates are: $3
+1929=candidates are: $3
+#$1:$2: error: declaration of '$3' shadows a parameter
+1930=declaration of '$3' shadows a parameter
+#$1:$2: error: within this context
+1931=within this context
+#$1:$2: note: previous declaration of '$3' was here
+1932=previous declaration of '$3' was here
+#$1:$2: error: return-statement with a value, in function returning '$3'
+1933=return-statement with a value, in function returning '$3'
+#$1:$2: error: passing '$3' as '$4' argument of '$5' discards qualifiers
+1934=passing '$3' as '$4' argument of '$5' discards qualifiers
+#$1:$2: error: template argument $3 is invalid
+1935=template argument $3 is invalid
+#$1:$2: error: expected unqualified-id before '$3' token
+1936=expected unqualified-id before '$3' token

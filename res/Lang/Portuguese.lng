@@ -862,7 +862,7 @@ Version=2.0
 #$1:$2: error: expected constructor, destructor, or type conversion before '$3'
 1858=Era esperado um construtor, destruidor ou um tipo de conversão antes de '$3'
 #In file included from $1:$2:
-1859=Incluido no arquivo %s
+1859=Incluido no arquivo $1
 #$1:$2:($3): first defined here
 1860=Primeiramente definido aqui
 #$1:$2: warning: enumeration value '$3' not handled in switch
@@ -974,7 +974,7 @@ Version=2.0
 #$1:$2: error: incompatible types when assigning to type '$3' from type '$4'
 1914=Tipos incompatíveis na atribuição para o tipo '$3' apartir do tipo '$4'
 #$1:$2: error: invalid operands to binary $3 (have '$4' and '$5')
-1915=Operandos inválidos para %s binários (tem '$3' e '$4')
+1915=Operandos inválidos para $3 binários (tem '$4' e '$5')
 #$1:$2: warning: assuming signed overflow does not occur when assuming that $3 is always $4
 1916=Assumindo estouro com sinal não ocorre quando assumindo que $3 é sempre $4
 #$1:$2:($3): more undefined references to `$4' follow

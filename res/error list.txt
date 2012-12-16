@@ -7,3 +7,5 @@ NovoArquivo.c:6: error: 'signed' or 'unsigned' invalid for 'a'
 NovoArquivo.c:6: error: variable or field 'a' declared void
 NovoArquivo.c:6: error: expected primary-expression before 'return'
 NovoArquivo.c:7: error: redeclaration of 'a' with no linkage
+email.cpp:(.text+0x323): undefined reference to `ZNSsC1EPKcRKSaIcE'
+ld: cannot open output file bin\print_server.exe: Permission denied

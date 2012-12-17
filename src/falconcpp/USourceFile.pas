@@ -62,7 +62,7 @@ const
   LD_OPTION_KILL_AT = '--kill-at';
   LD_OPTION_OUT_LIB = '--out-implib';
   LD_DLL_STATIC_LIB = LD_COMMAND + ',' + LD_OPTION_KILL_AT + ',' +
-    LD_OPTION_OUT_LIB + ',lib%s';
+    LD_OPTION_OUT_LIB + ',%slib%s';
 type
   TVersionInfo = class
     Major: Integer;
@@ -301,7 +301,7 @@ type
 
 implementation
 
-uses UFrmMain, UUtils, UConfig;
+uses UFrmMain, UUtils, UConfig, TokenFile, TokenList, TokenUtils;
 
 const
   filemoveError = 'Can''t move file ''%s'' to ''%s.''';
@@ -811,8 +811,6 @@ begin
         Free;
       end;
     end;
-    if FileType = FILE_TYPE_H then
-      Project.ForceClean := True;
     FFileDateTime := FileDateTime(FileName);
   end;
   //update main form
@@ -909,7 +907,7 @@ end;
 constructor TProjectBase.Create(Node: TTreeNode);
 begin
   inherited Create(Node);
-  FForceClean := False; //first compilation do clean?
+  FForceClean := False;
   FVersion := TVersionInfo.Create;
   FVersion.LanguageID := GetSystemDefaultLangID;
   FVersion.CharsetID := $04E4;
@@ -1881,11 +1879,12 @@ procedure TProjectFile.Build;
 var
   Makefile, FileContSpc, Temp: string;
   Files: TStrings;
-  Res, MkWar: TStrings;
-  MkRes: Integer;
+  Res, MkWar, Includes: TStrings;
+  MkRes, I, J: Integer;
   Manf: Byte;
   mk: TMakefile;
   OldDebuggingState: Boolean;
+  TokenFile: TTokenFile;
 begin
   SaveAll;
   if CompilerType in [COMPILER_CPP, COMPILER_C] then
@@ -1914,7 +1913,24 @@ begin
     end;
     Res.Free;
     Makefile := ExtractFilePath(FileName) + 'Makefile.mak';
-
+    for I := 0 to Files.Count - 1 do
+    begin
+      Includes := TStringList.Create;
+      Files.Objects[I] := Includes;
+      TokenFile := FrmFalconMain.FilesParsed.ItemOfByFileName(Files.Strings[I]);
+      if TokenFile = nil then
+        Continue;
+      for J := 0 to TokenFile.Includes.Count - 1 do
+      begin
+        if TokenFile.Includes.Items[J].Flag = 'L' then
+        begin
+          Temp := TokenFile.Includes.Items[J].Name;
+          Temp := ExtractFilePath(Files.Strings[I]) + ConvertSlashes(Temp);
+          Temp := ExpandFileName(Temp);
+          Includes.Add(Temp);
+        end;
+      end;
+    end;
     mk := TMakefile.Create;
     mk.BaseDir := ExtractFilePath(FileName);
     mk.Files := Files;
@@ -1944,6 +1960,8 @@ begin
     mk.Echo := True;
     MkRes := mk.BuildMakefile;
     mk.Free;
+    for I := 0 to Files.Count - 1 do
+      Files.Objects[I].Free;
     Files.Free;
     if MkRes = 0 then
     begin

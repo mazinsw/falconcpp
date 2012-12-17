@@ -95,10 +95,18 @@ end;
 
 procedure TMakefile.TransformToRelativePath;
 var
-  I: Integer;
+  I, J: Integer;
+  Includes: TStrings;
 begin
   for I := 0 to Files.Count - 1 do
+  begin
     Files.Strings[I] := ExtractRelativePath(BaseDir, Files.Strings[I]);
+    Includes := TStrings(Files.Objects[I]);
+    for J := 0 to Includes.Count - 1 do
+    begin
+      Includes.Strings[J] := ExtractRelativePath(BaseDir, Includes.Strings[J]);
+    end;
+  end;
 end;
 
 procedure TMakefile.SelectFilesByExt(Extensions: array of string; List: TStrings);
@@ -110,16 +118,16 @@ begin
     for X := 0 to Length(Extensions) - 1 do
     begin
       if CompareText(ExtractFileExt(Files.Strings[I]), Extensions[X]) = 0 then
-        List.Add(Files.Strings[I]);
+        List.AddObject(Files.Strings[I], Files.Objects[I]);
     end;
   end;
 end;
 
 function TMakefile.BuildMakefile: Integer;
 var
-  Source, Resources, OutFile: TStrings;
-  I: Integer;
-  S, Temp, Cop, EchoStr: string;
+  Source, Resources, OutFile, Includes: TStrings;
+  I, J: Integer;
+  S, Temp, Cop, EchoStr, IncludeHeaders: string;
   ShowAnsiOBJS: Boolean;
 begin
   Result := 0;
@@ -131,15 +139,15 @@ begin
   SelectFilesByExt(['.c', '.cpp', '.cc', '.cxx', '.c++', '.cp'], Source);
   SelectFilesByExt(['.rc'], Resources);
   if CompilerIsCpp then
-    OutFile.Add('CPP    = g++.exe')
+    OutFile.Add('CPP    = g++')
   else
-    OutFile.Add('CC     = gcc.exe');
+    OutFile.Add('CC     = gcc');
   if Resources.Count > 0 then
-    OutFile.Add('WINDRES= windres.exe');
+    OutFile.Add('WINDRES= windres');
   if CreateLibrary then
   begin
-    OutFile.Add('AR     =ar.exe');
-    OutFile.Add('RANLIB =ranlib.exe');
+    OutFile.Add('AR     =ar');
+    OutFile.Add('RANLIB =ranlib');
   end;
   ShowAnsiOBJS := False;
   if Source.Count > 0 then
@@ -303,7 +311,11 @@ begin
     S := ChangeFileExt(Source.Strings[I], '.o');
     S := ConvertAnsiToOem(S);
     Temp := Source.Strings[I];
-    OutFile.Add(EscapeString(S) + ': ' + EscapeString(Temp));
+    IncludeHeaders := '';
+    Includes := TStrings(Source.Objects[I]);
+    for J := 0 to Includes.Count - 1 do
+      IncludeHeaders := IncludeHeaders + ' ' + Includes.Strings[J];
+    OutFile.Add(EscapeString(S) + ': ' + EscapeString(Temp) + IncludeHeaders);
     S := DoubleQuotedStr(S);
     Temp := DoubleQuotedStr(ConvertAnsiToOem(Temp));
     if CompilerIsCpp then

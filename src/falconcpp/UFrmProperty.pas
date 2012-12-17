@@ -839,7 +839,7 @@ begin
           begin
             if ChbCreateLL.Checked then
               ChLbLibs.Items.Insert(1, Format(LD_DLL_STATIC_LIB,
-                [RemoveFileExt(EditTarget.Text) + 'dll.a']))
+                [ExtractFilePath(EditTarget.Text), RemoveFileExt(ExtractFileName(EditTarget.Text)) + 'dll.a']))
             else
               ChLbLibs.Items.Insert(1, LD_COMMAND + ',' + LD_OPTION_KILL_AT);
             ChLbLibs.Checked[1] := True;
@@ -931,9 +931,8 @@ begin
   begin
     if ChbCreateLL.Checked then
     begin
-      ChLbLibs.Items.Strings[J] := LD_COMMAND + ',' + LD_OPTION_KILL_AT +
-        ',' + LD_OPTION_OUT_LIB + ',lib' + RemoveFileExt(EditTarget.Text) +
-        'dll.a';
+      ChLbLibs.Items.Strings[J] := Format(LD_DLL_STATIC_LIB,
+        [ExtractFilePath(EditTarget.Text), RemoveFileExt(ExtractFileName(EditTarget.Text)) + 'dll.a']);
     end
     else
       ChLbLibs.Items.Strings[J] := LD_COMMAND + ',' + LD_OPTION_KILL_AT;

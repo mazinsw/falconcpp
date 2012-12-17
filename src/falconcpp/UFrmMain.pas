@@ -650,7 +650,7 @@ type
     BuildTime: Cardinal;
     ZoomEditor: Integer; //edit zoom
     ActiveEditingFile: TTokenFile; //last parsed tokens
-    FilesParsed: TTokenFiles; //all files parsed
+    FFilesParsed: TTokenFiles; //all files parsed
 
     //for Project
     ThreadFilesParsed: TThreadTokenFiles;
@@ -778,6 +778,7 @@ type
     property AutoComplete: TSynAutoCompleteTemplate read FAutoComplete;
     property SearchList: TStrings read FSearchList;
     property ReplaceList: TStrings read FReplaceList;
+    property FilesParsed: TTokenFiles read FFilesParsed;
   end;
 
   { TParserThread }
@@ -1126,7 +1127,7 @@ begin
   ThreadFilesParsed.OnFinish := AllParserFinish;
 
   ParseAllFiles := TTokenFiles.Create; //parse all unparsed files
-  FilesParsed := TTokenFiles.Create;
+  FFilesParsed := TTokenFiles.Create;
   ActiveEditingFile := TTokenFile.Create;
   AllParsedList := TStringList.Create;
 
@@ -2955,7 +2956,7 @@ begin
   if CompilerCmd.Executing then
     CompilerCmd.Stop;
   if Executor.Running then
-    Executor.Reset;
+    Executor.ResetAll;
   if not DebugReader.Running then
     Exit;
   DebugReader.SendCommand(GDB_QUIT);
@@ -3232,8 +3233,16 @@ begin
         case I of
           mrYes:
             begin
-              if not SaveProject(ProjProp, smSave) then
-                Exit;
+              if not ProjProp.Saved or ProjProp.IsNew then
+              begin
+                if not SaveProject(ProjProp, smSave) then
+                  Exit;
+              end
+              else
+              begin
+                ProjProp.SaveAll;
+                ProjProp.Save;
+              end;
             end;
           mrCancel: Exit;
         end; //case
@@ -5676,7 +5685,7 @@ begin
   if createStaticLib then
   begin
     NewPrj.Libs := Trim(NewPrj.Libs + ' ' +
-      Format(LD_DLL_STATIC_LIB, [ChangeFileExt(NewPrj.Target, 'dll.a')]));
+      Format(LD_DLL_STATIC_LIB, [ExtractFilePath(NewPrj.Target), ChangeFileExt(ExtractFileName(NewPrj.Target), 'dll.a')]));
   end;
   if createDefFile then
   begin

@@ -313,7 +313,7 @@ Version=your translate version
 1442=dddd, d of mmmm of yyyy t
 
 #compilation messages
-1443=Compilation success in %s seconds
+1443=Compilation success in %s s
 1444=Compilation failed
 1445=Adding messages %d/%d
 1446=Parsing results %d/%d
@@ -705,6 +705,11 @@ Version=your translate version
 5120=Return type
 5121=Line
 5122=File
+
+#Console Runner
+6001=Process returned %ld   execution time : %0.3f s
+6002=Press any key to continue.
+
 
 #mingw messages
 #translation example

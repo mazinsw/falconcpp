@@ -9,7 +9,7 @@ uses
 type
   TFormAbout = class(TForm)
     Image1: TImage;
-    Label1: TLabel;
+    LblNameVersion: TLabel;
     Panel1: TPanel;
     BtnOk: TButton;
     Label6: TLabel;
@@ -43,6 +43,8 @@ var
   FormAbout: TFormAbout;
 
 implementation
+
+uses UFrmMain;
 
 {$R *.dfm}
 
@@ -100,6 +102,11 @@ begin
   Image1.Picture.Icon.LoadFromStream(rs);
   rs.Free;
   UpdateLangNow;
+  LblNameVersion.Caption := Format('Falcon C++ v%d.%d.%d.%d',
+    [FrmFalconMain.FalconVersion.Major,
+     FrmFalconMain.FalconVersion.Minor,
+     FrmFalconMain.FalconVersion.Release,
+     FrmFalconMain.FalconVersion.Build]);
 end;
 
 procedure TFormAbout.CreateParams(var Params: TCreateParams);

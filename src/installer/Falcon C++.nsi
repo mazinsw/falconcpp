@@ -19,7 +19,7 @@
   !define SHCNE_ASSOCCHANGED 0x08000000
   !define SHCNF_IDLIST 0
   !define MAJ_VERSION "3.2"
-  !define APP_VERSION "${MAJ_VERSION}.0.0"
+  !define APP_VERSION "${MAJ_VERSION}.0.10"
 ;--------------------------------
 ;General
 

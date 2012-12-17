@@ -111,7 +111,7 @@ object FraProjs: TFraProjs
       TabIndex = -1
       TabOrder = 2
       TabStop = True
-      FixedTabWidth = True
+      FixedTabWidth = False
       OnMouseMove = ProjectListMouseMove
       OnPageChange = PageControlPageChange
     end

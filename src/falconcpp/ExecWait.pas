@@ -37,6 +37,7 @@ type
     fParams: string;
     fTimeOut: Cardinal;
     fProcess: Cardinal;
+    fProcessID: Cardinal;
     fVisible: boolean;
     procedure ExecAndWait;
   public
@@ -48,6 +49,7 @@ type
     property TimeOut: Cardinal read fTimeOut write fTimeOut;
     property Visible: boolean read fVisible write fVisible;
     property Process: Cardinal read fProcess;
+    property ProcessID: Cardinal read fProcessID;
   end;
 
   TExecWait = class(TPersistent)
@@ -60,6 +62,7 @@ type
   public
     class function Exec: TExecWait;
     procedure Reset;
+    procedure ResetAll;
     procedure ExecuteAndWatch(sFileName, sParams, sPath: string; bVisible: boolean; iTimeOut: Cardinal; OnStartEvent, OnTermEvent: TNotifyEvent);
   published
     property FileName: string read fFileName write fFileName;
@@ -87,7 +90,7 @@ function ExecutorGetStdOut: TExecWaitGetStdOut;
 
 implementation
 
-uses SysUtils;
+uses SysUtils, tlhelp32;
 
 { TExecThread }
 
@@ -120,6 +123,7 @@ begin
     StartupInfo, ProcessInfo) then
   begin
     fProcess := ProcessInfo.hProcess;
+    fProcessID := ProcessInfo.dwProcessId;
     WaitForSingleObject(ProcessInfo.hProcess, fTimeOut);
   end;
   CloseHandle(ProcessInfo.hProcess);
@@ -174,6 +178,44 @@ procedure TExecWait.Reset;
 begin
   if Assigned(fExec) then
     TerminateProcess(fExec.Process, 0);
+  fIsRunning := False;
+end;
+
+procedure TExecWait.ResetAll;
+var
+  bContinue: Boolean;
+  hSnap: Cardinal;
+  pe: PROCESSENTRY32;
+  myprocID, hChildProc: Cardinal;
+begin
+  if Assigned(fExec) then
+  begin
+    //TerminateProcess(fExec.Process, 0);
+    myprocID := fExec.ProcessID; // your main process id
+    ZeroMemory(@pe, SizeOf(PROCESSENTRY32));
+    pe.dwSize := sizeof(PROCESSENTRY32);
+    hSnap := CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if Process32First(hSnap, pe) then
+    begin
+      bContinue := TRUE;
+      // kill child processes
+      while bContinue do
+      begin
+        // only kill child processes
+        if (pe.th32ParentProcessID = myprocID) then
+        begin
+          hChildProc := OpenProcess(PROCESS_ALL_ACCESS, FALSE, pe.th32ProcessID);
+          if hChildProc <> 0 then
+          begin
+              TerminateProcess(hChildProc, 1);
+              CloseHandle(hChildProc);
+          end;
+        end;
+        bContinue := Process32Next(hSnap, pe);
+      end;
+      TerminateProcess(fExec.Process, 0);
+    end;
+  end;
   fIsRunning := False;
 end;
 

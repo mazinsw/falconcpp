@@ -313,7 +313,7 @@ Version=2.0
 1442=dddd, d "de" mmmm "de" yyyy t
 
 #compilation messages
-1443=Sucesso na compilação
+1443=Sucesso na compilação em %s s
 1444=Falha na compilação
 1445=Adicionando mensagens %d/%d
 1446=Traduzindo resultados %d/%d
@@ -706,6 +706,11 @@ Version=2.0
 5120=Tipo de retorno
 5121=Linha
 5122=Arquivo
+
+#Console Runner
+6001=O Processo retornou %ld   tempo de execução : %0.3f s
+6002=Pressione uma tecla para continuar...
+
 
 #mingw messages
 #translation example

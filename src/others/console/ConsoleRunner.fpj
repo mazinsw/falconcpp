@@ -15,6 +15,14 @@
     <AppType Value="CONSOLE"/>
     <Files>
         <File Name="main.cpp"/>
+        <Folder Name="inih">
+            <File Name="ini.h"/>
+            <File Name="ini.c"/>
+            <Folder Name="cpp">
+                <File Name="INIReader.h"/>
+                <File Name="INIReader.cpp"/>
+            </Folder>
+        </Folder>
     </Files>
     <AppIcon>
         0000010001003030000001002000A82500001600000028000000300000006000

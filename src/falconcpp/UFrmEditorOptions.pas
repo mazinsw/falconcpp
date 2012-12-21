@@ -227,6 +227,7 @@ type
     CheckBoxBreakClosingHeaderBlocks: TCheckBox;
     Label26: TLabel;
     ComboBoxPointerAlign: TComboBox;
+    ChbAutoCloseBrackets: TCheckBox;
     procedure FormKeyPress(Sender: TObject; var Key: Char);
     procedure SynPrevMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -827,6 +828,7 @@ begin
     ChbUseTabChar.Checked := UseTabChar;
     ChbEnhHomeKey.Checked := EnhancedHomeKey;
     ChbShowLineChars.Checked := ShowLineChars;
+    ChbAutoCloseBrackets.Checked := AutoCloseBrackets;
 
     CboMaxUnd.Text := IntToStr(MaxUndo);
     CboTabWdt.Text := IntToStr(TabWidth);
@@ -944,6 +946,7 @@ begin
     UseTabChar := ChbUseTabChar.Checked;
     EnhancedHomeKey := ChbEnhHomeKey.Checked;
     ShowLineChars := ChbShowLineChars.Checked;
+    AutoCloseBrackets := ChbAutoCloseBrackets.Checked;
 
     MaxUndo := StrToIntDef(CboMaxUnd.Text, 1024);
     TabWidth := StrToIntDef(CboTabWdt.Text, 4);
@@ -1062,6 +1065,7 @@ begin
   ChbGrpUnd.Caption := STR_FRM_EDITOR_OPT[7];
   ChbKeepTraiSpa.Caption := STR_FRM_EDITOR_OPT[8];
   ChbShowLineChars.Caption := STR_FRM_EDITOR_OPT[9];
+  ChbAutoCloseBrackets.Caption := STR_FRM_EDITOR_OPT[138];
   ChbScrollHint.Caption := STR_FRM_EDITOR_OPT[10];
   ChbTabUnOrIndt.Caption := STR_FRM_EDITOR_OPT[11];
   ChbSmartTabs.Caption := STR_FRM_EDITOR_OPT[12];
@@ -1642,6 +1646,7 @@ begin
   ChbUseTabChar.Checked := False;
   ChbEnhHomeKey.Checked := False;
   ChbShowLineChars.Checked := False;
+  ChbAutoCloseBrackets.Checked := True;
   CboMaxUnd.ItemIndex := 0;
   CboTabWdt.ItemIndex := 1;
   //-----------------------------

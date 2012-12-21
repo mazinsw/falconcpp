@@ -22,6 +22,7 @@ type
     UseTabChar: Boolean;
     EnhancedHomeKey: Boolean;
     ShowLineChars: Boolean;
+    AutoCloseBrackets: Boolean;
 
     MaxUndo: Integer;
     TabWidth: Integer;
@@ -308,6 +309,7 @@ begin
     UseTabChar := ini.ReadBool('EditorOptions', 'UseTabChar', False);
     EnhancedHomeKey := ini.ReadBool('EditorOptions', 'EnhancedHomeKey', False);
     ShowLineChars := ini.ReadBool('EditorOptions', 'ShowLineChars', False);
+    AutoCloseBrackets := ini.ReadBool('EditorOptions', 'AutoCloseBrackets', True);
 
     MaxUndo := ini.ReadInteger('EditorOptions', 'MaxUndo', 1024);
     TabWidth := ini.ReadInteger('EditorOptions', 'TabWidth', 4);
@@ -608,6 +610,7 @@ begin
     ini.WriteBool('EditorOptions', 'UseTabChar', UseTabChar);
     ini.WriteBool('EditorOptions', 'EnhancedHomeKey', EnhancedHomeKey);
     ini.WriteBool('EditorOptions', 'ShowLineChars', ShowLineChars);
+    ini.WriteBool('EditorOptions', 'AutoCloseBrackets', AutoCloseBrackets);
 
     ini.WriteInteger('EditorOptions', 'MaxUndo', MaxUndo);
     ini.WriteInteger('EditorOptions', 'TabWidth', TabWidth);

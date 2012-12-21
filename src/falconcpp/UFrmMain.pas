@@ -599,6 +599,10 @@ type
     procedure TreeViewOutlineFreeNode(Sender: TBaseNativeTreeView;
       Node: PNativeNode);
     procedure TreeViewOutline_DblClick(Sender: TObject);
+    procedure CodeCompletionGetWordBreakChars(Sender: TObject;
+      var WordBreakChars: String);
+    procedure CodeCompletionGetWordEndChars(Sender: TObject;
+      var WordEndChars: String; Index: Integer; var Handled: Boolean);
     //**********************************************/
   private
     { Private declarations }
@@ -637,6 +641,9 @@ type
     CurrentFileIsParsed: Boolean;
     LastMousePos: TPoint;
     LastWordHintStart: Integer;
+
+    // include list
+    FIncludeFileList: TStrings;
 
     // search history
     FSearchList: TStrings;
@@ -741,6 +748,7 @@ type
       DeleteNext: Boolean = False): PNativeNode;
     procedure PaintTokenItemV2(const ToCanvas: TCanvas; DisplayRect: TRect;
       Token: TTokenClass; Selected, Focused: Boolean; var DefaultDraw: Boolean);
+    function FillIncludeList(IncludePathFilesOnly: Boolean): Boolean;
   public
     { Public declarations }
     LastSearch: TSearchItem;
@@ -1083,7 +1091,7 @@ end;
 procedure TFrmFalconMain.FormCreate(Sender: TObject);
 var
   List: TStrings;
-  I: Integer;
+  I, J: Integer;
   Template: TTemplate;
   Temp, path: string;
   ini: TIniFile;
@@ -1094,6 +1102,7 @@ var
 begin
   IsLoading := True;
   FSearchList := TStringList.Create;
+  FIncludeFileList := TStringList.Create;
   FReplaceList := TStringList.Create;
   FConfig := TConfig.Create;
   FAppRoot := ExtractFilePath(Application.ExeName);
@@ -1405,7 +1414,24 @@ begin
       if Config.Environment.ShowSplashScreen then
         Sleep(3000);
     end;
+    FIncludeFileList.Assign(SourceFileList);
     SourceFileList.Free;
+    for I := 0 to FIncludeFileList.Count - 1 do
+      FIncludeFileList.Strings[I] := ConvertToUnixSlashes(ExtractRelativePath(Config.Compiler.Path + '\include\', FIncludeFileList.Strings[I]));
+    J := FIncludeFileList.Count;
+    FindFiles(Config.Compiler.Path + '\' + Config.Compiler.Version + '\include\c++\', '*', FIncludeFileList);
+    for I := J to FIncludeFileList.Count - 1 do
+      FIncludeFileList.Strings[I] := ConvertToUnixSlashes(ExtractRelativePath(Config.Compiler.Path + '\' + Config.Compiler.Version + '\include\c++\', FIncludeFileList.Strings[I]));
+  end
+  else
+  begin
+    FindFiles(Config.Compiler.Path + '\include\', '*.h', FIncludeFileList);
+    for I := 0 to FIncludeFileList.Count - 1 do
+      FIncludeFileList.Strings[I] := ConvertToUnixSlashes(ExtractRelativePath(Config.Compiler.Path + '\include\', FIncludeFileList.Strings[I]));
+    J := FIncludeFileList.Count;
+    FindFiles(Config.Compiler.Path + '\' + Config.Compiler.Version + '\include\c++\', '*', FIncludeFileList);
+    for I := J to FIncludeFileList.Count - 1 do
+      FIncludeFileList.Strings[I] := ConvertToUnixSlashes(ExtractRelativePath(Config.Compiler.Path + '\' + Config.Compiler.Version + '\include\c++\', FIncludeFileList.Strings[I]));
   end;
   List := TStringList.Create;
   GetSourcesFiles(List);
@@ -1950,7 +1976,7 @@ begin
   CompletionColors[TTkType(2)] := Format(CompletionNames[2], [ColorToString(EdtOpt.CompListFunc)]);
   CompletionColors[TTkType(3)] := Format(CompletionNames[3], [ColorToString(EdtOpt.CompListConstructor)]);
   CompletionColors[TTkType(4)] := Format(CompletionNames[4], [ColorToString(EdtOpt.CompListDestructor)]);
-  //CompletionColors[TTkType(5)]  := Format(CompletionNames[5],  [ColorToString(EdtOpt.CompListInclude)]);
+  CompletionColors[TTkType(5)] := Format(CompletionNames[5],  [ColorToString(EdtOpt.CompListPreproc{CompListInclude})]);
   CompletionColors[TTkType(6)] := Format(CompletionNames[6], [ColorToString(EdtOpt.CompListPreproc)]);
   CompletionColors[TTkType(7)] := Format(CompletionNames[7], [ColorToString(EdtOpt.CompListVar)]);
   CompletionColors[TTkType(8)] := Format(CompletionNames[8], [ColorToString(EdtOpt.CompListTypedef)]);
@@ -4792,24 +4818,44 @@ var
   i, j, SpaceCount1: Integer;
   bStart: TBufferCoord;
   attri: TSynHighlighterAttributes;
+  bCoord: TBufferCoord;
 begin
   LastKeyPressed := Key;
   if GetActiveSheet(sheet) then
   begin
-    if sheet.Memo.GetHighlighterAttriAtRowCol(sheet.Memo.CaretXY, token, attri) then
+    bCoord := sheet.Memo.CaretXY;
+    LineStr := '';
+    if bCoord.Line > 0 then
+      LineStr := sheet.Memo.Lines.Strings[bCoord.Line - 1];
+    if (bCoord.Line > 0) and (bCoord.Char > Length(LineStr)) then
+      bCoord.Char := Length(sheet.Memo.Lines.Strings[bCoord.Line - 1]);
+    if sheet.Memo.GetHighlighterAttriAtRowCol(bCoord, token, attri) then
     begin
       if (attri.Name = 'Comment') or (attri.Name = 'String') or (attri.Name = 'Character') then
         Exit;
+      if (Key in ['"', '<']) and (attri.Name = 'Preprocessor') and (Pos('include', LineStr) > 0) and
+        (Pos('"', LineStr) = 0) and (Pos('<', LineStr) = 0) and (Pos('>', LineStr) = 0) then
+      begin
+        sheet.Memo.SelText := Key;
+        Key := #0;
+        CodeCompletion.ActivateCompletion;
+        Exit;
+      end;
     end;
     if Key = '(' then
     begin
-      sheet.Memo.SelText := ')';
+      if not Config.Editor.AutoCloseBrackets then
+        Exit;
+      Key := #0;
+      sheet.Memo.SelText := '()';
       sheet.Memo.CaretX := sheet.Memo.CaretX - 1;
       TimerHintParams.Enabled := False;
       TimerHintParams.Enabled := True;
     end
     else if Key = '[' then
     begin
+      if not Config.Editor.AutoCloseBrackets then
+        Exit;
       sheet.Memo.SelText := ']';
       sheet.Memo.CaretX := sheet.Memo.CaretX - 1;
     end
@@ -4893,26 +4939,44 @@ begin
         end;
         Key := #0;
         S := GetLeftSpacing(SpaceCount1, sheet.Memo.TabWidth, sheet.Memo.WantTabs and not (eoTabsToSpaces in sheet.Memo.Options));
-        str := '{' + #13 + S + GetLeftSpacing(sheet.Memo.TabWidth,
-          sheet.Memo.TabWidth, sheet.Memo.WantTabs and not (eoTabsToSpaces in sheet.Memo.Options)) + #13 + S + '}';
-        sheet.Memo.BeginUpdate;
         bStart.Char := Length(S) + 1;
-        if replaceLine then
+        if Config.Editor.AutoCloseBrackets then
         begin
-          if sheet.Memo.SelAvail then
-            sheet.Memo.SetCaretAndSelection(bStart, bStart, sheet.Memo.BlockEnd)
-          else
-            sheet.Memo.CaretX := bStart.Char;
+          str := '{' + #13 + S + GetLeftSpacing(sheet.Memo.TabWidth,
+            sheet.Memo.TabWidth, sheet.Memo.WantTabs and not (eoTabsToSpaces in sheet.Memo.Options)) + #13 + S + '}';
+          sheet.Memo.BeginUpdate;
+          if replaceLine then
+          begin
+            if sheet.Memo.SelAvail then
+              sheet.Memo.SetCaretAndSelection(bStart, bStart, sheet.Memo.BlockEnd)
+            else
+              sheet.Memo.CaretX := bStart.Char;
+          end;
+          sheet.Memo.SelText := str;
+          sheet.Memo.EndUpdate;
+          Inc(bStart.Line);
+          bStart.Char := Length(GetLeftSpacing(SpaceCount1 + sheet.Memo.TabWidth,
+            sheet.Memo.TabWidth, sheet.Memo.WantTabs and not (eoTabsToSpaces in sheet.Memo.Options))) + 1;
+          sheet.Memo.CaretXY := bStart;
+        end
+        else
+        begin
+          sheet.Memo.BeginUpdate;
+          if replaceLine then
+          begin
+            if sheet.Memo.SelAvail then
+              sheet.Memo.SetCaretAndSelection(bStart, bStart, sheet.Memo.BlockEnd)
+            else
+              sheet.Memo.CaretX := bStart.Char;
+          end;
+          sheet.Memo.SelText := '{';
+          sheet.Memo.EndUpdate;
         end;
-        sheet.Memo.SelText := str;
-        sheet.Memo.EndUpdate;
-        Inc(bStart.Line);
-        bStart.Char := Length(GetLeftSpacing(SpaceCount1 + sheet.Memo.TabWidth,
-          sheet.Memo.TabWidth, sheet.Memo.WantTabs and not (eoTabsToSpaces in sheet.Memo.Options))) + 1;
-        sheet.Memo.CaretXY := bStart;
       end
       else
       begin
+        if not Config.Editor.AutoCloseBrackets then
+          Exit;
         sheet.Memo.SelText := '}';
         sheet.Memo.CaretX := sheet.Memo.CaretX - 1;
       end;
@@ -5176,6 +5240,7 @@ end;
 procedure TFrmFalconMain.FormDestroy(Sender: TObject);
 begin
   FSearchList.Free;
+  FIncludeFileList.Free;
   FReplaceList.Free;
   DebugParser.Free;
   DebugReader.Free;
@@ -6610,11 +6675,54 @@ begin
   end;
 end;
 
+function TFrmFalconMain.FillIncludeList(IncludePathFilesOnly: Boolean): Boolean;
+var
+  NewToken: TTokenClass;
+  sheet: TSourceFileSheet;
+  proj: TProjectFile;
+  S: string;
+  I: Integer;
+  List: TStrings;
+begin
+  Result := True;
+  if IncludePathFilesOnly then
+  begin
+    for I := 0 to FIncludeFileList.Count - 1 do
+    begin
+      NewToken := TTokenClass.Create;
+      NewToken.Name := FIncludeFileList.Strings[I];
+      NewToken.Flag := 'S';
+      NewToken.Token := tkInclude;
+      CodeCompletion.InsertList.AddObject(CompletionInsertItem(NewToken), NewToken);
+      CodeCompletion.ItemList.AddObject(CompletionShowItem(NewToken, CompletionColors), NewToken);
+    end;
+    Exit;
+  end;
+  if not GetActiveSheet(sheet) then
+    Exit;
+  List := TStringList.Create;
+  proj := sheet.SourceFile.Project;
+  S := ExtractFilePath(sheet.SourceFile.FileName);
+  proj.GetFiles(List);
+  for I := 0 to List.Count - 1 do
+  begin
+    if (List.Objects[I] = sheet.SourceFile) or (TSourceFile(List.Objects[I]).FileType <> FILE_TYPE_H) then
+      Continue;
+    NewToken := TTokenClass.Create;
+    NewToken.Name := ConvertToUnixSlashes(ExtractRelativePath(S, List.Strings[I]));
+    NewToken.Flag := 'L';
+    NewToken.Token := tkInclude;
+    CodeCompletion.InsertList.AddObject(CompletionInsertItem(NewToken), NewToken);
+    CodeCompletion.ItemList.AddObject(CompletionShowItem(NewToken, CompletionColors), NewToken);
+  end;
+  List.Free;
+end;
+
 procedure TFrmFalconMain.CodeCompletionExecute(Kind: TSynCompletionType;
   Sender: TObject; var CurrentInput: string; var x, y: Integer;
   var CanExecute: Boolean);
 var
-  S, Fields, Input: string;
+  S, Fields, Input, LineStr: string;
   sheet: TSourceFileSheet;
   TokenItem: TTokenFile;
   SelStart, I, LineLen: integer;
@@ -6646,11 +6754,18 @@ begin
   CodeCompletion.InsertList.Clear;
   //get valid SelStart
   Buffer := sheet.Memo.CaretXY;
+  LineStr := '';
   if (Buffer.Line > 0) then
   begin
-    LineLen := Length(sheet.Memo.Lines.Strings[Buffer.Line - 1]);
+    LineStr := sheet.Memo.Lines.Strings[Buffer.Line - 1];
+    LineLen := Length(LineStr);
     if (Buffer.Char > LineLen + 1) then
+    begin
       Buffer.Char := LineLen + 1;
+      LineStr := Copy(LineStr, 1, Buffer.Char - 2);
+    end
+    else
+      LineStr := Copy(LineStr, 1, Buffer.Char - 1);
   end;
   if sheet.Memo.GetHighlighterAttriAtRowCol(Buffer, S, Attri) then
   begin
@@ -6663,11 +6778,37 @@ begin
       begin
         if StringIn(Attri.Name, ['Character', 'String', 'Comment',
           'Preprocessor']) then
+        begin
+          if (Attri.Name = 'Preprocessor') and (Pos('include', LineStr) > 0) and
+            (Pos('>', LineStr) = 0) and (CountChar(LineStr, '"') <= 1) and
+            ((Pos('<', LineStr) > 0) or (Pos('"', LineStr) > 0)) then
+          begin
+            if not FillIncludeList(Pos('<', LineStr) > 0) then
+              Exit;
+            //HintParams.Cancel;
+            DebugHint.Cancel;
+            HintTip.Cancel;
+            CanExecute := True;
+          end;
           Exit;
+        end;
         Inc(Buffer.Char);
       end
       else
+      begin
+        if (Attri.Name = 'Preprocessor') and (Pos('include', LineStr) > 0) and
+          (Pos('>', LineStr) = 0) and (CountChar(LineStr, '"') <= 1) and
+            ((Pos('<', LineStr) > 0) or (Pos('"', LineStr) > 0)) then
+        begin
+          if not FillIncludeList(Pos('<', LineStr) > 0) then
+            Exit;
+          //HintParams.Cancel;
+          DebugHint.Cancel;
+          HintTip.Cancel;
+          CanExecute := True;
+        end;
         Exit;
+      end;
     end;
   end
   else if (Buffer.Char > 1) then
@@ -6684,11 +6825,37 @@ begin
         begin
           if StringIn(Attri.Name, ['Character', 'String', 'Comment',
             'Preprocessor']) then
+          begin
+            if (Attri.Name = 'Preprocessor') and (Pos('include', LineStr) > 0)
+              and (Pos('>', LineStr) = 0) and (CountChar(LineStr, '"') <= 1) and
+            ((Pos('<', LineStr) > 0) or (Pos('"', LineStr) > 0)) then
+            begin
+              if not FillIncludeList(Pos('<', LineStr) > 0) then
+                Exit;
+              //HintParams.Cancel;
+              DebugHint.Cancel;
+              HintTip.Cancel;
+              CanExecute := True;
+            end;
             Exit;
+          end;
           Inc(Buffer.Char);
         end
         else
+        begin
+          if (Attri.Name = 'Preprocessor') and (Pos('include', LineStr) > 0)
+            and (Pos('>', LineStr) = 0) and (CountChar(LineStr, '"') <= 1) and
+            ((Pos('<', LineStr) > 0) or (Pos('"', LineStr) > 0)) then
+          begin
+            if not FillIncludeList(Pos('<', LineStr) > 0) then
+              Exit;
+            //HintParams.Cancel;
+            DebugHint.Cancel;
+            HintTip.Cancel;
+            CanExecute := True;
+          end;
           Exit;
+        end;
       end;
     end;
     Inc(Buffer.Char);
@@ -6836,11 +7003,55 @@ begin
   //  FormatFloat('" Items on " 0.000"s"', StartTicks / 1000), 0, 0, 0, mitCompiler);
 end;
 
+procedure TFrmFalconMain.CodeCompletionGetWordBreakChars(Sender: TObject;
+  var WordBreakChars: String);
+var
+  sheet: TSourceFileSheet;
+  bCoord: TBufferCoord;
+  LineStr, S: string;
+  LineLen: Integer;
+  Attri: TSynHighlighterAttributes;
+begin
+  WordBreakChars := CodeCompletion.EndOfTokenChr;
+  if not GetActiveSheet(sheet) then
+    Exit;
+  bCoord := sheet.Memo.CaretXY;
+  LineStr := '';
+  if (bCoord.Line > 0) then
+  begin
+    LineStr := sheet.Memo.Lines.Strings[bCoord.Line - 1];
+    LineLen := Length(LineStr);
+    if (bCoord.Char > LineLen) then
+      bCoord.Char := LineLen;
+  end;
+  if sheet.Memo.GetHighlighterAttriAtRowCol(bCoord, S, Attri) then
+  begin
+    if (Attri.Name = 'Preprocessor') and (Pos('include', LineStr) > 0) then
+    begin
+      WordBreakChars := '<>"';
+    end;
+  end;
+end;
+
+procedure TFrmFalconMain.CodeCompletionGetWordEndChars(Sender: TObject;
+  var WordEndChars: String; Index: Integer; var Handled: Boolean);
+var
+  Token: TTokenClass;
+begin
+  Token := TTokenClass(CodeCompletion.ItemList.Objects[Index]);
+  if Token.Token = tkInclude then
+  begin
+    Handled := True;
+    WordEndChars := '>"';
+  end;
+end;
+
 procedure TFrmFalconMain.CodeCompletionCodeCompletion(Sender: TObject;
   var Value: string; Shift: TShiftState; Index: Integer; EndToken: Char);
 var
   Token: TTokenClass;
   NextChar: Char;
+  LineStr: string;
   sheet: TSourceFileSheet;
 begin
   if not GetActiveSheet(sheet) then
@@ -6867,6 +7078,19 @@ begin
     begin
       TimerHintParams.Enabled := True;
     end;
+  end
+  else if Token.Token = tkInclude then
+  begin
+    LineStr := '';
+    if sheet.Memo.CaretY <= sheet.Memo.Lines.Count then
+      LineStr := Trim(sheet.Memo.Lines.Strings[sheet.Memo.CaretY - 1]);
+    NextChar := #0;
+    if Length(LineStr) > 0 then
+      NextChar := LineStr[Length(LineStr)];
+    if (Pos('<', LineStr) > 0) and (EndToken <> '>') and (NextChar <> '>') then
+      Value := Value + '>'
+    else if (Pos('"', LineStr) > 0) and (EndToken <> '"') and (NextChar <> '"') then
+      Value := Value + '"';
   end;
 end;
 

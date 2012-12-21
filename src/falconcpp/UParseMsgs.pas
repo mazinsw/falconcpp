@@ -245,7 +245,7 @@ begin
     end;
     OriMsg := SLn;
     SLn := ResolveUnixFileName(SLn);
-    if not (Pos('mingw32-make.exe', SLn) > 0) then
+    if not RegEx.Exec('mingw32-make.exe: \*\*\* \[.*\] Error [0-9]+', SLn) then
     begin
       Msg := TMessageItem.Create;
       Msg.MsgType := mitCompiler;

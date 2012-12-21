@@ -28,6 +28,7 @@ function CompletionInsertItem(Token: TTokenClass): string;
 //params
 function CommaCountAt(const S: string; Init: Integer): Integer;
 function CountCommas(const S: string): Integer;
+function CountChar(const S: string; ch: Char): Integer;
 function GetParamsBefore(const S: string; Index: Integer): string;
 function GetActiveParams(const S: string; Index: Integer): string;
 function GetParamsAfter(const S: string; Index: Integer): string;
@@ -58,6 +59,7 @@ function FileDateTime(const FileName: string): TDateTime;
 function IsNumber(const S: string): Boolean;
 function ScopeInState(const S: string; ScopeClass: TScopeClassState): Boolean;
 function ConvertSlashes(const Path: string): string;
+function ConvertToUnixSlashes(const Path: string): string;
 function GetFirstOpenBrace(const S: string; QuoteChar: Char;
   var SelStart: Integer): Boolean;
 function ParseFields(const Text: string; SelStart: Integer;
@@ -636,6 +638,11 @@ begin
         else
           Result := CompletionColors[Token.Token] + Token.Name + '\style{-B};';
       end;
+    tkInclude:
+      begin
+        Result := CompletionColors[Token.Token] + Token.Name +
+          '\style{-B};';
+      end;
     tkVariable:
       begin
         I := Pos('[', Token.Flag);
@@ -989,6 +996,16 @@ begin
   Result := 0;
   for I := 1 to Length(S) do
     if S[I] = ',' then
+      Inc(Result);
+end;
+
+function CountChar(const S: string; ch: Char): Integer;
+var
+  I: Integer;
+begin
+  Result := 0;
+  for I := 1 to Length(S) do
+    if S[I] = ch then
       Inc(Result);
 end;
 
@@ -1591,6 +1608,16 @@ begin
   for i := 1 to Length(Result) do
     if Result[i] = '/' then
       Result[i] := '\';
+end;
+
+function ConvertToUnixSlashes(const Path: string): string;
+var
+  i: Integer;
+begin
+  Result := Path;
+  for i := 1 to Length(Result) do
+    if Result[i] = '\' then
+      Result[i] := '/';
 end;
 
 end.

@@ -1449,7 +1449,7 @@ object FrmFalconMain: TFrmFalconMain
     Options = [scoLimitToMatchedText, scoUseInsertList, scoUsePrettyText, scoUseBuiltInTimer, scoEndCharCompletion, scoCompleteWithTab, scoCompleteWithEnter]
     ClTitleBackground = clBtnHighlight
     Width = 450
-    EndOfTokenChr = '{}()[]<>.,; :=+-*/%?|~&!^'
+    EndOfTokenChr = '{}()[]<>.,; :=+-/*%?|~&!^"'
     TriggerChars = '.>:'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -1471,6 +1471,8 @@ object FrmFalconMain: TFrmFalconMain
     TimerInterval = 300
     OnAfterCodeCompletion = CodeCompletionAfterCodeCompletion
     OnCodeCompletion = CodeCompletionCodeCompletion
+    OnGetWordBreakChars = CodeCompletionGetWordBreakChars
+    OnGetWordEndChars = CodeCompletionGetWordEndChars
     Left = 610
     Top = 272
   end

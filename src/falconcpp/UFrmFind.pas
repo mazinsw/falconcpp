@@ -908,25 +908,15 @@ begin
   memo.SearchEngine.Options := sopt;
   //compare and replace **********
   text := memo.SelText;
-  if ChbDiffCase.Checked then
+  memo.SearchEngine.Pattern := search;
+  memo.SearchEngine.FindAll(text);
+  if memo.SearchEngine.ResultCount = 1 then
   begin
-    if memo.SearchEngine.Replace(text, search) = search then
-    begin
-      selstart := memo.SelStart;
-      memo.SelText := replace;
-      memo.SelStart := selstart;
-      memo.SelLength := Length(replace);
-    end;
-  end
-  else
-  begin
-    if memo.SearchEngine.Replace(text, search) = search then
-    begin
-      selstart := memo.SelStart;
-      memo.SelText := replace;
-      memo.SelStart := selstart;
-      memo.SelLength := Length(replace);
-    end;
+    replace := memo.SearchEngine.Replace(text, replace);
+    selstart := memo.SelStart;
+    memo.SelText := replace;
+    memo.SelStart := selstart;
+    memo.SelLength := Length(replace);
   end;
   //******************************
   BtnFindClick(Sender);

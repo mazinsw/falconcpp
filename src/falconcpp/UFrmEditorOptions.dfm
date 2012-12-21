@@ -1,6 +1,6 @@
 object FrmEditorOptions: TFrmEditorOptions
-  Left = 478
-  Top = 277
+  Left = 506
+  Top = 394
   BorderStyle = bsDialog
   Caption = 'Editor Options'
   ClientHeight = 428
@@ -33,19 +33,19 @@ object FrmEditorOptions: TFrmEditorOptions
         Left = 4
         Top = 2
         Width = 432
-        Height = 161
+        Height = 167
         Caption = 'Editor Options'
         TabOrder = 0
         object Label6: TLabel
           Left = 8
-          Top = 114
+          Top = 122
           Width = 49
           Height = 13
           Caption = 'Max Undo'
         end
         object Label16: TLabel
           Left = 224
-          Top = 114
+          Top = 122
           Width = 53
           Height = 13
           Caption = 'Tab Width:'
@@ -97,7 +97,7 @@ object FrmEditorOptions: TFrmEditorOptions
         end
         object CboMaxUnd: TComboBox
           Left = 8
-          Top = 131
+          Top = 139
           Width = 81
           Height = 21
           ItemHeight = 13
@@ -109,7 +109,7 @@ object FrmEditorOptions: TFrmEditorOptions
         end
         object CboTabWdt: TComboBox
           Left = 224
-          Top = 130
+          Top = 138
           Width = 81
           Height = 21
           ItemHeight = 13
@@ -165,6 +165,15 @@ object FrmEditorOptions: TFrmEditorOptions
           Height = 17
           Caption = 'Show Line Characters'
           TabOrder = 11
+          OnClick = EditorOptionsChanged
+        end
+        object ChbAutoCloseBrackets: TCheckBox
+          Left = 7
+          Top = 96
+          Width = 201
+          Height = 17
+          Caption = 'Auto close brackets/parentheses'
+          TabOrder = 12
           OnClick = EditorOptionsChanged
         end
       end
@@ -455,7 +464,7 @@ object FrmEditorOptions: TFrmEditorOptions
         Top = 32
         Width = 65
         Height = 21
-        ItemHeight = 13
+        ItemHeight = 0
         TabOrder = 2
         Text = '10'
         OnChange = CboSizeChange
@@ -465,7 +474,7 @@ object FrmEditorOptions: TFrmEditorOptions
         Top = 32
         Width = 185
         Height = 21
-        ItemHeight = 13
+        ItemHeight = 0
         TabOrder = 3
         OnSelect = CboEditFontSelect
       end

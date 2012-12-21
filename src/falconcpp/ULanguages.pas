@@ -519,7 +519,7 @@ const
     'Found ''%s'' in line %d, column %d'
     );
 
-  MAX_FRM_EDITOR_OPT = 137;
+  MAX_FRM_EDITOR_OPT = 138;
   CONST_STR_FRM_EDITOR_OPT: array[1..MAX_FRM_EDITOR_OPT] of string = (
     'Editor Options',
   //General Sheet
@@ -719,7 +719,8 @@ const
     'Code Templates',
     'Custom Code Template File:',
     'Open',
-    'Edit'
+    'Edit',
+    'Auto close brackets/parentheses'
     );
 
   MAX_FRM_ENV_OPT = 36;

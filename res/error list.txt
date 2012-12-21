@@ -9,3 +9,4 @@ NovoArquivo.c:6: error: expected primary-expression before 'return'
 NovoArquivo.c:7: error: redeclaration of 'a' with no linkage
 email.cpp:(.text+0x323): undefined reference to `ZNSsC1EPKcRKSaIcE'
 ld: cannot open output file bin\print_server.exe: Permission denied
+NovoArquivo.c:6:13: error: too many decimal points in number

@@ -493,6 +493,7 @@ Version=2.0
 4339=Desfazer grupo
 4340=Manter espaços à direita
 4341=Mostrar caracteres de final de linha
+4470=Auto fechar parênteses e colchetes
 4342=Barra de rolagem com guia
 4343=Indentar/Desindentar com o Tab
 4344=Tab inteligente
@@ -633,6 +634,7 @@ Version=2.0
 4467=Arquivo de modelo de código personalizável:
 4468=Abrir
 4469=Editar
+#last 4470
 
 #Form Environment Options
 4569=Opções do ambiente

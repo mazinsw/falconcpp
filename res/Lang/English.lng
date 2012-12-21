@@ -492,6 +492,7 @@ Version=your translate version
 4339=Group Undo
 4340=Keep Trailing Spaces
 4341=Show Line Characters
+4470=Auto close brackets/parentheses
 4342=Scroll Hint
 4343=Tab Indent/Unindent
 4344=Smart Tabs
@@ -632,6 +633,7 @@ Version=your translate version
 4467=Custom Code Template File:
 4468=Open
 4469=Edit
+#last 4470
 
 #Form Environment Options
 4569=Environment Options

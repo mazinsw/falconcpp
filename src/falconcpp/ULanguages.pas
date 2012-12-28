@@ -838,7 +838,7 @@ const
     );
 
   //Translate mingw messages
-  MAX_CMPMSG = 152;
+  MAX_CMPMSG = 168;
   CONST_STR_CMPMSG: array[1..MAX_CMPMSG] of TCompilerMessage = (
         (Expression: '([^:]*): In function ''(.*)'':'; FileName: 1; Line: 0; Column: 0),
     (Expression: '([^:]*):([0-9]+): warning: implicit declaration of function ''(.*)'''; FileName: 1; Line: 2; Column: 0),
@@ -991,7 +991,23 @@ const
     (Expression: '([^:]*):([0-9]+): error: return-statement with a value, in function returning ''(.*)'''; FileName: 1; Line: 2; Column: 0),
     (Expression: '([^:]*):([0-9]+): error: passing ''(.*)'' as ''(.*)'' argument of ''(.*)'' discards qualifiers'; FileName: 1; Line: 2; Column: 0),
     (Expression: '([^:]*):([0-9]+): error: template argument ([0-9]+) is invalid'; FileName: 1; Line: 2; Column: 0),
-    (Expression: '([^:]*):([0-9]+): error: expected unqualified-id before ''(.*)'' token'; FileName: 1; Line: 2; Column: 0)
+    (Expression: '([^:]*):([0-9]+): error: expected unqualified-id before ''(.*)'' token'; FileName: 1; Line: 2; Column: 0),
+    (Expression: '([^:]*):([0-9]+): warning: return type of ''(.*)'' is not ''(.*)'''; FileName: 1; Line: 2; Column: 0),
+    (Expression: '([^:]*):([0-9]+): warning: ''(.*)'' with a value, in function returning void'; FileName: 1; Line: 2; Column: 0),
+    (Expression: '([^:]*):([0-9]+): warning: ''(.*)'' with no value, in function returning non-void'; FileName: 1; Line: 2; Column: 0),
+    (Expression: '([^:]*):([0-9]+): error: redefinition of ''(.*)'''; FileName: 1; Line: 2; Column: 0),
+    (Expression: '([^:]*):([0-9]+):([0-9]+): warning: integer constant is so large that it is unsigned'; FileName: 1; Line: 2; Column: 3),
+    (Expression: '([^:]*):([0-9]+): error: ''(.*)'' or ''(.*)'' invalid for ''(.*)'''; FileName: 1; Line: 2; Column: 0),
+    (Expression: '([^:]*):([0-9]+): error: variable or field ''(.*)'' declared void'; FileName: 1; Line: 2; Column: 0),
+    (Expression: '([^:]*):([0-9]+): error: expected primary-expression before ''(.*)'''; FileName: 1; Line: 2; Column: 0),
+    (Expression: '([^:]*):([0-9]+): error: redeclaration of ''(.*)'' with no linkage'; FileName: 1; Line: 2; Column: 0),
+    (Expression: '([^:]*):\(\.text\+(0x[0-9A-Fa-f]+)\): undefined reference to `(.*)'''; FileName: 1; Line: 0; Column: 0),
+    (Expression: '([^:]*): cannot open output file (.*): Permission denied'; FileName: 2; Line: 0; Column: 0),
+    (Expression: '([^:]*):([0-9]+):([0-9]+): error: too many decimal points in number'; FileName: 1; Line: 2; Column: 3),
+    (Expression: '([^:]*):([0-9]+):([0-9]+): warning: assignment makes integer from pointer without a cast [enabled by default]'; FileName: 1; Line: 2; Column: 3),
+    (Expression: '([^:]*):([0-9]+):([0-9]+): error: lvalue required as unary ''(.*)'' operand'; FileName: 1; Line: 2; Column: 3),
+    (Expression: '([^:]*):([0-9]+): error: ''(.*)'' loop initial declarations are only allowed in (.*) mode'; FileName: 1; Line: 2; Column: 0),
+    (Expression: '([^:]*):([0-9]+): note: use option (.*) or (.*) to compile your code'; FileName: 1; Line: 2; Column: 0)
   );
 
 type

@@ -314,7 +314,7 @@ begin
     IncludeHeaders := '';
     Includes := TStrings(Source.Objects[I]);
     for J := 0 to Includes.Count - 1 do
-      IncludeHeaders := IncludeHeaders + ' ' + Includes.Strings[J];
+      IncludeHeaders := IncludeHeaders + ' ' + DoubleQuotedStr(Includes.Strings[J]);
     OutFile.Add(EscapeString(S) + ': ' + EscapeString(Temp) + IncludeHeaders);
     S := DoubleQuotedStr(S);
     Temp := DoubleQuotedStr(ConvertAnsiToOem(Temp));

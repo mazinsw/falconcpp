@@ -59,6 +59,10 @@ const
   WM_RELOADFTM = WM_USER + $1008;
   WM_REPARSEFILES = WM_RELOADFTM + 1;
   MINLINE_TOENABLE_GOTOLINE = 3;
+  {$EXTERNALSYM PBS_MARQUEE}
+  PBS_MARQUEE = $0008;
+  {$EXTERNALSYM PBM_SETMARQUEE}
+  PBM_SETMARQUEE = WM_USER+10;
 
 type
   TSearchItem = record
@@ -834,6 +838,21 @@ uses
 {$R *.dfm}
 {$R resources.res}
 
+procedure ProgressbarSetMarqueue(Progressbar: TProgressBar);
+begin
+  Progressbar.Position := 0;
+  SetWindowLong(Progressbar.Handle, GWL_STYLE,
+    GetWindowLong(Progressbar.Handle, GWL_STYLE) or PBS_MARQUEE);
+  SendMessage(Progressbar.Handle, PBM_SETMARQUEE, 1, 0);
+end;
+
+procedure ProgressbarSetNormal(Progressbar: TProgressBar);
+begin
+  SetWindowLong(Progressbar.Handle, GWL_STYLE,
+    GetWindowLong(Progressbar.Handle, GWL_STYLE) and not PBS_MARQUEE);
+  SendMessage(Progressbar.Handle, PBM_SETMARQUEE, 0, 0);
+end;
+
 procedure SetActiveCompiler(OldPath, Actpath: string;
   SplashScreen: TSplashScreen = nil);
 var
@@ -1419,9 +1438,9 @@ begin
     for I := 0 to FIncludeFileList.Count - 1 do
       FIncludeFileList.Strings[I] := ConvertToUnixSlashes(ExtractRelativePath(Config.Compiler.Path + '\include\', FIncludeFileList.Strings[I]));
     J := FIncludeFileList.Count;
-    FindFiles(Config.Compiler.Path + '\' + Config.Compiler.Version + '\include\c++\', '*', FIncludeFileList);
+    FindFiles(Config.Compiler.Path + '\lib\gcc\mingw32\' + Config.Compiler.Version + '\include\c++\', '*.*', FIncludeFileList);
     for I := J to FIncludeFileList.Count - 1 do
-      FIncludeFileList.Strings[I] := ConvertToUnixSlashes(ExtractRelativePath(Config.Compiler.Path + '\' + Config.Compiler.Version + '\include\c++\', FIncludeFileList.Strings[I]));
+      FIncludeFileList.Strings[I] := ConvertToUnixSlashes(ExtractRelativePath(Config.Compiler.Path + '\lib\gcc\mingw32\' + Config.Compiler.Version + '\include\c++\', FIncludeFileList.Strings[I]));
   end
   else
   begin
@@ -1429,9 +1448,9 @@ begin
     for I := 0 to FIncludeFileList.Count - 1 do
       FIncludeFileList.Strings[I] := ConvertToUnixSlashes(ExtractRelativePath(Config.Compiler.Path + '\include\', FIncludeFileList.Strings[I]));
     J := FIncludeFileList.Count;
-    FindFiles(Config.Compiler.Path + '\' + Config.Compiler.Version + '\include\c++\', '*', FIncludeFileList);
+    FindFiles(Config.Compiler.Path + '\lib\gcc\mingw32\' + Config.Compiler.Version + '\include\c++\', '*.*', FIncludeFileList);
     for I := J to FIncludeFileList.Count - 1 do
-      FIncludeFileList.Strings[I] := ConvertToUnixSlashes(ExtractRelativePath(Config.Compiler.Path + '\' + Config.Compiler.Version + '\include\c++\', FIncludeFileList.Strings[I]));
+      FIncludeFileList.Strings[I] := ConvertToUnixSlashes(ExtractRelativePath(Config.Compiler.Path + '\lib\gcc\mingw32\' + Config.Compiler.Version + '\include\c++\', FIncludeFileList.Strings[I]));
   end;
   List := TStringList.Create;
   GetSourcesFiles(List);
@@ -6351,6 +6370,8 @@ begin
   Fields := Fields + Input;
   Input := GetFirstWord(Fields);
   ParamsList := TStringList.Create;
+  //if ThreadFilesParsed.Busy then
+  //  ThreadFilesParsed.WaitFor;
   TokenFileItem := ActiveEditingFile;
   //show function params
   if not FilesParsed.GetFieldsBaseParams(Input, Fields, BracketStart,
@@ -6435,7 +6456,8 @@ end;
 
 procedure TFrmFalconMain.ParserStart(Sender: TObject);
 begin
-  ProgressBarParser.Position := 0;
+  if not ThreadFilesParsed.Busy then
+    ProgressBarParser.Position := 0;
   ProgressBarParser.Show;
 end;
 
@@ -6443,7 +6465,8 @@ procedure TFrmFalconMain.ParserProgress(Sender: TObject; TokenFile: TTokenFile;
   const FileName: string; Current, Total: Integer; Parsed: Boolean;
   Method: TTokenParseMethod);
 begin
-  ProgressBarParser.Position := (Current * 100) div Total;
+  if not ThreadFilesParsed.Busy then
+    ProgressBarParser.Position := (Current * 100) div Total;
 end;
 
 procedure TFrmFalconMain.ParserFinish(Sender: TObject);
@@ -6460,7 +6483,7 @@ begin
     end;
     IsLoadingSrcFiles := False;
   end;
-  if not ThreadFilesParsed.Busy then
+  if not ThreadLoadTkFiles.Busy and not ThreadFilesParsed.Busy then
     ProgressBarParser.Hide;
 end;
 
@@ -6497,7 +6520,8 @@ begin
   //update grayed project and outline
   PageControlEditorPageChange(PageControlEditor,
     PageControlEditor.ActivePageIndex);
-  ProgressBarParser.Hide;
+  if not ThreadLoadTkFiles.Busy and not ThreadTokenFiles.Busy then
+    ProgressBarParser.Hide;
 end;
 
 procedure TFrmFalconMain.TokenParserStart(Sender: TObject);
@@ -6509,17 +6533,25 @@ procedure TFrmFalconMain.TokenParserProgress(Sender: TObject;
   TokenFile: TTokenFile; const FileName: string; Current, Total: Integer;
   Parsed: Boolean; Method: TTokenParseMethod);
 begin
-  StatusBar.Panels.Items[3].Caption := 'Loading ' + ExtractFileName(FileName);
+  if not ThreadTokenFiles.Busy and not ThreadFilesParsed.Busy and (ProgressBarParser.Tag <> 1) then
+  begin
+    ProgressBarParser.Show;
+    ProgressBarParser.Tag := 1;
+    ProgressbarSetMarqueue(ProgressBarParser);
+  end;
 end;
 
 procedure TFrmFalconMain.TokenParserFinish(Sender: TObject);
 begin
-//
+  //
 end;
 
 procedure TFrmFalconMain.TokenParserAllFinish(Sender: TObject);
 begin
-  StatusBar.Panels.Items[3].Caption := '';
+  ProgressBarParser.Tag := 0;
+  ProgressbarSetNormal(ProgressBarParser);
+  if not ThreadTokenFiles.Busy and not ThreadFilesParsed.Busy then
+    ProgressBarParser.Hide;
 end;
 
 procedure TFrmFalconMain.ProcessDebugHint(Input: string; Line, SelStart: integer;
@@ -6640,6 +6672,8 @@ begin
       end;
       Exit;
     end;
+    //if ThreadFilesParsed.Busy then
+    //  ThreadFilesParsed.WaitFor;
     // show hint
     if FilesParsed.FindDeclaration(Input, Fields, ActiveEditingFile, TokenFileItem,
       Token, I, BufferCoord.Line) then
@@ -6734,6 +6768,8 @@ var
   InputError: Boolean;
   //StartTicks: Cardinal;
 begin
+  //if ThreadFilesParsed.Busy then
+  //  ThreadFilesParsed.WaitFor;
   Input := '';
   CanExecute := False;
   if not Config.Editor.CodeCompletion then

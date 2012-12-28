@@ -113,6 +113,7 @@ function GetCompanyName: string;
 function GetLanguagesList: TStrings;
 function GetLanguageName(LangID: Word): string;
 function IsForeground(Handle: HWND): Boolean;
+function BringUpApp(const ClassName: string): Boolean;
 function IsSubMenu(Value: string): Boolean;
 function GetSubMenu(Value: string): string;
 function FindFiles(Search: string; Finded: TStrings): Boolean; overload;
@@ -848,6 +849,22 @@ end;
 function IsForeground(Handle: HWND): Boolean;
 begin
   Result := GetForegroundWindow = Handle;
+end;
+
+function BringUpApp(const ClassName: string): Boolean;
+var
+  Handle, AppHandle: HWND;
+begin
+  Result := False;
+  AppHandle := FindWindow(PChar(ClassName), nil);
+  if AppHandle <> 0 then
+  begin
+    Handle := GetWindowLong(AppHandle, GWL_HWNDPARENT);
+    ForceForegroundWindow(AppHandle);
+    if IsIconic(Handle) then
+      ShowWindow(Handle, SW_RESTORE);
+    Result := True;
+  end;
 end;
 
 function IsSubMenu(Value: string): Boolean;

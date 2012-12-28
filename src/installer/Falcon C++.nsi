@@ -3,6 +3,7 @@
 ;Include Modern UI
 
   !include "MUI2.nsh"
+  !include "FileFunc.nsh"
 
   !define MUI_ICON "${NSISDIR}\Contrib\Graphics\Icons\orange-install.ico"
   !define MUI_HEADERIMAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Header\orange.bmp"
@@ -30,8 +31,14 @@
   OutFile "..\..\bin\Falcon C++-${APP_VERSION}-Setup.exe"
 !else  
   OutFile "..\..\bin\Falcon C++-${APP_VERSION}-No-MinGW-Setup.exe"
-!endif  
+!endif
+
+  ;Default installation folder
   InstallDir "$PROGRAMFILES\Falcon"
+
+  ;Get installation folder from registry if available
+  InstallDirRegKey HKLM "Software\Falcon" ""
+  
   RequestExecutionLevel admin
   
 ;--------------------------------
@@ -67,6 +74,7 @@
   !insertmacro MUI_PAGE_LICENSE '..\..\res\license.txt'
   !insertmacro MUI_PAGE_COMPONENTS
   !insertmacro MUI_PAGE_DIRECTORY
+  !define MUI_PAGE_CUSTOMFUNCTION_LEAVE PostInstPage
   !insertmacro MUI_PAGE_INSTFILES
   !insertmacro MUI_PAGE_FINISH
   
@@ -255,6 +263,10 @@ SectionGroup "${PROJECT_NAME}" GroupFalcon
     WriteRegDWord HKLM "${REG_UNINSTALL}" "NoRepair" 1
     WriteRegStr   HKLM "${REG_UNINSTALL}" "UninstallString" "$INSTDIR\Uninstall.exe"
     
+    ; save install dir
+    WriteRegStr HKLM "Software\Falcon" "" $INSTDIR
+    WriteRegStr HKLM "Software\Falcon" "Version" "${APP_VERSION}"
+
     ;write language id
     SetShellVarContext current
     CreateDirectory "$APPDATA\Falcon"
@@ -302,7 +314,7 @@ SectionGroup "${PROJECT_NAME}" GroupFalcon
 
     ; h file
     !insertmacro ADD_EXT_CMD "h" "$(DESC_Assoc_H)" "Falcon.exe,5" "Falcon.exe"
-	!insertmacro ADD_EXT_CMD "hpp" "$(DESC_Assoc_H)" "Falcon.exe,5" "Falcon.exe"
+    !insertmacro ADD_EXT_CMD "hpp" "$(DESC_Assoc_H)" "Falcon.exe,5" "Falcon.exe"
     !insertmacro ADD_EXT_CMD "hh" "$(DESC_Assoc_H)" "Falcon.exe,5" "Falcon.exe"
     !insertmacro ADD_EXT_CMD "rh" "$(DESC_Assoc_H)" "Falcon.exe,5" "Falcon.exe"
     
@@ -320,24 +332,24 @@ SectionGroup "${PROJECT_NAME}" GroupFalcon
 
     ; lib file
     !insertmacro ADD_EXT "a" "$(DESC_Assoc_A)" "Falcon.exe,10"
-	
+  
     Call RefreshShellIcons
     
   SectionEnd
   
   Section "$(NAME_SecLangFile)" SecLangFile 
     SetOutPath "$INSTDIR\Lang" 
-	File "..\..\res\Lang\Portuguese.lng"
+  File "..\..\res\Lang\Portuguese.lng"
     ;...
   SectionEnd
   Section "$(NAME_SecDeskScut)" SecDeskScut 
     SetOutPath "$INSTDIR"
-	SetShellVarContext all
+  SetShellVarContext all
     createShortCut "$DESKTOP\${PROJECT_NAME}.lnk" "$INSTDIR\Falcon.exe" "" "" "" "" "" "C++ IDE easy and complete" 
   SectionEnd
   Section "$(NAME_SecQckLScut)" SecQckLScut 
     SetOutPath "$INSTDIR"
-	SetShellVarContext all
+  SetShellVarContext all
     createShortCut "$QUICKLAUNCH\${PROJECT_NAME}.lnk" "$INSTDIR\Falcon.exe" "" "" "" "" "" "C++ IDE easy and complete"  
   SectionEnd
 SectionGroupEnd
@@ -455,7 +467,15 @@ SectionEnd
 Function .onInit
 
   !insertmacro MUI_LANGDLL_DISPLAY
-  
+  ReadRegStr $2 HKLM "Software\Falcon" ""
+  ${If} $2 == ""
+    ReadRegStr $2 HKLM "${REG_UNINSTALL}" "UninstallString"
+    ${If} $2 != ""
+      ${GetParent} $2 $0
+      StrCpy $INSTDIR $0
+    ${EndIf}
+  ${EndIf}
+
 FunctionEnd
 
 Function un.onInit
@@ -464,19 +484,32 @@ Function un.onInit
   
 FunctionEnd
 
+Function PostInstPage
+ 
+  ; Don't advance automatically if details expanded
+  FindWindow $R0 "#32770" "" $HWNDPARENT
+  GetDlgItem $R0 $R0 1016
+  System::Call user32::IsWindowVisible(i$R0)i.s
+  Pop $R0
+ 
+  StrCmp $R0 0 +2
+  SetAutoClose false
+ 
+FunctionEnd
+
 ;--------------------------------
 ;Descriptions
 
   ;Assign language strings to sections
   !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
-    !insertmacro MUI_DESCRIPTION_TEXT ${SecCore} $(DESC_SecCore)
-	!insertmacro MUI_DESCRIPTION_TEXT ${SecFtm} $(DESC_SecFtm)
-	!insertmacro MUI_DESCRIPTION_TEXT ${SecAssoc} $(DESC_SecAssoc)
-	!insertmacro MUI_DESCRIPTION_TEXT ${SecLangFile} $(DESC_SecLangFile)
-	!insertmacro MUI_DESCRIPTION_TEXT ${SecDeskScut} $(DESC_SecDeskScut)
-	!insertmacro MUI_DESCRIPTION_TEXT ${SecQckLScut} $(DESC_SecQckLScut)
+  !insertmacro MUI_DESCRIPTION_TEXT ${SecCore} $(DESC_SecCore)
+  !insertmacro MUI_DESCRIPTION_TEXT ${SecFtm} $(DESC_SecFtm)
+  !insertmacro MUI_DESCRIPTION_TEXT ${SecAssoc} $(DESC_SecAssoc)
+  !insertmacro MUI_DESCRIPTION_TEXT ${SecLangFile} $(DESC_SecLangFile)
+  !insertmacro MUI_DESCRIPTION_TEXT ${SecDeskScut} $(DESC_SecDeskScut)
+  !insertmacro MUI_DESCRIPTION_TEXT ${SecQckLScut} $(DESC_SecQckLScut)
 !ifdef WITH_MINGW
-	!insertmacro MUI_DESCRIPTION_TEXT ${SecMinGW} $(DESC_SecMinGW)
+  !insertmacro MUI_DESCRIPTION_TEXT ${SecMinGW} $(DESC_SecMinGW)
 !endif  
   !insertmacro MUI_FUNCTION_DESCRIPTION_END
   
@@ -488,7 +521,7 @@ FunctionEnd
 ;Launch after instalation function
 
 Function LaunchLink
-  SetOutPath "$INSTDIR"	
+  SetOutPath "$INSTDIR"  
   ExecShell "open" "$INSTDIR\Falcon.exe"
 FunctionEnd
 

@@ -177,7 +177,7 @@ begin
     DoProgress;
     case fptr^ of
       #10: Inc(fCurrLine); //LF
-      '\': if (fptr + 1)^ = '''' then
+      '\': //if (fptr + 1)^ = '''' then
         begin
           Inc(fptr, 2);
           Inc(fCurrPos, 2);

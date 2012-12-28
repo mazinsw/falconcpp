@@ -1877,13 +1877,13 @@ procedure TProjectFile.Build;
   end;
 
 var
-  Makefile, FileContSpc, Temp: string;
+  Makefile, FileContSpc, Temp, IncludeFileName, IncludeName: string;
   Files: TStrings;
   Res, MkWar, Includes: TStrings;
-  MkRes, I, J: Integer;
+  MkRes, I, J, K: Integer;
   Manf: Byte;
   mk: TMakefile;
-  OldDebuggingState: Boolean;
+  OldDebuggingState, SkipIncludeFile: Boolean;
   TokenFile: TTokenFile;
 begin
   SaveAll;
@@ -1924,9 +1924,25 @@ begin
       begin
         if TokenFile.Includes.Items[J].Flag = 'L' then
         begin
-          Temp := TokenFile.Includes.Items[J].Name;
-          Temp := ExtractFilePath(Files.Strings[I]) + ConvertSlashes(Temp);
+          IncludeName := ConvertSlashes(TokenFile.Includes.Items[J].Name);
+          Temp := ExtractFilePath(Files.Strings[I]) + IncludeName;
           Temp := ExpandFileName(Temp);
+          if not FileExists(Temp) then
+          begin
+            SkipIncludeFile := False;
+            for K := 0 to FrmFalconMain.FilesParsed.PathList.Count - 1 do
+            begin
+              IncludeFileName := ExpandFileName(FrmFalconMain.FilesParsed.PathList.Strings[K] +
+                IncludeName);
+              if FileExists(IncludeFileName) then
+              begin
+                SkipIncludeFile := True;
+                Break;
+              end;
+            end;
+            if SkipIncludeFile then
+              Continue;
+          end;
           Includes.Add(Temp);
         end;
       end;

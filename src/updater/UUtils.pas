@@ -60,6 +60,7 @@ function CompareVersion(Ver1, Ver2: TVersion): Integer;
 function VersionToStr(Version: TVersion): String;
 procedure LoadLang;
 function CanUpdate(UpdateXML: String): Boolean;
+function BringUpApp(const ClassName: string): Boolean;
 procedure RunSecureUpdater;
 function GetTempDirectory: String;
 function ForceForegroundWindow(hwnd: THandle): Boolean;
@@ -364,11 +365,26 @@ begin
       STR_FRM_UPD[I] := CONST_STR_FRM_UPD[I];//default english
 end;
 
+function BringUpApp(const ClassName: string): Boolean;
+var
+  Handle, AppHandle: HWND;
+begin
+  Result := False;
+  AppHandle := FindWindow(PChar(ClassName), nil);
+  if AppHandle <> 0 then
+  begin
+    Handle := GetWindowLong(AppHandle, GWL_HWNDPARENT);
+    ForceForegroundWindow(AppHandle);
+    if IsIconic(Handle) then
+      ShowWindow(Handle, SW_RESTORE);
+    Result := True;
+  end;
+end;
+
 procedure RunSecureUpdater;
 var
   I: Integer;
   ExeRunUpdater, params, RunTempDir: string;
-  Handle, UpdaterHandle: HWND;
 begin
   RunTempDir := GetTempDirectory + '~falcon_updater.tmp\';
   ExeRunUpdater := RunTempDir + ExtractFileName(Application.ExeName);
@@ -376,18 +392,9 @@ begin
     DeleteFile(ExeRunUpdater);
   if not DirectoryExists(RunTempDir) and not CreateDir(RunTempDir) then
     Exit;
-  if not CopyFile(PChar(Application.ExeName), PChar(ExeRunUpdater), FALSE) then
-  begin
-    UpdaterHandle := FindWindow(PChar('TFrmUpdate'), nil);
-    if UpdaterHandle <> 0 then
-    begin
-      Handle := GetWindowLong(UpdaterHandle, GWL_HWNDPARENT);
-      ForceForegroundWindow(UpdaterHandle);
-      if IsIconic(Handle) then
-        ShowWindow(Handle, SW_RESTORE);
-      Exit;
-    end;
-  end;
+  if not CopyFile(PChar(Application.ExeName), PChar(ExeRunUpdater), FALSE) and
+    BringUpApp('TFrmUpdate') then
+    Exit;
   params := '';
   for I := 1 to ParamCount - 1 do
   begin

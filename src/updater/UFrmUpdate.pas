@@ -27,7 +27,7 @@ type
     procedure StartUpdate;
     procedure NewVersion(UpdateXML: String);
     procedure FormKeyPress(Sender: TObject; var Key: Char);
-    function AppOpened(const WndClass: String): Boolean;
+    function IsAppOpen(const ClassName: String): Boolean;
     procedure BtnCancelClick(Sender: TObject);
     procedure UpdateDownloadFinish(Sender: TObject; State: TDownloadState;
       Canceled: Boolean);
@@ -115,9 +115,9 @@ begin
   end;
 end;
 
-function TFrmUpdate.AppOpened(const WndClass: String): Boolean;
+function TFrmUpdate.IsAppOpen(const ClassName: String): Boolean;
 begin
-  Result := FindWindow(PChar(WndClass), nil) > 0;
+  Result := FindWindow(PChar(ClassName), nil) > 0;
 end;
 
 procedure TFrmUpdate.BtnCancelClick(Sender: TObject);
@@ -127,7 +127,7 @@ begin
     UpdateDownload.Stop;
   if FileDownload.IsBusy then
     FileDownload.Stop;
-  if not UpdateDownload.IsBusy and not FileDownload.IsBusy then
+  //if not UpdateDownload.IsBusy and not FileDownload.IsBusy then
     Close;
 end;
 
@@ -142,7 +142,7 @@ begin
   SetProgsType(FraGetVer.PrgsUpdate, False);
   if not Canceled then
   begin
-    if FileExists(UpdateDownload.FileName) then
+    if FileExists(UpdateDownload.FileName) and (State <> dsError) then
     begin
       Stage := uwDownload;
       FraUpdate.Parent := PnlFra;
@@ -165,16 +165,16 @@ begin
   Stage := uwCancel;
   UpdateDownload.Stop;
   FileDownload.Stop;
-  if not UpdateDownload.IsBusy and not FileDownload.IsBusy then
-  begin
+//  if not UpdateDownload.IsBusy and not FileDownload.IsBusy then
+//  begin
     if Assigned(FrmUpdate) then
     begin
       Action := caFree;
-      FrmUpdate := nil;
+//      FrmUpdate := nil;
     end;
-  end
-  else
-    Action := caNone;
+//  end
+//  else
+//    Action := caNone;
 end;
 
 procedure TFrmUpdate.ExecutorInstallFinish(Sender: TObject);
@@ -236,7 +236,7 @@ begin
         Stage := uwInstall;
         FraUpdate.LblDesc.Caption := STR_FRM_UPD[25];
         LblAction.Caption := STR_FRM_UPD[25];
-        while AppOpened('TFrmFalconMain') do
+        while IsAppOpen('TFrmFalconMain') do
         begin
           I := MessageBox(Handle, PChar(STR_FRM_UPD[4]),
             PChar(STR_FRM_UPD[1]), MB_YESNOCANCEL+MB_ICONWARNING);
@@ -249,7 +249,7 @@ begin
           end
           else
           begin
-            ForceForegroundWindow(FindWindow(PChar('TFrmFalconMain'), nil));
+            BringUpApp('TFrmFalconMain');
             SendMessage(FindWindow(PChar('TFrmFalconMain'), nil), WM_CLOSE, 0, 0);
             Sleep(500);
             Application.ProcessMessages;

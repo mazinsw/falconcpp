@@ -58,22 +58,13 @@ uses
 function OpenWithOther: Boolean;
 var
   SendDT: TSendData;
-  Handle, AppHandle: HWND;
   I: Integer;
   List: TStrings;
   Ms: TMemoryStream;
 begin
   Result := False;
-  if (ParamCount = 0) then
+  if (ParamCount = 0) or not BringUpApp('TFrmFalconMain') then
     Exit;
-
-  Handle := FindWindow('TFrmFalconMain', nil);
-  if (Handle = 0) then
-    Exit;
-  AppHandle := FindWindow('TApplication', 'Falcon C++');
-  ForceForegroundWindow(Handle);
-  if (AppHandle > 0) and IsIconic(AppHandle) then
-    ShowWindow(AppHandle, SW_RESTORE);
   SendDT := TSendData.Create(nil);
   SendDT.ClassNamed := 'TFrmFalconMain';
   SendDT.SendType := stSend;

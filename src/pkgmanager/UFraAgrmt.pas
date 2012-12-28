@@ -18,6 +18,7 @@ type
     { Private declarations }
   public
     { Public declarations }
+    procedure ApplyTranslation;
   end;
 
 var
@@ -25,7 +26,7 @@ var
 
 implementation
 
-uses UFraSteps;
+uses UFraSteps, ULanguages;
 
 {$R *.dfm}
 
@@ -36,9 +37,14 @@ end;
 
 procedure TFraAgrmt.UpdateStep;
 begin
-  FraSteps.LblTitle.Caption := 'License Agreement';
+  FraSteps.LblTitle.Caption := STR_FRM_AGRMT[2];
   FraSteps.LblSubTitle.Caption :=
-    Format('Please review the license terms before installing %s.', [Installer.Name]);
+    Format(STR_FRM_AGRMT[3], [Installer.Name]);
+end;
+
+procedure TFraAgrmt.ApplyTranslation;
+begin
+  Label5.Caption := STR_FRM_AGRMT[4];
 end;
 
 end.

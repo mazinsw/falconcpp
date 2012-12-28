@@ -18,6 +18,7 @@ type
     { Private declarations }
   public
     { Public declarations }
+    procedure ApplyTranslation;
   end;
 
 var
@@ -25,7 +26,7 @@ var
 
 implementation
 
-uses UFraSteps;
+uses UFraSteps, ULanguages;
 
 {$R *.dfm}
 
@@ -36,8 +37,14 @@ end;
 
 procedure TFraReadMe.UpdateStep;
 begin
-  FraSteps.LblTitle.Caption := 'README';
-  FraSteps.LblSubTitle.Caption := 'Please read the following README.';
+  FraSteps.LblTitle.Caption := STR_FRM_README[3];
+  FraSteps.LblSubTitle.Caption := STR_FRM_README[4];
+end;
+
+procedure TFraReadMe.ApplyTranslation;
+begin
+  Label5.Caption := STR_FRM_README[1];
+  TextGuide.Caption := STR_FRM_README[2];
 end;
 
 end.

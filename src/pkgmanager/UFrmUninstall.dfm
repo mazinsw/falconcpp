@@ -64,14 +64,14 @@ object FrmUninstall: TFrmUninstall
       Caption = 'Name:'
     end
     object LblVer: TLabel
-      Left = 52
+      Left = 49
       Top = 36
       Width = 13
       Height = 13
       Caption = '%s'
     end
     object LblName: TLabel
-      Left = 52
+      Left = 49
       Top = 20
       Width = 13
       Height = 13

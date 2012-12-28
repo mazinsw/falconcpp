@@ -21,12 +21,15 @@ type
     { Private declarations }
   public
     { Public declarations }
+    procedure ApplyTranslation;
   end;
 
 var
   FraFnsh: TFraFnsh;
 
 implementation
+
+uses ULanguages;
 
 {$R *.dfm}
 
@@ -35,12 +38,16 @@ begin
   UpdateStep;
 end;
 
+procedure TFraFnsh.ApplyTranslation;
+begin
+   TextRecom.Caption := STR_FRM_FINISH[2];
+   ChbShow.Caption := STR_FRM_FINISH[3];
+end;
+
 procedure TFraFnsh.UpdateStep;
 begin
-  TextTitle.Caption := Format('Completing the %s Installation Wizard',
-    [Installer.Name]);
-  TextHelp.Caption := Format(Installer.FinishMsg,
-    [Installer.Name]);
+  TextTitle.Caption := Format(STR_FRM_FINISH[1], [Installer.Name]);
+  TextHelp.Caption := Format(Installer.FinishMsg, [Installer.Name]);
   if Installer.Aborted then
     TextHelp.Font.Color := clRed
   else if Installer.SkipFileCount > 0 then

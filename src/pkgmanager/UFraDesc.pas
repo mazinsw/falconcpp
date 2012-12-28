@@ -30,6 +30,7 @@ type
   public
     { Public declarations }
     WzdRestore: Boolean;
+    procedure ApplyTranslation;
   end;
 
 var
@@ -37,7 +38,7 @@ var
 
 implementation
 
-uses UInstaller, UFraSteps;
+uses UInstaller, UFraSteps, PkgUtils, ULanguages;
 
 {$R *.dfm}
 
@@ -48,18 +49,20 @@ end;
 
 procedure TFraDesc.UpdateStep;
 begin
-  FraSteps.LblTitle.Caption := 'Package description';
-  FraSteps.LblSubTitle.Caption := Format('Package details of %s.', [Installer.Name]);
+  FraSteps.LblTitle.Caption := STR_FRM_DESC[1];
+  FraSteps.LblSubTitle.Caption := Format(STR_FRM_DESC[2], [Installer.Name]);
 end;
 
-function FormatSize(Size:Int64): String;
+function FormatSize(Size: Int64): string;
 begin
-  case Size of
-    1024..1024*1023: Result := FormatFloat('0.0 KB', Size/1024);
-    1024*1024..1024*1024*1023: Result := FormatFloat('0.0 MB', Size/(1024*1024));
+  if Size < 1024 then
+    Result := FormatFloat('0 B', Size)
+  else if Size < 1024 * 1024 then
+    Result := FormatFloat('0.0 kB', Size / 1024)
+  else if Size < 1024 * 1024 * 1024 then
+    Result := FormatFloat('0.0 MB', Size / (1024 * 1024))
   else
-    Result := FormatFloat('0.0 GB', Size/(1024*1024*1024));
-  end;
+    Result := FormatFloat('0.00 GB', Size / (1024 * 1024 * 1024));
 end;
 
 function SpaceAvailabre(Directory: String): Int64;
@@ -72,9 +75,9 @@ end;
 
 procedure TFraDesc.Init;
 begin
-  LblEspReq.Caption := 'Space required: ' + FormatSize(Installer.PkgSize);
-  LblEspDisp.Caption := 'Space available: ' +
-    FormatSize(SpaceAvailabre(ExtractFilePath('C:')));
+  LblEspReq.Caption := STR_FRM_DESC[3] + ' ' + FormatSize(Installer.PkgSize);
+  LblEspDisp.Caption := STR_FRM_DESC[4] + ' ' +
+    FormatSize(SpaceAvailabre(ExtractFilePath(GetCompilerDir)));
   LblName.Caption := Installer.Name;
   LblVer.Caption := Installer.Version;
   if Length(Trim(Installer.WebSiteCaption)) = 0 then
@@ -92,6 +95,19 @@ end;
 procedure TFraDesc.LblSiteClick(Sender: TObject);
 begin
   Execute(Installer.WebSite);
+end;
+
+procedure TFraDesc.ApplyTranslation;
+begin
+  GBoxFile.Caption := STR_FRM_DESC[5];
+  Label4.Caption := STR_FRM_DESC[6];
+  LblName.Left := Label4.Left + Label4.Width + 5;
+  Label3.Caption := STR_FRM_DESC[7];
+  LblVer.Left := Label3.Left + Label3.Width + 5;
+  Label2.Caption := STR_FRM_DESC[8];
+  LblSite.Left := Label2.Left + Label2.Width + 5;
+  TextDesc.Caption := STR_FRM_DESC[9];
+  Label1.Caption := STR_FRM_DESC[10];
 end;
 
 end.

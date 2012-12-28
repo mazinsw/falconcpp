@@ -6,10 +6,6 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ComCtrls, UInstaller;
 
-const
-  WM_RELOADFTM = WM_USER + $1008;
-  WM_RELOADPKG  = WM_USER + $0112;
-
 type
   TFrmUninstall = class(TForm)
     GBoxFile: TGroupBox;
@@ -45,6 +41,8 @@ var
   FrmUninstall: TFrmUninstall;
 
 implementation
+
+uses ULanguages;
 
 {$R *.dfm}
 
@@ -125,6 +123,14 @@ procedure TFrmUninstall.FormCreate(Sender: TObject);
 begin
   EnableMenuItem(GetSystemMenu(Handle, False),
         SC_CLOSE, MF_DISABLED);
+  Caption := STR_FRM_UNINSTALL[1];
+  GBoxFile.Caption := STR_FRM_DESC[5];
+  Label5.Caption := STR_FRM_DESC[6];
+  LblName.Left := Label5.Left + Label5.Width + 5;
+  Label4.Caption := STR_FRM_DESC[7];
+  LblVer.Left := Label4.Left + Label4.Width + 5;
+  BtnShow.Caption := STR_FRM_PROGRESS[1];
+  BtnOk.Caption := STR_FRM_UNINSTALL[2];
 end;
 
 procedure TFrmUninstall.FormKeyDown(Sender: TObject; var Key: Word;

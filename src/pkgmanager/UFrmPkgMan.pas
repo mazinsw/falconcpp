@@ -5,7 +5,8 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Controls, Forms, Graphics,
   Dialogs, Menus, ComCtrls, ToolWin, ImgList, StdCtrls, PNGImage,
-  RichEditViewer, FormEffect, IniFiles, ShellApi, ExtCtrls, Clipbrd;
+  RichEditViewer, FormEffect, IniFiles, ShellApi, ExtCtrls, Clipbrd,
+  VistaAltFixUnit;
 
 const
   WM_RELOADPKG  = WM_USER + $0112;
@@ -68,6 +69,7 @@ type
     PopupMenu1: TPopupMenu;
     OpenFolder1: TMenuItem;
     CopyFileName1: TMenuItem;
+    VistaAltFix1: TVistaAltFix;
     procedure FormCreate(Sender: TObject);
     procedure PkgListProc(var Msg: TMessage);
     procedure ReloadPackages(var Message: TMessage); message WM_RELOADPKG;
@@ -97,6 +99,7 @@ type
   public
     { Public declarations }
     function PackageInstalled(const Name, Version: string): Boolean;
+    procedure ApplyTranslation;
   end;
 
   TPkgItem = class
@@ -119,7 +122,7 @@ var
 implementation
 
 uses UInstaller, UFrmWizard, UFraFnsh, UUninstaller, UFrmPkgDownload,
-  UFrmHelp;
+  UFrmHelp, PkgUtils, ULanguages;
 
 {$R *.dfm}
 
@@ -310,6 +313,7 @@ end;
 
 procedure TFrmPkgMan.FormCreate(Sender: TObject);
 begin
+  ApplyTranslation;
   PkgListWndProc := PkgList.WindowProc;
   PkgList.WindowProc := PkgListProc;
   DragAcceptFiles(PkgList.Handle, True);
@@ -341,9 +345,9 @@ begin
     begin
       DragQueryFile(TWMDropFiles(Msg).Drop, 0, @buffer, sizeof(buffer));
       S := StrPas(buffer);
-      if LoadPackageFile(S) then
+      if LoadPackageFile(Handle, S) then
       begin
-        FrmWizard := TFrmWizard.Create(Self);
+        FrmWizard := TFrmWizard.CreateParented(Handle);
         FraFnsh.ChbShow.Checked := False;
         FraFnsh.ChbShow.Enabled := False;
         FrmWizard.ShowModal;
@@ -378,7 +382,7 @@ begin
     begin
       if LoadPackageFile(FileName) then
       begin
-        FrmWizard := TFrmWizard.Create(Self);
+        FrmWizard := TFrmWizard.CreateParented(Handle);
         FraFnsh.ChbShow.Checked := False;
         FraFnsh.ChbShow.Enabled := False;
         FrmWizard.ShowModal;
@@ -472,11 +476,11 @@ begin
       if not FileExists(GetFalconDir + PkgInfo.Files.Strings[I]) then
         Inc(Forgot);
     if Forgot > 0 then
-      MessageBox(Handle, PChar(Format('%d of %d Files not Found',
-        [Forgot, PkgInfo.Files.Count])), PChar(Caption), MB_ICONWARNING)
+      MessageBox(Handle, PChar(Format(STR_FRM_PKG_MAN[29],
+        [Forgot, PkgInfo.Files.Count])), PChar(STR_FRM_PKG_MAN[1]), MB_ICONWARNING)
     else
-      MessageBox(Handle, 'Intact package files!',
-        PChar(Caption), MB_ICONINFORMATION)
+      MessageBox(Handle, PChar(STR_FRM_PKG_MAN[30]),
+        PChar(STR_FRM_PKG_MAN[1]), MB_ICONINFORMATION)
   end
 end;
 
@@ -502,8 +506,8 @@ begin
   if PkgList.SelCount = 0 then Exit;
   Item := TPkgItem(PkgList.Selected.Data);
   MessageBeep(48);
-  if MessageBox(Handle, PChar('Remove "' + Item.Name + '" - Version: ' +
-    Item.Version + ' ?'), 'Falcon C++ Package Manager', MB_ICONQUESTION+
+  if MessageBox(Handle, PChar(Format(STR_FRM_PKG_MAN[31],
+    [Item.Name, Item.Version])), PChar(STR_FRM_PKG_MAN[1]), MB_ICONQUESTION+
     MB_YESNOCANCEL) <> IDYES then Exit;
   UninstallPackage(Item.Name, Handle);
 end;
@@ -557,8 +561,41 @@ begin
     if FileExists(FileName) then
       ShellExecute(0, 'open', 'explorer.exe',
         PChar('/select, "' + FileName + '"'), nil, SW_SHOW);
-    //Edit;
   end;
+end;
+
+procedure TFrmPkgMan.ApplyTranslation;
+var
+  I: Integer;
+begin
+  Caption := STR_FRM_PKG_MAN[1];
+  // Main menu
+  for I := 0 to Menu.Items.Count - 1 do
+    Menu.Items.Items[I].Caption := STR_FRM_PKG_MAN[I + 2];
+  // SubMenu Package
+  for I := 0 to Packages1.Count - 1 do
+    Packages1.Items[I].Caption := STR_FRM_PKG_MAN[I + 5];
+  // SubMenu View
+  for I := 0 to View1.Count - 1 do
+    View1.Items[I].Caption := STR_FRM_PKG_MAN[I + 12];
+  // SubMenu Help
+  for I := 0 to Help1.Count - 1 do
+    Help1.Items[I].Caption := STR_FRM_PKG_MAN[I + 15];
+  TbInstall.Caption := STR_FRM_PKG_MAN[18];
+  TbUninstall.Caption := STR_FRM_PKG_MAN[19];
+  TbReload.Caption := STR_FRM_PKG_MAN[20];
+  TbCheck.Caption := STR_FRM_PKG_MAN[21];
+  TbHelp.Caption := STR_FRM_PKG_MAN[22];
+  TbAbout.Caption := STR_FRM_PKG_MAN[23];
+  TbExit.Caption := STR_FRM_PKG_MAN[24];
+  TsInfo.Caption := STR_FRM_PKG_MAN[25];
+  TsFile.Caption := STR_FRM_PKG_MAN[26];
+  Label1.Caption := STR_FRM_DESC[6];
+  Label4.Caption := STR_FRM_DESC[7];
+  Label2.Caption := STR_FRM_DESC[8];
+  Label5.Caption := STR_FRM_DESC[9];
+  for I := 0 to PopupMenu1.Items.Count - 1 do
+    PopupMenu1.Items.Items[I].Caption := STR_FRM_PKG_MAN[I + 27];
 end;
 
 end.

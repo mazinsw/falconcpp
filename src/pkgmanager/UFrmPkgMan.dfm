@@ -332,6 +332,7 @@ object FrmPkgMan: TFrmPkgMan
       end
       object Quit1: TMenuItem
         Caption = 'Exit'
+        ShortCut = 16465
         OnClick = ExitClick
       end
     end
@@ -383,7 +384,7 @@ object FrmPkgMan: TFrmPkgMan
     Left = 440
     Top = 16
     Bitmap = {
-      494C010109000E00140010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010109000E001C0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000003000000001002000000000000030
       0000000000000000000000000000000000000000000080808000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -813,5 +814,9 @@ object FrmPkgMan: TFrmPkgMan
       ShortCut = 16451
       OnClick = CopyFileName1Click
     end
+  end
+  object VistaAltFix1: TVistaAltFix
+    Left = 292
+    Top = 154
   end
 end

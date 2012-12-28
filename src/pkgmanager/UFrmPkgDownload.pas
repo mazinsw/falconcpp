@@ -137,6 +137,7 @@ type
     InstalledCount: Integer;
     Ms: TMemoryStream;
     CategoryList: TCategoryList;
+    Canceled: Boolean;
     Marqueue, CloseOnFinish: Boolean;
     LoadingPkg: Integer;
     InstallList: TRBTree;
@@ -167,6 +168,7 @@ type
     procedure CreateParams(var Params: TCreateParams); override;
   public
     { Public declarations }
+    procedure ApplyTranslation;
   end;
 
 var
@@ -176,7 +178,7 @@ function InstallPackages(ParentWindow: HWND): Integer;
 
 implementation
 
-uses UInstaller, UFrmPkgMan, ShlObj, UUninstaller;
+uses UInstaller, UFrmPkgMan, ShlObj, UUninstaller, PkgUtils, ULanguages;
 
 {$R *.dfm}
 
@@ -307,7 +309,7 @@ procedure TFrmPkgDownload.ReloadPackages;
   procedure LoadDone;
   begin
     ProgressBar1.Position := 0;
-    LabelProgresss.Caption := 'Done loading packages.';
+    LabelProgresss.Caption := STR_FRM_PKG_DOWN[13];
     BtnCancel.Enabled := False;
   end;
 
@@ -329,15 +331,15 @@ begin
   fmt.TimeSeparator  :=':';
   Ms.Position := 0;
   ProgressBar1.Position := 0;
-  LabelProgresss.Caption := 'Loading packages...';
+  LabelProgresss.Caption := STR_FRM_PKG_DOWN[14];
   XMLDoc := TXMLDocument.Create(Self);
   try
     XMLDoc.LoadFromStream(Ms);
   except
     XMLDoc.Free;
     ProgressBar1.Position := 0;
-    LabelProgresss.Caption := 'Error parsing xml.';
-    BtnCancel.Caption := 'Retry';
+    LabelProgresss.Caption := STR_FRM_PKG_DOWN[15];
+    BtnCancel.Caption := STR_FRM_PKG_DOWN[16];
     BtnCancel.Enabled := True;
     Exit;
   end;
@@ -422,7 +424,7 @@ begin
       end;
     end
     else
-      raise Exception.CreateFmt('Dependency "%s %s" to "%s %s" not found',
+      raise Exception.CreateFmt(STR_FRM_PKG_DOWN[17],
         [DependencyItem.Name, DependencyItem.Version,
         DependencyItem.Package.Name, DependencyItem.Package.Version]);
   end;
@@ -430,7 +432,7 @@ begin
   BuildDependencyList.Free;
   XMLDoc.Free;
   LoadDone;
-  SearchPackage('');
+  SearchPackage(UpperCase(Trim(EditSearch.Text)));
 end;
 
 procedure TFrmPkgDownload.CreateParams(var Params: TCreateParams);
@@ -474,12 +476,12 @@ begin
       ProgressbarSetNormal(ProgressBar1);
     end;
     ProgressBar1.Position := Round((ReceivedBytes / CalculatedFileSize) * 100);
-    LabelProgresss.Caption := Format('Downloading packages list %.2f%%.',
+    LabelProgresss.Caption := Format(STR_FRM_PKG_DOWN[18],
       [(ReceivedBytes / CalculatedFileSize) * 100]);
   end
   else
   begin
-    LabelProgresss.Caption := 'Downloading packages list...';
+    LabelProgresss.Caption := STR_FRM_PKG_DOWN[19];
   end;
 end;
 
@@ -492,7 +494,7 @@ begin
     ProgressbarSetMarqueue(ProgressBar1);
   end;
   Panel2.Visible := True;
-  LabelProgresss.Caption := 'Downloading packages list...';
+  LabelProgresss.Caption := STR_FRM_PKG_DOWN[19];
   BtnCancel.Enabled := True;
   FormResize(Self);
 end;
@@ -500,20 +502,20 @@ end;
 procedure TFrmPkgDownload.UpdateButtonsCaption;
 begin
   if InstallList.Count = 0 then
-    Button1.Caption := 'Install packages...'
+    Button1.Caption := STR_FRM_PKG_DOWN[11]
   else if InstallList.Count = 1 then
-    Button1.Caption := Format('Install %d package...', [InstallList.Count])
+    Button1.Caption := Format(STR_FRM_PKG_DOWN[20], [InstallList.Count])
   else
-    Button1.Caption := Format('Install %d packages...', [InstallList.Count]);
+    Button1.Caption := Format(STR_FRM_PKG_DOWN[21], [InstallList.Count]);
   Button1.Enabled := (InstallList.Count > 0) and not FileDownloadPkg.IsBusy and
     not (InstallPkgQueue.Count > 0) and (UninstallList.Count = 0) and
       (UninstallQueue.Count = 0);
   if UninstallList.Count = 0 then
-    Button2.Caption := 'Delete packages...'
+    Button2.Caption := STR_FRM_PKG_DOWN[12]
   else if UninstallList.Count = 1 then
-    Button2.Caption := Format('Delete %d package...', [UninstallList.Count])
+    Button2.Caption := Format(STR_FRM_PKG_DOWN[22], [UninstallList.Count])
   else
-    Button2.Caption := Format('Delete %d packages...', [UninstallList.Count]);
+    Button2.Caption := Format(STR_FRM_PKG_DOWN[23], [UninstallList.Count]);
   Button2.Enabled := (UninstallList.Count > 0) and (UninstallQueue.Count = 0);
 end;
 
@@ -562,10 +564,12 @@ end;
 
 procedure TFrmPkgDownload.FormCreate(Sender: TObject);
 begin
+  Canceled := False;
+  ApplyTranslation;
   PkgImg := GetPNGResource('PKGIMG');
   ConvertTo32BitImageList(ImageList16x16);
   AddImages(ImageList16x16, 'IMAGES_16x16');
-  ConfigRoot := IncludeTrailingPathDelimiter(GetSpecialFolder(CSIDL_APPDATA))
+  ConfigRoot := IncludeTrailingPathDelimiter(GetSpecialFolderPath(CSIDL_APPDATA))
                      + 'Falcon\';
   DownloadedPackagesRoot := ConfigRoot + 'Downloaded packages\';
   if not DirectoryExists(DownloadedPackagesRoot) then
@@ -625,13 +629,13 @@ begin
   else if Canceled then
   begin
     ProgressBar1.Position := 0;
-    LabelProgresss.Caption := 'Download canceled.';
+    LabelProgresss.Caption := STR_FRM_PKG_DOWN[24];
     BtnCancel.Enabled := False;
   end
   else
   begin
     ProgressBar1.Position := 0;
-    LabelProgresss.Caption := 'Download error invalid xml file.';
+    LabelProgresss.Caption := STR_FRM_PKG_DOWN[25];
     BtnCancel.Enabled := False;
   end;
 end;
@@ -674,16 +678,16 @@ begin
         if TPackage(Data).Installed then
         begin
           if TPackage(Data).State = psUninstall then
-            CellText := 'Uninstall'
+            CellText := STR_FRM_PKG_DOWN[26]
           else
-            CellText := 'Installed';
+            CellText := STR_FRM_PKG_DOWN[27];
         end
         else
         begin
           if TPackage(Data).State = psInstall then
-            CellText := 'Install'
+            CellText := STR_FRM_PKG_DOWN[28]
           else
-            CellText := 'Not installed';
+            CellText := STR_FRM_PKG_DOWN[29];
         end;
       end
       else
@@ -725,8 +729,12 @@ end;
 
 procedure TFrmPkgDownload.BtnCancelClick(Sender: TObject);
 begin
+  Canceled := True;
+  BtnCancel.Enabled := False;
   if FileDownloadXML.IsBusy then
     FileDownloadXML.Stop;
+  if FileDownloadPkg.IsBusy then
+    FileDownloadPkg.Stop;
 end;
 
 procedure TFrmPkgDownload.TreeViewPackagesGetImageIndex(
@@ -820,8 +828,8 @@ begin
   begin
     I := IDYES;
     if FileDownloadPkg.IsBusy then
-     I := MessageBox(Handle, 'Do you cancel package installation?',
-      PChar(Caption), MB_YESNOCANCEL+MB_DEFBUTTON2);
+     I := MessageBox(Handle, PChar(STR_FRM_PKG_DOWN[30]),
+      PChar(STR_FRM_PKG_DOWN[1]), MB_YESNOCANCEL+MB_DEFBUTTON2);
     Action := caNone;
     if I = IDYES then
     begin
@@ -848,13 +856,13 @@ begin
     if TPackage(Data).InstaledPackage(TPackage(Data).Name) then
     begin
       Allowed := False;
-      MessageBox(Handle, 'Package already installed!', PChar(Caption), MB_ICONINFORMATION);
+      MessageBox(Handle, PChar(STR_FRM_PKG_DOWN[31]), PChar(STR_FRM_PKG_DOWN[1]), MB_ICONINFORMATION);
       Exit;
     end
     else if not TPackage(Data).CanInstall then
     begin
       Allowed := False;
-      MessageBox(Handle, 'Package cannot be installed, a lowest dependency version already installed!', PChar(Caption), MB_ICONINFORMATION);
+      MessageBox(Handle, PChar(STR_FRM_PKG_DOWN[32]), PChar(STR_FRM_PKG_DOWN[1]), MB_ICONINFORMATION);
       Exit;
     end
     else if (NewState = csUncheckedNormal) and ((TPackage(Data).Installed and
@@ -862,7 +870,7 @@ begin
       (TPackage(Data).State = psInstall)) and not TPackage(Data).CanUninstall then
     begin
       Allowed := False;
-      MessageBox(Handle, 'Package cannot be uninstalled, other packages depend on!', PChar(Caption), MB_ICONINFORMATION);
+      MessageBox(Handle, PChar(STR_FRM_PKG_DOWN[33]), PChar(STR_FRM_PKG_DOWN[1]), MB_ICONINFORMATION);
       Exit;
     end;
   end;
@@ -880,9 +888,9 @@ begin
       Package.Version + '.fpk';
     if not FileExists(file_fpk) then
     begin
-      MessageBox(Handle, PChar(Format('Error file %s not found', [file_fpk])),
+      MessageBox(Handle, PChar(Format(STR_FRM_PKG_DOWN[34], [file_fpk])),
         PChar(Caption), MB_ICONERROR);
-      LabelProgresss.Caption := Format('Error file %s not found.',
+      LabelProgresss.Caption := Format(STR_FRM_PKG_DOWN[34],
         [Package.Name + ' ' + Package.Version + '.fpk']);
       ProgressBar1.Position := 0;
       BtnCancel.Enabled := False;
@@ -893,7 +901,7 @@ begin
     end;
     ProgressBar1.Position := Round(50 * ((InstalingList.Count - InstallQueue.Count)
       / InstalingList.Count) + 50 * (InstalingList.Count - InstallPkgQueue.Count) / InstalingList.Count);
-    LabelProgresss.Caption := Format('Installing package %s...',
+    LabelProgresss.Caption := Format(STR_FRM_PKG_DOWN[35],
       [Package.Name + ' ' + Package.Version]);
     InstallPkg.FileName := file_fpk;
     InstallPkg.Start(InstallPkgQueue.Count = 1);
@@ -903,7 +911,7 @@ begin
     Inc(InstalledCount, InstalingList.Count);
     InstalingList.Clear;
     UpdateButtonsCaption;
-    LabelProgresss.Caption := 'Done packages installation.';
+    LabelProgresss.Caption := STR_FRM_PKG_DOWN[36];
     ProgressBar1.Position := 0;
     BtnCancel.Enabled := False;
   end;
@@ -931,6 +939,7 @@ var
   Depends: Boolean;
   I, J, K: Integer;
 begin
+  Canceled := False;
   Node := InstallList.First;
   if Node = nil then
     Exit;
@@ -989,7 +998,7 @@ begin
     Package := TPackage(UninstallQueue.Peek);
     ProgressBar1.Position := Round(100 * ((UninstalingList.Count - UninstallQueue.Count)
       / UninstalingList.Count));
-    LabelProgresss.Caption := Format('Uninstalling package %s...',
+    LabelProgresss.Caption := Format(STR_FRM_PKG_DOWN[37],
       [Package.Name + ' ' + Package.Version]);
     UninstallPkg.Name := Package.Name;
     UninstallPkg.Start;
@@ -998,7 +1007,7 @@ begin
   UninstalingList.Clear;
   UpdateButtonsCaption;
   //Inc(UninstalledCount, InstalingList.Count);
-  LabelProgresss.Caption := 'Done packages uninstalled.';
+  LabelProgresss.Caption := STR_FRM_PKG_DOWN[38];
   ProgressBar1.Position := 0;
   BtnCancel.Enabled := False;
 end;
@@ -1022,6 +1031,7 @@ var
   OthersDepends: Boolean;
   I, J, K: Integer;
 begin
+  Canceled := False;
   Node := UninstallList.First;
   if Node = nil then
     Exit;
@@ -1079,7 +1089,7 @@ begin
   ProgressBar1.Position := Round(50 * ((InstalingList.Count - InstallQueue.Count)
     / InstalingList.Count));
   Package := TPackage(InstallQueue.Peek);
-  LabelProgresss.Caption := Format('Downloading package %s...',
+  LabelProgresss.Caption := Format(STR_FRM_PKG_DOWN[39],
     [Package.Name + ' ' + Package.Version]);
 end;
 
@@ -1100,10 +1110,10 @@ begin
     ProgressBar1.Position := Round(StartPos);
   Package := TPackage(InstallQueue.Peek);
   if CalculatedFileSize > 0 then
-    LabelProgresss.Caption := Format('Downloading package %s - %.1f%%...',
+    LabelProgresss.Caption := Format(STR_FRM_PKG_DOWN[40],
       [Package.Name + ' ' + Package.Version,  100 * (ReceivedBytes / CalculatedFileSize)])
   else
-    LabelProgresss.Caption := Format('Downloading package %s...',
+    LabelProgresss.Caption := Format(STR_FRM_PKG_DOWN[39],
       [Package.Name + ' ' + Package.Version]);
 end;
 
@@ -1119,9 +1129,11 @@ begin
       Close;
     Exit;
   end;
-  if Canceled then
+  if Canceled or Self.Canceled then
   begin
     Button1.Enabled := True;
+    LabelProgresss.Caption := STR_FRM_PKG_DOWN[24];
+    ProgressBar1.Position := 0;
     Exit;
   end;
   Package := TPackage(InstallQueue.Peek);
@@ -1154,12 +1166,19 @@ procedure TFrmPkgDownload.InstallPkgFinish(Sender: TObject; Sucess: Boolean);
 var
   Package: TPackage;
 begin
+  if Canceled then
+  begin
+    ProgressBar1.Position := 0;
+    BtnCancel.Enabled := False;
+    Button1.Enabled := True;
+    Exit;
+  end;
   Package := TPackage(InstallPkgQueue.Peek);
   if not Sucess then
   begin
-    MessageBox(Handle, PChar(Format('Error on install %s package',
+    MessageBox(Handle, PChar(Format(STR_FRM_PKG_DOWN[41],
       [Package.Name + ' ' + Package.Version])), PChar(Caption), MB_ICONERROR);
-    LabelProgresss.Caption := Format('Error on install %s package.',
+    LabelProgresss.Caption := Format(STR_FRM_PKG_DOWN[41],
       [Package.Name + ' ' + Package.Version]);
     ProgressBar1.Position := 0;
     BtnCancel.Enabled := False;
@@ -1188,12 +1207,19 @@ procedure TFrmPkgDownload.UninstallPkgFinish(Sender: TObject;
 var
   Package: TPackage;
 begin
+  if Canceled then
+  begin
+    BtnCancel.Enabled := False;
+    Button2.Enabled := True;
+    ProgressBar1.Position := 0;
+    Exit;
+  end;
   Package := TPackage(UninstallQueue.Peek);
   if not Sucess then
   begin
-    MessageBox(Handle, PChar(Format('Error on uninstall %s package',
+    MessageBox(Handle, PChar(Format(STR_FRM_PKG_DOWN[42],
       [Package.Name + ' ' + Package.Version])), PChar(Caption), MB_ICONERROR);
-    LabelProgresss.Caption := Format('Error on uninstall %s package.',
+    LabelProgresss.Caption := Format(STR_FRM_PKG_DOWN[42],
       [Package.Name + ' ' + Package.Version]);
     BtnCancel.Enabled := False;
     Button2.Enabled := True;
@@ -1236,7 +1262,7 @@ end;
 procedure TThreadInstallPkg.Execute;
 begin
   Synchronize(DoStart);
-  FSucess := LoadPackageFile(FFileName, True, FReparse);
+  FSucess := LoadPackageFile(0, FFileName, True, FReparse);
   Synchronize(DoFinish);
 end;
 
@@ -1316,6 +1342,37 @@ procedure TFrmPkgDownload.Splitter1CanResize(Sender: TObject;
   var NewSize: Integer; var Accept: Boolean);
 begin
   Accept := (NewSize > 219) and (ClientWidth - NewSize > 530);
+end;
+
+procedure TFrmPkgDownload.ApplyTranslation;
+begin
+  Caption := STR_FRM_PKG_DOWN[1];
+  GroupBox1.Caption := STR_FRM_PKG_DOWN[2];
+  TreeViewPackages.Header.Columns.Items[0].Text := STR_FRM_PKG_DOWN[3];
+  TreeViewPackages.Header.Columns.Items[1].Text := STR_FRM_PKG_DOWN[4];
+  TreeViewPackages.Header.Columns.Items[2].Text := STR_FRM_PKG_DOWN[5];
+  TreeViewPackages.Header.Columns.Items[3].Text := STR_FRM_PKG_DOWN[6];
+  Label3.Caption := STR_FRM_PKG_DOWN[7];
+  CheckBox1.Left := Label3.Left + Label3.Width + 15;
+  CheckBox1.Caption := STR_FRM_PKG_DOWN[8];
+  CheckBox1.Width := Canvas.TextWidth(CheckBox1.Caption) + 30;
+  CheckBox2.Left := CheckBox1.Left + CheckBox1.Width + 30;
+  CheckBox2.Caption := STR_FRM_PKG_DOWN[9];
+  CheckBox2.Width := Canvas.TextWidth(CheckBox2.Caption) + 30;
+  Label6.Caption := STR_FRM_PKG_DOWN[10];
+  EditSearch.Left := Label6.Left + Label6.Width + 10;
+  Button1.Caption := STR_FRM_PKG_DOWN[11];
+  Button2.Caption := STR_FRM_PKG_DOWN[12];
+  LabelProgresss.Caption := STR_FRM_PKG_DOWN[13];
+  GroupBox2.Caption := STR_FRM_PKG_MAN[25];
+  Label1.Caption := STR_FRM_DESC[6];
+  LabelName.Left := Label1.Left + Label1.Width + 5;
+  Label4.Caption := STR_FRM_DESC[7];
+  LabelVersion.Left := Label4.Left + Label4.Width + 5;
+  Label2.Caption := STR_FRM_DESC[8];
+  LblSite.Left := Label2.Left + Label2.Width + 5;
+  Label5.Caption := STR_FRM_DESC[9];
+  BtnCancel.Caption := STR_FRM_WIZARD[4];
 end;
 
 end.

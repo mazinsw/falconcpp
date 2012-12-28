@@ -28,10 +28,14 @@ var
 
 implementation
 
+uses ULanguages;
+
 {$R *.dfm}
 
 procedure TFrmHelp.FormCreate(Sender: TObject);
 begin
+  Caption := STR_FRM_PKG_MAN[1] + ' - [' + STR_FRM_PKG_MAN[22] + ']';
+  Button1.Caption := STR_FRM_PKG_MAN[32];
   Label1.Caption := 'Falcon C++ Package Manager'#10+
   '=========================='#10#10+
   #9'Install *.fpk, *.DevPak C/C++ Packages'#10+

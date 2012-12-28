@@ -34,6 +34,7 @@ type
     function ProgsTypeIsInfinity: Boolean;
     procedure AddDesc(Text: String);
     procedure UpdateStep;
+    procedure ApplyTranslation;
   end;
 
 var
@@ -41,7 +42,7 @@ var
 
 implementation
 
-uses UFraSteps;
+uses UFraSteps, ULanguages;
 
 {$R *.dfm}
 
@@ -52,10 +53,13 @@ end;
 
 procedure TFraPrgs.UpdateStep;
 begin
-  FraSteps.LblTitle.Caption := 'Installing';
-  FraSteps.LblSubTitle.Caption :=
-    Format('Please wait while %s Package is being installed.',
-    [Installer.Name]);
+  FraSteps.LblTitle.Caption := STR_FRM_PROGRESS[2];
+  FraSteps.LblSubTitle.Caption := Format(STR_FRM_PROGRESS[3], [Installer.Name]);
+end;
+
+procedure TFraPrgs.ApplyTranslation;
+begin
+  BtnShow.Caption := STR_FRM_PROGRESS[1];
 end;
 
 procedure TFraPrgs.AddDesc(Text: String);
@@ -113,12 +117,9 @@ begin
   PrgBar.Position := Position;
   if not Finished and not Success then
   begin
-    I := MessageBox(Handle, PChar(Msg + #10#10 +
-      FileName + #10#10 +
-      'Click Abort to stop the instalation,'#10 +
-      'Retry to try again, or'#10 +
-      'Ignore to skip this file.'),
-      'Falcon C++ Installation Wizard', MB_ICONERROR + MB_ABORTRETRYIGNORE);
+    I := MessageBox(Handle, PChar(Msg + #10#10 + FileName + #10#10 +
+      StringReplace(STR_FRM_PROGRESS[4], '\n', #10, [rfReplaceAll])),
+      PChar(STR_FRM_WIZARD[9]), MB_ICONERROR + MB_ABORTRETRYIGNORE);
     case I of
       IDABORT:
       begin

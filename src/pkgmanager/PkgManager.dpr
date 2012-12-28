@@ -28,7 +28,9 @@ uses
   UFrmHelp in 'UFrmHelp.pas' {FrmHelp},
   rbtree in '..\falconcpp\rbtree.pas',
   FastcodePatch in '..\others\nativehint\FastcodePatch.pas',
-  NativeHintWindow in '..\others\nativehint\NativeHintWindow.pas';
+  NativeHintWindow in '..\others\nativehint\NativeHintWindow.pas',
+  ULanguages in 'ULanguages.pas',
+  PkgUtils in 'PkgUtils.pas';
 
 var
   Silent: Boolean;
@@ -53,16 +55,17 @@ begin
     else
       InstallFileName := ParamStr(I);
   end;
-
+  if not Silent then
+    LoadTranslation;
   if Install and FileExists(InstallFileName) then
   begin
-    if LoadPackageFile(InstallFileName, Silent) then
+    if LoadPackageFile(0, InstallFileName, Silent) then
     begin
       if Silent then Exit;
       Application.Initialize;
 	    Application.Title := 'Falcon C++ Install Wizard';
       Application.CreateForm(TFrmWizard, FrmWizard);
-  Application.Run;
+      Application.Run;
     end
     else
       ExitCode := 1;

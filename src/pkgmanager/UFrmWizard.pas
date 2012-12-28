@@ -25,6 +25,8 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
+  protected
+    procedure CreateParams(var Params: TCreateParams); override;
   public
     { Public declarations }
     Step: Byte;
@@ -41,7 +43,7 @@ function MyExitWindows(RebootParam: Longword): Boolean;
 implementation
 
 uses UFraWelcome, UFraSteps, UFraAgrmt, UFraFnsh, UFraDesc, UFraPrgs,
-  UFraReadMe;
+  UFraReadMe, PkgUtils, ULanguages;
 
 {$R *.dfm}
 {$R resources.RES}
@@ -63,22 +65,24 @@ var
   Ms: TMemoryStream;
   png: TPNGObject;
 begin
+  BtnBack.Caption := STR_FRM_WIZARD[2];
+  BtnNext.Caption := STR_FRM_WIZARD[3];
+  BtnCan.Caption := STR_FRM_WIZARD[4];
   Ms := TMemoryStream.Create;
-  Caption := Format('%s Installation', [Installer.Name]);
+  Caption := Format(STR_FRM_WIZARD[1], [Installer.Name]);
   Done := False; 
   for I:= 0 to 6 do StepCtrl[I] := I;
   Screen.Cursors[crHandPoint] := LoadCursor(0, IDC_HAND);
   Prompt := True;
   FraWelc := TFraWelc.Create(Self);
+  FraWelc.ApplyTranslation;
   png := GetPNGResource('LOGOPKG');
   FraWelc.ImageLogo.Picture.Assign(png);
   png.Free;
-  FraWelc.LblMsg.Caption :=
-    Format('Welcome to the %s Package Installation Wizard', [Installer.Name]);
-  FraWelc.TextHelp.Caption :=
-    Format('This wizard will guide you through the instalation of %s.',
-    [Installer.Name]);
+  FraWelc.LblMsg.Caption := Format(STR_FRM_WELCOME[1], [Installer.Name]);
+  FraWelc.TextHelp.Caption := Format(STR_FRM_WELCOME[2], [Installer.Name]);
   FraSteps := TFraSteps.Create(Self);
+  FraSteps.ApplyTranslation;
   png := GetPNGResource('PKGLOGO');
   FraSteps.PkgImage.Picture.Assign(png);
   png.Free;
@@ -87,15 +91,14 @@ begin
     LoadImageFromStream(FraSteps.PkgImage.Picture, Ms);
     Ms.Clear;
   end;
-
   if Installer.TarFileExist(Installer.Logo, Ms) then
   begin
     LoadImageFromStream(FraWelc.ImageLogo.Picture, Ms);
     Ms.Clear;
   end;
-
   I := 1;
   FraReadMe := TFraReadMe.Create(Self);
+  FraReadMe.ApplyTranslation;
   if Installer.TarFileExist(Installer.Readme, Ms) then
   begin
     Ms.Position := 0;
@@ -104,8 +107,8 @@ begin
     Inc(I);
     Ms.Clear;
   end;
-  
   FraAgrmt := TFraAgrmt.Create(Self);
+  FraAgrmt.ApplyTranslation;
   if (Length(Trim(Installer.License)) > 0) then
   begin
     Lsc := UpperCase(Installer.License);
@@ -129,11 +132,9 @@ begin
         Ms.Clear;
       end;
   end;
-  FraAgrmt.TextAnswer.Caption :=
-    Format('If you accept the terms of the agreement, click I Agree to conti' +
-    'nue. You must accept the agreement to install %s.',
-    [Installer.Name]);
+  FraAgrmt.TextAnswer.Caption := Format(STR_FRM_AGRMT[1], [Installer.Name]);
   FraDesc := TFraDesc.Create(Self);
+  FraDesc.ApplyTranslation;
   StepCtrl[I] := 3;
   Inc(I);
   FraDesc.Init;
@@ -141,6 +142,7 @@ begin
   StepCtrl[I] := 4;
   Inc(I);
   FraFnsh := TFraFnsh.Create(Self);
+  FraFnsh.ApplyTranslation;
   FraFnsh.ChbShow.Checked := Installer.ShowPkgManager;
   Prompt := Installer.AbortAlert;
   StepCtrl[I] := 5;
@@ -185,21 +187,21 @@ begin
     begin
       SetFrameParent(FraReadMe, FraSteps.PanelStep);
       SetFrameParent(FraSteps, PanelFra);
-      BtnNext.Caption := 'Next >';
+      BtnNext.Caption := STR_FRM_WIZARD[3];
       BtnBack.Show;
     end;
     2: //*********** Licence Agreement *************//
     begin
       SetFrameParent(FraAgrmt, FraSteps.PanelStep);
       SetFrameParent(FraSteps, PanelFra);
-      BtnNext.Caption := 'I &Agree';
+      BtnNext.Caption := STR_FRM_WIZARD[5];
       BtnBack.Show;
     end;
     3: //*********** Description *************//
     begin
       SetFrameParent(FraDesc, FraSteps.PanelStep);
       SetFrameParent(FraSteps, PanelFra);
-      BtnNext.Caption := 'Install';
+      BtnNext.Caption := STR_FRM_WIZARD[6];
       BtnBack.Show;
     end;
     4: //*********** Progress *************//
@@ -208,7 +210,7 @@ begin
       SetFrameParent(FraPrgs, FraSteps.PanelStep);
       EnableMenuItem(GetSystemMenu(Handle, False),
         SC_CLOSE, MF_DISABLED);
-      BtnNext.Caption := 'Next >';
+      BtnNext.Caption := STR_FRM_WIZARD[3];
       BtnBack.Show;
       BtnBack.Enabled := False;
       BtnNext.Enabled := False;
@@ -220,7 +222,7 @@ begin
       SetFrameParent(FraFnsh, PanelFra);
       BtnNext.Enabled := True;
       BtnNext.SetFocus;
-      BtnNext.Caption := 'Finish';
+      BtnNext.Caption := STR_FRM_WIZARD[7];
       BtnBack.Show;
       if FindWindow('TFrmPkgMan', nil) <> 0 then
         FraFnsh.ChbShow.Checked := False;
@@ -230,9 +232,8 @@ begin
       Done := True;
       if Installer.Reboot then
       begin
-        I := MessageBox(Handle, 'Want to restart the system?',
-               'Falcon C++ Installation Wizard',
-               MB_ICONWARNING+MB_YESNOCANCEL+MB_DEFBUTTON2);
+        I := MessageBox(Handle, PChar(STR_FRM_WIZARD[8]), PChar(STR_FRM_WIZARD[9]),
+          MB_ICONWARNING+MB_YESNOCANCEL+MB_DEFBUTTON2);
         if I = IDYES then
           MyExitWindows(EWX_REBOOT)
         else if FraFnsh.ChbShow.Checked then
@@ -257,18 +258,18 @@ begin
     0: //*********** Welcome *************//
     begin
       SetFrameParent(FraWelc, PanelFra);
-      BtnNext.Caption := 'Next >';
+      BtnNext.Caption := STR_FRM_WIZARD[3];
       BtnBack.Hide;
     end;
     1: //*********** README *************//
     begin
       SetFrameParent(FraReadMe, FraSteps.PanelStep);
-      BtnNext.Caption := 'Next >';
+      BtnNext.Caption := STR_FRM_WIZARD[3];
     end;
     2: //*********** Agreement *************//
     begin
       SetFrameParent(FraAgrmt, FraSteps.PanelStep);
-      BtnNext.Caption := 'I &Agree';
+      BtnNext.Caption := STR_FRM_WIZARD[5];
     end;
   end;
 end;
@@ -279,9 +280,8 @@ var
 begin
   if Prompt then
   begin
-    Res := MessageBox(Handle, Pchar(
-      Format('Are you sure you want to quit %s Installation?', [Installer.Name])),
-             PChar(Caption), MB_ICONEXCLAMATION + MB_YESNO);
+    Res := MessageBox(Handle, Pchar(Format(STR_FRM_WIZARD[10], [Installer.Name])),
+      PChar(Caption), MB_ICONEXCLAMATION + MB_YESNO);
     if (Res = mrNo) then Action := caNone;
   end;
   if not (Action = caNone) and not Done then
@@ -314,6 +314,17 @@ begin
 		end;
 	end;
 	Result := ExitWindowsEx(RebootParam, 0);
+end;
+
+procedure TFrmWizard.CreateParams(var Params: TCreateParams);
+begin
+  inherited;
+  if ParentWindow <> 0 then
+  begin
+    Params.Style := Params.Style and not WS_CHILD;
+    if BorderStyle = bsNone then
+      Params.Style := Params.Style or WS_POPUP;
+  end;
 end;
 
 end.

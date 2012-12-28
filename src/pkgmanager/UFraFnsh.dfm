@@ -63,7 +63,7 @@ object FraFnsh: TFraFnsh
     object ChbShow: TCheckBox
       Left = 16
       Top = 160
-      Width = 145
+      Width = 185
       Height = 17
       Caption = 'Show Package Manager'
       TabOrder = 0

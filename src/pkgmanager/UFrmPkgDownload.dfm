@@ -122,7 +122,7 @@ object FrmPkgDownload: TFrmPkgDownload
       OnClick = CheckBox1Click
     end
     object CheckBox2: TCheckBox
-      Left = 155
+      Left = 179
       Top = 302
       Width = 97
       Height = 17
@@ -133,9 +133,9 @@ object FrmPkgDownload: TFrmPkgDownload
       OnClick = CheckBox1Click
     end
     object Button1: TButton
-      Left = 296
+      Left = 328
       Top = 304
-      Width = 209
+      Width = 177
       Height = 25
       Caption = 'Install packages...'
       Enabled = False
@@ -143,9 +143,9 @@ object FrmPkgDownload: TFrmPkgDownload
       OnClick = Button1Click
     end
     object Button2: TButton
-      Left = 296
+      Left = 328
       Top = 334
-      Width = 209
+      Width = 177
       Height = 25
       Caption = 'Delete packages...'
       Enabled = False

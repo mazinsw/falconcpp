@@ -19,6 +19,7 @@ type
     { Private declarations }
   public
     { Public declarations }
+    procedure ApplyTranslation;
   end;
 
 var
@@ -26,6 +27,16 @@ var
   
 implementation
 
+uses ULanguages;
+
 {$R *.dfm}
+
+{ TFraWelc }
+
+procedure TFraWelc.ApplyTranslation;
+begin
+  TextRecom.Caption := STR_FRM_WELCOME[3];
+  TextGuide.Caption := STR_FRM_WELCOME[4];
+end;
 
 end.

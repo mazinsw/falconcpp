@@ -3,11 +3,10 @@ unit UInstaller;
 interface
 
 uses
-  Windows, Classes, Forms, BZip2, LibTar, CommCtrl, Consts, ImgList, Controls,
-  IniFiles, Dialogs, ShellAPI, CompressUtils, Messages;
+  Windows, Classes, Forms, BZip2, LibTar, Consts,
+  IniFiles, Dialogs, CompressUtils, Messages, PkgUtils;
 
 const
-  CSIDL_PROGRAM_FILES = $0026;
   WM_RELOADFTM = WM_USER + $1008;
   WM_RELOADPKG  = WM_USER + $0112;
   WM_REPARSEFILES = WM_RELOADFTM + 1;
@@ -30,6 +29,7 @@ type
     FName: String;
     FVersion: String;
     FWebSiteCaption: String;
+    FParentWindow: HWND;
     FWebSite: String;
     FDescription: String;
     FDependencies: String;
@@ -62,7 +62,7 @@ type
     FRootFolder: String;
     FIniFile: String;
     FPkgSize: Int64;
-    FHandle: THandle;
+    //FHandle: THandle;
   public
     constructor Create;
     destructor Destroy; override;
@@ -100,24 +100,20 @@ type
     property ShortCuts: TShortCuts read FShortCuts;
     property PkgSize: Int64 read FPkgSize write FPkgSize;
     property TarFile: String read FTarFile write FTarFile;
-    property Handle: THandle read FHandle write FHandle;
+    property ParentWindow: HWND read FParentWindow write FParentWindow;
   end;
 
-procedure Execute(S: String);
-function GetFalconDir: String;
-function FindFiles(Search: String; Finded:TStrings): Boolean;
-procedure ConvertTo32BitImageList(const ImageList: TImageList);
-function LoadPackageFile(FileName: String; Silent: Boolean = False;
+function LoadPackageFile(ParentWindow: HWND; FileName: String; Silent: Boolean = False;
   Reparse: Boolean = True): Boolean;
-function GetSpecialFolder(ID: Integer): String;
 
 implementation
 
-uses UFrmLoad, SysUtils, ShlObj, UFrmWizard;
+uses UFrmLoad, SysUtils, UFrmWizard, ShlObj, Controls, ULanguages;
 
-function LoadPackageFile(FileName: String; Silent, Reparse: Boolean): Boolean;
+function LoadPackageFile(ParentWindow: HWND; FileName: String; Silent, Reparse: Boolean): Boolean;
 begin
   Installer := TInstaller.Create;
+  Installer.ParentWindow := ParentWindow;
   Installer.Reparse := Reparse;
   Installer.Silent := Silent;
   Result := Installer.Open(FileName);
@@ -129,125 +125,6 @@ begin
     Installer.Clear;
     Installer.Free;
   end;
-end;
-
-function FindFiles(Search: String; Finded:TStrings): Boolean;
-var
-  searchResult : TSearchRec;
-begin
-  Result := false;
-  if FindFirst(Search, faAnyFile, searchResult) = 0 then
-  begin
-    Result := True;
-    repeat
-        Finded.add(searchResult.Name);
-    until FindNext(searchResult) <> 0;
-    FindClose(searchResult);
-  end;
-end;
-
-function GetUserTemp: String;
-var
-  Buf: PChar;
-begin
-  Buf := StrAlloc(MAX_PATH);
-  GetTempPath(MAX_PATH, Buf);
-  Result := StrPas(Buf);
-  StrDispose(Buf);
-end;
-
-procedure ConvertTo32BitImageList(const ImageList: TImageList);
-//CommCtrl, Classes, Consts;
-const
-  Mask: array[Boolean] of Longint = (0, ILC_MASK);
-var
-  TemporyImageList: TImageList;
-begin
-  if Assigned(ImageList) then
-  begin
-    TemporyImageList := TImageList.Create(nil);
-    try
-      TemporyImageList.Assign(ImageList);
-      with ImageList do
-      begin
-        ImageList.Handle := ImageList_Create(Width, Height,
-          ILC_COLOR32 or Mask[Masked], 0, AllocBy);
-        if not ImageList.HandleAllocated then
-          raise EInvalidOperation.Create(SInvalidImageList);
-      end;
-      ImageList.AddImages(TemporyImageList);
-    finally
-      TemporyImageList.Free;
-    end;
-  end;
-end;
-
-function diretorioVazio(diretorio: string): Boolean;
-var
-  search_rec: TSearchRec;
-  i: Integer;
-begin
-  Result := False;
-  FindFirst(IncludeTrailingPathDelimiter(diretorio) + '*', faAnyFile, search_rec);
-  for i := 1 to 2 do
-    if (search_rec.Name = '.') or (search_rec.Name = '..') then
-      Result := FindNext(search_rec) <> 0;
-  FindClose(search_rec);
-end;
-
-function GetSpecialFolder(ID: Integer): String;
-var
-  Buf: PChar;
-begin
-  Buf := StrAlloc(MAX_PATH);
-  SHGetSpecialFolderPath(HInstance, Buf, ID, False);
-  Result := StrPas(Buf);
-  StrDispose(Buf);
-end;
-
-procedure Execute(S: String);
-var
-  ShellInfo: TShellExecuteInfo;
-begin
-  if Trim(S) <> '' then
-  begin
-    FillChar(ShellInfo, SizeOf(TShellExecuteInfo), 0);
-    ShellInfo.cbSize := SizeOf(TShellExecuteInfo);
-    ShellInfo.fMask := SEE_MASK_NOCLOSEPROCESS or SEE_MASK_FLAG_NO_UI or
-                       SEE_MASK_FLAG_DDEWAIT;
-    ShellInfo.Wnd := HWND_DESKTOP;
-    ShellInfo.lpVerb := 'Open';
-    ShellInfo.lpFile := PChar(S);
-    ShellInfo.lpParameters := nil;
-    ShellInfo.lpDirectory := nil;
-    ShellInfo.nShow := SW_SHOWNORMAL;
-    ShellExecuteEx(@ShellInfo);
-  end;
-end;
-
-function ConvertSlashes(Path: String): String;
-var
-  i: Integer;
-begin
-  Result := Path;
-  for i := 1 to Length(Result) do
-      if Result[i] = '/' then
-          Result[i] := '\';
-end;
-
-function GetFalconDir: String;
-begin
-  Result := ExtractFilePath(Application.ExeName);
-  if not FileExists(Result + 'Falcon.exe') then
-    Result := GetSpecialFolder(CSIDL_PROGRAM_FILES) + '\Falcon\';
-end;
-
-function GetSysDir: String;
-var
-  buffer: array[0..MAX_PATH - 1] of Char;
-begin
-  GetSystemDirectory(buffer, MAX_PATH);
-  Result := StrPas(buffer);
 end;
 
 function TInstaller.Clear: Boolean;
@@ -336,7 +213,7 @@ begin
   try
     Source := TFileStream.Create(ASource, fmOpenRead + fmShareDenyWrite);
   except
-    Error := 'Error can' + #39 +'t open file "' + ASource +'".';
+    Error := Format(STR_FRM_WIZARD[11], [ASource]);
     Exit;
   end;
 
@@ -344,7 +221,7 @@ begin
     Dest := TFileStream.Create(ADest, fmCreate);
   except
     Source.Free;
-    Error := 'Error can' + #39 +'t create file "' + ADest + '".';
+    Error := Format(STR_FRM_WIZARD[12], [ADest]);
     Exit;
   end;
 
@@ -367,7 +244,7 @@ begin
       Decomp.Free;
     Dest.Free;
     Source.Free;
-    Error := 'Error can' + #39 +'t decompress file "' + ASource + '".';
+    Error := Format(STR_FRM_WIZARD[13], [ASource]);
     if FileExists(ADest) then
       DeleteFile(ADest);
     Exit;
@@ -386,7 +263,7 @@ begin
   FShortCuts.Caption := TStringList.Create;
   FShortCuts.URL := TStringList.Create;
   FFalconDir := GetFalconDir;
-  FFinishMsg := '%s has been installed sucessfull.';
+  FFinishMsg := STR_FRM_WIZARD[14];
 end;
 
 destructor TInstaller.Destroy;
@@ -408,7 +285,7 @@ begin
   //progress form
   if not Silent then
   begin
-    FrmLoad := TFrmLoad.Create(nil);
+    FrmLoad := TFrmLoad.CreateParented(ParentWindow);
     FrmLoad.Show;
   end;
   I := 0;
@@ -433,7 +310,7 @@ begin
     end;
     Clear;
     if not Silent then
-      MessageBox(0, PChar(Error), 'Falcon C++ Installation Wizard', MB_ICONERROR);
+      MessageBox(ParentWindow, PChar(Error), PChar(STR_FRM_WIZARD[9]), MB_ICONERROR);
     Exit;
   end;
   Ext := UpperCase(ExtractFileExt(FileName));
@@ -453,7 +330,8 @@ begin
     end;
     Clear;
     if not Silent then
-      MessageBox(0, 'Package entry not found!', 'Falcon C++ Installation Wizard', MB_ICONERROR);
+      MessageBox(ParentWindow, PChar(STR_FRM_WIZARD[15]),
+        PChar(STR_FRM_WIZARD[9]), MB_ICONERROR);
     Exit;
   end;
   
@@ -471,8 +349,8 @@ begin
   begin
     Clear;
     if not Silent then
-      MessageBox(0, PChar('Dependencies: '#13 + List.Text),
-        'Falcon C++ Installation Wizard', MB_ICONEXCLAMATION);
+      MessageBox(ParentWindow, PChar(STR_FRM_WIZARD[16] + ' '#13 + List.Text),
+        PChar(STR_FRM_WIZARD[9]), MB_ICONEXCLAMATION);
   end;
   List.Free;
 end;
@@ -748,7 +626,7 @@ begin
               begin
                 if Assigned(PrgsEvent) then
                   PrgsEvent(Self, Curr, Size, False, True,
-                    'Creating directory:', FileName, Action);
+                    STR_FRM_WIZARD[17], FileName, Action);
               end
               else
               begin
@@ -756,7 +634,7 @@ begin
                 begin
                   Action := paSkip;
                   PrgsEvent(Self, Curr, Size, False, False,
-                    'Error creating directory:', FileName, Action);
+                    STR_FRM_WIZARD[18], FileName, Action);
                   case Action of
                     paRetry:;
                     paSkip:
@@ -764,16 +642,16 @@ begin
                       dir_created := True;
                       Inc(FSkipFileCount);
                       if FSkipFileCount = 1 then
-                        FFinishMsg := '%s has been installed with errors'#10 +
-                          ' folder ''' + FileName + ''' couldn''t be created.'
+                        FFinishMsg := Format(StringReplace(STR_FRM_WIZARD[19],
+                          '\n', #10, [rfReplaceAll]), ['%s', FileName])
                       else
-                        FFinishMsg := '%s has been installed with errors'#10 +
-                          IntToStr(FSkipFileCount) + ' couldn''t be installed.';
+                        FFinishMsg := Format(StringReplace(STR_FRM_WIZARD[20],
+                          '\n', #10, [rfReplaceAll]), ['%s', FSkipFileCount]);
                     end;
                     paAbort:
                     begin
-                      FFinishMsg := 'Installation of %s has been aborted:'#10 +
-                        'Error couldn''t create directory: ' +  FileName + '.';
+                      FFinishMsg := Format(StringReplace(STR_FRM_WIZARD[21],
+                        '\n', #10, [rfReplaceAll]), ['%s', FileName]);
                       FAborted := True;
                       Break;
                     end;
@@ -803,8 +681,8 @@ begin
               begin
                 file_created := False;
                 Action := paSkip;
-                PrgsEvent(Self, Curr, Size, False, False,
-                  'Error opening file for writing:', FileName, Action);
+                PrgsEvent(Self, Curr, Size, False, False, STR_FRM_WIZARD[22],
+                  FileName, Action);
                 case Action of
                   paRetry:;
                   paSkip:
@@ -812,17 +690,16 @@ begin
                     file_created := True;
                     Inc(FSkipFileCount);
                     if FSkipFileCount = 1 then
-                      FFinishMsg := '%s has been installed with errors'#10 +
-                        ' file ''' + FileName + ''' couldn''t be installed.'
+                      FFinishMsg := Format(StringReplace(STR_FRM_WIZARD[23],
+                          '\n', #10, [rfReplaceAll]), ['%s', FileName])
                     else
-                      FFinishMsg := '%s has been installed with errors'#10 +
-                        IntToStr(FSkipFileCount) + ' couldn''t be installed.';
+                      FFinishMsg := Format(StringReplace(STR_FRM_WIZARD[20],
+                          '\n', #10, [rfReplaceAll]), ['%s', FSkipFileCount]);
                   end;
                   paAbort:
                   begin
-                    FFinishMsg := 'Installation of %s has been aborted:'#10 +
-                        'Error couldn''t open file ''' +  FileName +
-                        ''' for writing.';
+                    FFinishMsg := Format(StringReplace(STR_FRM_WIZARD[24],
+                          '\n', #10, [rfReplaceAll]), ['%s', FileName]);
                     FAborted := True;
                     Break;
                   end;
@@ -842,19 +719,19 @@ begin
   except
     Clear;
     if Assigned(PrgsEvent) then
-      PrgsEvent(Self, Curr, Size, True, False, 'Error opening temp file:',
+      PrgsEvent(Self, Curr, Size, True, False, STR_FRM_WIZARD[25],
         FTarFile, Action);
     Exit;
   end;
   if Assigned(PrgsEvent) then
-    PrgsEvent(Self, Curr, Size, False, True, 'Removing temp files...',
+    PrgsEvent(Self, Curr, Size, False, True, STR_FRM_WIZARD[26],
       FTarFile, Action);
   Clear;
   SaveEntryFile;
   if Assigned(PrgsEvent) then
     PrgsEvent(Self, Curr, Size, True, not FAborted, '', '', Action);
 
-  ConfigRoot := IncludeTrailingPathDelimiter(GetSpecialFolder(CSIDL_APPDATA))
+  ConfigRoot := IncludeTrailingPathDelimiter(GetSpecialFolderPath(CSIDL_APPDATA))
                      + 'Falcon\';
   ini := TIniFile.Create(ConfigRoot + 'Config.ini');
   PkgIni := ini.ReadInteger('Packages', 'NewInstalled', 0);

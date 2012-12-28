@@ -15,16 +15,16 @@ object FraDesc: TFraDesc
     object LblEspReq: TLabel
       Left = 24
       Top = 200
-      Width = 107
+      Width = 106
       Height = 13
-      Caption = 'Space required: 0.0KB'
+      Caption = 'Space required: 0.0kB'
     end
     object LblEspDisp: TLabel
       Left = 24
       Top = 216
-      Width = 111
+      Width = 110
       Height = 13
-      Caption = 'Space available: 0.0KB'
+      Caption = 'Space available: 0.0kB'
     end
     object Label1: TLabel
       Left = 24

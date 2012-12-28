@@ -57,7 +57,7 @@ function UninstallPackage(const PkgName: String; Parent: HWND;
 
 implementation
 
-uses SysUtils, StrMatch;
+uses SysUtils, StrMatch, PkgUtils, ULanguages;
 
 function UninstallPackage(const PkgName: String; Parent: HWND;
   Silent: Boolean = False): Boolean;
@@ -138,7 +138,7 @@ begin
     NewFilePath := ExtractFilePath(NewFilePath);
   until False;
   FFinished := True;
-  FMsg := 'Complete.';
+  FMsg := STR_FRM_UNINSTALL[3];
   Inc(FPosition);
   Synchronize(DoProgress);
 end;
@@ -249,8 +249,7 @@ begin
     PkgDepends) then
   begin
     if not Silent then
-      MessageBox(Parent, PChar('Package "' + PkgName + '" not found'), 'Falcon C++ Package Manager',
-      MB_ICONERROR);
+      MessageBox(Parent, PChar(Format(STR_FRM_UNINSTALL[4], [PkgName])), PChar(STR_FRM_PKG_MAN[1]), MB_ICONERROR);
     PkgDepends.Free;
     Exit;
   end;
@@ -258,8 +257,8 @@ begin
   if PkgDepends.Count > 0 then
   begin
     if not Silent then
-      MessageBox(Parent, PChar('Others Depends: '#10 + PkgDepends.Text),
-        'Falcon C++ Package Manager', MB_ICONWARNING);
+      MessageBox(Parent, PChar(STR_FRM_UNINSTALL[5] + ' '#10 + PkgDepends.Text),
+        PChar(STR_FRM_PKG_MAN[1]), MB_ICONWARNING);
     PkgDepends.Free;
     Exit;
   end;

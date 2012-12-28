@@ -23,6 +23,7 @@ type
     { Private declarations }
   public
     { Public declarations }
+    procedure ApplyTranslation;
   end;
 
 var
@@ -30,6 +31,17 @@ var
 
 implementation
 
+uses ULanguages;
+
 {$R *.dfm}
+
+{ TFraSteps }
+
+{ TFraSteps }
+
+procedure TFraSteps.ApplyTranslation;
+begin
+  LblWidz.Caption := STR_FRM_STEPS[1];
+end;
 
 end.

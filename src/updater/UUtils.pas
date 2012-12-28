@@ -58,7 +58,9 @@ function GetFileVersionA(FileName: String): TVersion;
 function ParseVersion(Version: String): TVersion;
 function CompareVersion(Ver1, Ver2: TVersion): Integer;
 function VersionToStr(Version: TVersion): String;
+procedure LoadLang;
 function CanUpdate(UpdateXML: String): Boolean;
+procedure RunSecureUpdater;
 function GetTempDirectory: String;
 function ForceForegroundWindow(hwnd: THandle): Boolean;
 procedure SetProgsType(PrgsBar: TProgressBar; Infinity: Boolean);
@@ -76,7 +78,7 @@ var
 
 implementation
 
-uses UFrmUpdate;
+uses UFrmUpdate, Registry, ShellAPI;
 
 function ConvertSlashes(const Path: String): String;
 var
@@ -337,6 +339,67 @@ begin
   XMLDoc.Free;
 end;
 
+procedure LoadLang;
+var
+  LangFile: String;
+  I: Integer;
+  ini: TIniFile;
+
+  function ReadStr(const Ident: Integer; const Default: String): String;
+  begin
+    Result := ini.ReadString('FALCON', IntToStr(Ident), Default);
+  end;
+
+begin
+  LangFile := GetLangFileName;
+  if FileExists(LangFile) then
+  begin
+    ini := TIniFile.Create(LangFile);
+    for I := 1 to 25 do//4001 - 4021
+      STR_FRM_UPD[I] := ReadStr(I + 4000, CONST_STR_FRM_UPD[I]);
+    ini.Free;
+  end
+  else
+    for I := 1 to MAX_STR_FRM_UPD do//4001 - 4020
+      STR_FRM_UPD[I] := CONST_STR_FRM_UPD[I];//default english
+end;
+
+procedure RunSecureUpdater;
+var
+  I: Integer;
+  ExeRunUpdater, params, RunTempDir: string;
+  Handle, UpdaterHandle: HWND;
+begin
+  RunTempDir := GetTempDirectory + '~falcon_updater.tmp\';
+  ExeRunUpdater := RunTempDir + ExtractFileName(Application.ExeName);
+  if FileExists(ExeRunUpdater) then
+    DeleteFile(ExeRunUpdater);
+  if not DirectoryExists(RunTempDir) and not CreateDir(RunTempDir) then
+    Exit;
+  if not CopyFile(PChar(Application.ExeName), PChar(ExeRunUpdater), FALSE) then
+  begin
+    UpdaterHandle := FindWindow(PChar('TFrmUpdate'), nil);
+    if UpdaterHandle <> 0 then
+    begin
+      Handle := GetWindowLong(UpdaterHandle, GWL_HWNDPARENT);
+      ForceForegroundWindow(UpdaterHandle);
+      if IsIconic(Handle) then
+        ShowWindow(Handle, SW_RESTORE);
+      Exit;
+    end;
+  end;
+  params := '';
+  for I := 1 to ParamCount - 1 do
+  begin
+    if Pos(' ', ParamStr(I)) > 0 then
+      params := params + ' "' + ParamStr(I) + '"'
+    else
+      params := params + ' ' + ParamStr(I);
+  end;
+  ShellExecute(0, 'open', PChar(ExeRunUpdater), PChar(params),
+      PChar(ExtractFilePath(RunTempDir)), SW_SHOW);
+end;
+
 function GetTempDirectory: String;
 var
   TempDir: array[0..255] of Char;
@@ -441,7 +504,30 @@ begin
 end;
 
 function GetFalconDir: String;
+var
+  Reg: TRegistry;
 begin
+  Result := '';
+  Reg := TRegistry.Create(KEY_READ);
+  Reg.RootKey := HKEY_LOCAL_MACHINE;
+  if Reg.KeyExists('Software\Falcon') then
+  begin
+    Reg.OpenKeyReadOnly('Software\Falcon');
+    if Reg.ValueExists('') then
+      Result := Reg.ReadString('');
+    if Result <> '' then
+      Result := IncludeTrailingPathDelimiter(Result);
+  end
+  else if Reg.KeyExists('Software\Microsoft\Windows\CurrentVersion\Uninstall\Falcon') then
+  begin
+    Reg.OpenKeyReadOnly('Software\Microsoft\Windows\CurrentVersion\Uninstall\Falcon');
+    if Reg.ValueExists('UninstallString') then
+      Result := Reg.ReadString('UninstallString');
+    Result := ExtractFilePath(Result);
+  end;
+  Reg.Free;
+  if DirectoryExists(Result) then
+    Exit;
   Result := ExtractFilePath(Application.ExeName);
   if not FileExists(Result + 'Falcon.exe') then
     Result := GetUserFolderPath(CSIDL_PROGRAM_FILES) + 'Falcon\';

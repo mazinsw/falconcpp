@@ -60,28 +60,8 @@ uses UFraGetVer, UFraUpdate, CompressUtils, ExecWait;
 
 //update user selected language in Falcon C++
 procedure TFrmUpdate.UpdateLangNow;
-var
-  LangFile: String;
-  I: Integer;
-  ini: TIniFile;
-
-  function ReadStr(const Ident: Integer; const Default: String): String;
-  begin
-    Result := ini.ReadString('FALCON', IntToStr(Ident), Default);
-  end;
-
 begin
-  LangFile := GetLangFileName;
-  if FileExists(LangFile) then
-  begin
-    ini := TIniFile.Create(LangFile);
-    for I := 1 to 25 do//4001 - 4021
-      STR_FRM_UPD[I] := ReadStr(I + 4000, CONST_STR_FRM_UPD[I]);
-    ini.Free;
-  end
-  else
-    for I := 1 to MAX_STR_FRM_UPD do//4001 - 4020
-      STR_FRM_UPD[I] := CONST_STR_FRM_UPD[I];//default english
+  LoadLang;
   Caption := STR_FRM_UPD[1];
   Application.Title := STR_FRM_UPD[1];
   LblAction.Caption := STR_FRM_UPD[2];
@@ -201,6 +181,8 @@ procedure TFrmUpdate.ExecutorInstallFinish(Sender: TObject);
 begin
   BtnCancel.Caption := STR_FRM_UPD[23];
   FraUpdate.LblDesc.Caption := STR_FRM_UPD[7];
+  FraUpdate.LblChanges.Hide;
+  FraUpdate.MemoChanges.Hide;
   LblAction.Caption := STR_FRM_UPD[8];
   Stage := uwOk;
   DeleteFile(GetTempDirectory + FileName);
@@ -304,6 +286,11 @@ end;
 procedure TFrmUpdate.FileDownloadProgress(Sender: TObject; ReceivedBytes,
   CalculatedFileSize: Cardinal);
 begin
+  if FraUpdate.PrgsUpdate.Tag = 1 then
+  begin
+    FraUpdate.PrgsUpdate.Tag := 0;
+    SetProgsType(FraUpdate.PrgsUpdate, False);
+  end;
   FraUpdate.PrgsUpdate.Max := CalculatedFileSize;
   FraUpdate.PrgsUpdate.Position := ReceivedBytes;
   FraUpdate.LblDesc.Caption := FormatFloat(STR_FRM_UPD[11],
@@ -313,11 +300,13 @@ end;
 procedure TFrmUpdate.FileDownloadStart(Sender: TObject);
 begin
   FraUpdate.PrgsUpdate.Show;
+  FraUpdate.PrgsUpdate.Tag := 1;
+  SetProgsType(FraUpdate.PrgsUpdate, True);//undefined time
   BtnUpdate.Hide;
   BtnCancel.Caption := STR_FRM_UPD[24];
   FraUpdate.LblDesc.Caption := STR_FRM_UPD[12];
   LblAction.Caption := STR_FRM_UPD[13];
-  WriteIniFile('UPDATE', 'LastTry', VersionToStr(FraUpdate.SiteVersion));
+  WriteIniFile('Update', 'LastTry', VersionToStr(FraUpdate.SiteVersion));
 end;
 
 procedure TFrmUpdate.FormShow(Sender: TObject);

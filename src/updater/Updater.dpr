@@ -17,8 +17,16 @@ uses
 
 {$R resources.RES}
 
+var
+  UpdaterName: string;
 begin
   AppRoot := GetFalconDir;
+  UpdaterName := ExtractFileName(Application.ExeName);
+  if CompareText(AppRoot + UpdaterName, Application.ExeName) = 0 then
+  begin
+    RunSecureUpdater;
+    Exit;
+  end;
   ConfigPath := GetUserFolderPath(CSIDL_APPDATA) + 'Falcon\';
   if FileExists(AppRoot + 'Falcon.exe') then
     FalconVersion := GetFileVersionA(AppRoot + 'Falcon.exe')

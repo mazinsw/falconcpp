@@ -796,10 +796,10 @@ end;
 function TTokenFiles.ParseRecursiveAux(const FileName: string;
   FilesParsed: Integer; fProgressEvent: TProgressEvent): Integer;
 var
-  I: Integer;
+  I, J: Integer;
   TokenFile: TTokenFile;
   Text: TStringList;
-  PathOnly, NewFileName: string;
+  PathOnly, IncludeFileName, IncludeName: string;
 begin
   Result := FilesParsed;
   if not FileExists(FileName) then
@@ -826,12 +826,34 @@ begin
   PathOnly := ExtractFilePath(FileName);
   for I := 0 to TokenFile.Includes.Count - 1 do
   begin
-    NewFileName := PathOnly + ConvertSlashes(TokenFile.Includes.Items[I].Name);
-    if ItemOfByFileName(NewFileName) <> nil then
+    IncludeName := ConvertSlashes(TokenFile.Includes.Items[I].Name);
+    if TokenFile.Includes.Items[I].Flag = 'S' then
+    begin
+      for J := 0 to PathList.Count - 1 do
+      begin
+        IncludeFileName := ExpandFileName(PathList.Strings[J] + IncludeName);
+        if FileExists(IncludeFileName) then
+          Break;
+      end;
+    end
+    else
+    begin
+      IncludeFileName := ExpandFileName(PathOnly + IncludeName);
+      if not FileExists(IncludeFileName) then
+      begin
+        for J := 0 to PathList.Count - 1 do
+        begin
+          IncludeFileName := ExpandFileName(PathList.Strings[J] + IncludeName);
+          if FileExists(IncludeFileName) then
+            Break;
+        end;
+      end;
+    end;
+    if ItemOfByFileName(IncludeFileName) <> nil then
       Continue;
     if fCancel then
       Exit;
-    Result := ParseRecursiveAux(NewFileName, Result, fProgressEvent);
+    Result := ParseRecursiveAux(IncludeFileName, Result, fProgressEvent);
   end;
 end;
 
@@ -858,9 +880,9 @@ end;
 function TTokenFiles.LoadRecursiveAux(const FileName, BaseDir, FromBaseDir,
   Extension: string; FilesParsed: Integer; fProgressEvent: TProgressEvent): Integer;
 var
-  I: Integer;
+  I, J: Integer;
   TokenFile: TTokenFile;
-  FromName, DirFrom, DirBase, NewLoadName: string;
+  FromName, DirFrom, DirBase, IncludeName, IncludeFileName: string;
 begin
   Result := FilesParsed;
   if ItemOfByFileName(FileName) <> nil then
@@ -892,12 +914,34 @@ begin
   DirBase := ExtractFilePath(FileName);
   for I := 0 to TokenFile.Includes.Count - 1 do
   begin
-    NewLoadName := DirBase + ConvertSlashes(TokenFile.Includes.Items[I].Name);
-    if ItemOfByFileName(NewLoadName) <> nil then
+    IncludeName := ConvertSlashes(TokenFile.Includes.Items[I].Name);
+    if TokenFile.Includes.Items[I].Flag = 'S' then
+    begin
+      for J := 0 to PathList.Count - 1 do
+      begin
+        IncludeFileName := PathList.Strings[J] + IncludeName;
+        if FileExists(IncludeFileName) then
+          Break;
+      end;
+    end
+    else
+    begin
+      IncludeFileName := DirBase + IncludeName;
+      if not FileExists(IncludeFileName) then
+      begin
+        for J := 0 to PathList.Count - 1 do
+        begin
+          IncludeFileName := PathList.Strings[J] + IncludeName;
+          if FileExists(IncludeFileName) then
+            Break;
+        end;
+      end;
+    end;
+    if ItemOfByFileName(IncludeFileName) <> nil then
       Continue;
     if fCancel then
       Exit;
-    Result := LoadRecursiveAux(NewLoadName, BaseDir, FromBaseDir, Extension,
+    Result := LoadRecursiveAux(IncludeFileName, BaseDir, FromBaseDir, Extension,
       Result, fProgressEvent);
     if fCancel then
       Exit;
@@ -1384,27 +1428,37 @@ function TTokenFiles.InvalidOrFinded(var FindedTokenFile: TTokenFile;
   FindedList: TRBTree): Boolean;
 var
   FindName: string;
+  I: Integer;
 begin
   //file environment #include <stdio.h>
   if IncludeToken.Flag = 'S' then
   begin
-    { TODO -oMazin -c : For each all include path 24/08/2012 22:33:01 }
-    FindName := ExpandFileName(PathList.Strings[0] +
-      ConvertSlashes(IncludeToken.Name));
-    FindedTokenFile := ItemOfByFileName(FindName);
+    for I := 0 to PathList.Count - 1 do
+    begin
+      FindName := ExpandFileName(PathList.Strings[I] +
+        ConvertSlashes(IncludeToken.Name));
+      FindedTokenFile := ItemOfByFileName(FindName);
+      if FindedTokenFile <> nil then
+        Break;
+    end;
   end
   else
   begin
-  //file environment #include "main.h"
+    //file environment #include "main.h"
     FindName := ExpandFileName(FilePath +
       ConvertSlashes(IncludeToken.Name));
     FindedTokenFile := ItemOfByFileName(FindName);
     //if not found try file environment #include <stdio.h>
     if FindedTokenFile = nil then
     begin
-      { TODO -oMazin -c : for each all include path 24/08/2012 22:33:40 }
-      FindName := ExpandFileName(PathList.Strings[0] + ConvertSlashes(IncludeToken.Name));
-      FindedTokenFile := ItemOfByFileName(FindName);
+      for I := 0 to PathList.Count - 1 do
+      begin
+        FindName := ExpandFileName(PathList.Strings[I] +
+          ConvertSlashes(IncludeToken.Name));
+        FindedTokenFile := ItemOfByFileName(FindName);
+        if FindedTokenFile <> nil then
+          Break;
+      end;
     end;
   end;
   //file not parsed or already searched

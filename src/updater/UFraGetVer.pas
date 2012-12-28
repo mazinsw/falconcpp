@@ -8,6 +8,7 @@ uses
 
 type
   TFraGetVer = class(TFrame)
+    Panel1: TPanel;
     LblDesc: TLabel;
     PrgsUpdate: TProgressBar;
   private

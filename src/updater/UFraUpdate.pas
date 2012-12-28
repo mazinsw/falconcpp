@@ -4,14 +4,15 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Controls, Forms, ComCtrls, StdCtrls,
-  XMLDoc, XMLIntf, UUtils;
+  XMLDoc, XMLIntf, UUtils, ExtCtrls;
 
 type
   TFraUpdate = class(TFrame)
+    Panel1: TPanel;
     LblDesc: TLabel;
+    LblChanges: TLabel;
     PrgsUpdate: TProgressBar;
     MemoChanges: TMemo;
-    LblChanges: TLabel;
     function Load(UpdateXML: String): Boolean;
   private
     { Private declarations }
@@ -89,7 +90,8 @@ begin
       FrmUpdate.FileDownload.URL := NodeFiles.Attributes['URL'];
       Temp := FrmUpdate.FileDownload.URL;
       Temp := ExtractFileName(ConvertSlashes(Temp));
-      FrmUpdate.FileDownload.FileName := GetTempDirectory + Temp;
+      FrmUpdate.FileDownload.FileName := GetTempDirectory + Temp +
+        FrmUpdate.FileDownload.PartExt;
       Desc := TStringList.Create;
       Desc.Text := NodeFiles.Text;
       for X:= 0 to Pred(Desc.Count) do

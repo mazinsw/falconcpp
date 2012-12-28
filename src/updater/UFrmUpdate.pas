@@ -4,7 +4,8 @@ interface
 
 uses
   Windows, SysUtils, Classes, Controls, Forms, StdCtrls,
-  ExtCtrls, FileDownload, UUtils, IniFiles, ThreadFileDownload;
+  ExtCtrls, FileDownload, UUtils, IniFiles, ThreadFileDownload,
+  VistaAltFixUnit, Messages;
 
 type
 
@@ -20,6 +21,7 @@ type
     BtnUpdate: TButton;
     FileDownload: TFileDownload;
     PnlFra: TPanel;
+    VistaAltFix1: TVistaAltFix;
     procedure UpdateLangNow;
     procedure FormCreate(Sender: TObject);
     procedure StartUpdate;
@@ -73,17 +75,13 @@ begin
   if FileExists(LangFile) then
   begin
     ini := TIniFile.Create(LangFile);
-    for I := 1 to 21 do//4001 - 4020
+    for I := 1 to 25 do//4001 - 4021
       STR_FRM_UPD[I] := ReadStr(I + 4000, CONST_STR_FRM_UPD[I]);
-    STR_FRM_UPD[22] := ReadStr(1291, CONST_STR_FRM_UPD[22]);
-    STR_FRM_UPD[23] := ReadStr(1541, CONST_STR_FRM_UPD[23]);
-    STR_FRM_UPD[24] := ReadStr(1542, CONST_STR_FRM_UPD[24]);
-    STR_FRM_UPD[25] := ReadStr(4022, CONST_STR_FRM_UPD[25]);
+    ini.Free;
   end
   else
     for I := 1 to MAX_STR_FRM_UPD do//4001 - 4020
       STR_FRM_UPD[I] := CONST_STR_FRM_UPD[I];//default english
-      
   Caption := STR_FRM_UPD[1];
   Application.Title := STR_FRM_UPD[1];
   LblAction.Caption := STR_FRM_UPD[2];
@@ -97,7 +95,7 @@ begin
   FraGetVer := TFraGetVer.Create(Self);
   FraGetVer.Parent := PnlFra;
   FraUpdate := TFraUpdate.Create(Self);
-  FraGetVer.PrgsUpdate.DoubleBuffered := True;//resolve flik
+  //FraGetVer.PrgsUpdate.DoubleBuffered := True;//resolve flik
   UpdateLangNow;
   Install := (ParamCount = 1);//has URL as parameter
   if Install then
@@ -145,8 +143,10 @@ end;
 procedure TFrmUpdate.BtnCancelClick(Sender: TObject);
 begin
   Stage := uwCancel;
-  UpdateDownload.Stop;
-  FileDownload.Stop;
+  if UpdateDownload.IsBusy then
+    UpdateDownload.Stop;
+  if FileDownload.IsBusy then
+    FileDownload.Stop;
   if not UpdateDownload.IsBusy and not FileDownload.IsBusy then
     Close;
 end;
@@ -210,7 +210,7 @@ procedure TFrmUpdate.BtnUpdateClick(Sender: TObject);
 var
   temp: String;
 begin
-  temp := ReadIniFile('UPDATE', 'LastTry', '0.0.0.0');
+  temp := ReadIniFile('Update', 'LastTry', '0.0.0.0');
   case CompareVersion(FraUpdate.SiteVersion, ParseVersion(temp)) of
     -1, 1://site diff - restart download
     begin
@@ -227,7 +227,7 @@ procedure TFrmUpdate.FileDownloadFinish(Sender: TObject;
   State: TDownloadState; Canceled: Boolean);
 var
   Extracted: Boolean;
-  ExtractedFileName: String;
+  ExtractedFileName, DownloadedFileName: String;
   I: Integer;
 begin
   if Stage = uwCancel then
@@ -236,14 +236,18 @@ begin
     Exit;
   end;
   FraUpdate.PrgsUpdate.Hide;
-  if not Canceled then
+  if not Canceled and (State <> dsError) then
   begin
-    if FileExists(FileDownload.FileName) then
+    DownloadedFileName := FileDownload.URL;
+    DownloadedFileName := ExtractFileName(ConvertSlashes(DownloadedFileName));
+    DownloadedFileName := GetTempDirectory + DownloadedFileName;
+    if (State = dsDownloaded) and FileExists(FileDownload.FileName) and FileExists(DownloadedFileName) and (FileDownload.PartExt <> '') then
+      DeleteFile(DownloadedFileName); // delete old version
+    if (State = dsAlreadyExist) or ((State = dsDownloaded) and (not FileExists(FileDownload.FileName) or RenameFile(FileDownload.FileName, DownloadedFileName))) then
     begin
       //extract
       ExtractedFileName := GetTempDirectory + FileName;
-      Extracted := ExtractFile(FileDownload.FileName, ExtractedFileName);
-
+      Extracted := ExtractFile(DownloadedFileName, ExtractedFileName);
       if Extracted then
       begin
         FalconVersion := FraUpdate.SiteVersion;
@@ -253,18 +257,24 @@ begin
         while AppOpened('TFrmFalconMain') do
         begin
           I := MessageBox(Handle, PChar(STR_FRM_UPD[4]),
-            PChar(STR_FRM_UPD[1]), MB_RETRYCANCEL+MB_ICONWARNING);
-          if I = IDCANCEL then
+            PChar(STR_FRM_UPD[1]), MB_YESNOCANCEL+MB_ICONWARNING);
+          if I <> IDYES then
           begin
             FraUpdate.LblDesc.Caption := STR_FRM_UPD[5];
             LblAction.Caption := STR_FRM_UPD[5];
             BtnCancel.Caption := STR_FRM_UPD[22];
             Exit;
-            //Close;
+          end
+          else
+          begin
+            ForceForegroundWindow(FindWindow(PChar('TFrmFalconMain'), nil));
+            SendMessage(FindWindow(PChar('TFrmFalconMain'), nil), WM_CLOSE, 0, 0);
+            Sleep(500);
+            Application.ProcessMessages;
           end;
         end;
         //install
-        DeleteFile(FileDownload.FileName);
+        DeleteFile(DownloadedFileName);
         Executor.ExecuteAndWatch(ExtractedFileName, '/S',
           ExtractFilePath(ExtractedFileName), False, INFINITE,
           ExecutorInstallFinish);

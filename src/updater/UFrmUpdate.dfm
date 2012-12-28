@@ -104,10 +104,15 @@ object FrmUpdate: TFrmUpdate
     Top = 30
   end
   object FileDownload: TFileDownload
+    PartExt = '.part'
     OnStart = FileDownloadStart
     OnProgress = FileDownloadProgress
     OnFinish = FileDownloadFinish
     Left = 8
     Top = 62
+  end
+  object VistaAltFix1: TVistaAltFix
+    Left = 8
+    Top = 94
   end
 end

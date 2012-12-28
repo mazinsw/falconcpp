@@ -20,7 +20,7 @@ const
     'Application Update',
     'Looking for updates',
     '&Update',
-    'Falcon C++ is open, close it!',
+    'Falcon C++ is open, do you want to close it?',
     'Update failed',
     'Conection problem.',
     'Upgrade completed successfully.',
@@ -60,6 +60,7 @@ function CompareVersion(Ver1, Ver2: TVersion): Integer;
 function VersionToStr(Version: TVersion): String;
 function CanUpdate(UpdateXML: String): Boolean;
 function GetTempDirectory: String;
+function ForceForegroundWindow(hwnd: THandle): Boolean;
 procedure SetProgsType(PrgsBar: TProgressBar; Infinity: Boolean);
 function GetUserFolderPath(nFolder: Integer = CSIDL_PERSONAL): String;
 function GetLangFileName: String;
@@ -344,20 +345,86 @@ begin
   Result := IncludeTrailingPathDelimiter(StrPas(TempDir));
 end;
 
+function ForceForegroundWindow(hwnd: THandle): Boolean;
+const
+  SPI_GETFOREGROUNDLOCKTIMEOUT = $2000;
+  SPI_SETFOREGROUNDLOCKTIMEOUT = $2001;
+var
+  ForegroundThreadID: DWORD;
+  ThisThreadID: DWORD;
+  timeout: DWORD;
+begin
+  if IsIconic(hwnd) then
+    ShowWindow(hwnd, SW_RESTORE);
+
+  if GetForegroundWindow = hwnd then
+    Result := True
+  else
+  begin
+    // Windows 98/2000 doesn't want to foreground a window when some other
+    // window has keyboard focus
+
+    if ((Win32Platform = VER_PLATFORM_WIN32_NT) and (Win32MajorVersion > 4)) or
+      ((Win32Platform = VER_PLATFORM_WIN32_WINDOWS) and
+      ((Win32MajorVersion > 4) or ((Win32MajorVersion = 4) and
+      (Win32MinorVersion > 0)))) then
+    begin
+      // Code from Karl E. Peterson, www.mvps.org/vb/sample.htm
+      // Converted to Delphi by Ray Lischner
+      // Published in The Delphi Magazine 55, page 16
+
+      Result := False;
+      ForegroundThreadID := GetWindowThreadProcessID(GetForegroundWindow, nil);
+      ThisThreadID := GetWindowThreadPRocessId(hwnd, nil);
+      if AttachThreadInput(ThisThreadID, ForegroundThreadID, True) then
+      begin
+        BringWindowToTop(hwnd); // IE 5.5 related hack
+        SetForegroundWindow(hwnd);
+        AttachThreadInput(ThisThreadID, ForegroundThreadID, False);
+        Result := (GetForegroundWindow = hwnd);
+      end;
+      if not Result then
+      begin
+        // Code by Daniel P. Stasinski
+        SystemParametersInfo(SPI_GETFOREGROUNDLOCKTIMEOUT, 0, @timeout, 0);
+        SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, TObject(0),
+          SPIF_SENDCHANGE);
+        BringWindowToTop(hwnd); // IE 5.5 related hack
+        SetForegroundWindow(hWnd);
+        SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, TObject(timeout), SPIF_SENDCHANGE);
+      end;
+    end
+    else
+    begin
+      BringWindowToTop(hwnd); // IE 5.5 related hack
+      SetForegroundWindow(hwnd);
+    end;
+
+    Result := (GetForegroundWindow = hwnd);
+  end;
+end; { ForceForegroundWindow }
+
+procedure ProgressbarSetMarqueue(Progressbar: TProgressBar);
+begin
+  Progressbar.Position := 0;
+  SetWindowLong(Progressbar.Handle, GWL_STYLE,
+    GetWindowLong(Progressbar.Handle, GWL_STYLE) or PBS_MARQUEE);
+  SendMessage(Progressbar.Handle, PBM_SETMARQUEE, 1, 0);
+end;
+
+procedure ProgressbarSetNormal(Progressbar: TProgressBar);
+begin
+  SetWindowLong(Progressbar.Handle, GWL_STYLE,
+    GetWindowLong(Progressbar.Handle, GWL_STYLE) and not PBS_MARQUEE);
+  SendMessage(Progressbar.Handle, PBM_SETMARQUEE, 0, 0);
+end;
+
 procedure SetProgsType(PrgsBar: TProgressBar; Infinity: Boolean);
 begin
   if Infinity then
-  begin
-    SetWindowLong(PrgsBar.Handle, GWL_STYLE,
-      GetWindowLong(PrgsBar.Handle, GWL_STYLE) or PBS_MARQUEE);
-    SendMessage(PrgsBar.Handle, PBM_SETMARQUEE, 1, 0);
-  end
+    ProgressbarSetMarqueue(PrgsBar)
   else
-  begin
-    SetWindowLong(PrgsBar.Handle, GWL_STYLE,
-      GetWindowLong(PrgsBar.Handle, GWL_STYLE) and not PBS_MARQUEE);
-    SendMessage(PrgsBar.Handle, PBM_SETMARQUEE, 0, 0);
-  end;
+    ProgressbarSetNormal(PrgsBar);
 end;
 
 function GetUserFolderPath(nFolder: Integer = CSIDL_PERSONAL): String;
@@ -377,7 +444,7 @@ function GetFalconDir: String;
 begin
   Result := ExtractFilePath(Application.ExeName);
   if not FileExists(Result + 'Falcon.exe') then
-    Result := GetUserFolderPath(CSIDL_PROGRAM_FILES) + '\Falcon\';
+    Result := GetUserFolderPath(CSIDL_PROGRAM_FILES) + 'Falcon\';
 end;
 
 procedure WriteIniFile(Const Section, Ident, Value: String);
@@ -418,23 +485,33 @@ var
   I: Integer;
   Files: TStrings;
   ID, UserLangID: Integer;
-  Temp: String;
+  LangFileName, AlterConfIni, LangDir: String;
   ini: TIniFile;
 begin
   Result := '';
   ini := TIniFile.Create(ConfigPath + 'Config.ini');
+  AlterConfIni := ini.ReadString('EnvironmentOptions', 'ConfigurationFile', '');
   UserLangID := ini.ReadInteger('EnvironmentOptions', 'LanguageID', GetSystemDefaultLangID);
+  LangDir := ini.ReadString('EnvironmentOptions', 'LanguageDir', AppRoot + 'Lang\');
+  if ini.ReadBool('EnvironmentOptions', 'AlternativeConfFile', False) and
+    FileExists(AlterConfIni) then
+  begin
+    ini.Free;
+    ini := TIniFile.Create(ConfigPath + 'Config.ini');
+    UserLangID := ini.ReadInteger('EnvironmentOptions', 'LanguageID', UserLangID);
+    LangDir := ini.ReadString('EnvironmentOptions', 'LanguageDir', AppRoot + 'Lang\');
+  end;
   ini.Free;
   Files := TStringList.Create;
-  FindFiles(AppRoot + 'Lang\*.lng', Files);
+  FindFiles(LangDir + '*.lng', Files);
   for I:= 0 to Pred(Files.Count) do
   begin
-    Temp := AppRoot + 'Lang\' + Files.Strings[I];
-    ini := TIniFile.Create(Temp);
+    LangFileName := LangDir + Files.Strings[I];
+    ini := TIniFile.Create(LangFileName);
     ID := ini.ReadInteger('FALCON', 'LangID', 0);
     if ID = UserLangID then
     begin
-      Result := Temp;
+      Result := LangFileName;
       ini.Free;
       Exit;
     end;

@@ -23,7 +23,7 @@ uses
   SynEditExport, SynExportHTML, SynExportTeX, ThreadLoadTokenFiles, DebugConsts,
   XMLDoc, XMLIntf, BreakPoint, HintTree, DebugWatch, 
   UParseMsgs, SynEditMiscClasses, TBXStatusBars, XPPanels, ModernTabs,
-  VistaAltFixUnit, TB2Toolbar, ThreadFileDownload, NativeTreeView;
+  VistaAltFixUnit, TB2Toolbar, ThreadFileDownload, NativeTreeView, SynEditEx;
 
 const
   MAX_OUTLINE_TREE_IMAGES = 27;
@@ -711,7 +711,7 @@ type
       ShowContent: Boolean = False);
     procedure ToggleBreakpoint(aLine: Integer);
     procedure CheckIfFilesHasChanged;
-    procedure DetectScope(Memo: TSynMemo);
+    procedure DetectScope(Memo: TSynEditEx);
     function RemoveFile(FileProp: TSourceFile; FromDisk: Boolean = False): Boolean;
     procedure UpdateCompletionColors(EdtOpt: TEditorOptions);
     procedure ParseFiles(List: TStrings);
@@ -741,9 +741,9 @@ type
     procedure ProcessDebugHint(Input: string; Line, SelStart: integer;
       CursorPos: TPoint);
     procedure SelectToken(Token: TTokenClass);
-    procedure ShowHintParams(Memo: TSynMemo);
+    procedure ShowHintParams(Memo: TSynEditEx);
     procedure ProcessHintView(FileProp: TSourceFile;
-      Memo: TSynMemo; const X, Y: Integer);
+      Memo: TSynEditEx; const X, Y: Integer);
     procedure PaintTokenItem(const ToCanvas: TCanvas;
       DisplayRect: TRect; Token: TTokenClass; State: TCustomDrawState);
     procedure TextEditorUpdateStatusBar(Sender: TObject);
@@ -773,7 +773,7 @@ type
     function GetSourcesFiles(List: TStrings;
       IncludeRC: Boolean = False): Integer;
     function GetActiveSheet(var sheet: TSourceFileSheet): Boolean;
-    procedure GotoLineAndAlignCenter(Memo: TSynMemo; Line: Integer;
+    procedure GotoLineAndAlignCenter(Memo: TSynEditEx; Line: Integer;
       Col: Integer = 1; EndCol: Integer = 1; CursorEnd: Boolean = False);
 
     property LastProjectBuild: TProjectFile read FLastProjectBuild write FLastProjectBuild;
@@ -2129,7 +2129,7 @@ procedure TFrmFalconMain.UpdateOpenedSheets;
 var
   Options: TSynEditorOptions;
   I: Integer;
-  SynMemo: TSynMemo;
+  SynMemo: TSynEditEx;
 begin
   ZoomEditor := Config.Editor.FontSize;
   UpdateCompletionColors(Config.Editor);
@@ -2144,6 +2144,8 @@ begin
     with Config.Editor do
     begin
       Options := SynMemo.Options;
+      Include(Options, eoKeepCaretX);
+      Include(Options, eoShowIndentGuides);
       //------------ General --------------------------//
       if AutoIndent then
         Include(Options, eoAutoIndent)
@@ -2185,10 +2187,10 @@ begin
         Include(Options, eoEnhanceHomeKey)
       else
         Exclude(Options, eoEnhanceHomeKey);
-      if ShowLineChars then
-        Include(Options, eoShowSpecialChars)
+      if ShowSpaceChars then
+        Include(Options, eoShowSpaceChars)
       else
-        Exclude(Options, eoShowSpecialChars);
+        Exclude(Options, eoShowSpaceChars);
 
       SynMemo.MaxUndo := MaxUndo;
       SynMemo.TabWidth := TabWidth;
@@ -4414,7 +4416,7 @@ begin
   end;
 end;
 
-procedure TFrmFalconMain.DetectScope(Memo: TSynMemo);
+procedure TFrmFalconMain.DetectScope(Memo: TSynEditEx);
 var
   Token: TTokenClass;
   Node, Parent: PNativeNode;
@@ -4505,13 +4507,13 @@ end;
 
 procedure TFrmFalconMain.TextEditorChange(Sender: TObject);
 var
-  Memo: TSynMemo;
+  Memo: TSynEditEx;
   Sheet: TSourceFileSheet;
   FilePrp: TSourceFile;
 begin
-  if (Sender is TSynMemo) then
+  if (Sender is TSynEditEx) then
   begin
-    Memo := TSynMemo(Sender);
+    Memo := TSynEditEx(Sender);
     UpdateMenuItems([rmFile, rmEdit, rmSearch, rmRun]); {rmRun for Breakpoint}
     if Config.Editor.HighligthCurrentLine then
       Memo.ActiveLineColor := Config.Editor.CurrentLineColor
@@ -4544,7 +4546,7 @@ begin
     if LastKeyPressed = '(' then
     begin
       LastKeyPressed := #0;
-      ShowHintParams(Sender as TSynMemo);
+      ShowHintParams(Sender as TSynEditEx);
     end;
   end;
 end;
@@ -4558,18 +4560,18 @@ begin
   TimerHintTipEvent.Enabled := False;
   HintTip.Cancel;
   DebugHint.Cancel;
-  if (Sender is TSynMemo) then
+  if (Sender is TSynEditEx) then
   begin
     UpdateMenuItems([rmEdit]);
-    DetectScope(Sender as TSynMemo);
+    DetectScope(Sender as TSynEditEx);
     if Config.Editor.HighligthCurrentLine then
-      (Sender as TSynMemo).ActiveLineColor := Config.Editor.CurrentLineColor
+      (Sender as TSynEditEx).ActiveLineColor := Config.Editor.CurrentLineColor
     else
-      (Sender as TSynMemo).ActiveLineColor := clNone;
+      (Sender as TSynEditEx).ActiveLineColor := clNone;
   end;
 
   if HintParams.Activated and ((scCaretX in Changes) or (scCaretY in Changes))
-    and (Sender is TSynMemo) then
+    and (Sender is TSynEditEx) then
   begin
     TimerHintParams.Enabled := False;
     TimerHintParams.Enabled := True;
@@ -4579,11 +4581,11 @@ end;
 
 procedure TFrmFalconMain.TextEditorUpdateStatusBar(Sender: TObject);
 begin
-  if (Sender is TSynMemo) then
+  if (Sender is TSynEditEx) then
   begin
     StatusBar.Panels.Items[1].Caption := Format('Ln : %d  Col : %d   Sel : %d',
-      [(Sender as TSynMemo).DisplayY, (Sender as TSynMemo).DisplayX,
-      (Sender as TSynMemo).SelLength]);
+      [(Sender as TSynEditEx).DisplayY, (Sender as TSynEditEx).DisplayX,
+      (Sender as TSynEditEx).SelLength]);
   end;
 end;
 
@@ -4605,11 +4607,11 @@ begin
   end;
   if GetActiveProject(ProjProp) then
   begin
-    if (Sender is TSynMemo) then
+    if (Sender is TSynEditEx) then
     begin
       TextEditorUpdateStatusBar(Sender);
       for I := 1 to 9 do
-        if TSynMemo(Sender).GetBookMark(I, X, Y) then
+        if TSynEditEx(Sender).GetBookMark(I, X, Y) then
         begin
           TTBXItem(EditBookmarks.Items[I - 1]).Checked := True;
           TTBXItem(EditGotoBookmarks.Items[I - 1]).Checked := True;
@@ -6135,7 +6137,7 @@ begin
   StartFindPrevText(Self, LastSearch);
 end;
 
-procedure TFrmFalconMain.GotoLineAndAlignCenter(Memo: TSynMemo; Line,
+procedure TFrmFalconMain.GotoLineAndAlignCenter(Memo: TSynEditEx; Line,
   Col, EndCol: Integer; CursorEnd: Boolean);
 var
   BS, BE: TBufferCoord;
@@ -6290,7 +6292,7 @@ end;
 
 //hint functions
 
-procedure TFrmFalconMain.ShowHintParams(Memo: TSynMemo);
+procedure TFrmFalconMain.ShowHintParams(Memo: TSynEditEx);
 var
   S, Params, Fields, Input, SaveInput, SaveFields: string;
   Token, tokenParams, scope: TTokenClass;
@@ -6575,7 +6577,7 @@ begin
 end;
 
 procedure TFrmFalconMain.ProcessHintView(FileProp: TSourceFile;
-  Memo: TSynMemo; const X, Y: Integer);
+  Memo: TSynEditEx; const X, Y: Integer);
 
   function BufferIn(BS, Buffer, BE: TBufferCoord): Boolean;
   begin
@@ -7718,7 +7720,7 @@ var
   SwapFileName, FileName, Directive: string;
   fprop, swfp, parent: TSourceFile;
   resp: Integer;
-  Memo: TSynMemo;
+  Memo: TSynEditEx;
   FindedTokenFile: TTokenFile;
 begin
   if not GetActiveSheet(sheet) then

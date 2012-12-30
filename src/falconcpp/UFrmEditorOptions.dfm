@@ -1,10 +1,10 @@
 object FrmEditorOptions: TFrmEditorOptions
-  Left = 506
-  Top = 394
+  Left = 463
+  Top = 205
   BorderStyle = bsDialog
   Caption = 'Editor Options'
-  ClientHeight = 428
-  ClientWidth = 460
+  ClientHeight = 473
+  ClientWidth = 511
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -23,8 +23,8 @@ object FrmEditorOptions: TFrmEditorOptions
   object PageControl1: TPageControl
     Left = 8
     Top = 8
-    Width = 449
-    Height = 385
+    Width = 497
+    Height = 428
     ActivePage = TSGeneral
     TabOrder = 0
     object TSGeneral: TTabSheet
@@ -32,20 +32,20 @@ object FrmEditorOptions: TFrmEditorOptions
       object GroupBox1: TGroupBox
         Left = 4
         Top = 2
-        Width = 432
-        Height = 167
+        Width = 477
+        Height = 199
         Caption = 'Editor Options'
         TabOrder = 0
         object Label6: TLabel
           Left = 8
-          Top = 122
+          Top = 152
           Width = 49
           Height = 13
           Caption = 'Max Undo'
         end
         object Label16: TLabel
-          Left = 224
-          Top = 122
+          Left = 248
+          Top = 152
           Width = 53
           Height = 13
           Caption = 'Tab Width:'
@@ -53,25 +53,25 @@ object FrmEditorOptions: TFrmEditorOptions
         object ChbAutoIndt: TCheckBox
           Left = 8
           Top = 16
-          Width = 201
+          Width = 220
           Height = 17
           Caption = 'Auto Indent'
           TabOrder = 0
           OnClick = EditorOptionsChanged
         end
         object ChbUseTabChar: TCheckBox
-          Left = 224
+          Left = 248
           Top = 64
-          Width = 201
+          Width = 220
           Height = 17
           Caption = 'Use Tab Character'
           TabOrder = 1
           OnClick = EditorOptionsChanged
         end
         object ChbTabUnOrIndt: TCheckBox
-          Left = 224
+          Left = 248
           Top = 32
-          Width = 201
+          Width = 220
           Height = 17
           Caption = 'Tab Indent/Unindent'
           TabOrder = 2
@@ -80,7 +80,7 @@ object FrmEditorOptions: TFrmEditorOptions
         object ChbInsMode: TCheckBox
           Left = 8
           Top = 32
-          Width = 201
+          Width = 220
           Height = 17
           Caption = 'Insert Mode'
           TabOrder = 3
@@ -89,7 +89,7 @@ object FrmEditorOptions: TFrmEditorOptions
         object ChbGrpUnd: TCheckBox
           Left = 8
           Top = 48
-          Width = 201
+          Width = 220
           Height = 17
           Caption = 'Group Undo'
           TabOrder = 4
@@ -97,7 +97,7 @@ object FrmEditorOptions: TFrmEditorOptions
         end
         object CboMaxUnd: TComboBox
           Left = 8
-          Top = 139
+          Top = 169
           Width = 81
           Height = 21
           ItemHeight = 13
@@ -108,8 +108,8 @@ object FrmEditorOptions: TFrmEditorOptions
             '1024')
         end
         object CboTabWdt: TComboBox
-          Left = 224
-          Top = 138
+          Left = 248
+          Top = 168
           Width = 81
           Height = 21
           ItemHeight = 13
@@ -123,27 +123,27 @@ object FrmEditorOptions: TFrmEditorOptions
             '8')
         end
         object ChbSmartTabs: TCheckBox
-          Left = 224
+          Left = 248
           Top = 48
-          Width = 201
+          Width = 220
           Height = 17
           Caption = 'Smart Tabs'
           TabOrder = 7
           OnClick = EditorOptionsChanged
         end
         object ChbScrollHint: TCheckBox
-          Left = 224
+          Left = 248
           Top = 16
-          Width = 201
+          Width = 220
           Height = 17
           Caption = 'Scroll Hint'
           TabOrder = 8
           OnClick = EditorOptionsChanged
         end
         object ChbEnhHomeKey: TCheckBox
-          Left = 224
+          Left = 248
           Top = 80
-          Width = 201
+          Width = 220
           Height = 17
           Caption = 'Enhanced Home Key'
           TabOrder = 9
@@ -152,35 +152,44 @@ object FrmEditorOptions: TFrmEditorOptions
         object ChbKeepTraiSpa: TCheckBox
           Left = 8
           Top = 64
-          Width = 201
+          Width = 220
           Height = 17
           Caption = 'Keep Trailing Spaces'
           TabOrder = 10
           OnClick = EditorOptionsChanged
         end
-        object ChbShowLineChars: TCheckBox
+        object ChbShowSpaceChars: TCheckBox
           Left = 8
           Top = 80
-          Width = 201
+          Width = 220
           Height = 17
-          Caption = 'Show Line Characters'
+          Caption = 'Show Space and Tab Characters'
           TabOrder = 11
           OnClick = EditorOptionsChanged
         end
         object ChbAutoCloseBrackets: TCheckBox
-          Left = 7
+          Left = 8
           Top = 96
-          Width = 201
+          Width = 220
           Height = 17
           Caption = 'Auto close brackets/parentheses'
           TabOrder = 12
           OnClick = EditorOptionsChanged
         end
+        object ChbCursorPastEOL: TCheckBox
+          Left = 248
+          Top = 96
+          Width = 220
+          Height = 17
+          Caption = 'Cursor past EOL'
+          TabOrder = 13
+          OnClick = EditorOptionsChanged
+        end
       end
       object GroupBoxHlMatchBP: TGroupBox
         Left = 4
-        Top = 176
-        Width = 432
+        Top = 216
+        Width = 477
         Height = 66
         Caption = '      Highligth matching braces/parentheses'
         TabOrder = 1
@@ -193,7 +202,7 @@ object FrmEditorOptions: TFrmEditorOptions
           Enabled = False
         end
         object Label2: TLabel
-          Left = 160
+          Left = 184
           Top = 18
           Width = 49
           Height = 13
@@ -201,7 +210,7 @@ object FrmEditorOptions: TFrmEditorOptions
           Enabled = False
         end
         object Label3: TLabel
-          Left = 312
+          Left = 355
           Top = 18
           Width = 85
           Height = 13
@@ -229,7 +238,7 @@ object FrmEditorOptions: TFrmEditorOptions
           OnChange = EditorOptionsChanged
         end
         object ClbE: TColorBox
-          Left = 160
+          Left = 184
           Top = 34
           Width = 113
           Height = 22
@@ -241,7 +250,7 @@ object FrmEditorOptions: TFrmEditorOptions
           OnChange = EditorOptionsChanged
         end
         object ClbB: TColorBox
-          Left = 312
+          Left = 355
           Top = 34
           Width = 113
           Height = 22
@@ -255,7 +264,7 @@ object FrmEditorOptions: TFrmEditorOptions
       end
       object GroupBox3: TGroupBox
         Left = 4
-        Top = 253
+        Top = 293
         Width = 181
         Height = 66
         Caption = '      Highligth current line'
@@ -277,9 +286,9 @@ object FrmEditorOptions: TFrmEditorOptions
           OnClick = GroupEnableBoxDisableControls
         end
         object ClbCurLn: TColorBox
-          Left = 8
+          Left = 10
           Top = 34
-          Width = 113
+          Width = 161
           Height = 22
           Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbIncludeNone, cbCustomColor, cbPrettyNames]
           Enabled = False
@@ -289,8 +298,8 @@ object FrmEditorOptions: TFrmEditorOptions
         end
       end
       object GroupBox4: TGroupBox
-        Left = 272
-        Top = 253
+        Left = 317
+        Top = 293
         Width = 164
         Height = 66
         Caption = '      Link click'
@@ -312,9 +321,9 @@ object FrmEditorOptions: TFrmEditorOptions
           OnClick = GroupEnableBoxDisableControls
         end
         object ClbLinkColor: TColorBox
-          Left = 8
+          Left = 10
           Top = 34
-          Width = 113
+          Width = 145
           Height = 22
           Selected = clBlue
           Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbIncludeNone, cbCustomColor, cbPrettyNames]
@@ -325,8 +334,8 @@ object FrmEditorOptions: TFrmEditorOptions
         end
       end
       object BtnRestDef: TButton
-        Left = 328
-        Top = 326
+        Left = 375
+        Top = 369
         Width = 108
         Height = 25
         Caption = 'Restore Default'
@@ -361,19 +370,19 @@ object FrmEditorOptions: TFrmEditorOptions
       object GroupBox5: TGroupBox
         Left = 8
         Top = 184
-        Width = 423
-        Height = 98
+        Width = 473
+        Height = 103
         Caption = 'Margin and gutter'
         TabOrder = 0
         object Label7: TLabel
-          Left = 224
+          Left = 288
           Top = 16
           Width = 62
           Height = 13
           Caption = 'Right margin:'
         end
         object Label8: TLabel
-          Left = 224
+          Left = 288
           Top = 56
           Width = 60
           Height = 13
@@ -402,9 +411,9 @@ object FrmEditorOptions: TFrmEditorOptions
           OnClick = EditorOptionsChanged
         end
         object CboRMrg: TComboBox
-          Left = 224
+          Left = 288
           Top = 32
-          Width = 65
+          Width = 177
           Height = 21
           ItemHeight = 13
           ItemIndex = 0
@@ -415,9 +424,9 @@ object FrmEditorOptions: TFrmEditorOptions
             '80')
         end
         object CboGutterWdt: TComboBox
-          Left = 224
+          Left = 288
           Top = 72
-          Width = 65
+          Width = 177
           Height = 21
           ItemHeight = 13
           ItemIndex = 0
@@ -453,7 +462,7 @@ object FrmEditorOptions: TFrmEditorOptions
       object PanelTest: TPanel
         Left = 8
         Top = 80
-        Width = 425
+        Width = 473
         Height = 81
         BevelOuter = bvLowered
         Caption = 'AaBbYyZz'
@@ -464,7 +473,7 @@ object FrmEditorOptions: TFrmEditorOptions
         Top = 32
         Width = 65
         Height = 21
-        ItemHeight = 0
+        ItemHeight = 13
         TabOrder = 2
         Text = '10'
         OnChange = CboSizeChange
@@ -474,13 +483,13 @@ object FrmEditorOptions: TFrmEditorOptions
         Top = 32
         Width = 185
         Height = 21
-        ItemHeight = 0
+        ItemHeight = 13
         TabOrder = 3
         OnSelect = CboEditFontSelect
       end
       object Button1: TButton
-        Left = 328
-        Top = 326
+        Left = 375
+        Top = 369
         Width = 108
         Height = 25
         Caption = 'Restore Default'
@@ -492,14 +501,14 @@ object FrmEditorOptions: TFrmEditorOptions
       Caption = 'Colors'
       ImageIndex = 2
       object Label12: TLabel
-        Left = 264
+        Left = 312
         Top = 8
         Width = 70
         Height = 13
         Caption = 'Defined sintax:'
       end
       object BtnSave: TSpeedButton
-        Left = 385
+        Left = 433
         Top = 23
         Width = 22
         Height = 22
@@ -563,7 +572,7 @@ object FrmEditorOptions: TFrmEditorOptions
         OnClick = BtnSaveClick
       end
       object BtnDel: TSpeedButton
-        Left = 409
+        Left = 457
         Top = 23
         Width = 22
         Height = 22
@@ -634,21 +643,21 @@ object FrmEditorOptions: TFrmEditorOptions
         Caption = 'Type:'
       end
       object Label14: TLabel
-        Left = 152
+        Left = 184
         Top = 48
         Width = 54
         Height = 13
         Caption = 'Foreground'
       end
       object Label15: TLabel
-        Left = 152
+        Left = 184
         Top = 105
         Width = 58
         Height = 13
         Caption = 'Background'
       end
       object GroupBox6: TGroupBox
-        Left = 319
+        Left = 367
         Top = 58
         Width = 113
         Height = 84
@@ -683,94 +692,43 @@ object FrmEditorOptions: TFrmEditorOptions
         end
       end
       object CbDefSin: TComboBox
-        Left = 264
+        Left = 312
         Top = 24
         Width = 114
         Height = 21
         AutoComplete = False
-        ItemHeight = 0
+        ItemHeight = 13
         MaxLength = 48
         TabOrder = 1
         OnSelect = CbDefSinSelect
       end
-      object SynPrev: TSynMemo
-        Left = 6
-        Top = 152
-        Width = 427
-        Height = 195
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -13
-        Font.Name = 'Courier New'
-        Font.Style = []
-        TabOrder = 2
-        OnMouseDown = SynPrevMouseDown
-        BracketHighlight.Background = clSkyBlue
-        BracketHighlight.Foreground = clGray
-        BracketHighlight.AloneBackground = clNone
-        BracketHighlight.AloneForeground = clRed
-        BracketHighlight.Style = [fsBold]
-        BracketHighlight.AloneStyle = [fsBold]
-        LinkOptions.Color = clBlue
-        LinkOptions.AttributeList.Strings = (
-          'Preprocessor'
-          'Identifier')
-        LinkEnable = True
-        Gutter.DigitCount = 2
-        Gutter.Font.Charset = DEFAULT_CHARSET
-        Gutter.Font.Color = clWindowText
-        Gutter.Font.Height = -11
-        Gutter.Font.Name = 'Courier New'
-        Gutter.Font.Style = []
-        Gutter.LeftOffset = 6
-        Gutter.RightOffset = 21
-        Gutter.ShowLineNumbers = True
-        HideSelection = True
-        Highlighter = SynCpp
-        Lines.Strings = (
-          '//Sintax Preview'
-          '#include <stdio.h>'
-          ''
-          'int main(int argc, char *args[])'
-          '{'
-          '    int name[10] = "Falcon C++";'
-          '    name[0] = '#39'F'#39';'
-          '    return (0x00 * 0765);'
-          '}'
-          '//Selected Text')
-        Options = [eoAutoIndent, eoDisableScrollArrows, eoDragDropEditing, eoEnhanceEndKey, eoGroupUndo, eoHideShowScrollbars, eoNoCaret, eoNoSelection, eoScrollPastEol, eoShowScrollHint, eoSmartTabDelete, eoSmartTabs, eoTabsToSpaces]
-        ReadOnly = True
-        ScrollBars = ssNone
-        OnGutterClick = SynPrevGutterClick
-        OnSpecialLineColors = SynPrevSpecialLineColors
-      end
       object ListBoxType: TListBox
         Left = 6
         Top = 24
-        Width = 139
+        Width = 171
         Height = 121
         ItemHeight = 13
-        TabOrder = 3
+        TabOrder = 2
         OnClick = ListBoxTypeClick
       end
       object ClbFore: TColorBox
-        Left = 152
+        Left = 184
         Top = 64
-        Width = 113
+        Width = 129
+        Height = 22
+        Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbIncludeNone, cbIncludeDefault, cbCustomColor, cbPrettyNames]
+        ItemHeight = 16
+        TabOrder = 3
+        OnChange = ColorChange
+      end
+      object ClbBack: TColorBox
+        Left = 184
+        Top = 121
+        Width = 129
         Height = 22
         Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbIncludeNone, cbIncludeDefault, cbCustomColor, cbPrettyNames]
         ItemHeight = 16
         TabOrder = 4
-        OnChange = ColorChange
-      end
-      object ClbBack: TColorBox
-        Left = 152
-        Top = 121
-        Width = 113
-        Height = 22
-        Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbIncludeNone, cbIncludeDefault, cbCustomColor, cbPrettyNames]
-        ItemHeight = 16
-        TabOrder = 5
         OnChange = ColorChange
       end
     end
@@ -780,8 +738,8 @@ object FrmEditorOptions: TFrmEditorOptions
       object PageControl2: TPageControl
         Left = 6
         Top = 6
-        Width = 429
-        Height = 344
+        Width = 475
+        Height = 387
         ActivePage = TSFormatterStyle
         TabOrder = 0
         object TSFormatterStyle: TTabSheet
@@ -789,64 +747,10 @@ object FrmEditorOptions: TFrmEditorOptions
           object GroupBoxFormatterSample: TGroupBox
             Left = 124
             Top = 3
-            Width = 289
-            Height = 304
+            Width = 333
+            Height = 347
             Caption = 'Sample'
             TabOrder = 0
-            object SynMemoSample: TSynMemo
-              Left = 10
-              Top = 16
-              Width = 269
-              Height = 277
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = clWindowText
-              Font.Height = -13
-              Font.Name = 'Courier New'
-              Font.Style = []
-              TabOrder = 0
-              OnMouseDown = SynPrevMouseDown
-              BracketHighlight.Background = clSkyBlue
-              BracketHighlight.Foreground = clGray
-              BracketHighlight.AloneBackground = clNone
-              BracketHighlight.AloneForeground = clRed
-              BracketHighlight.Style = [fsBold]
-              BracketHighlight.AloneStyle = [fsBold]
-              LinkOptions.Color = clBlue
-              LinkOptions.AttributeList.Strings = (
-                'Preprocessor'
-                'Identifier')
-              LinkEnable = True
-              Gutter.DigitCount = 2
-              Gutter.Font.Charset = DEFAULT_CHARSET
-              Gutter.Font.Color = clWindowText
-              Gutter.Font.Height = -11
-              Gutter.Font.Name = 'Courier New'
-              Gutter.Font.Style = []
-              Gutter.LeftOffset = 6
-              Gutter.RightOffset = 21
-              Gutter.ShowLineNumbers = True
-              Gutter.Visible = False
-              HideSelection = True
-              Highlighter = SynCpp
-              Lines.Strings = (
-                'namespace foospace'
-                '{'
-                '    int Foo()'
-                '    {'
-                '        if (isBar)'
-                '        {'
-                '            bar();'
-                '            return 1;'
-                '        }'
-                '        else'
-                '            return 0;'
-                '    }'
-                '}')
-              Options = [eoAutoIndent, eoDisableScrollArrows, eoDragDropEditing, eoEnhanceEndKey, eoGroupUndo, eoHideShowScrollbars, eoScrollPastEol, eoShowScrollHint, eoSmartTabDelete, eoSmartTabs, eoTabsToSpaces]
-              ScrollBars = ssNone
-              OnGutterClick = SynPrevGutterClick
-              OnSpecialLineColors = SynPrevSpecialLineColors
-            end
           end
           object RadioGroupFormatterStyles: TRadioGroup
             Left = 6
@@ -867,7 +771,7 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object BtnPrevStyle: TButton
             Left = 3
-            Top = 283
+            Top = 325
             Width = 114
             Height = 25
             Caption = 'Preview'
@@ -893,7 +797,7 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object CheckBoxIndentClasses: TCheckBox
             Left = 6
-            Top = 24
+            Top = 26
             Width = 339
             Height = 17
             Hint = 
@@ -910,7 +814,7 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object CheckBoxIndentSwitches: TCheckBox
             Left = 6
-            Top = 40
+            Top = 44
             Width = 211
             Height = 17
             Hint = 
@@ -924,7 +828,7 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object CheckBoxIndentCase: TCheckBox
             Left = 6
-            Top = 56
+            Top = 62
             Width = 339
             Height = 17
             Hint = 
@@ -938,7 +842,7 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object CheckBoxIndentBrackets: TCheckBox
             Left = 6
-            Top = 72
+            Top = 80
             Width = 155
             Height = 17
             Caption = 'Indent brackets'
@@ -947,7 +851,7 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object CheckBoxIndentBlocks: TCheckBox
             Left = 6
-            Top = 88
+            Top = 98
             Width = 155
             Height = 17
             Caption = 'Indent blocks'
@@ -956,7 +860,7 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object CheckBoxIndentNamespaces: TCheckBox
             Left = 6
-            Top = 104
+            Top = 116
             Width = 155
             Height = 17
             Hint = 'Add extra indentation to namespace blocks.'
@@ -968,7 +872,7 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object CheckBoxIndentLabels: TCheckBox
             Left = 6
-            Top = 120
+            Top = 134
             Width = 155
             Height = 17
             Hint = 
@@ -983,7 +887,7 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object CheckBoxIndentMultLinePreprocessor: TCheckBox
             Left = 6
-            Top = 136
+            Top = 152
             Width = 339
             Height = 17
             Hint = 
@@ -1000,7 +904,7 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object CheckBoxIndentSingleLineComments: TCheckBox
             Left = 6
-            Top = 152
+            Top = 170
             Width = 259
             Height = 17
             Hint = 
@@ -1031,7 +935,7 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object CheckBoxInsertSpacePaddingOperators: TCheckBox
             Left = 6
-            Top = 40
+            Top = 44
             Width = 283
             Height = 17
             Hint = 
@@ -1046,7 +950,7 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object CheckBoxInsertSpacePaddingParenthesisOutside: TCheckBox
             Left = 6
-            Top = 56
+            Top = 62
             Width = 339
             Height = 17
             Hint = 
@@ -1061,7 +965,7 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object CheckBoxInsertSpacePaddingParenthesisInside: TCheckBox
             Left = 6
-            Top = 72
+            Top = 80
             Width = 339
             Height = 17
             Hint = 
@@ -1076,7 +980,7 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object CheckBoxRemoveExtraSpace: TCheckBox
             Left = 6
-            Top = 104
+            Top = 116
             Width = 331
             Height = 17
             Hint = 
@@ -1091,7 +995,7 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object CheckBoxFillEmptyLines: TCheckBox
             Left = 6
-            Top = 136
+            Top = 152
             Width = 411
             Height = 17
             Hint = 'Fill empty lines with the white space of the previous line.'
@@ -1103,7 +1007,7 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object CheckBoxDeleteEmptyLines: TCheckBox
             Left = 6
-            Top = 120
+            Top = 134
             Width = 283
             Height = 17
             Hint = 
@@ -1117,7 +1021,7 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object CheckBoxParenthesisHeaderPadding: TCheckBox
             Left = 6
-            Top = 88
+            Top = 98
             Width = 283
             Height = 17
             Hint = 
@@ -1132,7 +1036,7 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object CheckBoxBreakClosingHeaderBlocks: TCheckBox
             Left = 6
-            Top = 24
+            Top = 26
             Width = 283
             Height = 17
             Hint = 
@@ -1158,7 +1062,7 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object Label26: TLabel
             Left = 6
-            Top = 160
+            Top = 38
             Width = 61
             Height = 13
             Caption = 'Pointer align:'
@@ -1182,7 +1086,7 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object CheckBoxBreakClosingHeadersBrackets: TCheckBox
             Left = 6
-            Top = 40
+            Top = 64
             Width = 259
             Height = 17
             Hint = 
@@ -1199,7 +1103,7 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object CheckBoxBreakElseIf: TCheckBox
             Left = 6
-            Top = 56
+            Top = 82
             Width = 339
             Height = 17
             Hint = 
@@ -1216,7 +1120,7 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object CheckBoxDontBreakComplex: TCheckBox
             Left = 6
-            Top = 120
+            Top = 154
             Width = 408
             Height = 17
             Hint = 
@@ -1232,7 +1136,7 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object CheckBoxDontBreakOneLineBlocks: TCheckBox
             Left = 6
-            Top = 104
+            Top = 136
             Width = 219
             Height = 17
             Hint = 'Don'#39't break one-line blocks.'
@@ -1244,7 +1148,7 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object CheckBoxConvToSpaces: TCheckBox
             Left = 6
-            Top = 136
+            Top = 172
             Width = 187
             Height = 17
             Hint = 
@@ -1261,7 +1165,7 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object CheckBoxAddBrackets: TCheckBox
             Left = 6
-            Top = 72
+            Top = 100
             Width = 235
             Height = 17
             Hint = 
@@ -1279,7 +1183,7 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object CheckBoxAddOneLineBrackets: TCheckBox
             Left = 6
-            Top = 88
+            Top = 118
             Width = 235
             Height = 17
             Hint = 
@@ -1295,7 +1199,7 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object ComboBoxPointerAlign: TComboBox
             Left = 152
-            Top = 158
+            Top = 36
             Width = 137
             Height = 21
             Hint = 
@@ -1327,26 +1231,26 @@ object FrmEditorOptions: TFrmEditorOptions
       object GroupBox8: TGroupBox
         Left = 4
         Top = 4
-        Width = 430
+        Width = 477
         Height = 105
         Caption = 'Automatic features'
         TabOrder = 0
         object LblDelay: TLabel
-          Left = 240
+          Left = 288
           Top = 24
           Width = 30
           Height = 13
           Caption = '&Delay:'
         end
         object LblSecStart: TLabel
-          Left = 236
+          Left = 276
           Top = 72
           Width = 35
           Height = 13
           Caption = '0.1 sec'
         end
         object LblSecEnd: TLabel
-          Left = 382
+          Left = 422
           Top = 72
           Width = 35
           Height = 13
@@ -1397,7 +1301,7 @@ object FrmEditorOptions: TFrmEditorOptions
           OnClick = EditorOptionsChanged
         end
         object TrackBarCodeRes: TTrackBar
-          Left = 232
+          Left = 280
           Top = 40
           Width = 169
           Height = 33
@@ -1411,7 +1315,7 @@ object FrmEditorOptions: TFrmEditorOptions
       object GroupBox9: TGroupBox
         Left = 5
         Top = 120
-        Width = 429
+        Width = 476
         Height = 129
         Caption = 'Completion List Colors'
         TabOrder = 1
@@ -1448,7 +1352,7 @@ object FrmEditorOptions: TFrmEditorOptions
           Caption = 'Type Symbol:'
         end
         object Label21: TLabel
-          Left = 265
+          Left = 289
           Top = 48
           Width = 65
           Height = 13
@@ -1456,7 +1360,7 @@ object FrmEditorOptions: TFrmEditorOptions
           Caption = 'Preprocessor:'
         end
         object Label22: TLabel
-          Left = 269
+          Left = 293
           Top = 96
           Width = 61
           Height = 13
@@ -1464,7 +1368,7 @@ object FrmEditorOptions: TFrmEditorOptions
           Caption = 'Background:'
         end
         object Label23: TLabel
-          Left = 285
+          Left = 309
           Top = 72
           Width = 45
           Height = 13
@@ -1472,7 +1376,7 @@ object FrmEditorOptions: TFrmEditorOptions
           Caption = 'Selected:'
         end
         object Label24: TLabel
-          Left = 251
+          Left = 275
           Top = 24
           Width = 79
           Height = 13
@@ -1482,7 +1386,7 @@ object FrmEditorOptions: TFrmEditorOptions
         object ClbCompListConst: TColorBox
           Left = 126
           Top = 21
-          Width = 91
+          Width = 107
           Height = 22
           Selected = clGreen
           Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbIncludeNone, cbCustomColor, cbPrettyNames]
@@ -1493,7 +1397,7 @@ object FrmEditorOptions: TFrmEditorOptions
         object ClbCompListFunc: TColorBox
           Left = 126
           Top = 45
-          Width = 91
+          Width = 107
           Height = 22
           Selected = clBlue
           Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbIncludeNone, cbCustomColor, cbPrettyNames]
@@ -1504,7 +1408,7 @@ object FrmEditorOptions: TFrmEditorOptions
         object ClbCompListVar: TColorBox
           Left = 126
           Top = 69
-          Width = 91
+          Width = 107
           Height = 22
           Selected = clMaroon
           Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbIncludeNone, cbCustomColor, cbPrettyNames]
@@ -1515,7 +1419,7 @@ object FrmEditorOptions: TFrmEditorOptions
         object ClbCompListType: TColorBox
           Left = 126
           Top = 93
-          Width = 91
+          Width = 107
           Height = 22
           Selected = clOlive
           Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbIncludeNone, cbCustomColor, cbPrettyNames]
@@ -1524,9 +1428,9 @@ object FrmEditorOptions: TFrmEditorOptions
           OnChange = EditorOptionsChanged
         end
         object ClbCompListPreproc: TColorBox
-          Left = 334
+          Left = 358
           Top = 45
-          Width = 91
+          Width = 107
           Height = 22
           Selected = clGreen
           Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbIncludeNone, cbCustomColor, cbPrettyNames]
@@ -1535,9 +1439,9 @@ object FrmEditorOptions: TFrmEditorOptions
           OnChange = EditorOptionsChanged
         end
         object ClbCompListBg: TColorBox
-          Left = 334
+          Left = 358
           Top = 93
-          Width = 91
+          Width = 107
           Height = 22
           Selected = clWindow
           Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbIncludeNone, cbCustomColor, cbPrettyNames]
@@ -1546,9 +1450,9 @@ object FrmEditorOptions: TFrmEditorOptions
           OnChange = EditorOptionsChanged
         end
         object ClbCompListSel: TColorBox
-          Left = 334
+          Left = 358
           Top = 69
-          Width = 91
+          Width = 107
           Height = 22
           Selected = clHighlight
           Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbIncludeNone, cbCustomColor, cbPrettyNames]
@@ -1557,9 +1461,9 @@ object FrmEditorOptions: TFrmEditorOptions
           OnChange = EditorOptionsChanged
         end
         object ClbCompListTypedef: TColorBox
-          Left = 334
+          Left = 358
           Top = 21
-          Width = 91
+          Width = 107
           Height = 22
           Selected = clMaroon
           Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbIncludeNone, cbCustomColor, cbPrettyNames]
@@ -1571,7 +1475,7 @@ object FrmEditorOptions: TFrmEditorOptions
       object GroupBox7: TGroupBox
         Left = 5
         Top = 264
-        Width = 429
+        Width = 476
         Height = 81
         Caption = 'Code Templates'
         TabOrder = 2
@@ -1583,7 +1487,7 @@ object FrmEditorOptions: TFrmEditorOptions
           Caption = 'Custom Code Template File:'
         end
         object BtnEditCodeTemplate: TSpeedButton
-          Left = 394
+          Left = 442
           Top = 33
           Width = 24
           Height = 24
@@ -1662,7 +1566,7 @@ object FrmEditorOptions: TFrmEditorOptions
           OnClick = BtnEditCodeTemplateClick
         end
         object BtnChooseCodeTemplate: TSpeedButton
-          Left = 366
+          Left = 414
           Top = 33
           Width = 24
           Height = 24
@@ -1726,7 +1630,7 @@ object FrmEditorOptions: TFrmEditorOptions
         object EditCodeTemplate: TEdit
           Left = 8
           Top = 34
-          Width = 353
+          Width = 401
           Height = 21
           TabOrder = 0
           OnChange = EditCodeTemplateChange
@@ -1735,8 +1639,8 @@ object FrmEditorOptions: TFrmEditorOptions
     end
   end
   object BtnOk: TButton
-    Left = 220
-    Top = 398
+    Left = 268
+    Top = 442
     Width = 75
     Height = 25
     Caption = 'Ok'
@@ -1744,8 +1648,8 @@ object FrmEditorOptions: TFrmEditorOptions
     OnClick = BtnOkClick
   end
   object BtnCancel: TButton
-    Left = 300
-    Top = 398
+    Left = 348
+    Top = 442
     Width = 75
     Height = 25
     Caption = 'Cancel'
@@ -1753,8 +1657,8 @@ object FrmEditorOptions: TFrmEditorOptions
     OnClick = BtnCancelClick
   end
   object BtnApply: TButton
-    Left = 380
-    Top = 398
+    Left = 428
+    Top = 442
     Width = 75
     Height = 25
     Caption = 'Apply'
@@ -1763,15 +1667,15 @@ object FrmEditorOptions: TFrmEditorOptions
     OnClick = BtnApplyClick
   end
   object SynCpp: TSynCppSyn
-    Left = 72
-    Top = 396
+    Left = 80
+    Top = 484
   end
   object TimerNormalDelay: TTimer
     Enabled = False
     Interval = 500
     OnTimer = TimerNormalDelayTimer
-    Left = 40
-    Top = 396
+    Left = 48
+    Top = 484
   end
   object OpenDialog: TOpenDialog
     DefaultExt = '.txt'
@@ -1779,7 +1683,7 @@ object FrmEditorOptions: TFrmEditorOptions
       'Text Files(*.txt)|*.txt|Code Templates(*.ct)|*.ct|All files(*.*)' +
       '|*.*'
     Options = [ofHideReadOnly, ofFileMustExist, ofNoNetworkButton, ofEnableSizing, ofDontAddToRecent]
-    Left = 8
-    Top = 396
+    Left = 16
+    Top = 484
   end
 end

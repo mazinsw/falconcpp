@@ -53,7 +53,8 @@ uses
   DebugWatch in '..\others\debug\DebugWatch.pas',
   FastcodePatch in '..\others\nativehint\FastcodePatch.pas',
   NativeHintWindow in '..\others\nativehint\NativeHintWindow.pas',
-  rbtree in 'rbtree.pas';
+  rbtree in 'rbtree.pas',
+  SynEditEx in 'SynEditEx.pas';
 
 function OpenWithOther: Boolean;
 var

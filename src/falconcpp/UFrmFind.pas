@@ -88,7 +88,7 @@ function EncodeStr(const S: string): string;
 
 implementation
 
-uses USourceFile, SynEdit, SynEditMiscClasses, ULanguages,
+uses USourceFile, SynEditEx, SynEditMiscClasses, ULanguages,
   UUtils, UParseMsgs;
 
 {$R *.dfm}
@@ -97,7 +97,7 @@ procedure StartFindText(frm: TFrmFalconMain);
 var
   prop: TSourceFile;
   sheet: TSourceFileSheet;
-  memo: TSynMemo;
+  memo: TSynEditEx;
   seltext: string;
 begin
   if not frm.GetActiveFile(prop) then
@@ -123,7 +123,7 @@ procedure StartFindNextText(frm: TFrmFalconMain; LastSearch: TSearchItem);
 var
   prop: TSourceFile;
   sheet: TSourceFileSheet;
-  memo: TSynMemo;
+  memo: TSynEditEx;
   sopt: TSynSearchOptions;
   I, Start, Index, Count: Integer;
 begin
@@ -186,7 +186,7 @@ procedure StartFindPrevText(frm: TFrmFalconMain; LastSearch: TSearchItem);
 var
   prop: TSourceFile;
   sheet: TSourceFileSheet;
-  memo: TSynMemo;
+  memo: TSynEditEx;
   sopt: TSynSearchOptions;
   I, Start, Index, Count: Integer;
 begin
@@ -247,7 +247,7 @@ procedure StartFindFilesText(frm: TFrmFalconMain);
 var
   prop: TSourceFile;
   sheet: TSourceFileSheet;
-  memo: TSynMemo;
+  memo: TSynEditEx;
   seltext: string;
 begin
   seltext := '';
@@ -275,7 +275,7 @@ procedure StartReplaceText(frm: TFrmFalconMain);
 var
   prop: TSourceFile;
   sheet: TSourceFileSheet;
-  memo: TSynMemo;
+  memo: TSynEditEx;
   seltext: string;
 begin
   if not frm.GetActiveFile(prop) then
@@ -747,7 +747,7 @@ end;
 procedure TFrmFind.BtnFindClick(Sender: TObject);
 var
   sheet: TSourceFileSheet;
-  memo: TSynMemo;
+  memo: TSynEditEx;
   search: string;
   I, Start, Index, Count, lastlength, selstart, selend: Integer;
   pt: TPoint;
@@ -879,7 +879,7 @@ end;
 procedure TFrmFind.BtnReplaceClick(Sender: TObject);
 var
   sheet: TSourceFileSheet;
-  memo: TSynMemo;
+  memo: TSynEditEx;
   search, replace, text: string;
   selstart: Integer;
   sopt: TSynSearchOptions;
@@ -925,7 +925,7 @@ end;
 procedure TFrmFind.BtnReplAllClick(Sender: TObject);
 var
   sheet: TSourceFileSheet;
-  memo: TSynMemo;
+  memo: TSynEditEx;
   search, replace: string;
   Count: Integer;
   sopt: TSynSearchOptions;

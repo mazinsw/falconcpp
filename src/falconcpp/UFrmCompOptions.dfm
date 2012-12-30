@@ -1,10 +1,10 @@
 object FrmCompOptions: TFrmCompOptions
-  Left = 524
-  Top = 225
+  Left = 430
+  Top = 205
   BorderStyle = bsDialog
   Caption = 'Compiler and Debugger Options'
-  ClientHeight = 428
-  ClientWidth = 460
+  ClientHeight = 473
+  ClientWidth = 511
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -23,8 +23,8 @@ object FrmCompOptions: TFrmCompOptions
   object PageControl1: TPageControl
     Left = 8
     Top = 8
-    Width = 449
-    Height = 385
+    Width = 497
+    Height = 428
     ActivePage = TSCompiler
     TabOrder = 0
     object TSCompiler: TTabSheet
@@ -37,7 +37,7 @@ object FrmCompOptions: TFrmCompOptions
         Caption = 'Compiler configuration:'
       end
       object BtnSave: TSpeedButton
-        Left = 385
+        Left = 433
         Top = 26
         Width = 22
         Height = 22
@@ -100,7 +100,7 @@ object FrmCompOptions: TFrmCompOptions
         ShowHint = True
       end
       object BtnDel: TSpeedButton
-        Left = 409
+        Left = 457
         Top = 26
         Width = 22
         Height = 22
@@ -165,7 +165,7 @@ object FrmCompOptions: TFrmCompOptions
       object ComboBoxCompilerConfig: TComboBoxEx
         Left = 4
         Top = 26
-        Width = 372
+        Width = 421
         Height = 22
         ItemsEx = <>
         ItemHeight = 16
@@ -176,8 +176,8 @@ object FrmCompOptions: TFrmCompOptions
       object PageControl2: TPageControl
         Left = 4
         Top = 57
-        Width = 433
-        Height = 295
+        Width = 481
+        Height = 339
         ActivePage = TabSheet1
         TabOrder = 1
         object TabSheet1: TTabSheet
@@ -190,7 +190,7 @@ object FrmCompOptions: TFrmCompOptions
             Caption = 'Compiler path:'
           end
           object BtnChooseCompilerPath: TSpeedButton
-            Left = 397
+            Left = 443
             Top = 31
             Width = 24
             Height = 24
@@ -253,7 +253,7 @@ object FrmCompOptions: TFrmCompOptions
           object ComboBoxCompilerPath: TComboBox
             Left = 5
             Top = 33
-            Width = 387
+            Width = 431
             Height = 21
             ItemHeight = 13
             TabOrder = 0
@@ -262,7 +262,7 @@ object FrmCompOptions: TFrmCompOptions
           object GroupBox1: TGroupBox
             Left = 5
             Top = 63
-            Width = 412
+            Width = 461
             Height = 134
             Caption = 'Informations'
             TabOrder = 1
@@ -297,7 +297,7 @@ object FrmCompOptions: TFrmCompOptions
             object Bevel2: TBevel
               Left = 8
               Top = 72
-              Width = 393
+              Width = 445
               Height = 3
               Shape = bsBottomLine
             end
@@ -362,10 +362,24 @@ object FrmCompOptions: TFrmCompOptions
         object TabSheet3: TTabSheet
           Caption = 'Compiler options'
           ImageIndex = 2
+          object Label10: TLabel
+            Left = 5
+            Top = 248
+            Width = 56
+            Height = 13
+            Caption = 'Description:'
+          end
+          object Label11: TLabel
+            Left = 5
+            Top = 283
+            Width = 51
+            Height = 13
+            Caption = 'Parameter:'
+          end
           object ListView2: TListView
             Left = 4
             Top = 4
-            Width = 415
+            Width = 462
             Height = 229
             Checkboxes = True
             Columns = <
@@ -375,7 +389,7 @@ object FrmCompOptions: TFrmCompOptions
               end
               item
                 Caption = 'Parameter'
-                Width = 100
+                Width = 140
               end>
             ColumnClick = False
             GridLines = True
@@ -385,14 +399,69 @@ object FrmCompOptions: TFrmCompOptions
             TabOrder = 0
             ViewStyle = vsReport
           end
+          object Button1: TButton
+            Left = 232
+            Top = 280
+            Width = 75
+            Height = 25
+            Caption = 'Add'
+            TabOrder = 1
+            OnClick = BtnOkClick
+          end
+          object Button2: TButton
+            Left = 312
+            Top = 280
+            Width = 75
+            Height = 25
+            Caption = 'Edit'
+            TabOrder = 2
+            OnClick = BtnOkClick
+          end
+          object Edit1: TEdit
+            Left = 69
+            Top = 247
+            Width = 396
+            Height = 21
+            TabOrder = 3
+          end
+          object Edit2: TEdit
+            Left = 69
+            Top = 282
+            Width = 156
+            Height = 21
+            TabOrder = 4
+          end
+          object Button5: TButton
+            Left = 392
+            Top = 280
+            Width = 75
+            Height = 25
+            Caption = 'Remove'
+            TabOrder = 5
+            OnClick = BtnOkClick
+          end
         end
         object TabSheet2: TTabSheet
           Caption = 'Linker options'
           ImageIndex = 1
+          object Label12: TLabel
+            Left = 5
+            Top = 248
+            Width = 56
+            Height = 13
+            Caption = 'Description:'
+          end
+          object Label13: TLabel
+            Left = 5
+            Top = 283
+            Width = 51
+            Height = 13
+            Caption = 'Parameter:'
+          end
           object ListView1: TListView
             Left = 4
             Top = 4
-            Width = 415
+            Width = 462
             Height = 229
             Checkboxes = True
             Columns = <
@@ -402,7 +471,7 @@ object FrmCompOptions: TFrmCompOptions
               end
               item
                 Caption = 'Parameter'
-                Width = 100
+                Width = 140
               end>
             ColumnClick = False
             GridLines = True
@@ -411,6 +480,47 @@ object FrmCompOptions: TFrmCompOptions
             RowSelect = True
             TabOrder = 0
             ViewStyle = vsReport
+          end
+          object Edit3: TEdit
+            Left = 69
+            Top = 247
+            Width = 396
+            Height = 21
+            TabOrder = 1
+          end
+          object Edit4: TEdit
+            Left = 69
+            Top = 282
+            Width = 156
+            Height = 21
+            TabOrder = 2
+          end
+          object Button3: TButton
+            Left = 232
+            Top = 280
+            Width = 75
+            Height = 25
+            Caption = 'Add'
+            TabOrder = 3
+            OnClick = BtnOkClick
+          end
+          object Button4: TButton
+            Left = 312
+            Top = 280
+            Width = 75
+            Height = 25
+            Caption = 'Edit'
+            TabOrder = 4
+            OnClick = BtnOkClick
+          end
+          object Button6: TButton
+            Left = 392
+            Top = 280
+            Width = 75
+            Height = 25
+            Caption = 'Remove'
+            TabOrder = 5
+            OnClick = BtnOkClick
           end
         end
       end
@@ -421,7 +531,7 @@ object FrmCompOptions: TFrmCompOptions
       object GroupBox2: TGroupBox
         Left = 5
         Top = 10
-        Width = 428
+        Width = 476
         Height = 74
         Caption = 'Informations'
         TabOrder = 0
@@ -479,8 +589,8 @@ object FrmCompOptions: TFrmCompOptions
     end
   end
   object BtnOk: TButton
-    Left = 220
-    Top = 398
+    Left = 268
+    Top = 442
     Width = 75
     Height = 25
     Caption = 'Ok'
@@ -488,8 +598,8 @@ object FrmCompOptions: TFrmCompOptions
     OnClick = BtnOkClick
   end
   object BtnCancel: TButton
-    Left = 300
-    Top = 398
+    Left = 348
+    Top = 442
     Width = 75
     Height = 25
     Caption = 'Cancel'
@@ -497,8 +607,8 @@ object FrmCompOptions: TFrmCompOptions
     OnClick = BtnCancelClick
   end
   object BtnApply: TButton
-    Left = 380
-    Top = 398
+    Left = 428
+    Top = 442
     Width = 75
     Height = 25
     Caption = 'Apply'

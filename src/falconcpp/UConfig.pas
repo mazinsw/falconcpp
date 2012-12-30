@@ -15,14 +15,15 @@ type
     InsertMode: Boolean;
     GroupUndo: Boolean;
     KeepTrailingSpaces: Boolean;
+    ShowSpaceChars: Boolean;
+    AutoCloseBrackets: Boolean;
 
     ScrollHint: Boolean;
     TabIndentUnindent: Boolean;
     SmartTabs: Boolean;
     UseTabChar: Boolean;
     EnhancedHomeKey: Boolean;
-    ShowLineChars: Boolean;
-    AutoCloseBrackets: Boolean;
+    CursorPastEol: Boolean;
 
     MaxUndo: Integer;
     TabWidth: Integer;
@@ -308,7 +309,8 @@ begin
     TabIndentUnindent := ini.ReadBool('EditorOptions', 'TabIndentUnindent', True);
     UseTabChar := ini.ReadBool('EditorOptions', 'UseTabChar', False);
     EnhancedHomeKey := ini.ReadBool('EditorOptions', 'EnhancedHomeKey', False);
-    ShowLineChars := ini.ReadBool('EditorOptions', 'ShowLineChars', False);
+    CursorPastEol := ini.ReadBool('EditorOptions', 'CursorPastEOL', False);
+    ShowSpaceChars := ini.ReadBool('EditorOptions', 'ShowSpaceChars', False);
     AutoCloseBrackets := ini.ReadBool('EditorOptions', 'AutoCloseBrackets', True);
 
     MaxUndo := ini.ReadInteger('EditorOptions', 'MaxUndo', 1024);
@@ -609,7 +611,9 @@ begin
     ini.WriteBool('EditorOptions', 'SmartTabs', SmartTabs);
     ini.WriteBool('EditorOptions', 'UseTabChar', UseTabChar);
     ini.WriteBool('EditorOptions', 'EnhancedHomeKey', EnhancedHomeKey);
-    ini.WriteBool('EditorOptions', 'ShowLineChars', ShowLineChars);
+    ini.WriteBool('EditorOptions', 'CursorPastEOL', CursorPastEol);
+
+    ini.WriteBool('EditorOptions', 'ShowSpaceChars', ShowSpaceChars);
     ini.WriteBool('EditorOptions', 'AutoCloseBrackets', AutoCloseBrackets);
 
     ini.WriteInteger('EditorOptions', 'MaxUndo', MaxUndo);

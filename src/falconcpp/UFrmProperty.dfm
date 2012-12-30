@@ -1,10 +1,10 @@
 object FrmProperty: TFrmProperty
-  Left = 463
-  Top = 240
+  Left = 405
+  Top = 205
   BorderStyle = bsDialog
   Caption = 'Properties'
-  ClientHeight = 428
-  ClientWidth = 460
+  ClientHeight = 473
+  ClientWidth = 511
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -22,8 +22,8 @@ object FrmProperty: TFrmProperty
   object PageCtrlProp: TPageControl
     Left = 8
     Top = 8
-    Width = 449
-    Height = 385
+    Width = 497
+    Height = 428
     ActivePage = TSApp
     TabOrder = 0
     object TSApp: TTabSheet
@@ -31,7 +31,7 @@ object FrmProperty: TFrmProperty
       object GrpAppSet: TGroupBox
         Left = 8
         Top = 2
-        Width = 425
+        Width = 473
         Height = 343
         Caption = 'Application settings'
         TabOrder = 0
@@ -155,8 +155,8 @@ object FrmProperty: TFrmProperty
       object GrbIncVer: TGroupBox
         Left = 8
         Top = 2
-        Width = 425
-        Height = 343
+        Width = 471
+        Height = 367
         Caption = '     Include version information in project '
         TabOrder = 0
         object ChbIncVer: TCheckBox
@@ -170,8 +170,8 @@ object FrmProperty: TFrmProperty
         object GrpVersion: TGroupBox
           Left = 8
           Top = 18
-          Width = 409
-          Height = 87
+          Width = 455
+          Height = 103
           Caption = 'Version numbers'
           Enabled = False
           TabOrder = 1
@@ -184,7 +184,7 @@ object FrmProperty: TFrmProperty
             Enabled = False
           end
           object LblMinor: TLabel
-            Left = 115
+            Left = 131
             Top = 24
             Width = 63
             Height = 13
@@ -192,7 +192,7 @@ object FrmProperty: TFrmProperty
             Enabled = False
           end
           object LblRelease: TLabel
-            Left = 221
+            Left = 253
             Top = 24
             Width = 39
             Height = 13
@@ -200,7 +200,7 @@ object FrmProperty: TFrmProperty
             Enabled = False
           end
           object LblBuild: TLabel
-            Left = 327
+            Left = 375
             Top = 24
             Width = 23
             Height = 13
@@ -209,7 +209,7 @@ object FrmProperty: TFrmProperty
           end
           object ChbIncBuild: TCheckBox
             Left = 8
-            Top = 64
+            Top = 72
             Width = 297
             Height = 17
             Caption = 'Auto increment build number'
@@ -242,7 +242,7 @@ object FrmProperty: TFrmProperty
           end
           object EditMinor: TEditAlign
             Tag = 1
-            Left = 116
+            Left = 132
             Top = 40
             Width = 55
             Height = 21
@@ -254,7 +254,7 @@ object FrmProperty: TFrmProperty
             Alignment = taRightJustify
           end
           object UpDownMinor: TUpDown
-            Left = 171
+            Left = 187
             Top = 40
             Width = 16
             Height = 21
@@ -266,7 +266,7 @@ object FrmProperty: TFrmProperty
           end
           object EditRelease: TEditAlign
             Tag = 2
-            Left = 222
+            Left = 254
             Top = 40
             Width = 55
             Height = 21
@@ -278,7 +278,7 @@ object FrmProperty: TFrmProperty
             Alignment = taRightJustify
           end
           object UpDownRelease: TUpDown
-            Left = 277
+            Left = 309
             Top = 40
             Width = 16
             Height = 21
@@ -290,7 +290,7 @@ object FrmProperty: TFrmProperty
           end
           object EditBuild: TEditAlign
             Tag = 3
-            Left = 328
+            Left = 376
             Top = 40
             Width = 55
             Height = 21
@@ -302,7 +302,7 @@ object FrmProperty: TFrmProperty
             Alignment = taRightJustify
           end
           object UpDownBuild: TUpDown
-            Left = 383
+            Left = 431
             Top = 40
             Width = 16
             Height = 21
@@ -315,8 +315,8 @@ object FrmProperty: TFrmProperty
         end
         object GrpLang: TGroupBox
           Left = 8
-          Top = 110
-          Width = 409
+          Top = 134
+          Width = 455
           Height = 70
           Caption = 'Language'
           Enabled = False
@@ -361,11 +361,11 @@ object FrmProperty: TFrmProperty
         end
         object ListValues: TListGridView
           Left = 8
-          Top = 191
-          Width = 409
+          Top = 215
+          Width = 455
           Height = 138
           ColCount = 2
-          DefaultColWidth = 190
+          DefaultColWidth = 215
           DefaultRowHeight = 15
           DefaultDrawing = False
           Enabled = False
@@ -395,15 +395,15 @@ object FrmProperty: TFrmProperty
       object PageControl1: TPageControl
         Left = 8
         Top = 177
-        Width = 425
-        Height = 177
+        Width = 473
+        Height = 216
         ActivePage = GrbLibs
         TabOrder = 3
         object GrbLibs: TTabSheet
           Caption = 'Libraries'
           ImageIndex = -1
           object SBtnAdd: TSpeedButton
-            Left = 384
+            Left = 432
             Top = 7
             Width = 24
             Height = 24
@@ -465,8 +465,8 @@ object FrmProperty: TFrmProperty
             OnClick = SBtnAddClick
           end
           object SBtnRem: TSpeedButton
-            Left = 384
-            Top = 33
+            Left = 432
+            Top = 42
             Width = 24
             Height = 24
             Hint = 'Delete selected'
@@ -528,8 +528,8 @@ object FrmProperty: TFrmProperty
             OnClick = SBtnRemClick
           end
           object SBtnUp: TSpeedButton
-            Left = 384
-            Top = 60
+            Left = 432
+            Top = 125
             Width = 24
             Height = 24
             Hint = 'Move to up'
@@ -591,8 +591,8 @@ object FrmProperty: TFrmProperty
             OnClick = SBtnUpClick
           end
           object SBtnDown: TSpeedButton
-            Left = 384
-            Top = 87
+            Left = 432
+            Top = 155
             Width = 24
             Height = 24
             Hint = 'Move to down'
@@ -654,8 +654,8 @@ object FrmProperty: TFrmProperty
             OnClick = SBtnDownClick
           end
           object SBtnEdit: TSpeedButton
-            Left = 384
-            Top = 113
+            Left = 432
+            Top = 72
             Width = 24
             Height = 24
             Hint = 'Edit selected'
@@ -735,17 +735,17 @@ object FrmProperty: TFrmProperty
           object CBLibs: TComboBox
             Left = 8
             Top = 8
-            Width = 369
+            Width = 417
             Height = 21
-            ItemHeight = 0
+            ItemHeight = 13
             TabOrder = 0
             OnKeyPress = CBLibsKeyPress
           end
           object ChLbLibs: TCheckListBox
             Left = 8
             Top = 43
-            Width = 369
-            Height = 94
+            Width = 417
+            Height = 136
             OnClickCheck = ProjectChange
             ItemHeight = 13
             TabOrder = 1
@@ -758,7 +758,7 @@ object FrmProperty: TFrmProperty
           Caption = 'Includes'
           ImageIndex = -1
           object SBtnAddInc: TSpeedButton
-            Left = 384
+            Left = 432
             Top = 7
             Width = 24
             Height = 24
@@ -820,8 +820,8 @@ object FrmProperty: TFrmProperty
             OnClick = SBtnAddIncClick
           end
           object SBtnDelInc: TSpeedButton
-            Left = 384
-            Top = 33
+            Left = 432
+            Top = 42
             Width = 24
             Height = 24
             Hint = 'Delete selected'
@@ -883,8 +883,8 @@ object FrmProperty: TFrmProperty
             OnClick = SBtnDelIncClick
           end
           object SBtnUpInc: TSpeedButton
-            Left = 384
-            Top = 60
+            Left = 432
+            Top = 125
             Width = 24
             Height = 24
             Hint = 'Move to up'
@@ -946,8 +946,8 @@ object FrmProperty: TFrmProperty
             OnClick = SBtnUpIncClick
           end
           object SBtnDownInc: TSpeedButton
-            Left = 384
-            Top = 87
+            Left = 432
+            Top = 155
             Width = 24
             Height = 24
             Hint = 'Move to down'
@@ -1009,8 +1009,8 @@ object FrmProperty: TFrmProperty
             OnClick = SBtnDownIncClick
           end
           object SBtnEditInc: TSpeedButton
-            Left = 384
-            Top = 113
+            Left = 432
+            Top = 72
             Width = 24
             Height = 24
             Hint = 'Edit selected'
@@ -1090,17 +1090,17 @@ object FrmProperty: TFrmProperty
           object CBIncs: TComboBox
             Left = 8
             Top = 8
-            Width = 369
+            Width = 417
             Height = 21
-            ItemHeight = 0
+            ItemHeight = 13
             TabOrder = 0
             OnKeyPress = CBIncsKeyPress
           end
           object ListIncs: TListBox
             Left = 8
             Top = 43
-            Width = 369
-            Height = 94
+            Width = 417
+            Height = 136
             ItemHeight = 13
             TabOrder = 1
             OnClick = ListIncsClick
@@ -1175,15 +1175,15 @@ object FrmProperty: TFrmProperty
       end
       object GrbClean: TGroupBox
         Left = 8
-        Top = 88
-        Width = 273
-        Height = 81
+        Top = 86
+        Width = 470
+        Height = 84
         Caption = 'Cleaning'
         TabOrder = 2
         object CLBClean: TCheckListBox
           Left = 8
           Top = 16
-          Width = 257
+          Width = 453
           Height = 57
           OnClickCheck = ProjectChange
           ItemHeight = 13
@@ -1195,14 +1195,6 @@ object FrmProperty: TFrmProperty
           TabOrder = 0
         end
       end
-      object GrbLibs1: TGroupBox
-        Left = 288
-        Top = 4
-        Width = 145
-        Height = 165
-        Caption = 'Others'
-        TabOrder = 4
-      end
     end
     object TSRun: TTabSheet
       Caption = 'Run'
@@ -1210,8 +1202,8 @@ object FrmProperty: TFrmProperty
       object GrbApprun: TGroupBox
         Left = 8
         Top = 2
-        Width = 425
-        Height = 67
+        Width = 471
+        Height = 69
         Caption = 'Application'
         TabOrder = 0
         object LblParams: TLabel
@@ -1224,7 +1216,7 @@ object FrmProperty: TFrmProperty
         object EditParams: TEdit
           Left = 9
           Top = 37
-          Width = 408
+          Width = 454
           Height = 21
           TabOrder = 0
           OnChange = ProjectChange
@@ -1233,8 +1225,8 @@ object FrmProperty: TFrmProperty
     end
   end
   object BtnOk: TButton
-    Left = 220
-    Top = 398
+    Left = 268
+    Top = 442
     Width = 75
     Height = 25
     Caption = 'Ok'
@@ -1242,8 +1234,8 @@ object FrmProperty: TFrmProperty
     OnClick = BtnOkClick
   end
   object BtnCancel: TButton
-    Left = 300
-    Top = 398
+    Left = 348
+    Top = 442
     Width = 75
     Height = 25
     Caption = 'Cancel'
@@ -1251,8 +1243,8 @@ object FrmProperty: TFrmProperty
     OnClick = BtnCancelClick
   end
   object BtnApply: TButton
-    Left = 380
-    Top = 398
+    Left = 428
+    Top = 442
     Width = 75
     Height = 25
     Caption = 'Apply'
@@ -1275,7 +1267,7 @@ object FrmProperty: TFrmProperty
   end
   object OpenIcon: TIconDialog
     IconIndex = 0
-    Left = 4
+    Left = 20
     Top = 394
   end
 end

@@ -74,7 +74,6 @@ type
     SBtnDelInc: TSpeedButton;
     SBtnUpInc: TSpeedButton;
     SBtnDownInc: TSpeedButton;
-    GrbLibs1: TGroupBox;
     ChbCreateLL: TCheckBox;
     SBtnEditInc: TSpeedButton;
     SBtnEdit: TSpeedButton;

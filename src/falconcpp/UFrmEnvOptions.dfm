@@ -1,10 +1,10 @@
 object FrmEnvOptions: TFrmEnvOptions
-  Left = 423
-  Top = 350
+  Left = 431
+  Top = 205
   BorderStyle = bsDialog
   Caption = 'Environment Options'
-  ClientHeight = 428
-  ClientWidth = 460
+  ClientHeight = 473
+  ClientWidth = 511
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -23,8 +23,8 @@ object FrmEnvOptions: TFrmEnvOptions
   object PageControl1: TPageControl
     Left = 8
     Top = 8
-    Width = 449
-    Height = 385
+    Width = 497
+    Height = 428
     ActivePage = TSGeneral
     TabOrder = 0
     object TSGeneral: TTabSheet
@@ -129,14 +129,14 @@ object FrmEnvOptions: TFrmEnvOptions
         Caption = 'Max files in reopen menu'
       end
       object LabelLang: TLabel
-        Left = 247
+        Left = 295
         Top = 16
         Width = 51
         Height = 13
         Caption = 'Language:'
       end
       object ComboBoxLanguage: TComboBoxEx
-        Left = 248
+        Left = 296
         Top = 32
         Width = 185
         Height = 22
@@ -205,7 +205,7 @@ object FrmEnvOptions: TFrmEnvOptions
       end
       object BtnChooseTemplatesDir: TSpeedButton
         Tag = 1
-        Left = 403
+        Left = 451
         Top = 141
         Width = 24
         Height = 24
@@ -275,7 +275,7 @@ object FrmEnvOptions: TFrmEnvOptions
       end
       object BtnChooseLangDir: TSpeedButton
         Tag = 2
-        Left = 403
+        Left = 451
         Top = 187
         Width = 24
         Height = 24
@@ -345,7 +345,7 @@ object FrmEnvOptions: TFrmEnvOptions
         Enabled = False
       end
       object BtnViewHelpDir: TSpeedButton
-        Left = 403
+        Left = 451
         Top = 279
         Width = 24
         Height = 24
@@ -416,7 +416,7 @@ object FrmEnvOptions: TFrmEnvOptions
       end
       object BtnViewExamplesDir: TSpeedButton
         Tag = 1
-        Left = 403
+        Left = 451
         Top = 327
         Width = 24
         Height = 24
@@ -485,7 +485,7 @@ object FrmEnvOptions: TFrmEnvOptions
         Caption = 'User'#39's default directory'
       end
       object BtnChooseUsersDefDir: TSpeedButton
-        Left = 403
+        Left = 451
         Top = 95
         Width = 24
         Height = 24
@@ -555,7 +555,7 @@ object FrmEnvOptions: TFrmEnvOptions
       end
       object BtnChooseProjDir: TSpeedButton
         Tag = 3
-        Left = 403
+        Left = 451
         Top = 234
         Width = 24
         Height = 24
@@ -619,7 +619,7 @@ object FrmEnvOptions: TFrmEnvOptions
       object EditTemplatesDir: TEdit
         Left = 5
         Top = 142
-        Width = 392
+        Width = 438
         Height = 21
         TabOrder = 0
         OnChange = EditorOptionsChanged
@@ -627,7 +627,7 @@ object FrmEnvOptions: TFrmEnvOptions
       object EditLangDir: TEdit
         Left = 5
         Top = 188
-        Width = 392
+        Width = 438
         Height = 21
         TabOrder = 1
         OnChange = EditorOptionsChanged
@@ -635,7 +635,7 @@ object FrmEnvOptions: TFrmEnvOptions
       object EditHelpDocDir: TEdit
         Left = 5
         Top = 280
-        Width = 392
+        Width = 438
         Height = 21
         Enabled = False
         TabOrder = 2
@@ -644,7 +644,7 @@ object FrmEnvOptions: TFrmEnvOptions
       object EditExamplesDir: TEdit
         Left = 5
         Top = 328
-        Width = 392
+        Width = 438
         Height = 21
         Enabled = False
         TabOrder = 3
@@ -653,7 +653,7 @@ object FrmEnvOptions: TFrmEnvOptions
       object EditUsersDefDir: TEdit
         Left = 5
         Top = 96
-        Width = 392
+        Width = 438
         Height = 21
         TabOrder = 4
         OnChange = EditorOptionsChanged
@@ -661,7 +661,7 @@ object FrmEnvOptions: TFrmEnvOptions
       object GroupBoxUseAltConfFile: TGroupBox
         Left = 4
         Top = 8
-        Width = 429
+        Width = 477
         Height = 65
         Caption = '      Alternative configuration file'
         TabOrder = 5
@@ -673,7 +673,7 @@ object FrmEnvOptions: TFrmEnvOptions
           Caption = 'Configuration file'
         end
         object BtnChooseConfFile: TSpeedButton
-          Left = 399
+          Left = 447
           Top = 33
           Width = 24
           Height = 24
@@ -745,7 +745,7 @@ object FrmEnvOptions: TFrmEnvOptions
         object EditAltConfFile: TEdit
           Left = 9
           Top = 35
-          Width = 384
+          Width = 432
           Height = 21
           TabOrder = 1
           OnChange = EditorOptionsChanged
@@ -754,7 +754,7 @@ object FrmEnvOptions: TFrmEnvOptions
       object EditProjDir: TEdit
         Left = 5
         Top = 235
-        Width = 392
+        Width = 438
         Height = 21
         TabOrder = 6
         OnChange = EditorOptionsChanged
@@ -762,8 +762,8 @@ object FrmEnvOptions: TFrmEnvOptions
     end
   end
   object BtnOk: TButton
-    Left = 220
-    Top = 398
+    Left = 268
+    Top = 442
     Width = 75
     Height = 25
     Caption = 'Ok'
@@ -771,8 +771,8 @@ object FrmEnvOptions: TFrmEnvOptions
     OnClick = BtnOkClick
   end
   object BtnCancel: TButton
-    Left = 300
-    Top = 398
+    Left = 348
+    Top = 442
     Width = 75
     Height = 25
     Caption = 'Cancel'
@@ -780,8 +780,8 @@ object FrmEnvOptions: TFrmEnvOptions
     OnClick = BtnCancelClick
   end
   object BtnApply: TButton
-    Left = 380
-    Top = 398
+    Left = 428
+    Top = 442
     Width = 75
     Height = 25
     Caption = 'Apply'

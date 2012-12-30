@@ -1,6 +1,6 @@
 object FrmNewProj: TFrmNewProj
-  Left = 637
-  Top = 305
+  Left = 416
+  Top = 257
   BorderStyle = bsDialog
   Caption = 'New Project'
   ClientHeight = 384

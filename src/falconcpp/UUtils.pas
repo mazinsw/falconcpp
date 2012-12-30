@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Classes, Dialogs, ComCtrls, Controls, 
-  USourceFile, Registry, ImgList, SynEditKeyCmds, SynMemo, SynEdit, 
+  USourceFile, Registry, ImgList, SynEditKeyCmds, SynMemo, SynEdit, SynEditEx,
   ShlObj, Graphics, Messages, XMLDoc, XMLIntf, UParseMsgs,
   ShellAPI, Forms;
 
@@ -100,7 +100,7 @@ function GetFullFileName(Name: string): string;
 function LinuxSpace(const S: string): string;
 function DoubleQuotedStr(const S: string): string;
 
-function EditorGotoXY(Memo: TSynMemo; X, Y: Integer): Boolean;
+function EditorGotoXY(Memo: TSynEditEx; X, Y: Integer): Boolean;
 function SearchSourceFile(FileName: string;
   var FileProp: TSourceFile): Boolean;
 function OpenFile(FileName: string): TProjectFile;
@@ -252,66 +252,123 @@ begin
 end;
 
 procedure SearchCompilers(List: TStrings; var PathCompiler: string);
+
+  function findString(const S: string; aList: TStrings): Integer;
+  var
+    I: Integer;
+  begin
+    Result := -1;
+    for I := 0 to aList.Count - 1 do
+    begin
+      if CompareText(aList.Strings[I], S) = 0 then
+      begin
+        Result := I;
+        Break;
+      end;
+    end;
+  end;
+
 var
-  path, ProgFiles: string;
+  BaseDir, ProgFiles, Path, Temp, Temp2: string;
+  I, J, K: Integer;
 begin
   List.Clear;
   //find compilers
-  path := ExcludeTrailingPathDelimiter(GetEnvironmentVariable('MINGW_PATH'));
-  if FileExists(IncludeTrailingPathDelimiter(path) + 'bin\gcc.exe') then
+  BaseDir := ExcludeTrailingPathDelimiter(GetEnvironmentVariable('MINGW_PATH'));
+  if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') then
   begin
-    List.Add(path);
-    PathCompiler := path;
+    List.Add(BaseDir);
+    PathCompiler := BaseDir;
   end
   else
     PathCompiler := '';
   //Falcon C++
-  path := ExtractFilePath(Application.ExeName) + 'MinGW';
-  if FileExists(IncludeTrailingPathDelimiter(path) + 'bin\gcc.exe') and
-    (List.IndexOf(path) < 0) then
-    List.Add(path);
+  BaseDir := ExtractFilePath(Application.ExeName) + 'MinGW';
+  if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
+    (findString(BaseDir, List) < 0) then
+    List.Add(BaseDir);
 
   ProgFiles := GetEnvironmentVariable('PROGRAMFILES');
-  path := IncludeTrailingPathDelimiter(ProgFiles) + 'Falcon\MinGW';
-  if FileExists(IncludeTrailingPathDelimiter(path) + 'bin\gcc.exe') and
-    (List.IndexOf(path) < 0) then
-    List.Add(path);
+  BaseDir := IncludeTrailingPathDelimiter(ProgFiles) + 'Falcon\MinGW';
+  if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
+    (findString(BaseDir, List) < 0) then
+    List.Add(BaseDir);
 
   //Code::Blocks
-  path := ProgFiles + '\CodeBlocks\MinGW';
-  if FileExists(IncludeTrailingPathDelimiter(path) + 'bin\gcc.exe') and
-    (List.IndexOf(path) < 0) then
-    List.Add(path);
+  BaseDir := ProgFiles + '\CodeBlocks\MinGW';
+  if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
+    (findString(BaseDir, List) < 0) then
+    List.Add(BaseDir);
 
-  path := ProgFiles + '\CodeBlocks 8.02\MinGW';
-  if FileExists(IncludeTrailingPathDelimiter(path) + 'bin\gcc.exe') and
-    (List.IndexOf(path) < 0) then
-    List.Add(path);
+  BaseDir := ProgFiles + '\CodeBlocks 8.02\MinGW';
+  if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
+    (findString(BaseDir, List) < 0) then
+    List.Add(BaseDir);
 
   //MinGW
-  path := ExtractFileDrive(ProgFiles) + '\MinGW';
-  if FileExists(IncludeTrailingPathDelimiter(path) + 'bin\gcc.exe') and
-    (List.IndexOf(path) < 0) then
-    List.Add(path);
+  BaseDir := ExtractFileDrive(ProgFiles) + '\MinGW';
+  if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
+    (findString(BaseDir, List) < 0) then
+    List.Add(BaseDir);
 
   //Dev-C++
-  path := ExtractFileDrive(ProgFiles) + '\Dev-Cpp';
-  if FileExists(IncludeTrailingPathDelimiter(path) + 'bin\gcc.exe') and
-    (List.IndexOf(path) < 0) then
-    List.Add(path);
+  BaseDir := ExtractFileDrive(ProgFiles) + '\Dev-Cpp';
+  if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
+    (findString(BaseDir, List) < 0) then
+    List.Add(BaseDir);
 
-  path := ProgFiles + '\Dev-Cpp\MinGW';
-  if FileExists(IncludeTrailingPathDelimiter(path) + 'bin\gcc.exe') and
-    (List.IndexOf(path) < 0) then
-    List.Add(path);
-  path := ProgFiles + '\Dev-Cpp\MinGW32';
-  if FileExists(IncludeTrailingPathDelimiter(path) + 'bin\gcc.exe') and
-    (List.IndexOf(path) < 0) then
-    List.Add(path);
-  path := ProgFiles + '\Dev-Cpp\MinGW64';
-  if FileExists(IncludeTrailingPathDelimiter(path) + 'bin\gcc.exe') and
-    (List.IndexOf(path) < 0) then
-    List.Add(path);
+  BaseDir := ProgFiles + '\Dev-Cpp\MinGW';
+  if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
+    (findString(BaseDir, List) < 0) then
+    List.Add(BaseDir);
+  BaseDir := ProgFiles + '\Dev-Cpp\MinGW32';
+  if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
+    (findString(BaseDir, List) < 0) then
+    List.Add(BaseDir);
+  BaseDir := ProgFiles + '\Dev-Cpp\MinGW64';
+  if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
+    (findString(BaseDir, List) < 0) then
+    List.Add(BaseDir);
+  Path := GetEnvironmentVariable('PATH');
+  Temp := UpperCase(Path);
+  I := Pos('MINGW', Temp);
+  while I > 0 do
+  begin
+    J := I;
+    while (J > 1) and (Temp[J] <> ';') do
+      Dec(J);
+    K := I;
+    while (K < Length(Temp)) and (Temp[K] <> ';') do
+      Inc(K);
+    Temp2 := Copy(Path, J, K - J + 1);
+    if Temp[J] = ';' then
+    begin
+      Delete(Temp, J + 1, K - J);
+      Delete(Path, J + 1, K - J);
+    end
+    else if Temp[K] = ';' then
+    begin
+      Delete(Temp, J, K - J);
+      Delete(Path, J, K - J);
+    end
+    else
+    begin
+      Delete(Temp, J, K - J + 1);
+      Delete(Path, J, K - J + 1);
+    end;
+    I := I - j + 1;
+    while (I < Length(Temp2)) and (Temp2[I] <> '\') do
+      Inc(I);
+    if Temp2[I] = '\' then
+      Delete(Temp2, I, Length(Temp2) - I + 1);
+    if Temp2[1] = ';' then
+      Delete(Temp2, 1, 1);
+    BaseDir := Temp2;
+    if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
+      (findString(BaseDir, List) < 0) then
+      List.Add(BaseDir);
+    I := Pos('MINGW', Temp);
+  end;
 end;
 
 function TranslateSpecialChars(const S: string): string;
@@ -1315,7 +1372,7 @@ begin
   Result := MinGWPath + '\bin\' + Name;
 end;
 
-function EditorGotoXY(Memo: TSynMemo; X, Y: Integer): Boolean;
+function EditorGotoXY(Memo: TSynEditEx; X, Y: Integer): Boolean;
 var
   DisplayCoord: TDisplayCoord;
   BufferCoord: TBufferCoord;

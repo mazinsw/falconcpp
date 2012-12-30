@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ComCtrls, StdCtrls, ExtCtrls, SynEdit, SynMemo, Buttons,
+  Dialogs, ComCtrls, StdCtrls, ExtCtrls, SynEdit, SynEditEx, SynMemo, Buttons,
   SynEditHighlighter, SynHighlighterCpp;
 
 const
@@ -64,7 +64,7 @@ type
     function GetSintaxString: string;
     procedure SetSintaxString(const S: string);
     procedure Insert(Index: Integer; Item: TSintaxType);
-    procedure UpdateEditor(Editor: TSynMemo; AttributeName: string = '');
+    procedure UpdateEditor(Editor: TSynEditEx; AttributeName: string = '');
     procedure UpdateHighlight(Highlight: TSynCustomHighlighter;
       AttributeName: string = '');
     procedure Clear;
@@ -131,7 +131,6 @@ type
     CbDefSin: TComboBox;
     BtnSave: TSpeedButton;
     BtnDel: TSpeedButton;
-    SynPrev: TSynMemo;
     ListBoxType: TListBox;
     Label13: TLabel;
     Label14: TLabel;
@@ -184,7 +183,7 @@ type
     ClbLinkColor: TColorBox;
     ChbEnhHomeKey: TCheckBox;
     ChbKeepTraiSpa: TCheckBox;
-    ChbShowLineChars: TCheckBox;
+    ChbShowSpaceChars: TCheckBox;
     BtnRestDef: TButton;
     Button1: TButton;
     TSFormatter: TTabSheet;
@@ -195,7 +194,6 @@ type
     GroupBoxFormatterSample: TGroupBox;
     RadioGroupFormatterStyles: TRadioGroup;
     BtnPrevStyle: TButton;
-    SynMemoSample: TSynMemo;
     CheckBoxForceUsingTabs: TCheckBox;
     CheckBoxIndentClasses: TCheckBox;
     CheckBoxIndentSwitches: TCheckBox;
@@ -228,6 +226,7 @@ type
     Label26: TLabel;
     ComboBoxPointerAlign: TComboBox;
     ChbAutoCloseBrackets: TCheckBox;
+    ChbCursorPastEOL: TCheckBox;
     procedure FormKeyPress(Sender: TObject; var Key: Char);
     procedure SynPrevMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -272,6 +271,9 @@ type
     procedure CreateParams(var Params: TCreateParams); override;
   public
     { Public declarations }
+    SynPrev: TSynEditEx;
+    SynMemoSample: TSynEditEx;
+    constructor Create(AOwner: TComponent); override;
     procedure UpdateLangNow;
     procedure Load;
   end;
@@ -408,6 +410,7 @@ var
   C1, C2: TColor;
   L: TStringList;
   I, J: Integer;
+  Sxt: TSintaxType;
 begin
   All := Trim('{', S, '}');
   All := StringReplace(All, ';', #13#10, [rfReplaceAll]);
@@ -438,6 +441,23 @@ begin
     AddSintaxType(StxName, C1, C2, Style);
   end;
   L.Free;
+  // Keep compatibilities
+  if not GetType('Documentation Comment', Sxt) then
+    AddSintaxType('Documentation Comment', clTeal);
+  if not GetType('Type Word', Sxt) then
+  begin
+    if GetType('Reserved Word', Sxt) then
+      AddSintaxType('Type Word', Sxt.Foreground, Sxt.Background, Sxt.Style)
+    else
+      AddSintaxType('Type Word', $00FF0080);
+  end;
+  if not GetType('Instruction Word', Sxt) then
+  begin
+    if GetType('Reserved Word', Sxt) then
+      AddSintaxType('Instruction Word', Sxt.Foreground, Sxt.Background, Sxt.Style)
+    else
+      AddSintaxType('Instruction Word', clBlue);
+  end;
 end;
 
 procedure TSintax.AddSintaxType(Name: string; Foreground: TColor;
@@ -500,7 +520,7 @@ begin
 
 end;
 
-procedure TSintax.UpdateEditor(Editor: TSynMemo; AttributeName: string = '');
+procedure TSintax.UpdateEditor(Editor: TSynEditEx; AttributeName: string = '');
 var
   I: Integer;
   st: TSintaxType;
@@ -638,18 +658,20 @@ begin
   Stx.AddSintaxType('Assembler', clNone);
   Stx.AddSintaxType('Character', clGray);
   Stx.AddSintaxType('Comment', clGreen);
+  Stx.AddSintaxType('Documentation Comment', clTeal);
   Stx.AddSintaxType('Float', $000080FF);
   Stx.AddSintaxType('Hexadecimal', $000080FF);
   Stx.AddSintaxType('Identifier', clNone);
   Stx.AddSintaxType('Number', $000080FF);
   Stx.AddSintaxType('Octal', $000080FF);
   Stx.AddSintaxType('Preprocessor', $00004080);
-  Stx.AddSintaxType('Reserved Word', $00FF0080);
+  Stx.AddSintaxType('Type Word', $00FF0080);
+  Stx.AddSintaxType('Instruction Word', clBlue, clNone, [fsBold]);
   Stx.AddSintaxType('Space', clNone);
   Stx.AddSintaxType('String', clGray);
   Stx.AddSintaxType('Symbol', clNavy, clNone, [fsBold]);
   Stx.AddSintaxType('Gutter', clGray, $00E4E4E4);
-  Stx.AddSintaxType('Selection', clWindowText, clGray);
+  Stx.AddSintaxType('Selection', clWindowText, clSilver);
   FItemIndex := Add(Stx);
 
   //Borland
@@ -659,13 +681,15 @@ begin
   Stx.AddSintaxType('Assembler', clGreen);
   Stx.AddSintaxType('Character', clYellow);
   Stx.AddSintaxType('Comment', clGray);
+  Stx.AddSintaxType('Documentation Comment', clGray);
   Stx.AddSintaxType('Float', clYellow);
   Stx.AddSintaxType('Hexadecimal', clYellow);
   Stx.AddSintaxType('Identifier', clYellow);
   Stx.AddSintaxType('Number', clYellow);
   Stx.AddSintaxType('Octal', clYellow);
   Stx.AddSintaxType('Preprocessor', clYellow);
-  Stx.AddSintaxType('Reserved Word', clWhite);
+  Stx.AddSintaxType('Type Word', clWhite);
+  Stx.AddSintaxType('Instruction Word', clWhite);
   Stx.AddSintaxType('Space', clNone, clNavy);
   Stx.AddSintaxType('String', clYellow);
   Stx.AddSintaxType('Symbol', clYellow);
@@ -680,13 +704,15 @@ begin
   Stx.AddSintaxType('Assembler', clRed);
   Stx.AddSintaxType('Character', $001515A3);
   Stx.AddSintaxType('Comment', clGreen);
+  Stx.AddSintaxType('Documentation Comment', clGreen);
   Stx.AddSintaxType('Float', clNavy);
   Stx.AddSintaxType('Hexadecimal', clNavy);
   Stx.AddSintaxType('Identifier', clNone);
   Stx.AddSintaxType('Number', clNavy);
   Stx.AddSintaxType('Octal', clNavy);
   Stx.AddSintaxType('Preprocessor', clBlue);
-  Stx.AddSintaxType('Reserved Word', clBlue);
+  Stx.AddSintaxType('Type Word', clBlue);
+  Stx.AddSintaxType('Instruction Word', clBlue);
   Stx.AddSintaxType('Space', clNone);
   Stx.AddSintaxType('String', $001515A3);
   Stx.AddSintaxType('Symbol', clNone);
@@ -701,18 +727,20 @@ begin
   Stx.AddSintaxType('Assembler', clNone);
   Stx.AddSintaxType('Character', clGray);
   Stx.AddSintaxType('Comment', clGreen);
+  Stx.AddSintaxType('Documentation Comment', clTeal);
   Stx.AddSintaxType('Float', $000080FF);
   Stx.AddSintaxType('Hexadecimal', $000080FF);
   Stx.AddSintaxType('Identifier', clNone);
   Stx.AddSintaxType('Number', $000080FF);
   Stx.AddSintaxType('Octal', $000080FF);
   Stx.AddSintaxType('Preprocessor', $00004080);
-  Stx.AddSintaxType('Reserved Word', $00FF0080, clNone, [fsBold]);
+  Stx.AddSintaxType('Type Word', $00FF0080);
+  Stx.AddSintaxType('Instruction Word', clBlue, clNone, [fsBold]);
   Stx.AddSintaxType('Space', clNone);
   Stx.AddSintaxType('String', clBlue);
   Stx.AddSintaxType('Symbol', clNavy, clNone, [fsBold]);
   Stx.AddSintaxType('Gutter', clGray, $00E4E4E4);
-  Stx.AddSintaxType('Selection', clWindowText, clGray);
+  Stx.AddSintaxType('Selection', clWindowText, clSilver);
   FItemIndex := Add(Stx);
 end;
 
@@ -821,13 +849,14 @@ begin
     ChbInsMode.Checked := InsertMode;
     ChbGrpUnd.Checked := GroupUndo;
     ChbKeepTraiSpa.Checked := KeepTrailingSpaces;
+    ChbCursorPastEOL.Checked := CursorPastEol;
 
     ChbScrollHint.Checked := ScrollHint;
     ChbTabUnOrIndt.Checked := TabIndentUnindent;
     ChbSmartTabs.Checked := SmartTabs;
     ChbUseTabChar.Checked := UseTabChar;
     ChbEnhHomeKey.Checked := EnhancedHomeKey;
-    ChbShowLineChars.Checked := ShowLineChars;
+    ChbShowSpaceChars.Checked := ShowSpaceChars;
     ChbAutoCloseBrackets.Checked := AutoCloseBrackets;
 
     CboMaxUnd.Text := IntToStr(MaxUndo);
@@ -939,13 +968,14 @@ begin
     InsertMode := ChbInsMode.Checked;
     GroupUndo := ChbGrpUnd.Checked;
     KeepTrailingSpaces := ChbKeepTraiSpa.Checked;
+    CursorPastEol := ChbCursorPastEOL.Checked;
 
     ScrollHint := ChbScrollHint.Checked;
     TabIndentUnindent := ChbTabUnOrIndt.Checked;
     SmartTabs := ChbSmartTabs.Checked;
     UseTabChar := ChbUseTabChar.Checked;
     EnhancedHomeKey := ChbEnhHomeKey.Checked;
-    ShowLineChars := ChbShowLineChars.Checked;
+    ShowSpaceChars := ChbShowSpaceChars.Checked;
     AutoCloseBrackets := ChbAutoCloseBrackets.Checked;
 
     MaxUndo := StrToIntDef(CboMaxUnd.Text, 1024);
@@ -1064,7 +1094,8 @@ begin
   ChbInsMode.Caption := STR_FRM_EDITOR_OPT[6];
   ChbGrpUnd.Caption := STR_FRM_EDITOR_OPT[7];
   ChbKeepTraiSpa.Caption := STR_FRM_EDITOR_OPT[8];
-  ChbShowLineChars.Caption := STR_FRM_EDITOR_OPT[9];
+  ChbCursorPastEOL.Caption := STR_FRM_EDITOR_OPT[139];
+  ChbShowSpaceChars.Caption := STR_FRM_EDITOR_OPT[9];
   ChbAutoCloseBrackets.Caption := STR_FRM_EDITOR_OPT[138];
   ChbScrollHint.Caption := STR_FRM_EDITOR_OPT[10];
   ChbTabUnOrIndt.Caption := STR_FRM_EDITOR_OPT[11];
@@ -1234,7 +1265,7 @@ begin
   if X <= (SynPrev.Gutter.Width + SynPrev.Gutter.RightOffset -
     SynPrev.Gutter.LeftOffset) then
     Exit;
-  if bc.Line = 10 then
+  if bc.Line = SynPrev.Lines.Count then
   begin
     AttrName := 'Selection';
   end
@@ -1404,7 +1435,7 @@ begin
   else
   begin
     ActiveSintax.UpdateEditor(SynPrev, AttrName);
-    SynPrev.InvalidateLine(10);
+    SynPrev.InvalidateLine(SynPrev.Lines.Count);
   end;
   if ActiveSintax.ReadOnly then
   begin
@@ -1528,7 +1559,7 @@ procedure TFrmEditorOptions.SynPrevSpecialLineColors(Sender: TObject;
 var
   st: TSintaxType;
 begin
-  if Line = 10 then
+  if Line = SynPrev.Lines.Count then
   begin
     if not ActiveSintax.GetType('Selection', st) then
       Exit;
@@ -1639,27 +1670,33 @@ begin
   ChbInsMode.Checked := True;
   ChbGrpUnd.Checked := True;
   ChbKeepTraiSpa.Checked := True;
+  ChbCursorPastEOL.Checked := False;
   //-------------------------
   ChbScrollHint.Checked := True;
   ChbTabUnOrIndt.Checked := True;
   ChbSmartTabs.Checked := True;
   ChbUseTabChar.Checked := False;
   ChbEnhHomeKey.Checked := False;
-  ChbShowLineChars.Checked := False;
+  ChbShowSpaceChars.Checked := False;
   ChbAutoCloseBrackets.Checked := True;
   CboMaxUnd.ItemIndex := 0;
   CboTabWdt.ItemIndex := 1;
   //-----------------------------
   ChbHighMatch.Checked := True;
   ClbN.Selected := clBlue;
+  ClbN.Invalidate;
   ClbE.Selected := clRed;
-  ClbB.Selected := clSkyBlue;
+  ClbE.Invalidate;
+  ClbB.Selected := clNone;
+  ClbB.Invalidate;
   //---------------------------
   ChbHighCurLn.Checked := True;
-  ClbCurLn.Selected := $FFE0C2;
+  ClbCurLn.Selected := $FFE8E8;
+  ClbCurLn.Invalidate;
   //---------------------------
   ChbLinkClick.Checked := True;
   ClbLinkColor.Selected := clBlue;
+  ClbLinkColor.Invalidate;
   OptionsChange;
 end;
 
@@ -1818,6 +1855,102 @@ end;
 procedure TFrmEditorOptions.ComboBoxPointerAlignChange(Sender: TObject);
 begin
   OptionsChange;
+end;
+
+constructor TFrmEditorOptions.Create(AOwner: TComponent);
+begin
+  inherited;
+  SynPrev := TSynEditEx.Create(TSSintax);
+  SynMemoSample := TSynEditEx.Create(GroupBoxFormatterSample);
+  SynPrev.Parent := TSSintax;
+  SynPrev.Left := 6;
+  SynPrev.Top := 152;
+  SynPrev.Width := 475;
+  SynPrev.Height := 241;
+  SynPrev.OnMouseDown := SynPrevMouseDown;
+  SynPrev.BracketHighlight.Background := clSkyBlue;
+  SynPrev.BracketHighlight.Foreground := clGray;
+  SynPrev.BracketHighlight.AloneBackground := clNone;
+  SynPrev.BracketHighlight.AloneForeground := clRed;
+  SynPrev.BracketHighlight.Style := [fsBold];
+  SynPrev.BracketHighlight.AloneStyle := [fsBold];
+  SynPrev.LinkOptions.Color := clBlue;
+  SynPrev.LinkOptions.AttributeList.Add('Preprocessor');
+  SynPrev.LinkOptions.AttributeList.Add('Identifier');
+  SynPrev.LinkEnable := True;
+  SynPrev.Gutter.DigitCount := 2;
+  SynPrev.Gutter.LeftOffset := 6;
+  SynPrev.Gutter.RightOffset := 21;
+  SynPrev.Gutter.ShowLineNumbers := True;
+  SynPrev.HideSelection := True;
+  SynPrev.Highlighter := SynCpp;
+  SynPrev.Lines.Text :=
+    '// Sintax Preview'#13 +
+    '#include <stdio.h>'#13 +
+    ''#13 +
+    '/**'#13 +
+    ' * Main program function'#13 +
+    ' */'#13 +
+    'int main(int argc, char *argv[])'#13 +
+    '{'#13 +
+    '    int name[10] = "Falcon C++";'#13 +
+    ''#13 +
+    '    name[0] = '#39'F'#39';'#13 +
+    '    return ( 0x00 * 0765 * 0.7f );'#13 +
+    '}'#13 +
+    'Selected Text';
+  SynPrev.Options := [eoAutoIndent, eoDisableScrollArrows, eoDragDropEditing,
+    eoEnhanceEndKey, eoGroupUndo,
+    eoHideShowScrollbars, eoNoCaret,
+    eoNoSelection, eoScrollPastEol, eoShowScrollHint,
+    eoSmartTabDelete, eoSmartTabs, eoTabsToSpaces];
+  SynPrev.ReadOnly := True;
+  SynPrev.ScrollBars := ssNone;
+  SynPrev.OnGutterClick := SynPrevGutterClick;
+  SynPrev.OnSpecialLineColors := SynPrevSpecialLineColors;
+
+  SynMemoSample.Parent := GroupBoxFormatterSample;
+  SynMemoSample.Left := 10;
+  SynMemoSample.Top := 16;
+  SynMemoSample.Width := 313;
+  SynMemoSample.Height := 320;
+  SynMemoSample.OnMouseDown := SynPrevMouseDown;
+  SynMemoSample.BracketHighlight.Background := clSkyBlue;
+  SynMemoSample.BracketHighlight.Foreground := clGray;
+  SynMemoSample.BracketHighlight.AloneBackground := clNone;
+  SynMemoSample.BracketHighlight.AloneForeground := clRed;
+  SynMemoSample.BracketHighlight.Style := [fsBold];
+  SynMemoSample.BracketHighlight.AloneStyle := [fsBold];
+  SynMemoSample.LinkOptions.Color := clBlue;
+  SynMemoSample.LinkOptions.AttributeList.Add('Preprocessor');
+  SynMemoSample.LinkOptions.AttributeList.Add('Identifier');
+  SynMemoSample.LinkEnable := True;
+  SynMemoSample.Gutter.DigitCount := 2;
+  SynMemoSample.Gutter.LeftOffset := 6;
+  SynMemoSample.Gutter.RightOffset := 21;
+  SynMemoSample.Gutter.ShowLineNumbers := True;
+  SynMemoSample.Gutter.Visible := False;
+  SynMemoSample.HideSelection := True;
+  SynMemoSample.Highlighter := SynCpp;
+  SynMemoSample.Lines.Text :=
+    'namespace foospace'#13 +
+    '{'#13 +
+    '    int Foo()'#13 +
+    '    {'#13 +
+    '        if (isBar)'#13 +
+    '        {'#13 +
+    '            bar();'#13 +
+    '            return 1;'#13 +
+    '        }'#13 +
+    '        else'#13 +
+    '            return 0;'#13 +
+    '    }'#13 +
+    '}';
+  SynMemoSample.Options := [eoAutoIndent, eoDisableScrollArrows,
+    eoDragDropEditing, eoEnhanceEndKey, eoGroupUndo,
+    eoHideShowScrollbars, eoScrollPastEol, eoShowScrollHint,
+    eoSmartTabDelete, eoSmartTabs, eoTabsToSpaces];
+  SynMemoSample.ScrollBars := ssNone;
 end;
 
 end.

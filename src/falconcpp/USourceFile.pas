@@ -5,7 +5,7 @@ interface
 uses
   Windows, SysUtils, Forms, Graphics, Classes, Dialogs,
   Menus, ComCtrls, Controls, ShellApi,
-  SynMemo, SynEdit, XMLDoc, XMLIntf, SynEditHighlighter, SynEditKeyCmds,
+  SynEdit, SynEditEx, XMLDoc, XMLIntf, SynEditHighlighter, SynEditKeyCmds,
   Makefile, Breakpoint, UTemplates, ModernTabs;
 
 const
@@ -285,7 +285,7 @@ type
 
   TSourceFileSheet = class(TPropertySheet)
   private
-    FSynMemo: TSynMemo;
+    FSynMemo: TSynEditEx;
     FSourceFile: TSourceFile;
     procedure TextEditorMouseDown(Sender: TObject;
       Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
@@ -293,7 +293,7 @@ type
     constructor CreateEditor(SourceFile: TSourceFile; PageCtrl: TModernPageControl;
       SelectTab: Boolean = True);
     destructor Destroy; override;
-    property Memo: TSynMemo read FSynMemo;
+    property Memo: TSynEditEx read FSynMemo;
     property SourceFile: TSourceFile read FSourceFile;
   end;
 
@@ -2148,11 +2148,13 @@ begin
   FSourceFile := SourceFile;
   FSourceFile.FSheet := Self;
   FSheetType := SHEET_TYPE_FILE;
-  FSynMemo := TSynMemo.Create(Self);
+  FSynMemo := TSynEditEx.Create(Self);
   //FSynMemo.BorderStyle := bsNone;
   with FrmFalconMain.Config.Editor do
   begin
     Options := FSynMemo.Options;
+    Include(Options, eoKeepCaretX);
+    Include(Options, eoShowIndentGuides);
     //------------ General --------------------------//
     if AutoIndent then
       Include(Options, eoAutoIndent)
@@ -2169,7 +2171,10 @@ begin
       Exclude(Options, eoTabIndent)
     else
       Include(Options, eoTrimTrailingSpaces);
-
+    if CursorPastEol then
+      Include(Options, eoScrollPastEol)
+    else
+      Exclude(Options, eoScrollPastEol);
     if ScrollHint then
       Exclude(Options, eoShowScrollHint)
     else
@@ -2194,10 +2199,10 @@ begin
       Include(Options, eoEnhanceHomeKey)
     else
       Exclude(Options, eoEnhanceHomeKey);
-    if ShowLineChars then
-      Include(Options, eoShowSpecialChars)
+    if ShowSpaceChars then
+      Include(Options, eoShowSpaceChars)
     else
-      Exclude(Options, eoShowSpecialChars);
+      Exclude(Options, eoShowSpaceChars);
 
     FSynMemo.MaxUndo := MaxUndo;
     FSynMemo.TabWidth := TabWidth;

@@ -5106,7 +5106,7 @@ end;
 procedure TFrmFalconMain.UpdateDownloadFinish(Sender: TObject;
    State: TDownloadState; Canceled: Boolean);
 begin
-  if not Canceled and not XMLOpened then
+  if not Canceled and not XMLOpened and (State <> dsError) then
   begin
     XMLOpened := True;
     if CanUpdate(UpdateDownload.FileName) then

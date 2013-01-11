@@ -1683,9 +1683,9 @@ begin
   CboTabWdt.ItemIndex := 1;
   //-----------------------------
   ChbHighMatch.Checked := True;
-  ClbN.Selected := clBlue;
+  ClbN.Selected := clRed;
   ClbN.Invalidate;
-  ClbE.Selected := clRed;
+  ClbE.Selected := clMaroon;
   ClbE.Invalidate;
   ClbB.Selected := clNone;
   ClbB.Invalidate;

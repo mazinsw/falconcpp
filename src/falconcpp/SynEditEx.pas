@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Forms, Controls, Messages, Classes, SynEdit, SynEditHighlighter, Graphics,
-  SynEditTypes;
+  SynEditTypes, SynEditStrConst,SynEditTextBuffer;
 
 const
   DirectivesNames: array[0..10] of String = (
@@ -15,6 +15,40 @@ const
 type
   TLinkClickEvent = procedure(Sender: TObject; Word, Attri, FirstWord: String)
     of object;
+
+  TSynBracketHighlight = class(TPersistent)
+  private
+    fBackground: TColor;
+    fForeground: TColor;
+    fAloneBackground: TColor;
+    fAloneForeground: TColor;
+    fStyle: TFontStyles;
+    fAloneStyle: TFontStyles;
+    procedure SetStyle(Value: TFontStyles);
+    procedure SetAloneStyle(Value: TFontStyles);
+  public
+    constructor Create;
+  published
+    property Background: TColor read fBackground write fBackground;
+    property Foreground: TColor read fForeground write fForeground;
+    property AloneBackground: TColor read fAloneBackground write fAloneBackground;
+    property AloneForeground: TColor read fAloneForeground write fAloneForeground;
+    property Style: TFontStyles read fStyle write SetStyle;
+    property AloneStyle: TFontStyles read fAloneStyle write SetAloneStyle;
+  end;
+
+  TSynLinkOptions = class(TPersistent)
+  private
+    fColor: TColor;
+    fAttributeList: TStrings;
+    procedure SetAttriList(Value: TStrings);
+  public
+    constructor Create;
+    destructor Destroy; override;
+  published
+    property Color: TColor read fColor write fColor;
+    property AttributeList: TStrings read fAttributeList write SetAttriList;
+  end;
 
   TSynEditEx = class(TSynEdit)
   private
@@ -37,8 +71,23 @@ type
       TransientType: TTransientType);
     procedure DoLinkClick(Word, Attri, FirstWord: String);
     procedure PaintLink(TransientType: TTransientType);
+    procedure AdvanceSpaceBreakLine(aLine: Integer; var LeftOffset: Integer;
+      var Unindent: Boolean);
+    procedure ProcessBreakLine;
+    procedure ProcessCloseBracketChar;
+    function GetLeftSpacing(CharCount: Integer; WantTabs: Boolean): String;
+    function LeftSpacesEx(const Line: string; WantTabs: Boolean): Integer;
+    function RightSpacesEx(const Line: string; WantTabs: Boolean): Integer;
+    procedure ReplaceText(const S: string; aBlockBegin,
+      aBlockEnd: TBufferCoord);
+    function GetLastNonSpaceChar(const S: string): Char;
+    function GetFirstNonSpaceChar(const S: string): Char;
   protected
+    procedure DoDeleteLastCharBeforeCaret(SpaceLen: Integer;
+      var SpaceCount: Integer); override;
+    procedure DoTabKeyIndent(MinLen: Integer; var I: Integer); override;
     procedure KeyUp(var Key: Word; Shift: TShiftState); override;
+    procedure KeyPress(var Key: Char); override;
     procedure KeyDown(var Key: Word; Shift: TShiftState); override;
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y:
       Integer); override;
@@ -106,6 +155,90 @@ begin
   Result := False;
 end;
 
+function CharExtreme(const S1, S2: String; C1, C2: Char): Boolean;
+var
+  p, pend: PChar;
+begin
+  p := Pchar(S1);
+  pend := p + Length(S1);
+  if pend > p then
+  begin
+    repeat
+      Dec(pend);
+      if not (pend^ in [#9, #32]) then break;
+    until pend <= p;
+  end;
+  if pend^ <> C1 then
+  begin
+    Result := False;
+    Exit;
+  end;
+  p := Pchar(S2);
+  if p^ <> #0 then
+  begin
+    repeat
+      if not (p^ in [#9, #32]) then break;
+      Inc(p);
+    until p^ = #0;
+  end;
+  if p^ <> C2 then
+  begin
+    Result := False;
+    Exit;
+  end;
+  Result := True;
+end;
+
+{TSynBracketHighlight}
+
+procedure TSynBracketHighlight.SetStyle(Value: TFontStyles);
+begin
+  if fStyle <> Value then begin
+    fStyle := Value;
+  end;
+end;
+
+procedure TSynBracketHighlight.SetAloneStyle(Value: TFontStyles);
+begin
+  if fAloneStyle <> Value then begin
+    fAloneStyle := Value;
+  end;
+end;
+
+constructor TSynBracketHighlight.Create;
+begin
+  inherited Create;
+  fBackground := clSkyBlue;
+  fForeground := clBlue;
+  fAloneBackground := clNone;
+  fAloneForeground := clRed;
+  fAloneStyle := [fsBold];
+  fStyle := [fsBold];
+end;
+
+{TSynLinkOptions}
+
+constructor TSynLinkOptions.Create;
+begin
+  inherited Create;
+  fColor := clBlue;
+  fAttributeList := TStringList.Create;
+end;
+
+destructor TSynLinkOptions.Destroy;
+begin
+  fAttributeList.Free;
+  inherited Create;
+end;
+
+procedure TSynLinkOptions.SetAttriList(Value: TStrings);
+begin
+  if Assigned(Value) then
+    fAttributeList.Assign(Value);
+end;
+
+{TSynEditEx}
+
 constructor TSynEditEx.Create(AOwner: TComponent);
 begin
   inherited;
@@ -114,8 +247,8 @@ begin
   OnPaintTransient := PaintBracket;
   fLinkOptions := TSynLinkOptions.Create;
   fLinkEnable := True;
-  fLinkOptions.AttributeList.Add('Preprocessor');
-  fLinkOptions.AttributeList.Add('Identifier');
+  fLinkOptions.AttributeList.Add(SYNS_AttrPreprocessor);
+  fLinkOptions.AttributeList.Add(SYNS_AttrIdentifier);
   fCurrShiftState := [];
 end;
 
@@ -158,6 +291,15 @@ begin
   inherited;
 end;
 
+procedure TSynEditEx.KeyPress(var Key: Char);
+begin
+  inherited;
+  if Key = '}' then
+    ProcessCloseBracketChar
+  else if Key = #13 then
+    ProcessBreakLine;
+end;
+
 procedure TSynEditEx.MouseMove(Shift: TShiftState; X, Y: Integer);
 begin
   fCurrShiftState := Shift;
@@ -176,6 +318,161 @@ begin
     if Button = mbLeft then
       if ProcessLinkClick(X, Y) then Exit;
   end;
+end;
+
+procedure TSynEditEx.AdvanceSpaceBreakLine(aLine: Integer;
+  var LeftOffset: Integer; var Unindent: Boolean);
+var
+  wStart: TBufferCoord;
+  token, PrevLine: String;
+  p, pt, sp, pend: PChar;
+  j, i, k, tokentype, tokenstart: Integer;
+  CheckPrevLines, HasBreak, SkipComment: Boolean;
+  attri: TSynHighlighterAttributes;
+begin
+  Unindent := False;
+  LeftOffset := 0;
+  i := 0;
+  k := 0;
+  SkipComment := False;
+  while aLine >= 0 do
+  begin
+    PrevLine := Lines[aLine];
+    i := 0;
+    k := 0;
+    p := PChar(PrevLine);
+    if p^ <> #0 then
+      repeat
+        if not (p^ in [#9, #32]) then Break;
+        if p^ = #9 then
+          Inc(k, TabWidth)
+        else
+          Inc(k);
+        Inc(i);
+        Inc(p);
+      until p^ = #0;
+    pt := PChar(PrevLine);
+    Inc(pt, Length(PrevLine) - 1);
+    if (p^ <> #0) and not SkipComment then
+    begin
+      p := PChar(PrevLine);
+      pt := p + Length(PrevLine) - 1;
+      while pt >= p do
+      begin
+        if not (pt^ in [#9, #32]) then Break;
+        Dec(pt);
+      end;
+      if (pt - 1 >= p) and (pt^ = '/') and ((pt - 1)^ = '*') then
+        SkipComment := True
+      else
+        Break;
+      Dec(pt, 2);
+    end;
+    if SkipComment then
+    begin
+      p := PChar(PrevLine);
+      while pt > p do
+      begin
+        if (pt^ = '*') and ((pt - 1)^ = '/') then Break;
+        Dec(pt);
+      end;
+      if (pt > p) then
+      begin
+        //SkipComment := False;
+        Break;
+      end;
+    end;
+    Dec(aLine);
+  end;
+  if aLine < 0 then
+    Exit;
+  PrevLine := Lines[aLine];
+  p := PChar(PrevLine);
+  pend := p + Length(PrevLine);
+  if pend > p then
+  begin
+    repeat
+      Dec(pend);
+      if not (pend^ in [#9, #32]) then break;
+    until pend <= p;
+  end;
+  if pend^ = '{' then
+  begin
+    Inc(k, TabWidth);
+    LeftOffset := k;
+    Exit;
+  end;
+  CheckPrevLines := False;
+  HasBreak := False;
+  wStart := BufferCoord(i + 1, aLine + 1);
+  if GetHighlighterAttriAtRowCol(wStart, token, attri) then
+  begin
+    if ((attri.name = SYNS_AttrInstructionWord) and
+       ((token = 'if') or (token = 'case') or (token = 'while')
+       or (token = 'else') or (token = 'for') or (token = 'default'))) or
+       ((attri.name = SYNS_AttrTypeWord) and
+       ((token = 'public') or (token = 'private') or (token = 'protected'))) or
+       ((attri.name = 'Symbol') and (token = '{')) then
+    begin
+      if pend^ <> ';' then
+        Inc(k, TabWidth);
+      LeftOffset := k;
+      Exit;
+    end
+    else
+    begin
+      CheckPrevLines := True;
+      HasBreak := (attri.name = SYNS_AttrInstructionWord) and (token = 'break');
+    end;
+  end;
+  // dont indent when single line statement block
+  aLine := aLine - 1;
+  while CheckPrevLines and (aLine >= 0) do
+  begin
+    PrevLine := Lines[aLine];
+    if (Length(PrevLine) >= 1) then
+    begin
+      p := @PrevLine[1];
+      j := 0;
+      repeat
+        if not (p^ in [#9, #32]) then break;
+        Inc(j);
+        Inc(p);
+      until p^ = #0;
+      if (p^ = '{') then
+        Break;
+      if p^ <> #0 then
+      begin
+        sp := @PrevLine[1];
+        p := sp + Length(PrevLine) - 1;
+        repeat
+          if not (p^ in [#9, #32]) then break;
+          Dec(p);
+        until p < sp;
+        if (p >= sp) and (p^ = '{') then
+          Break;
+        wStart := BufferCoord(j + 1, aLine + 1);
+        if GetHighlighterAttriAtRowColEx(wStart, token, tokentype, tokenstart,
+            attri) then
+        begin
+          if ((attri.name = SYNS_AttrInstructionWord) and
+            ((token = 'if') or (token = 'while') or (token = 'else')
+            or (token = 'for'))) or HasBreak then
+          begin
+            if (tokenstart - 1 >= 0) then
+            begin
+              Unindent := True;
+              LeftOffset := k - TabWidth;
+              Exit;
+            end;
+          end;
+        end;
+        Break;
+      end;
+    end;
+    Dec(aLine);
+  end;
+  LeftOffset := k;
 end;
 
 procedure TSynEditEx.DoLinkClick(Word, Attri, FirstWord: String);
@@ -322,40 +619,6 @@ begin
     Canvas.TextOut(Pt.X, Pt.Y, Word);
   end;
   Canvas.Font.Style := Canvas.Font.Style - [fsUnderline];
-end;
-
-function CharExtreme(const S1, S2: String; C1, C2: Char): Boolean;
-var
-  p, pend: PChar;
-begin
-  p := Pchar(S1);
-  pend := p + Length(S1);
-  if pend > p then
-  begin
-    repeat
-      Dec(pend);
-      if not (pend^ in [#9, #32]) then break;
-    until pend <= p;
-  end;
-  if pend^ <> C1 then
-  begin
-    Result := False;
-    Exit;
-  end;
-  p := Pchar(S2);
-  if p^ <> #0 then
-  begin
-    repeat
-      if not (p^ in [#9, #32]) then break;
-      Inc(p);
-    until p^ = #0;
-  end;
-  if p^ <> C2 then
-  begin
-    Result := False;
-    Exit;
-  end;
-  Result := True;
 end;
 
 procedure TSynEditEx.ProcessHighlighterLink;
@@ -543,14 +806,16 @@ var P, Pa: TBufferCoord;
     Pix, PixB: TPoint;
     Alone: Boolean;
     D     : TDisplayCoord;
-    S: String;
+    SkipClear: Boolean;
+    S, LineStr: string;
     I, FontSize: Integer;
     Attri: TSynHighlighterAttributes;
-    start: Integer;
+    start, LineLen: Integer;
     TmpCharA, TmpCharB: Char;
     ftStyle: TFontStyles;
 begin
-  if SelAvail then Exit;
+  if SelAvail or not BracketHighlighting then
+    Exit;
 //if you had a highlighter that used a markup language, like html or xml, then you would want to highlight
 //the greater and less than signs as well as illustrated below
 
@@ -564,21 +829,20 @@ begin
       2: begin OpenChars[i] := '['; CloseChars[i] := ']'; end;
       3: begin OpenChars[i] := '<'; CloseChars[i] := '>'; end;
     end;
-
   P := CaretXY;
   D := DisplayXY;
-
-  Start := SelStart;
-
-  if (Start > 0) and (Start <= length(Text)) then
-    TmpCharA := Text[Start]
+  Start := P.Char - 1;
+  LineStr := LineText;
+  LineLen := Length(LineStr);
+  if (Start > 0) and (Start <= LineLen) then
+    TmpCharA := LineStr[Start]
   else TmpCharA := #0;
-
-  if (Start < length(Text)) then
-    TmpCharB := Text[Start + 1]
-  else TmpCharB := #0;
-
-  if not(TmpCharA in AllBrackets) and not(TmpCharB in AllBrackets) then exit;
+  if (Start < LineLen) then
+    TmpCharB := LineStr[Start + 1]
+  else
+    TmpCharB := #0;
+  if not(TmpCharA in AllBrackets) and not(TmpCharB in AllBrackets) then
+    Exit;
   S := TmpCharA;
   if not(TmpCharA in AllBrackets) then
     S := TmpCharB
@@ -588,7 +852,7 @@ begin
   if not Assigned(Highlighter) or not Assigned(Attri) then Exit;
   if (Highlighter.SymbolAttribute = Attri) then
   begin
-    for i := low(OpenChars) to High(OpenChars) do
+    for i := Low(OpenChars) to High(OpenChars) do
     begin
       if (S = OpenChars[i]) or (S = CloseChars[i]) then
       begin
@@ -600,13 +864,11 @@ begin
           PixB := CharToPixels(P)
         else
           Alone := True;
-
         Canvas.Brush.Style := bsSolid;//Clear;
         ftStyle := Canvas.Font.Style;
         Canvas.Font.Assign(Font);
         Canvas.Font.Style := Attri.Style;
         FontSize := Canvas.Font.Size;
-
         if (TransientType = ttAfter) then
         begin
           if (Pix.X > GutterWidth) and not Alone then
@@ -639,6 +901,7 @@ begin
           Canvas.Brush.Color := Highlighter.WhitespaceAttribute.Background;
         if Canvas.Brush.Color = clNone then
           Canvas.Brush.Color := clWhite;
+        SkipClear := False;
         if Pix.X > GutterWidth then
         begin
           if Alone or (TransientType <> ttAfter) then
@@ -649,14 +912,22 @@ begin
           end
           else
           begin
-            Canvas.TextOut(Pix.X, Pix.Y, ' ');
+            if (TransientType = ttAfter) and (Pa.Line = P.Line) and (Pa.Char + 1 = P.Char) and
+              (PixB.X > GutterWidth) then
+            begin
+              SkipClear := True;
+              Canvas.TextOut(Pix.X, Pix.Y, '  ');
+            end
+            else
+            begin
+              Canvas.TextOut(Pix.X, Pix.Y, ' ');
+            end;
             Canvas.Brush.Style := bsClear;
             Canvas.Font.Size := FontSize + 2;
             Canvas.TextOut(Pix.X, Pix.Y - (Canvas.TextHeight(S) - LineHeight) div 2, S);
             Canvas.Brush.Style := bsSolid;
           end;
         end;
-
         if not Alone and (PixB.X > GutterWidth) then
         begin
           if (TransientType <> ttAfter) then
@@ -687,7 +958,8 @@ begin
           end
           else
           begin
-            Canvas.TextOut(PixB.X, PixB.Y, ' ');
+            if not SkipClear then
+              Canvas.TextOut(PixB.X, PixB.Y, ' ');
             Canvas.Brush.Style := bsClear;
             Canvas.Font.Size := FontSize + 2;
             if S = OpenChars[i] then
@@ -703,6 +975,233 @@ begin
     end;//for i :=
     Canvas.Brush.Style := bsSolid;
   end;
+end;
+
+function TSynEditEx.GetLeftSpacing(CharCount: Integer; WantTabs: Boolean): String;
+begin
+  if (WantTabs) and (not (eoTabsToSpaces in Options)) and (CharCount>=TabWidth) then
+      Result:=StringOfChar(#9,CharCount div TabWidth)+StringOfChar(#32,CharCount mod TabWidth)
+  else Result:=StringOfChar(#32,CharCount);
+end;
+
+function TSynEditEx.LeftSpacesEx(const Line: string; WantTabs: Boolean): Integer;
+var
+  p: PChar;
+begin
+  p := pointer(Line);
+  if Assigned(p) and (eoAutoIndent in Options) then
+  begin
+    Result := 0;
+    while p^ in [#1..#32] do
+    begin
+      if (p^ = #9) and WantTabs then
+        Inc(Result, TabWidth)
+      else
+        Inc(Result);
+      Inc(p);
+    end;
+  end
+  else
+    Result := 0;
+end;
+
+function TSynEditEx.RightSpacesEx(const Line: string; WantTabs: Boolean): Integer;
+var
+  p, pend: PChar;
+begin
+  p := pointer(Line);
+  pend := p + Length(Line) - 1;
+  if Assigned(p) and (eoAutoIndent in Options) then
+  begin
+    Result := 0;
+    while (pend >= p) and (pend^ in [#1..#32]) do
+    begin
+      if (pend^ = #9) and WantTabs then
+        Inc(Result, TabWidth)
+      else
+        Inc(Result);
+      Dec(pend);
+    end;
+  end
+  else
+    Result := 0;
+end;
+
+procedure TSynEditEx.ReplaceText(const S: string; aBlockBegin, aBlockEnd: TBufferCoord);
+var
+  TmpStr: string;
+begin
+  BeginUndoBlock;
+  SetCaretAndSelection(aBlockBegin, aBlockBegin, aBlockEnd);
+  TmpStr := SelText;
+  SetSelTextPrimitive(S);
+  UndoList.AddChange(crReplace, aBlockBegin, aBlockEnd, TmpStr, smNormal);
+  EndUndoBlock;
+end;
+
+function TSynEditEx.GetLastNonSpaceChar(const S: string): Char;
+var
+  p, pend: PChar;
+begin
+  Result := #0;
+  p := Pointer(S);
+  pend := p + Length(S) - 1;
+  if Assigned(p) then
+  begin
+    while pend >= p do
+    begin
+      if not (pend^ in [#32, #9]) then
+      begin
+        Result := pend^;
+        Break;
+      end;
+      Dec(pend);
+    end;
+  end;
+end;
+
+function TSynEditEx.GetFirstNonSpaceChar(const S: string): Char;
+var
+  p: PChar;
+begin
+  Result := #0;
+  p := Pointer(S);
+  if Assigned(p) then
+  begin
+    while p^ <> #0 do
+    begin
+      if not (p^ in [#32, #9]) then
+      begin
+        Result := p^;
+        Break;
+      end;
+      Inc(p);
+    end;
+  end;
+end;
+
+// Indentation enhancement
+
+procedure TSynEditEx.ProcessBreakLine;
+var
+  c, bCaret: TBufferCoord;
+  LineStr, PrevLineStr, StrPrevCaret, StrPosCaret, TmpStr: string;
+  LeftOffset, SpaceCount, I: Integer;
+  lstch, fstch: Char;
+  Unindent, caretChanged: Boolean;
+begin
+  if not (eoAutoIndent in Options) then
+    Exit;
+  caretChanged:= False;
+  c := CaretXY;
+  PrevLineStr := Lines[c.Line - 2];
+  LineStr := LineText;
+  StrPrevCaret := Copy(LineStr, 1, c.Char - 1);
+  StrPosCaret := Copy(LineStr, c.Char, Length(LineStr) - c.Char + 1);
+  lstch := GetLastNonSpaceChar(PrevLineStr);
+  fstch := GetFirstNonSpaceChar(StrPosCaret);
+  AdvanceSpaceBreakLine(c.Line - 1, LeftOffset, Unindent);
+  if (lstch = '{') and (fstch = '}') then
+  begin
+    Inc(LeftOffset, TabWidth);
+    caretChanged := True;
+    bCaret := CaretXY;
+    bCaret.Char := LeftOffset + 1;
+    BeginUndoBlock;
+    TmpStr := GetLeftSpacing(LeftOffset, WantTabs and not (eoTabsToSpaces in Options));
+    Lines.Insert(CaretY - 1, TmpStr);
+    UndoList.AddChange(crLineBreak, CaretXY, CaretXY, '', smNormal);
+    EndUndoBlock;
+    Dec(LeftOffset, TabWidth);
+  end
+  else if (fstch = '{') and (LeftOffset >= TabWidth) then
+  begin
+    Dec(LeftOffset, TabWidth);
+    caretChanged := True;
+    bCaret := CaretXY;
+    Inc(bCaret.Char);
+  end;
+  I := RightSpacesEx(StrPrevCaret, True);
+  SpaceCount := LeftOffset - I;
+  if Unindent then
+  begin
+    TmpStr := GetLeftSpacing(-SpaceCount, WantTabs and not (eoTabsToSpaces in Options));
+    ReplaceText('', BufferCoord(CaretX - Length(TmpStr), CaretY), CaretXY);
+    if not caretChanged then
+      bCaret := CaretXY;
+  end
+  else
+  begin
+    TmpStr := GetLeftSpacing(SpaceCount, WantTabs and not (eoTabsToSpaces in Options));
+    SelText := TmpStr;
+    if not caretChanged then
+      bCaret := CaretXY;
+  end;
+  InternalCaretXY := bCaret;
+end;
+
+procedure TSynEditEx.ProcessCloseBracketChar;
+var
+  c, CaretNew, StartOfBlock, EndOfBlock: TBufferCoord;
+  LineStr, StrPrevBracket, StrBracket, Temp: string;
+  SpaceCount: Integer;
+begin
+  c := CaretXY;
+  LineStr := LineText;
+  StrPrevBracket := Copy(LineStr, 1, c.Char - 2);
+  StrBracket := Copy(LineStr, c.Char - 1, Length(LineStr) - c.Char + 2);
+  CaretNew := GetMatchingBracketEx(BufferCoord(C.Char - 1, C.Line));
+  if (CaretNew.Char > 0) and (CaretNew.Line > 0) and
+     (Length(Trim(StrPrevBracket)) = 0) then
+  begin
+    SpaceCount := LeftSpacesEx(Lines[CaretNew.Line - 1], True);
+    Temp := GetLeftSpacing(SpaceCount, WantTabs and not (eoTabsToSpaces in Options));
+    StartOfBlock := BufferCoord(1, c.Line);
+    EndOfBlock := BufferCoord(c.Char, c.Line);
+    ReplaceText(Temp + StrBracket[1], StartOfBlock, EndOfBlock);
+  end;
+end;
+
+procedure TSynEditEx.DoDeleteLastCharBeforeCaret(SpaceLen: Integer;
+  var SpaceCount: Integer);
+var
+  Unindent: Boolean;
+begin
+  inherited;
+  Unindent := False;
+  SpaceCount := 0;
+  if SpaceLen > 0 then
+  begin
+    AdvanceSpaceBreakLine(CaretY - 1, SpaceCount, Unindent);
+    if (SpaceCount = SpaceLen) and not Unindent then
+      SpaceCount := 0
+    else
+      SpaceCount := Length(GetLeftSpacing(SpaceCount, WantTabs and not (eoTabsToSpaces in Options)));
+    if SpaceCount > SpaceLen then
+      SpaceCount := 0;
+  end;
+  if SpaceCount = SpaceLen then
+  begin
+    if Unindent then
+      Dec(SpaceCount, TabWidth)
+    else
+      SpaceCount := 0;
+  end;
+end;
+
+procedure TSynEditEx.DoTabKeyIndent(MinLen: Integer; var I: Integer);
+var
+  Unindent: Boolean;
+  J, iLine: Integer;
+begin
+  inherited;
+  iLine := CaretY - 1;
+  AdvanceSpaceBreakLine(iLine, I, Unindent);
+  J := LeftSpacesEx(Copy(Lines[iLine], 1, MinLen - 1), True);
+  if I > J then
+    Dec(I, J)
+  else if I <= J then
+    I := TabWidth;
 end;
 
 end.

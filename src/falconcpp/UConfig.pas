@@ -317,12 +317,12 @@ begin
     TabWidth := ini.ReadInteger('EditorOptions', 'TabWidth', 4);
     //------------------------------//
     HighligthMatchBraceParentheses := ini.ReadBool('EditorOptions', 'HighligthMatchBraceParentheses', True);
-    NormalColor := StringToColor(ini.ReadString('EditorOptions', 'NormalColor', 'clBlue'));
-    ErrorColor := StringToColor(ini.ReadString('EditorOptions', 'ErrorColor', 'clRed'));
-    BgColor := StringToColor(ini.ReadString('EditorOptions', 'BgColor', 'clSkyBlue'));
+    NormalColor := StringToColor(ini.ReadString('EditorOptions', 'NormalColor', 'clRed'));
+    ErrorColor := StringToColor(ini.ReadString('EditorOptions', 'ErrorColor', 'clMaroon'));
+    BgColor := StringToColor(ini.ReadString('EditorOptions', 'BgColor', 'clNone'));
 
     HighligthCurrentLine := ini.ReadBool('EditorOptions', 'HighligthCurrentLine', True);
-    CurrentLineColor := StringToColor(ini.ReadString('EditorOptions', 'CurrentLineColor', '$FFE0C2'));
+    CurrentLineColor := StringToColor(ini.ReadString('EditorOptions', 'CurrentLineColor', '$FFE8E8'));
 
     LinkClick := ini.ReadBool('EditorOptions', 'LinkClick', True);
     LinkColor := StringToColor(ini.ReadString('EditorOptions', 'LinkColor', 'clBlue'));

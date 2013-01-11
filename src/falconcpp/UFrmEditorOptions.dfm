@@ -473,7 +473,7 @@ object FrmEditorOptions: TFrmEditorOptions
         Top = 32
         Width = 65
         Height = 21
-        ItemHeight = 13
+        ItemHeight = 0
         TabOrder = 2
         Text = '10'
         OnChange = CboSizeChange
@@ -483,7 +483,7 @@ object FrmEditorOptions: TFrmEditorOptions
         Top = 32
         Width = 185
         Height = 21
-        ItemHeight = 13
+        ItemHeight = 0
         TabOrder = 3
         OnSelect = CboEditFontSelect
       end
@@ -697,7 +697,7 @@ object FrmEditorOptions: TFrmEditorOptions
         Width = 114
         Height = 21
         AutoComplete = False
-        ItemHeight = 13
+        ItemHeight = 0
         MaxLength = 48
         TabOrder = 1
         OnSelect = CbDefSinSelect

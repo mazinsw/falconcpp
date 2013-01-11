@@ -1,12 +1,2 @@
-NovoArquivo.c:4: warning: return type of 'main' is not 'int'
-NovoArquivo.c:7: warning: 'return' with a value, in function returning void
-NovoArquivo.c:7: warning: 'return' with no value, in function returning non-void
-NovoArquivo.c:10: error: redefinition of 'teste'
-NovoArquivo.c:6:11: warning: integer constant is so large that it is unsigned
-NovoArquivo.c:6: error: 'signed' or 'unsigned' invalid for 'a'
-NovoArquivo.c:6: error: variable or field 'a' declared void
-NovoArquivo.c:6: error: expected primary-expression before 'return'
-NovoArquivo.c:7: error: redeclaration of 'a' with no linkage
-email.cpp:(.text+0x323): undefined reference to `ZNSsC1EPKcRKSaIcE'
-ld: cannot open output file bin\print_server.exe: Permission denied
-NovoArquivo.c:6:13: error: too many decimal points in number
+main.cpp:15:21: fatal error: GL/glut.h: No such file or directory
+compilation terminated.

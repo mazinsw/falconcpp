@@ -420,7 +420,7 @@ Version=your translate version
 4001=Application Update
 4002=Looking for updates
 4003=&Update
-4004=Falcon C++ is open, do you want to close it!
+4004=Falcon C++ is open, do you want to close it?
 4005=Update failed
 4006=Conection problem.
 4007=Upgrade completed successfully.
@@ -491,8 +491,9 @@ Version=your translate version
 4338=Insert Mode
 4339=Group Undo
 4340=Keep Trailing Spaces
-4341=Show Line Characters
+4341=Show Space and Tab Characters
 4470=Auto close brackets/parentheses
+4471=Cursor past EOL
 4342=Scroll Hint
 4343=Tab Indent/Unindent
 4344=Smart Tabs
@@ -633,7 +634,7 @@ Version=your translate version
 4467=Custom Code Template File:
 4468=Open
 4469=Edit
-#last 4470
+#last 4471
 
 #Form Environment Options
 4569=Environment Options
@@ -712,6 +713,157 @@ Version=your translate version
 6001=Process returned %ld   execution time : %0.3f s
 6002=Press any key to continue.
 
+#Package Manager
+#Loading form
+7001=Please wait while extract package...
+7002=unpacking data: %d%%
+#Wizard form
+7101=%s Installation
+7102=< Back
+7103=Next >
+7104=Cancel
+7105=I &Agree
+7106=Install
+7107=Finish
+7108=Want to restart the system?
+7109=Falcon C++ Installation Wizard
+7110=Are you sure you want to quit %s Installation?
+7111=Error can't open file "%s".
+7112=Error can't create file "%s".
+7113=Error can't decompress file "%s".
+7114=%s has been installed sucessfull.
+7115=Package entry not found!
+7116=Dependencies:
+7117=Creating directory:
+7118=Error creating directory:
+7119=%s has been installed with errors\n folder '%s' couldn't be created.
+7120=%s has been installed with errors\n%d couldn't be installed.
+7121=Installation of %s has been aborted:\nError couldn't create directory: %s.
+7122=Error opening file for writing:
+7123=%s has been installed with errors\nfile '%s' couldn't be installed.
+7124=Installation of %s has been aborted:\nError couldn't open file '%s' for writing.
+7125=Error opening temp file:
+7126=Removing temp files...
+#Welcome frame
+7201=Welcome to the %s Package Installation Wizard
+7202=This wizard will guide you through the instalation of %s.
+7203=It is recommended that you close Falcon C++ application before starting Installation. This will make it possible to update all files on the compiler folder.
+7204=Click Next to continue.
+#Install step frame
+7301=Falcon C++ Install Package
+#Agreement frame
+7401=If you accept the terms of the agreement, click I Agree to continue. You must accept the agreement to install %s.
+7402=License Agreement
+7403=Please review the license terms before installing %s.
+7404=Press Page Down to see the rest of the agreement.
+#Readme frame
+7501=Press Page Down to see the rest of the README.
+7502=Click Next to continue.
+7503=README
+7504=Please read the following README.
+#Description frame
+7601=Package description
+7602=Package details of %s.
+7603=Space required:
+7604=Space available:
+7605=Package description
+7606=Name:
+7607=Version:
+7608=Website:
+7609=Description:
+7610=Click Install to start the installation.
+#Progress frame
+7701=Show details
+7702=Installing
+7703=Please wait while %s Package is being installed.
+7704=Click Abort to stop the instalation,\nRetry to try again, or\nIgnore to skip this file.
+#Finish frame
+7801=Completing the %s Installation Wizard
+7802=Click Finish to close this wizard.
+7803=Show Package Manager
+#Uninstall form
+7901=Uninstalling package...
+7902=Ok
+7903=Complete.
+7904=Package "%s" not found
+7905=Others Depends:
+#Package Manager form
+8001=Falcon C++ Package Manager
+8002=Packages
+8003=View
+8004=Help
+8005=Install
+8006=Uninstall
+8007=-
+8008=Reload
+8009=Check
+8010=-
+8011=Exit
+8012=Toolbar
+8013=Details
+8014=Statusbar
+8015=Help
+8016=-
+8017=About...
+8018=Install
+8019=Uninstall
+8020=Reload
+8021=Check
+8022=Help
+8023=About
+8024=Exit
+8025=Information
+8026=Files
+8027=Open Folder
+8028=Copy FileName
+8029=%d of %d Files not Found
+8030=Intact package files!
+8031=Remove "%s" - Version: %s ?
+#Help form
+8032=Ok
+#Download form
+8101=Install packages
+8102=Packages
+8103=Name
+8104=Version
+8105=Size
+8106=Status
+8107=Show
+8108=Updates/New
+8109=Installed
+8110=Search package:
+8111=Install packages...
+8112=Delete packages...
+8113=Done loading packages.
+8114=Loading packages...
+8115=Error parsing xml.
+8116=Retry
+8117=Dependency "%s %s" to "%s %s" not found
+8118=Downloading packages list %.2f%%.
+8119=Downloading packages list...
+8120=Install %d package...
+8121=Install %d packages...
+8122=Delete %d package...
+8123=Delete %d packages...
+8124=Download canceled.
+8125=Download error invalid xml file.
+8126=Uninstall
+8127=Installed
+8128=Install
+8129=Not installed
+8130=Do you cancel package installation?
+8131=Package already installed!
+8132=Package cannot be installed, a lowest dependency version already installed!
+8133=Package cannot be uninstalled, other packages depend on!
+8134=Error file %s not found
+8135=Installing package %s...
+8136=Done packages installation.
+8137=Uninstalling package %s...
+8138=Done packages uninstalled.
+8139=Downloading package %s...
+8140=Downloading package %s - %.1f%%...
+8141=Error on install %s package
+8142=Error on uninstall %s package
 
 #mingw messages
 #translation example
@@ -895,7 +1047,7 @@ Version=your translate version
 1871="$4" within comment
 #$1:$2:$3: warning: missing terminating $4 character
 1872=missing terminating $4 character
-#$1: $2: No such file or directory
+#$1: cannot open output file $2: No such file or directory
 1873=$2: No such file or directory
 #$1:$2: error: missing terminating $3 character
 1874=missing terminating $3 character
@@ -1023,3 +1175,35 @@ Version=your translate version
 1935=template argument $3 is invalid
 #$1:$2: error: expected unqualified-id before '$3' token
 1936=expected unqualified-id before '$3' token
+#$1:$2: warning: return type of '$3' is not '$4'
+1937=return type of '$3' is not '$4'
+#$1:$2: warning: '$3' with a value, in function returning void
+1938='$3' with a value, in function returning void
+#$1:$2: warning: '$3' with no value, in function returning non-void
+1939='$3' with no value, in function returning non-void
+#$1:$2: error: redefinition of '$3'
+1940=redefinition of '$3'
+#$1:$2:$3: warning: integer constant is so large that it is unsigned
+1941=integer constant is so large that it is unsigned
+#$1:$2: error: '$3' or '$4' invalid for '$5'
+1942='$3' or '$4' invalid for '$5'
+#$1:$2: error: variable or field '$3' declared void
+1943=variable or field '$3' declared void
+#$1:$2: error: expected primary-expression before '$3'
+1944=expected primary-expression before '$3'
+#$1:$2: error: redeclaration of '$3' with no linkage
+1945=redeclaration of '$3' with no linkage
+#$1:(.text+$2): undefined reference to `$3'
+1946=undefined reference to `$3'
+#$1: cannot open output file $2: Permission denied
+1947=cannot open output file $2: Permission denied
+#$1:$2:$3: error: too many decimal points in number
+1948=too many decimal points in number
+#$1:$2:$3: warning: assignment makes integer from pointer without a cast [enabled by default]
+1949=assignment makes integer from pointer without a cast [enabled by default]
+#$1:$2:$3: error: lvalue required as unary '$4' operand
+1950=lvalue required as unary '$4' operand
+#$1:$2: error: '$3' loop initial declarations are only allowed in $4 mode
+1951='$3' loop initial declarations are only allowed in $4 mode
+#$1:$2: note: use option $3 or $4 to compile your code
+1952=use option $3 or $4 to compile your code

@@ -421,7 +421,7 @@ Version=2.0
 4001=Atualização do aplicativo
 4002=Verificando atualizações...
 4003=&Atualizar
-4004=Deseja reiniciar o Falcon C++?
+4004=O Falcon C++ está aberto, deseja fecha-lo?
 4005=Falha na atualização
 4006=Problema na conexão.
 4007=Atualização completada com sucesso.
@@ -492,8 +492,9 @@ Version=2.0
 4338=Modo de inserção
 4339=Desfazer grupo
 4340=Manter espaços à direita
-4341=Mostrar caracteres de final de linha
+4341=Exibir espaços e tabulações
 4470=Auto fechar parênteses e colchetes
+4471=Cursor depois do final da linha
 4342=Barra de rolagem com guia
 4343=Indentar/Desindentar com o Tab
 4344=Tab inteligente
@@ -634,7 +635,7 @@ Version=2.0
 4467=Arquivo de modelo de código personalizável:
 4468=Abrir
 4469=Editar
-#last 4470
+#last 4471
 
 #Form Environment Options
 4569=Opções do ambiente
@@ -713,6 +714,158 @@ Version=2.0
 6001=O Processo retornou %ld   tempo de execução : %0.3f s
 6002=Pressione uma tecla para continuar...
 
+#Package Manager
+#Loading form
+7001=Espere enquanto o pacote é extraido...
+7002=Extraindo dados: %d%%
+#Wizard form
+7101=Instalação do pacote %s
+7102=< Voltar
+7103=Próximo >
+7104=Cancelar
+7105=Eu Concordo
+7106=Instalar
+7107=Concluir
+7108=Deseja reiniciar o sistema agora?
+7109=Falcon C++ Assistente de Instalação
+7110=Deseja sair da instalação do pacote %s?
+7111=Erro: não foi possível abrir o arquivo "%s".
+7112=Erro: não foi possível criar o arquivo "%s".
+7113=Erro: não foi possível extrair o arquivo "%s".
+7114=O pacote %s foi instalado com sucesso.
+7115=Arquivo de informação de pacote não encontrado!
+7116=Dependencias:
+7117=Criando diretório:
+7118=Erro na criação do diretório:
+7119=O pacote %s foi instalado com erros\Não foi possível criar o diretório '%s'.
+7120=O pacote %s foi instalado com erros\n%d arquivos não foram instalados.
+7121=A instalação de %s foi abortada:\nErro: Não foi possível criar o diretório '%s'.
+7122=Erro ao abrir arquivo para escrita:
+7123=O pacote %s foi instalado com erros\nfile '%s' couldn't be installed.
+7124=A instalação de %s foi abortada:\nErro: Não foi possível abrir o arquivo '%s' para escrita.
+7125=Erro ao abrir arquivo temporário:
+7126=Removendo arquivos temporários...
+#Welcome frame
+7201=Bem-vindo ao assistente de instalação do pacote %s
+7202=Este assistente guiará você através da instalação do pacote %s.
+7203=É recomendado que você feche a aplicação Falcon C++ antes de iniciar a instalação. Isto tornará possível a atualização de todos os arquivos da pasta do compilador.
+7204=Clique em Próximo para continuar.
+#Install step frame
+7301=Falcon C++ Instalação de pacote
+#Agreement frame
+7401=Se você aceita os termos do acordo, clique em Eu Concordo para continuar. Você deve aceitar o acordo para instalar o pacote %s.
+7402=Acordo da licença
+7403=Por favor, reveja os termos da licença antes de instalar o pacote %s.
+7404=Pressione Page Down para ver o resto do acordo.
+#Readme frame
+7501=Pressione Page Down para ver o resto do texto LEIAME.
+7502=Clique em Próximo para continuar.
+7503=LEIAME
+7504=Por favor, leia o seguinte texto LEIAME.
+#Description frame
+7601=Descrição do pacote
+7602=Detalhes do pacote %s.
+7603=Espaço requerido:
+7604=Espaço disponível:
+7605=Descrição do pacote
+7606=Nome:
+7607=Versão:
+7608=Website:
+7609=Descrição:
+7610=Clique em Instalar para iniciar a instalação.
+#Progress frame
+7701=Mostrar detalhes
+7702=Instalando
+7703=Por favor, espere enquanto o pacote %s está sendo instalado.
+7704=Clique em abortar para parar a instalação,\nRepetir para tentar novamente, ou\nIgnorar para pular este arquivo.
+#Finish frame
+7801=Completando o assistente de instalação do pacote %s
+7802=Clique em Concluir para fechar este assistente.
+7803=Mostrar gerenciador de pacotes
+#Uninstall form
+7901=Desinstalando pacote...
+7902=Ok
+7903=Completo.
+7904=Pacote "%s" não encontrado
+7905=Outros pacotes dependem:
+
+#Package Manager form
+8001=Gerenciador de pacotes do Falcon C++
+8002=Pacotes
+8003=Visualizar
+8004=Ajuda
+8005=Instalar
+8006=Desinstalar
+8007=-
+8008=Recarregar
+8009=Verificar
+8010=-
+8011=Sair
+8012=Barra de ferramentas
+8013=Detalhes
+8014=Barra de status
+8015=Ajuda
+8016=-
+8017=Sobre...
+8018=Instalar
+8019=Desinstalar
+8020=Recarregar
+8021=Verificar
+8022=Ajuda
+8023=Sobre
+8024=Sair
+8025=Informações
+8026=Arquivos
+8027=Abrir pasta
+8028=Copiar caminho completo
+8029=%d arquivos não encontrados de %d instalados
+8030=Pacote intacto!
+8031=Deseja remover o pacote "%s" - Versão: %s ?
+#Help form
+8032=Ok
+#Download form
+8101=Instalar pacotes
+8102=Pacotes
+8103=Nome
+8104=Versão
+8105=Tamanho
+8106=Status
+8107=Mostrar
+8108=Atualizações/Novos pacotes
+8109=Instalados
+8110=Procurar pacote:
+8111=Instalar pacotes...
+8112=Remover pacotes...
+8113=Carregamento de pacotes concluído.
+8114=Carregando pacotes...
+8115=Erro no arquivo xml.
+8116=Repetir
+8117=Dependência "%s %s" para "%s %s" não encontrada
+8118=Baixando lista de pacotes %.2f%%.
+8119=Baixando lista de pacotes...
+8120=Instalar %d pacote...
+8121=Instalar %d pacotes...
+8122=Remover %d pacote...
+8123=Remover %d pacotes...
+8124=Download cancelado.
+8125=Erro no download: Arquivo xml inválido.
+8126=Desinstalar
+8127=Instalado
+8128=Instalar
+8129=Não instalado
+8130=Deseja cancelar a instalação dos pacotes?
+8131=O pacote já está instalado!
+8132=O pacote não pode ser instalado, uma versão mais antiga já está instalada!
+8133=O pacote não pode ser desinstalado, outros pacotes dependem dele!
+8134=Erro arquivo %s não encontrado
+8135=Instalando pacote %s...
+8136=Instalação de pacotes concluída.
+8137=Desinstalando pacote %s...
+8138=Desinstalação de pacotes concluída.
+8139=Baixando pacote %s...
+8140=Baixando pacote %s - %.1f%%...
+8141=Erro ao tentar instalar o pacote %s
+8142=Erro ao tentar desinstalar o pacote %s
 
 #mingw messages
 #translation example
@@ -817,11 +970,11 @@ Version=2.0
 #$1:$2: warning: too few arguments for format
 1832=Pouco parâmetro para o formato
 #$1:$2: warning: format '$3' expects type '$4', but argument $5 has type '$6'
-1833=O formato '$3' é usado para o tipo '$4', mas o parametro $5 é do tipo '$6'
+1833=O formato '$3' é usado para o tipo '$4', mas o parâmetro $5 é do tipo '$6'
 #$1:$2: error: switch quantity not an integer
 1834=O parâmetro do switch não é um inteiro
 #$1:$2: error: incompatible type for argument $3 of '$4'
-1835=Tipo incompatível com o parametro $3 da função '$4'
+1835=Tipo incompatível com o parâmetro $3 da função '$4'
 #$1:$2: error: expected statement before '$3' token
 1836=Era esperado alguma expressão ou símbolo antes de '$3'
 #$1:$2: warning: control reaches end of non-void function
@@ -896,7 +1049,7 @@ Version=2.0
 1871=Tem um "$4" dentro do comentário
 #$1:$2:$3: warning: missing terminating $4 character
 1872=Falta encerrar a string com $4
-#$1: $2: No such file or directory
+#$1: cannot open output file $2: No such file or directory
 1873=Arquivo ou diretório '$2' não encontrado
 #$1:$2: error: missing terminating $3 character
 1874=Falta encerrar a string com $3
@@ -1024,3 +1177,35 @@ Version=2.0
 1935=Argumento de modelo $3 é inválido
 #$1:$2: error: expected unqualified-id before '$3' token
 1936=Esperado um id não qualificado antes do símbolo '$3'
+#$1:$2: warning: return type of '$3' is not '$4'
+1937=O tipo de retorno de '$3' não é '$4'
+#$1:$2: warning: '$3' with a value, in function returning void
+1938='$3' com um valor, em uma função que não retorna nada
+#$1:$2: warning: '$3' with no value, in function returning non-void
+1939='$3' sem um valor, em uma função que retorna algo
+#$1:$2: error: redefinition of '$3'
+1940=Redefinição de '$3'
+#$1:$2:$3: warning: integer constant is so large that it is unsigned
+1941=A constante inteira é tão grande que ela está sem sinal
+#$1:$2: error: '$3' or '$4' invalid for '$5'
+1942='$3' ou '$4' inválido para '$5'
+#$1:$2: error: variable or field '$3' declared void
+1943=Variável ou campo '$3' declarado void
+#$1:$2: error: expected primary-expression before '$3'
+1944=Esperado expressão primária antes de '$3'
+#$1:$2: error: redeclaration of '$3' with no linkage
+1945=Redeclaração de '$3' sem ligação
+#$1:(.text+$2): undefined reference to `$3'
+1946=Referência não definida para `$3'
+#$1: cannot open output file $2: Permission denied
+1947=Não foi possível abrir o arquivo de saida $2: Permissão negada
+#$1:$2:$3: error: too many decimal points in number
+1948=Muitos pontos decimais no número
+#$1:$2:$3: warning: assignment makes integer from pointer without a cast [enabled by default]
+1949=Atribuição torna inteiro a partir de um ponteiro sem um cast [abilitado por padrão]
+#$1:$2:$3: error: lvalue required as unary '$4' operand
+1950=Valor da esquerda requerida como operando '$4' unário
+#$1:$2: error: '$3' loop initial declarations are only allowed in $4 mode
+1951=Declarações iniciais de laço '$3' só são permitidos no modo $4
+#$1:$2: note: use option $3 or $4 to compile your code
+1952=Use a opção $3 ou $4 para compilar seu código

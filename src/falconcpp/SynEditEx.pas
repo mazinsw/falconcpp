@@ -1182,7 +1182,7 @@ begin
   end;
   if SpaceCount = SpaceLen then
   begin
-    if Unindent then
+    if Unindent and (SpaceCount > TabWidth) then
       Dec(SpaceCount, TabWidth)
     else
       SpaceCount := 0;

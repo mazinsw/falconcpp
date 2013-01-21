@@ -1,7 +1,5 @@
-#ifndef __MAIN_H__
-#define __MAIN_H__
-
-#include <windows.h>
+#ifndef _MAIN_H_
+#define _MAIN_H_
 
 /*  To use this exported function of dll, include this header
  *  in your project, if check create a linked library in project properties.
@@ -54,5 +52,4 @@ int DLL_EXPORT sum(int a, int b);
 }
 #endif
 
-#endif // __MAIN_H__
-
+#endif /* _MAIN_H_ */

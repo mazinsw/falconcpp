@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "main.h"
 
 // a sample exported function

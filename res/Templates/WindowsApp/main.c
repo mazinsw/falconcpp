@@ -8,14 +8,14 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR cmdParam, int cmd
     MSG messages;        /* for messages queue manipulation */
     WNDCLASSEX WndClass; /* data struct for window class */
     HWND hWnd;           /* handle for window */
-    
+
     /* define window class */
     WndClass.cbSize = sizeof(WNDCLASSEX);
     WndClass.style = CS_DBLCLKS;
     WndClass.hInstance = hInst;
     WndClass.lpszClassName = "WindowClassName";
     WndClass.lpfnWndProc = WndProc;
-    
+
     /* icons, cursor and menu */
     WndClass.hIcon = LoadIcon(hInst, "MAINICON"); /* default icon */
     WndClass.hIconSm = LoadIcon(hInst, "MAINICON"); /* default icon */
@@ -23,7 +23,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR cmdParam, int cmd
     WndClass.lpszMenuName = NULL; /* no menu */
     WndClass.cbClsExtra = 0;
     WndClass.cbWndExtra = 0;
-    
+
     /* window background color */
     WndClass.hbrBackground = GetSysColorBrush(COLOR_BTNFACE); 
     RegisterClassEx(&WndClass);
@@ -41,8 +41,8 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR cmdParam, int cmd
                           NULL);                 /* No Window Creation data */
                           
     ShowWindow(hWnd, SW_SHOW);
-	UpdateWindow(hWnd);  
-    
+    UpdateWindow(hWnd);  
+
     /* loop messages. run until GetMessage return 0*/  
     while (GetMessage(&messages, NULL, 0, 0))
     {

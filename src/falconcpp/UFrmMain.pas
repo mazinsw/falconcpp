@@ -1679,11 +1679,22 @@ begin
     PopEditorSwap.Enabled := Flag;
     PopTabsSwap.Enabled := Flag;
     Flag := Assigned(CurrentSheet) and (CurrentSheet.Memo.SelAvail or
-      (CurrentSheet.Memo.SelStart < Length(CurrentSheet.Memo.Text))) and CurrentSheet.Memo.Focused;
+      ((CurrentSheet.Memo.CaretY <= CurrentSheet.Memo.Lines.Count) and
+      ((CurrentSheet.Memo.CaretY < CurrentSheet.Memo.Lines.Count) or
+      (CurrentSheet.Memo.CaretX < Length(CurrentSheet.Memo.Lines[CurrentSheet.Memo.CaretY - 1])))
+      )) and CurrentSheet.Memo.Focused;
     EditDelete.Enabled := Flag;
     PopEditorDelete.Enabled := Flag;
-    Flag := Assigned(CurrentSheet) and (CurrentSheet.Memo.SelLength <>
-      Length(CurrentSheet.Memo.Text)) and CurrentSheet.Memo.Focused;
+    Flag := Assigned(CurrentSheet) and (not ((CurrentSheet.Memo.SelAvail and
+      ((CurrentSheet.Memo.BlockBegin.Char = 1) and (CurrentSheet.Memo.BlockBegin.Line = 1)) and
+      (CurrentSheet.Memo.Lines.Count > 0) and
+      ((CurrentSheet.Memo.BlockEnd.Char = Length(
+        CurrentSheet.Memo.Lines[CurrentSheet.Memo.Lines.Count - 1]) + 1) and
+        (CurrentSheet.Memo.BlockEnd.Line = CurrentSheet.Memo.Lines.Count))) or
+        (CurrentSheet.Memo.Lines.Count = 0) or
+        ((CurrentSheet.Memo.Lines.Count = 1) and
+        (Length(CurrentSheet.Memo.Lines[0]) = 0))
+        )) and CurrentSheet.Memo.Focused;
     EditSelectAll.Enabled := Flag;
     PopEditorSelectAll.Enabled := Flag;
     Flag := Assigned(CurrentSheet) and (CurrentSheet.Memo.Lines.Count > 0);

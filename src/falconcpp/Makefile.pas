@@ -146,8 +146,8 @@ begin
     OutFile.Add('WINDRES= windres');
   if CreateLibrary then
   begin
-    OutFile.Add('AR     =ar');
-    OutFile.Add('RANLIB =ranlib');
+    OutFile.Add('AR     = ar');
+    OutFile.Add('RANLIB = ranlib');
   end;
   ShowAnsiOBJS := False;
   if Source.Count > 0 then
@@ -157,9 +157,9 @@ begin
       ShowAnsiOBJS := True;
     S := EscapeString(ConvertAnsiToOem(S));
     if (Source.Count + Resources.Count) > 1 then
-      OutFile.Add('OBJS   =' + S + ' \')
+      OutFile.Add('OBJS   = ' + S + ' \')
     else
-      OutFile.Add('OBJS   =' + S);
+      OutFile.Add('OBJS   = ' + S);
 
     for I := 1 to Source.Count - 2 do
     begin
@@ -167,7 +167,7 @@ begin
       if (ConvertAnsiToOem(S) <> S) or (Pos(' ', S) > 0) then
         ShowAnsiOBJS := True;
       S := EscapeString(ConvertAnsiToOem(S));
-      OutFile.Add('        ' + S + ' \');
+      OutFile.Add('         ' + S + ' \');
     end;
     if Resources.Count = 1 then
     begin
@@ -177,13 +177,13 @@ begin
         if (ConvertAnsiToOem(S) <> S) or (Pos(' ', S) > 0) then
           ShowAnsiOBJS := True;
         S := EscapeString(ConvertAnsiToOem(S));
-        OutFile.Add('        ' + S + ' \');
+        OutFile.Add('         ' + S + ' \');
       end;
       S := ChangeFileExt(Resources.Strings[0], '.res');
       if (ConvertAnsiToOem(S) <> S) or (Pos(' ', S) > 0) then
         ShowAnsiOBJS := True;
       S := EscapeString(ConvertAnsiToOem(S));
-      OutFile.Add('        ' + S);
+      OutFile.Add('         ' + S);
     end
     else if Source.Count > 1 then
     begin
@@ -191,7 +191,7 @@ begin
       if (ConvertAnsiToOem(S) <> S) or (Pos(' ', S) > 0) then
         ShowAnsiOBJS := True;
       S := EscapeString(ConvertAnsiToOem(S));
-      OutFile.Add('        ' + S);
+      OutFile.Add('         ' + S);
     end;
   end
   else if Resources.Count = 1 then
@@ -200,7 +200,7 @@ begin
     if (ConvertAnsiToOem(S) <> S) or (Pos(' ', S) > 0) then
       ShowAnsiOBJS := True;
     S := EscapeString(ConvertAnsiToOem(S));
-    OutFile.Add('OBJS   =' + S);
+    OutFile.Add('OBJS   = ' + S);
   end;
   OutFile.Add('');
 
@@ -211,15 +211,15 @@ begin
       S := ChangeFileExt(Source.Strings[0], '.o');
       S := DoubleQuotedStr(ConvertAnsiToOem(S));
       if (Source.Count + Resources.Count) > 1 then
-        OutFile.Add('AOBJS  =' + S + ' \')
+        OutFile.Add('AOBJS  = ' + S + ' \')
       else
-        OutFile.Add('AOBJS  =' + S);
+        OutFile.Add('AOBJS  = ' + S);
 
       for I := 1 to Source.Count - 2 do
       begin
         S := ChangeFileExt(Source.Strings[I], '.o');
         S := DoubleQuotedStr(ConvertAnsiToOem(S));
-        OutFile.Add('        ' + S + ' \');
+        OutFile.Add('         ' + S + ' \');
       end;
       if Resources.Count = 1 then
       begin
@@ -227,24 +227,24 @@ begin
         begin
           S := ChangeFileExt(Source.Strings[Source.Count - 1], '.o');
           S := DoubleQuotedStr(ConvertAnsiToOem(S));
-          OutFile.Add('        ' + S + ' \');
+          OutFile.Add('         ' + S + ' \');
         end;
         S := ChangeFileExt(Resources.Strings[0], '.res');
         S := DoubleQuotedStr(ConvertAnsiToOem(S));
-        OutFile.Add('        ' + S);
+        OutFile.Add('         ' + S);
       end
       else if Source.Count > 1 then
       begin
         S := ChangeFileExt(Source.Strings[Source.Count - 1], '.o');
         S := DoubleQuotedStr(ConvertAnsiToOem(S));
-        OutFile.Add('        ' + S);
+        OutFile.Add('         ' + S);
       end;
     end
     else if Resources.Count = 1 then
     begin
       S := ChangeFileExt(Resources.Strings[0], '.res');
       S := DoubleQuotedStr(ConvertAnsiToOem(S));
-      OutFile.Add('OBJS   =' + S);
+      OutFile.Add('OBJS   = ' + S);
     end;
     OutFile.Add('');
   end;

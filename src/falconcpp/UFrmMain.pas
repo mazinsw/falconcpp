@@ -648,6 +648,7 @@ type
 
     // include list
     FIncludeFileList: TStrings;
+    FIncludeFileListFlag: Integer;
 
     // search history
     FSearchList: TStrings;
@@ -655,7 +656,6 @@ type
 
     //for ThreadTokenFiles
     IsLoadingSrcFiles: Boolean;
-    LoadTokenMode: Integer;
     FLastProjectBuild: TProjectFile; //last builded project
     startBuildTicks: Cardinal;
     BuildTime: Cardinal;
@@ -1110,7 +1110,8 @@ end;
 procedure TFrmFalconMain.FormCreate(Sender: TObject);
 var
   List: TStrings;
-  I, J: Integer;
+  I: Integer;
+  NewInstalled: Integer;
   Template: TTemplate;
   Temp, path: string;
   ini: TIniFile;
@@ -1290,7 +1291,7 @@ begin
   ViewItemClick(ViewStatusBar);
   ViewOutline.Checked := ini.ReadBool('View', 'Outline', True);
   ViewItemClick(ViewOutline);
-  LoadTokenMode := ini.ReadInteger('Packages', 'NewInstalled', -1);
+  NewInstalled := ini.ReadInteger('Packages', 'NewInstalled', -1);
   //load user sintax
   List := TStringList.Create;
   ini.ReadSection('HighlighterList', List);
@@ -1418,10 +1419,11 @@ begin
   FilesParsed.PathList.Add(Config.Compiler.Path + '\include\');
   SplashScreen.TextOut(55, 300, STR_FRM_MAIN[30]);
   IsLoadingSrcFiles := False;
-  if (LoadTokenMode <> 0) then
+  FIncludeFileListFlag := 2;
+  if (NewInstalled <> 0) then
   begin
     SourceFileList := TStringList.Create;
-    if LoadTokenMode < 0 then
+    if NewInstalled < 0 then
       SplashScreen.TextOut(55, 300, Format(STR_FRM_MAIN[36], [0]))
     else
       SplashScreen.TextOut(55, 300, Format(STR_FRM_MAIN[37], [0]));
@@ -1437,20 +1439,7 @@ begin
     SourceFileList.Free;
     for I := 0 to FIncludeFileList.Count - 1 do
       FIncludeFileList.Strings[I] := ConvertToUnixSlashes(ExtractRelativePath(Config.Compiler.Path + '\include\', FIncludeFileList.Strings[I]));
-    J := FIncludeFileList.Count;
-    FindFiles(Config.Compiler.Path + '\lib\gcc\mingw32\' + Config.Compiler.Version + '\include\c++\', '*.*', FIncludeFileList);
-    for I := J to FIncludeFileList.Count - 1 do
-      FIncludeFileList.Strings[I] := ConvertToUnixSlashes(ExtractRelativePath(Config.Compiler.Path + '\lib\gcc\mingw32\' + Config.Compiler.Version + '\include\c++\', FIncludeFileList.Strings[I]));
-  end
-  else
-  begin
-    FindFiles(Config.Compiler.Path + '\include\', '*.h', FIncludeFileList);
-    for I := 0 to FIncludeFileList.Count - 1 do
-      FIncludeFileList.Strings[I] := ConvertToUnixSlashes(ExtractRelativePath(Config.Compiler.Path + '\include\', FIncludeFileList.Strings[I]));
-    J := FIncludeFileList.Count;
-    FindFiles(Config.Compiler.Path + '\lib\gcc\mingw32\' + Config.Compiler.Version + '\include\c++\', '*.*', FIncludeFileList);
-    for I := J to FIncludeFileList.Count - 1 do
-      FIncludeFileList.Strings[I] := ConvertToUnixSlashes(ExtractRelativePath(Config.Compiler.Path + '\lib\gcc\mingw32\' + Config.Compiler.Version + '\include\c++\', FIncludeFileList.Strings[I]));
+    FIncludeFileListFlag := 1;
   end;
   List := TStringList.Create;
   GetSourcesFiles(List);
@@ -6728,12 +6717,27 @@ var
   sheet: TSourceFileSheet;
   proj: TProjectFile;
   S: string;
-  I: Integer;
+  I, J: Integer;
   List: TStrings;
 begin
   Result := True;
   if IncludePathFilesOnly then
   begin
+    if FIncludeFileListFlag = 2 then
+    begin
+      FindFiles(Config.Compiler.Path + '\include\', '*.h', FIncludeFileList);
+      for I := 0 to FIncludeFileList.Count - 1 do
+        FIncludeFileList.Strings[I] := ConvertToUnixSlashes(ExtractRelativePath(Config.Compiler.Path + '\include\', FIncludeFileList.Strings[I]));
+      Dec(FIncludeFileListFlag);
+    end;
+    if FIncludeFileListFlag = 1 then
+    begin
+      J := FIncludeFileList.Count;
+      FindFiles(Config.Compiler.Path + '\lib\gcc\mingw32\' + Config.Compiler.Version + '\include\c++\', '*.*', FIncludeFileList);
+      for I := J to FIncludeFileList.Count - 1 do
+        FIncludeFileList.Strings[I] := ConvertToUnixSlashes(ExtractRelativePath(Config.Compiler.Path + '\lib\gcc\mingw32\' + Config.Compiler.Version + '\include\c++\', FIncludeFileList.Strings[I]));
+      Dec(FIncludeFileListFlag);
+    end;
     for I := 0 to FIncludeFileList.Count - 1 do
     begin
       NewToken := TTokenClass.Create;

@@ -741,17 +741,16 @@ object FrmProperty: TFrmProperty
             TabOrder = 0
             OnKeyPress = CBLibsKeyPress
           end
-          object ChLbLibs: TCheckListBox
+          object ListLibs: TListBox
             Left = 8
             Top = 43
             Width = 417
             Height = 136
-            OnClickCheck = ProjectChange
             ItemHeight = 13
             TabOrder = 1
-            OnClick = ChLbLibsClick
-            OnDblClick = ChLbLibsDblClick
-            OnKeyDown = ChLbLibsKeyDown
+            OnClick = ListLibsClick
+            OnDblClick = ListLibsDblClick
+            OnKeyDown = ListLibsKeyDown
           end
         end
         object GrbIncs: TTabSheet

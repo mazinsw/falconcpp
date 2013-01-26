@@ -61,6 +61,8 @@ procedure GetNameAndVersion(const S: string; var aName, aVersion: string);
 procedure SearchCompilers(List: TStrings; var PathCompiler: string);
 function TranslateSpecialChars(const S: string): string;
 function GetLeftSpacing(CharCount, TabWidth: Integer; WantTabs: Boolean): string;
+function CanDoubleQuotedStr(const S: string): Boolean;
+procedure SplitParams(const S: string; List: TStrings);
 function ExecuteFile(Handle: HWND; const Filename, Paramaters,
   Directory: string; Options: TExecuteFileOptions): Integer;
 procedure LoadFontNames(List: TStrings);
@@ -381,6 +383,70 @@ begin
   if (WantTabs) and (CharCount>=TabWidth) then
       Result:=StringOfChar(#9,CharCount div TabWidth)+StringOfChar(#32,CharCount mod TabWidth)
   else Result:=StringOfChar(#32,CharCount);
+end;
+
+function CanDoubleQuotedStr(const S: string): Boolean;
+var
+  p: PChar;
+  I: Integer;
+begin
+  Result := False;
+  I := 0;
+  p := PChar(Trim(S));
+  if p <> nil then
+    while p^ <> #0 do
+    begin
+      if p^ = '"' then
+        Inc(I)
+      else if (p^ = ' ') and (I mod 2 = 0) then
+      begin
+        Result := True;
+        Exit;
+      end;
+      Inc(p);
+    end;
+end;
+
+procedure SplitParams(const S: string; List: TStrings);
+var
+  p, ps, ap: PChar;
+  Temp: string;
+  I, K: Integer;
+begin
+  I := 0;
+  K := 0;
+  p := PChar(S);
+  ap := p;
+  ps := p;
+  if p <> nil then
+  begin
+    while p^ <> #0 do
+    begin
+      if p^ = '"' then
+        Inc(I)
+      else if (p^ = ' ') and (I mod 2 = 0) then
+      begin
+        if K > 0 then
+        begin
+          Temp := Copy(S, ps - ap + 1, p - ps);
+          List.Add(Temp);
+        end;
+        K := 0;
+        while p^ = ' ' do
+          Inc(p);
+        ps := p;
+        Continue;
+      end
+      else
+        Inc(K);
+      Inc(p);
+    end;
+    if K > 0 then
+    begin
+      Temp := Copy(S, ps - ap + 1, p - ps);
+      List.Add(Temp);
+    end;
+  end;
 end;
 
 procedure BitmapToAlpha(bmp: TBitmap; Color: TColor = clFuchsia);

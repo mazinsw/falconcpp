@@ -67,7 +67,6 @@ type
     SBtnRem: TSpeedButton;
     SBtnUp: TSpeedButton;
     SBtnDown: TSpeedButton;
-    ChLbLibs: TCheckListBox;
     CBIncs: TComboBox;
     ListIncs: TListBox;
     SBtnAddInc: TSpeedButton;
@@ -85,6 +84,7 @@ type
     UpDownRelease: TUpDown;
     EditBuild: TEditAlign;
     UpDownBuild: TUpDown;
+    ListLibs: TListBox;
     procedure ListValuesEditColumn(Sender: TObject; ACol, ARow: Integer;
       var CanEdit: Boolean; var EditType: TEditType);
     procedure FormCreate(Sender: TObject);
@@ -102,7 +102,7 @@ type
     procedure VersionChange(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
-    procedure ChLbLibsClick(Sender: TObject);
+    procedure ListLibsClick(Sender: TObject);
     procedure SBtnAddClick(Sender: TObject);
     procedure SBtnAddIncClick(Sender: TObject);
     procedure SBtnRemClick(Sender: TObject);
@@ -110,13 +110,13 @@ type
     procedure ListIncsClick(Sender: TObject);
     procedure ListIncsKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
-    procedure ChLbLibsKeyDown(Sender: TObject; var Key: Word;
+    procedure ListLibsKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure SBtnUpClick(Sender: TObject);
     procedure SBtnDownClick(Sender: TObject);
     procedure SBtnUpIncClick(Sender: TObject);
     procedure SBtnDownIncClick(Sender: TObject);
-    procedure ChLbLibsSelect(Sender: TObject);
+    procedure ListLibsSelect(Sender: TObject);
     procedure ListIncsSelect(Sender: TObject);
     procedure RGAppTpClick(Sender: TObject);
     procedure CbbLangChange(Sender: TObject);
@@ -124,7 +124,7 @@ type
     procedure CBLibsKeyPress(Sender: TObject; var Key: Char);
     procedure SBtnEditIncClick(Sender: TObject);
     procedure SBtnEditClick(Sender: TObject);
-    procedure ChLbLibsDblClick(Sender: TObject);
+    procedure ListLibsDblClick(Sender: TObject);
     procedure ListIncsDblClick(Sender: TObject);
     procedure ChbCreateLLClick(Sender: TObject);
     procedure CBIncsKeyPress(Sender: TObject; var Key: Char);
@@ -190,25 +190,12 @@ begin
     Temp := Temp + ' -O2';
   Project.CompilerOptions := Trim(Temp);
   Temp := '';
-  for I := 0 to ChLbLibs.Count - 1 do
-    if ChLbLibs.Checked[I] then
-    begin
-      if Pos(' ', ChLbLibs.Items.Strings[I]) > 0 then
-        Temp := Temp + ' ' + ChLbLibs.Items.QuoteChar + ChLbLibs.Items.Strings[I]
-          + ChLbLibs.Items.QuoteChar
-      else
-        Temp := Temp + ' ' + ChLbLibs.Items.Strings[I];
-    end;
+  for I := 0 to ListLibs.Count - 1 do
+    Temp := Temp + ' ' + ListLibs.Items.Strings[I];
   Project.Libs := Trim(Temp);
   Temp := '';
   for I := 0 to ListIncs.Count - 1 do
-  begin
-    if Pos(' ', ListIncs.Items.Strings[I]) > 0 then
-      Temp := Temp + ' ' + ListIncs.Items.QuoteChar + ListIncs.Items.Strings[I]
-        + ListIncs.Items.QuoteChar
-    else
-      Temp := Temp + ' ' + ListIncs.Items.Strings[I];
-  end;
+    Temp := Temp + ' ' + ListIncs.Items.Strings[I];
   OldFlags := Project.Flags;
   Project.Flags := Trim(Temp);
   Project.DeleteObjsBefore := CLBClean.Checked[0];
@@ -243,9 +230,6 @@ begin
 end;
 
 procedure TFrmProperty.SetProject(Project: TProjectFile);
-var
-  List: TStrings;
-  I: Integer;
 begin
   if (self.Project <> Project) then
   begin
@@ -268,17 +252,8 @@ begin
     CHBShowWar.Checked := (Pos('-Wall', Project.CompilerOptions) > 0);
     CHBMinSize.Checked := (Pos('-s', Project.CompilerOptions) > 0);
     CHBOptSpd.Checked := (Pos('-O2', Project.CompilerOptions) > 0);
-    List := TStringList.Create;
-    List.Delimiter := ' ';
-    List.DelimitedText := Trim(Project.Libs);
-
-    for I := 0 to List.Count - 1 do
-      ChLbLibs.Checked[ChLbLibs.Items.Add(List.Strings[I])] := True;
-
-    List.DelimitedText := Trim(Project.Flags);
-    for I := 0 to List.Count - 1 do
-      ListIncs.Items.Add(List.Strings[I]);
-    List.Free;
+    SplitParams(Trim(Project.Libs), ListLibs.Items);
+    SplitParams(Trim(Project.Flags), ListIncs.Items);
     ChbIncVer.Checked := Project.IncludeVersionInfo;
     ChbIncVerClick(ChbIncVer);
     UpDownMajor.Position := Project.Version.Major;
@@ -534,20 +509,21 @@ begin
     Close;
 end;
 
-procedure TFrmProperty.ChLbLibsClick(Sender: TObject);
+procedure TFrmProperty.ListLibsClick(Sender: TObject);
 var
   CPos: TPoint;
 begin
   GetCursorPos(CPos);
-  if (ChLbLibs.ItemAtPos(ChLbLibs.ScreenToClient(CPos), True) < 0) then
-    ChLbLibs.ItemIndex := -1;
-  ChLbLibsSelect(Sender);
+  if (ListLibs.ItemAtPos(ListLibs.ScreenToClient(CPos), True) < 0) then
+    ListLibs.ItemIndex := -1;
+  ListLibsSelect(Sender);
 end;
 
 procedure TFrmProperty.SBtnAddClick(Sender: TObject);
 var
   I: Integer;
   LibDir, LibName: string;
+  List: TStrings;
 begin
   if (Length(Trim(CBLibs.Text)) = 0) then
   begin
@@ -582,67 +558,65 @@ begin
   end
   else
   begin
-    if not ChLbLibs.Enabled then
+    if not ListLibs.Enabled then
     begin
-      ChLbLibs.Enabled := True;
-      ChLbLibs.Items.Strings[ChLbLibs.ItemIndex] := CBLibs.Text;
+      ListLibs.Enabled := True;
+      List := TStringList.Create;
+      SplitParams(CBLibs.Text, List);
+      if List.Count > 0 then
+        ListLibs.Items.Strings[ListLibs.ItemIndex] := List.Strings[0];
+      for I := 1 to List.Count - 1 do
+        ListLibs.Items.Add(List.Strings[I]);
+      List.Free;
       CBLibs.Text := '';
-      ChLbLibsSelect(Sender);
+      ListLibsSelect(Sender);
       ProjectChange(Sender);
       Exit;
     end;
-    I := ChLbLibs.Items.IndexOf(CBLibs.Text);
+    I := ListLibs.Items.IndexOf(CBLibs.Text);
     if (I < 0) then
-      ChLbLibs.Checked[ChLbLibs.Items.Add(CBLibs.Text)] := True
+      SplitParams(CBLibs.Text, ListLibs.Items)
     else
-    begin
-      if ChLbLibs.Checked[I] then
-      begin
-        CBLibs.Text := '';
-        Exit;
-      end
-      else
-        ChLbLibs.Checked[I] := True;
-    end;
+      Exit;
     CBLibs.Text := '';
-    ChLbLibsSelect(Sender);
+    ListLibsSelect(Sender);
     ProjectChange(Sender);
   end;
 end;
 
-procedure TFrmProperty.ChLbLibsSelect(Sender: TObject);
+procedure TFrmProperty.ListLibsSelect(Sender: TObject);
 begin
-  SBtnRem.Enabled := (ChLbLibs.ItemIndex > -1);
-  SBtnUp.Enabled := (ChLbLibs.ItemIndex > 0);
-  SBtnDown.Enabled := (ChLbLibs.ItemIndex < ChLbLibs.Count - 1)
-    and (ChLbLibs.ItemIndex > -1);
-  SBtnEdit.Enabled := (ChLbLibs.ItemIndex > -1);
+  SBtnRem.Enabled := (ListLibs.ItemIndex > -1);
+  SBtnUp.Enabled := (ListLibs.ItemIndex > 0);
+  SBtnDown.Enabled := (ListLibs.ItemIndex < ListLibs.Count - 1)
+    and (ListLibs.ItemIndex > -1);
+  SBtnEdit.Enabled := (ListLibs.ItemIndex > -1);
 end;
 
 procedure TFrmProperty.SBtnRemClick(Sender: TObject);
 begin
-  if (ChLbLibs.ItemIndex > -1) then
-    ChLbLibs.DeleteSelected;
-  ChLbLibsSelect(Sender);
+  if (ListLibs.ItemIndex > -1) then
+    ListLibs.DeleteSelected;
+  ListLibsSelect(Sender);
   ProjectChange(Sender);
 end;
 
-procedure TFrmProperty.ChLbLibsKeyDown(Sender: TObject; var Key: Word;
+procedure TFrmProperty.ListLibsKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-  if (ChLbLibs.ItemIndex >= 0) and (Key = VK_DELETE) then
+  if (ListLibs.ItemIndex >= 0) and (Key = VK_DELETE) then
     SBtnRem.Click;
-  ChLbLibsSelect(Sender);
+  ListLibsSelect(Sender);
 end;
 
 procedure TFrmProperty.SBtnUpClick(Sender: TObject);
 var
   Index: Integer;
 begin
-  Index := ChLbLibs.ItemIndex - 1;
-  ChLbLibs.Items.Move(ChLbLibs.ItemIndex, ChLbLibs.ItemIndex - 1);
-  ChLbLibs.Selected[Index] := True;
-  ChLbLibsSelect(Sender);
+  Index := ListLibs.ItemIndex - 1;
+  ListLibs.Items.Move(ListLibs.ItemIndex, ListLibs.ItemIndex - 1);
+  ListLibs.Selected[Index] := True;
+  ListLibsSelect(Sender);
   ProjectChange(Sender);
 end;
 
@@ -650,10 +624,10 @@ procedure TFrmProperty.SBtnDownClick(Sender: TObject);
 var
   Index: Integer;
 begin
-  Index := ChLbLibs.ItemIndex + 1;
-  ChLbLibs.Items.Move(ChLbLibs.ItemIndex, ChLbLibs.ItemIndex + 1);
-  ChLbLibs.Selected[Index] := True;
-  ChLbLibsSelect(Sender);
+  Index := ListLibs.ItemIndex + 1;
+  ListLibs.Items.Move(ListLibs.ItemIndex, ListLibs.ItemIndex + 1);
+  ListLibs.Selected[Index] := True;
+  ListLibsSelect(Sender);
   ProjectChange(Sender);
 end;
 
@@ -775,85 +749,79 @@ begin
     case RGAppTp.ItemIndex of
       0:
         begin
-          for I := ChLbLibs.Items.Count - 1 downto 0 do
+          for I := ListLibs.Items.Count - 1 downto 0 do
           begin
-            if ChLbLibs.Items.Strings[I] = '-mwindows' then
-              ChLbLibs.Items.Delete(I)
-            else if ChLbLibs.Items.Strings[I] = '-shared' then
-              ChLbLibs.Items.Delete(I)
-            else if Pos(LD_COMMAND + ',' + LD_OPTION_KILL_AT, ChLbLibs.Items.Strings[I]) > 0 then
-              ChLbLibs.Items.Delete(I);
+            if ListLibs.Items.Strings[I] = '-mwindows' then
+              ListLibs.Items.Delete(I)
+            else if ListLibs.Items.Strings[I] = '-shared' then
+              ListLibs.Items.Delete(I)
+            else if Pos(LD_COMMAND + ',' + LD_OPTION_KILL_AT, ListLibs.Items.Strings[I]) > 0 then
+              ListLibs.Items.Delete(I);
           end;
         end;
       1:
         begin
-          for I := ChLbLibs.Items.Count - 1 downto 0 do
+          for I := ListLibs.Items.Count - 1 downto 0 do
           begin
-            if ChLbLibs.Items.Strings[I] = '-mwindows' then
+            if ListLibs.Items.Strings[I] = '-mwindows' then
             begin
               Idx := I;
-              ChLbLibs.Checked[I] := True;
               if I <> 0 then
-                ChLbLibs.Items.Move(I, 0);
+                ListLibs.Items.Move(I, 0);
             end
-            else if ChLbLibs.Items.Strings[I] = '-shared' then
-              ChLbLibs.Items.Delete(I)
-            else if Pos(LD_COMMAND + ',' + LD_OPTION_KILL_AT, ChLbLibs.Items.Strings[I]) > 0 then
-              ChLbLibs.Items.Delete(I);
+            else if ListLibs.Items.Strings[I] = '-shared' then
+              ListLibs.Items.Delete(I)
+            else if Pos(LD_COMMAND + ',' + LD_OPTION_KILL_AT, ListLibs.Items.Strings[I]) > 0 then
+              ListLibs.Items.Delete(I);
           end;
           if Idx < 0 then
           begin
-            ChLbLibs.Items.Insert(0, '-mwindows');
-            ChLbLibs.Checked[0] := True;
+            ListLibs.Items.Insert(0, '-mwindows');
           end;
         end;
       2:
         begin
-          for I := ChLbLibs.Items.Count - 1 downto 0 do
+          for I := ListLibs.Items.Count - 1 downto 0 do
           begin
-            if ChLbLibs.Items.Strings[I] = '-mwindows' then
-              ChLbLibs.Items.Delete(I)
-            else if ChLbLibs.Items.Strings[I] = '-shared' then
+            if ListLibs.Items.Strings[I] = '-mwindows' then
+              ListLibs.Items.Delete(I)
+            else if ListLibs.Items.Strings[I] = '-shared' then
             begin
               Idx := I;
-              ChLbLibs.Checked[I] := True;
               if I <> 0 then
-                ChLbLibs.Items.Move(I, 0);
+                ListLibs.Items.Move(I, 0);
             end
-            else if Pos(LD_COMMAND + ',' + LD_OPTION_KILL_AT, ChLbLibs.Items.Strings[I]) > 0 then
+            else if Pos(LD_COMMAND + ',' + LD_OPTION_KILL_AT, ListLibs.Items.Strings[I]) > 0 then
             begin
               Idx2 := I;
-              ChLbLibs.Checked[I] := True;
               if I <> 1 then
-                if ChLbLibs.Items.Count >= 2 then
-                  ChLbLibs.Items.Move(I, 1);
+                if ListLibs.Items.Count >= 2 then
+                  ListLibs.Items.Move(I, 1);
             end;
           end;
           if Idx < 0 then
           begin
-            ChLbLibs.Items.Insert(0, '-shared');
-            ChLbLibs.Checked[0] := True;
+            ListLibs.Items.Insert(0, '-shared');
           end;
           if Idx2 < 0 then
           begin
             if ChbCreateLL.Checked then
-              ChLbLibs.Items.Insert(1, Format(LD_DLL_STATIC_LIB,
+              ListLibs.Items.Insert(1, Format(LD_DLL_STATIC_LIB,
                 [ExtractFilePath(EditTarget.Text), RemoveFileExt(ExtractFileName(EditTarget.Text)) + 'dll.a']))
             else
-              ChLbLibs.Items.Insert(1, LD_COMMAND + ',' + LD_OPTION_KILL_AT);
-            ChLbLibs.Checked[1] := True;
+              ListLibs.Items.Insert(1, LD_COMMAND + ',' + LD_OPTION_KILL_AT);
           end;
         end;
       3:
         begin
-          for I := ChLbLibs.Items.Count - 1 downto 0 do
+          for I := ListLibs.Items.Count - 1 downto 0 do
           begin
-            if ChLbLibs.Items.Strings[I] = '-mwindows' then
-              ChLbLibs.Items.Delete(I)
-            else if ChLbLibs.Items.Strings[I] = '-shared' then
-              ChLbLibs.Items.Delete(I)
-            else if ChLbLibs.Items.Strings[I] = LD_COMMAND + ',' + LD_OPTION_KILL_AT then
-              ChLbLibs.Items.Delete(I);
+            if ListLibs.Items.Strings[I] = '-mwindows' then
+              ListLibs.Items.Delete(I)
+            else if ListLibs.Items.Strings[I] = '-shared' then
+              ListLibs.Items.Delete(I)
+            else if ListLibs.Items.Strings[I] = LD_COMMAND + ',' + LD_OPTION_KILL_AT then
+              ListLibs.Items.Delete(I);
           end;
         end;
     end;
@@ -895,13 +863,13 @@ end;
 
 procedure TFrmProperty.SBtnEditClick(Sender: TObject);
 begin
-  ChLbLibs.Enabled := False;
+  ListLibs.Enabled := False;
   SBtnEdit.Enabled := False;
   SBtnRem.Enabled := False;
-  CBLibs.Text := ChLbLibs.Items.Strings[ChLbLibs.ItemIndex];
+  CBLibs.Text := ListLibs.Items.Strings[ListLibs.ItemIndex];
 end;
 
-procedure TFrmProperty.ChLbLibsDblClick(Sender: TObject);
+procedure TFrmProperty.ListLibsDblClick(Sender: TObject);
 begin
   if SBtnEdit.Enabled then
     SBtnEditClick(Sender);
@@ -918,9 +886,9 @@ var
   I, J: Integer;
 begin
   J := -1;
-  for I := 0 to ChLbLibs.Items.Count - 1 do
+  for I := 0 to ListLibs.Items.Count - 1 do
   begin
-    if Pos(LD_COMMAND + ',' + LD_OPTION_KILL_AT, ChLbLibs.Items.Strings[I]) > 0 then
+    if Pos(LD_COMMAND + ',' + LD_OPTION_KILL_AT, ListLibs.Items.Strings[I]) > 0 then
     begin
       J := I;
       Break;
@@ -930,11 +898,11 @@ begin
   begin
     if ChbCreateLL.Checked then
     begin
-      ChLbLibs.Items.Strings[J] := Format(LD_DLL_STATIC_LIB,
+      ListLibs.Items.Strings[J] := Format(LD_DLL_STATIC_LIB,
         [ExtractFilePath(EditTarget.Text), RemoveFileExt(ExtractFileName(EditTarget.Text)) + 'dll.a']);
     end
     else
-      ChLbLibs.Items.Strings[J] := LD_COMMAND + ',' + LD_OPTION_KILL_AT;
+      ListLibs.Items.Strings[J] := LD_COMMAND + ',' + LD_OPTION_KILL_AT;
   end;
   ProjectChange(Sender);
 end;

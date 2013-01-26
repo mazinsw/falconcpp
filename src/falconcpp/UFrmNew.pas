@@ -398,7 +398,7 @@ begin
   end
   else
   begin
-    NewPrj.CompilerOptions := '-Wall -s -O2';
+    NewPrj.CompilerOptions := '-Wall -s';
     FileName := NextProjectName(STR_FRM_MAIN[23], '.fpj', FrmFalconMain.TreeViewProjects.Items);
     FileName := FrmFalconMain.Config.Environment.ProjectsDir + FileName;
   end;

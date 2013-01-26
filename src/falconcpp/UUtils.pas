@@ -1252,7 +1252,7 @@ var
           NewPrj.Target := RemoveFileExt(AName) + '.res'
         else
           NewPrj.Target := RemoveFileExt(AName) + '.exe';
-        NewPrj.CompilerOptions := '-Wall -s -O2';
+        NewPrj.CompilerOptions := '-Wall -s';
       end
       else
         NewPrj.FileName := FileName;
@@ -1427,7 +1427,7 @@ begin
       begin
         ProjProp.Target := RemoveFileExt(ProjProp.Name) + '.exe';
         ProjProp.AppType := APPTYPE_CONSOLE;
-        ProjProp.CompilerOptions := '-Wall -s -O2';
+        ProjProp.CompilerOptions := '-Wall -s';
       end;
     end;
   end

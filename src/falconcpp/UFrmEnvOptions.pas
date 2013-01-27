@@ -68,6 +68,8 @@ type
     procedure EditmaxFilesInReopenChange(Sender: TObject);
     procedure BtnChooseConfFileClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
   private
     { Private declarations }
     Loading: Boolean;
@@ -484,6 +486,15 @@ end;
 procedure TFrmEnvOptions.FormCreate(Sender: TObject);
 begin
   UpdateLangNow;
+end;
+
+procedure TFrmEnvOptions.FormKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = VK_ESCAPE then
+    Close
+  else if (Key = VK_RETURN) and (Shift = [ssCtrl]) then
+    BtnOk.Click;
 end;
 
 end.

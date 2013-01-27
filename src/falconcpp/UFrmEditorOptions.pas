@@ -261,6 +261,8 @@ type
     procedure ComboBoxBracketStyleChange(Sender: TObject);
     procedure BtnPrevStyleClick(Sender: TObject);
     procedure ComboBoxPointerAlignChange(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
   private
     { Private declarations }
     ActiveSintax: TSintax;
@@ -1628,6 +1630,7 @@ procedure TFrmEditorOptions.BtnEditCodeTemplateClick(Sender: TObject);
 begin
   if not Assigned(FrmCodeTemplates) then
     FrmCodeTemplates := TFrmCodeTemplates.CreateParented(Handle);
+  FrmCodeTemplates.CodeTemplateFileName := EditCodeTemplate.Text;
   FrmCodeTemplates.ShowModal;
 end;
 
@@ -1951,6 +1954,15 @@ begin
     eoHideShowScrollbars, eoScrollPastEol, eoShowScrollHint,
     eoSmartTabDelete, eoSmartTabs, eoTabsToSpaces];
   SynMemoSample.ScrollBars := ssNone;
+end;
+
+procedure TFrmEditorOptions.FormKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = VK_ESCAPE then
+    Close
+  else if (Key = VK_RETURN) and (Shift = [ssCtrl]) then
+    BtnOk.Click;
 end;
 
 end.

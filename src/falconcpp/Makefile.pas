@@ -50,6 +50,10 @@ type
     property ForceClean: Boolean read FForceClean write FForceClean;
   end;
 
+function DoubleQuotedStr(const S: string): string;
+function ConvertAnsiToOem(const S: string): string;
+function EscapeString(const S: string): string;
+
 implementation
 
 function ConvertAnsiToOem(const S: string): string;

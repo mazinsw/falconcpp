@@ -99,8 +99,6 @@ function BrowseDialog(Handle: HWND; const Title: string;
 function HumanToBool(Resp: string): Boolean;
 function BoolToHuman(Question: Boolean): string;
 function GetFullFileName(Name: string): string;
-function LinuxSpace(const S: string): string;
-function DoubleQuotedStr(const S: string): string;
 
 function EditorGotoXY(Memo: TSynEditEx; X, Y: Integer): Boolean;
 function SearchSourceFile(FileName: string;
@@ -1664,27 +1662,6 @@ begin
   SelectFilesByExt([Extension], List, OutList);
   Result := OutList.Text;
   OutList.Free;
-end;
-
-function ConvertAnsiToOem(const S: string): string;
-begin
-  Result := '';
-  if Length(s) = 0 then
-    Exit;
-  SetLength(Result, Length(S));
-  AnsiToOem(PChar(S), PChar(Result));
-end;
-
-function LinuxSpace(const S: string): string;
-begin
-  Result := StringReplace(S, ' ', '\ ', [rfReplaceAll]);
-end;
-
-function DoubleQuotedStr(const S: string): string;
-begin
-  Result := S;
-  if Pos(' ', Trim(S)) > 0 then
-    Result := '"' + Result + '"';
 end;
 
 procedure SelectFilesByExt(Extensions: array of string; List, OutList: TStrings);

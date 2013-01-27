@@ -17,6 +17,7 @@ object FrmCodeTemplates: TFrmCodeTemplates
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnKeyDown = FormKeyDown
   OnKeyPress = FormKeyPress
   PixelsPerInch = 96
   TextHeight = 13
@@ -245,40 +246,6 @@ object FrmCodeTemplates: TFrmCodeTemplates
       ShowHint = True
       OnClick = BtnEditClick
     end
-    object SynTemplates: TSynMemo
-      Left = 9
-      Top = 192
-      Width = 426
-      Height = 177
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -13
-      Font.Name = 'Courier New'
-      Font.Style = []
-      TabOrder = 0
-      BracketHighlight.Background = clSkyBlue
-      BracketHighlight.Foreground = clGray
-      BracketHighlight.AloneBackground = clNone
-      BracketHighlight.AloneForeground = clRed
-      BracketHighlight.Style = [fsBold]
-      BracketHighlight.AloneStyle = [fsBold]
-      LinkOptions.Color = clBlue
-      LinkOptions.AttributeList.Strings = (
-        'Preprocessor'
-        'Identifier')
-      LinkEnable = True
-      Gutter.DigitCount = 2
-      Gutter.Font.Charset = DEFAULT_CHARSET
-      Gutter.Font.Color = clWindowText
-      Gutter.Font.Height = -11
-      Gutter.Font.Name = 'Courier New'
-      Gutter.Font.Style = []
-      Gutter.LeftOffset = 6
-      Gutter.ShowLineNumbers = True
-      Gutter.Visible = False
-      Options = [eoAutoIndent, eoDisableScrollArrows, eoDragDropEditing, eoEnhanceEndKey, eoGroupUndo, eoHideShowScrollbars, eoScrollPastEol, eoShowScrollHint, eoSmartTabDelete, eoTabIndent, eoTabsToSpaces, eoTrimTrailingSpaces]
-      ScrollBars = ssNone
-    end
     object ListViewTemplates: TListView
       Left = 8
       Top = 32
@@ -296,7 +263,7 @@ object FrmCodeTemplates: TFrmCodeTemplates
       HideSelection = False
       ReadOnly = True
       RowSelect = True
-      TabOrder = 1
+      TabOrder = 0
       ViewStyle = vsReport
       OnAdvancedCustomDrawItem = ListViewTemplatesAdvancedCustomDrawItem
       OnDeletion = ListViewTemplatesDeletion

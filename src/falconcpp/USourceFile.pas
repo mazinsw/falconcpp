@@ -290,6 +290,7 @@ type
     procedure TextEditorMouseDown(Sender: TObject;
       Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
   public
+    class procedure UpdateEditor(SynMemo: TSynEditEx);
     constructor CreateEditor(SourceFile: TSourceFile; PageCtrl: TModernPageControl;
       SelectTab: Boolean = True);
     destructor Destroy; override;
@@ -1878,6 +1879,7 @@ procedure TProjectFile.Build;
 
 var
   Makefile, FileContSpc, Temp, IncludeFileName, IncludeName: string;
+  ExecFileName, ExecDirectory, ExecParams: string;
   Files: TStrings;
   Res, MkWar, Includes: TStrings;
   MkRes, I, J, K: Integer;
@@ -1885,6 +1887,7 @@ var
   mk: TMakefile;
   OldDebuggingState, SkipIncludeFile: Boolean;
   TokenFile: TTokenFile;
+  HasResource: Boolean;
 begin
   SaveAll;
   if CompilerType in [COMPILER_CPP, COMPILER_C] then
@@ -1892,8 +1895,10 @@ begin
     Files := TStringList.Create;
     GetFiles(Files);
     Res := TStringList.Create;
+    HasResource := False;
     if GetResource(Res) then
     begin
+      HasResource := True;
       if Assigned(Icon) then
         Icon.SaveToFile(ExtractFilePath(FileName) + 'AppIcon.ico');
       Manf := 0;
@@ -1912,70 +1917,104 @@ begin
       Res.SaveToFile(ExtractFilePath(FileName) + 'AppResource.rc');
     end;
     Res.Free;
-    Makefile := ExtractFilePath(FileName) + 'Makefile.mak';
-    for I := 0 to Files.Count - 1 do
+    if HasResource or (FileType = FILE_TYPE_PROJECT) then
     begin
-      Includes := TStringList.Create;
-      Files.Objects[I] := Includes;
-      TokenFile := FrmFalconMain.FilesParsed.ItemOfByFileName(Files.Strings[I]);
-      if TokenFile = nil then
-        Continue;
-      for J := 0 to TokenFile.Includes.Count - 1 do
+      for I := 0 to Files.Count - 1 do
       begin
-        if TokenFile.Includes.Items[J].Flag = 'L' then
+        Includes := TStringList.Create;
+        Files.Objects[I] := Includes;
+        TokenFile := FrmFalconMain.FilesParsed.ItemOfByFileName(Files.Strings[I]);
+        if TokenFile = nil then
+          Continue;
+        for J := 0 to TokenFile.Includes.Count - 1 do
         begin
-          IncludeName := ConvertSlashes(TokenFile.Includes.Items[J].Name);
-          Temp := ExtractFilePath(Files.Strings[I]) + IncludeName;
-          Temp := ExpandFileName(Temp);
-          if not FileExists(Temp) then
+          if TokenFile.Includes.Items[J].Flag = 'L' then
           begin
-            SkipIncludeFile := False;
-            for K := 0 to FrmFalconMain.FilesParsed.PathList.Count - 1 do
+            IncludeName := ConvertSlashes(TokenFile.Includes.Items[J].Name);
+            Temp := ExtractFilePath(Files.Strings[I]) + IncludeName;
+            Temp := ExpandFileName(Temp);
+            if not FileExists(Temp) then
             begin
-              IncludeFileName := ExpandFileName(FrmFalconMain.FilesParsed.PathList.Strings[K] +
-                IncludeName);
-              if FileExists(IncludeFileName) then
+              SkipIncludeFile := False;
+              for K := 0 to FrmFalconMain.FilesParsed.PathList.Count - 1 do
               begin
-                SkipIncludeFile := True;
-                Break;
+                IncludeFileName := ExpandFileName(FrmFalconMain.FilesParsed.PathList.Strings[K] +
+                  IncludeName);
+                if FileExists(IncludeFileName) then
+                begin
+                  SkipIncludeFile := True;
+                  Break;
+                end;
               end;
+              if SkipIncludeFile then
+                Continue;
             end;
-            if SkipIncludeFile then
-              Continue;
+            Includes.Add(Temp);
           end;
-          Includes.Add(Temp);
         end;
       end;
     end;
-    mk := TMakefile.Create;
-    mk.BaseDir := ExtractFilePath(FileName);
-    mk.Files := Files;
-    mk.FileName := Makefile;
-    mk.Target := Target;
-    mk.Libs := Libs;
-    mk.Flags := Flags;
-    mk.CompilerIsCpp := (CompilerType = COMPILER_CPP);
-    mk.CreateLibrary := (AppType = APPTYPE_LIB);
-    mk.CompilerPath := FCompilerPath;
-    mk.CompilerOptions := CompilerOptions;
     OldDebuggingState := Debugging;
     Debugging := HasBreakpoint or BreakpointCursor.Valid;
-    if not OldDebuggingState and Debugging then
-      ForceClean := True;
-    mk.ForceClean := ForceClean;
     BreakpointChanged := False;
-    mk.DebugMode := Debugging;
-    if Debugging then
+    ExecDirectory := ExtractFilePath(FileName);
+    if not HasResource and (FileType <> FILE_TYPE_PROJECT) then
     begin
-      mk.CompilerOptions := RemoveOption('-s', mk.CompilerOptions);
-      mk.CompilerOptions := RemoveOption('-O2', mk.CompilerOptions);
-      mk.CompilerOptions := RemoveOption('-O3', mk.CompilerOptions);
+      Files.Clear;
+      if CompilerType = COMPILER_C then
+        ExecFileName := 'gcc'
+      else
+        ExecFileName := 'g++';
+      ExecParams := CompilerOptions;
+      if Debugging then
+      begin
+        ExecParams := RemoveOption('-s', ExecParams);
+        ExecParams := RemoveOption('-O2', ExecParams);
+        ExecParams := RemoveOption('-O3', ExecParams);
+        ExecParams := ExecParams + ' -g';
+      end;
+      // TransformToRelativePath;
+      Temp := ExtractRelativePath(ExecDirectory, FileName);
+      Temp := DoubleQuotedStr(Temp);
+      ExecParams := ExecParams + ' ' + Temp;
+      Temp := DoubleQuotedStr(Target);
+      ExecParams := ExecParams + ' -o ' + Temp;
+      ExecParams := Trim(ExecParams + ' -L"$(MINGW_PATH)\lib" ' + Libs);
+      ExecParams := Trim(ExecParams + ' -I"$(MINGW_PATH)\include" ' + Flags);
+      MkRes := 0;
+    end
+    else
+    begin
+      Makefile := ExtractFilePath(FileName) + 'Makefile.mak';
+      ExecFileName := 'mingw32-make.exe';
+      ExecParams := '-s -f Makefile.mak';
+      mk := TMakefile.Create;
+      mk.BaseDir := ExtractFilePath(FileName);
+      mk.Files := Files;
+      mk.FileName := Makefile;
+      mk.Target := Target;
+      mk.Libs := Libs;
+      mk.Flags := Flags;
+      mk.CompilerIsCpp := (CompilerType = COMPILER_CPP);
+      mk.CreateLibrary := (AppType = APPTYPE_LIB);
+      mk.CompilerPath := FCompilerPath;
+      mk.CompilerOptions := CompilerOptions;
+      if not OldDebuggingState and Debugging then
+        ForceClean := True;
+      mk.ForceClean := ForceClean;
+      mk.DebugMode := Debugging;
+      if Debugging then
+      begin
+        mk.CompilerOptions := RemoveOption('-s', mk.CompilerOptions);
+        mk.CompilerOptions := RemoveOption('-O2', mk.CompilerOptions);
+        mk.CompilerOptions := RemoveOption('-O3', mk.CompilerOptions);
+      end;
+      mk.CleanBefore := DeleteObjsBefore;
+      mk.CleanAfter := DeleteObjsAfter;
+      mk.Echo := True;
+      MkRes := mk.BuildMakefile;
+      mk.Free;
     end;
-    mk.CleanBefore := DeleteObjsBefore;
-    mk.CleanAfter := DeleteObjsAfter;
-    mk.Echo := True;
-    MkRes := mk.BuildMakefile;
-    mk.Free;
     for I := 0 to Files.Count - 1 do
       Files.Objects[I].Free;
     Files.Free;
@@ -1984,9 +2023,9 @@ begin
       ForceClean := False; //WARNING if mingw32-make.exe not complete clean rule
                           //directives aren't updated
       FrmFalconMain.LastProjectBuild := Self;
-      FrmFalconMain.CompilerCmd.FileName := 'mingw32-make.exe';
-      FrmFalconMain.CompilerCmd.Directory := ExtractFilePath(Makefile);
-      FrmFalconMain.CompilerCmd.Params := '-s -f Makefile.mak';
+      FrmFalconMain.CompilerCmd.FileName := ExecFileName;
+      FrmFalconMain.CompilerCmd.Directory := ExecDirectory;
+      FrmFalconMain.CompilerCmd.Params := ExecParams;
       FrmFalconMain.CompilerCmd.Start;
     end
     else
@@ -2138,21 +2177,14 @@ end;
 
 {TSourceFileSheet}
 
-constructor TSourceFileSheet.CreateEditor(SourceFile: TSourceFile;
-  PageCtrl: TModernPageControl; SelectTab: Boolean);
+class procedure TSourceFileSheet.UpdateEditor(SynMemo: TSynEditEx);
 var
   Options: TSynEditorOptions;
 begin
-  inherited Create(PageCtrl);
-  ParentBackground := False;
-  FSourceFile := SourceFile;
-  FSourceFile.FSheet := Self;
-  FSheetType := SHEET_TYPE_FILE;
-  FSynMemo := TSynEditEx.Create(Self);
   //FSynMemo.BorderStyle := bsNone;
   with FrmFalconMain.Config.Editor do
   begin
-    Options := FSynMemo.Options;
+    Options := SynMemo.Options;
     Include(Options, eoKeepCaretX);
     Include(Options, eoShowIndentGuides);
     //------------ General --------------------------//
@@ -2161,7 +2193,7 @@ begin
     else
       Exclude(Options, eoAutoIndent);
     //find text at cursor
-    FSynMemo.InsertMode := InsertMode;
+    SynMemo.InsertMode := InsertMode;
     if GroupUndo then
       Include(Options, eoGroupUndo)
     else
@@ -2204,41 +2236,54 @@ begin
     else
       Exclude(Options, eoShowSpaceChars);
 
-    FSynMemo.MaxUndo := MaxUndo;
-    FSynMemo.TabWidth := TabWidth;
+    SynMemo.MaxUndo := MaxUndo;
+    SynMemo.TabWidth := TabWidth;
 
-    FSynMemo.BracketHighlighting := HighligthMatchBraceParentheses;
-    FSynMemo.BracketHighlight.Foreground := NormalColor;
-    FSynMemo.BracketHighlight.AloneForeground := ErrorColor;
-    FSynMemo.BracketHighlight.Style := [fsBold];
-    FSynMemo.BracketHighlight.AloneStyle := [fsBold];
-    FSynMemo.BracketHighlight.Background := BgColor;
+    SynMemo.BracketHighlighting := HighligthMatchBraceParentheses;
+    SynMemo.BracketHighlight.Foreground := NormalColor;
+    SynMemo.BracketHighlight.AloneForeground := ErrorColor;
+    SynMemo.BracketHighlight.Style := [fsBold];
+    SynMemo.BracketHighlight.AloneStyle := [fsBold];
+    SynMemo.BracketHighlight.Background := BgColor;
 
     if HighligthCurrentLine then
-      FSynMemo.ActiveLineColor := CurrentLineColor
+      SynMemo.ActiveLineColor := CurrentLineColor
     else
-      FSynMemo.ActiveLineColor := clNone;
+      SynMemo.ActiveLineColor := clNone;
 
-    FSynMemo.LinkEnable := LinkClick;
-    FSynMemo.LinkOptions.Color := LinkColor;
+    SynMemo.LinkEnable := LinkClick;
+    SynMemo.LinkOptions.Color := LinkColor;
 
     //---------------- Display ---------------------//
-    FSynMemo.Font.Name := FontName;
-    FSynMemo.Font.Size := FontSize;
-    FSynMemo.Gutter.Width := GutterWidth;
+    SynMemo.Font.Name := FontName;
+    SynMemo.Font.Size := FontSize;
+    SynMemo.Gutter.Width := GutterWidth;
     if ShowRightMargin then
-      FSynMemo.RightEdge := RightMargin
+      SynMemo.RightEdge := RightMargin
     else
-      FSynMemo.RightEdge := 0;
-    FSynMemo.Gutter.Visible := ShowGutter;
-    FSynMemo.Gutter.ShowLineNumbers := ShowLineNumber;
-    FSynMemo.Gutter.Gradient := GradientGutter;
+      SynMemo.RightEdge := 0;
+    SynMemo.Gutter.Visible := ShowGutter;
+    SynMemo.Gutter.ShowLineNumbers := ShowLineNumber;
+    SynMemo.Gutter.Gradient := GradientGutter;
     //-------------- Colors -------------------------//
 
-    FrmFalconMain.SintaxList.Selected.UpdateEditor(FSynMemo);
+    FrmFalconMain.SintaxList.Selected.UpdateEditor(SynMemo);
     //-------------- Code Resources -----------------//
-    FSynMemo.Options := Options;
+    SynMemo.Options := Options;
   end;
+end;
+
+constructor TSourceFileSheet.CreateEditor(SourceFile: TSourceFile;
+  PageCtrl: TModernPageControl; SelectTab: Boolean);
+begin
+  inherited Create(PageCtrl);
+  ParentBackground := False;
+  FSourceFile := SourceFile;
+  FSourceFile.FSheet := Self;
+  FSheetType := SHEET_TYPE_FILE;
+  FSynMemo := TSynEditEx.Create(Self);
+  //FSynMemo.BorderStyle := bsNone;
+  UpdateEditor(FSynMemo);
   FSynMemo.ReadOnly := SourceFile.ReadOnly;
   if SourceFile.ReadOnly then
     Font.Color := clGrayText;

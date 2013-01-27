@@ -17,6 +17,7 @@ object FrmEditorOptions: TFrmEditorOptions
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnKeyDown = FormKeyDown
   OnKeyPress = FormKeyPress
   PixelsPerInch = 96
   TextHeight = 13

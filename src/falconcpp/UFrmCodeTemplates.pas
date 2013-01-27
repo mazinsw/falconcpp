@@ -4,7 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ComCtrls, Buttons, SynEdit, SynMemo, StdCtrls, SynEditAutoComplete;
+  Dialogs, ComCtrls, Buttons, SynEdit, SynMemo, StdCtrls, SynEditAutoComplete,
+  SynEditEx, USourceFile;
 
 type
   TFrmCodeTemplates = class(TForm)
@@ -12,7 +13,6 @@ type
     BtnOk: TButton;
     Label1: TLabel;
     Label2: TLabel;
-    SynTemplates: TSynMemo;
     BtnAdd: TSpeedButton;
     BtnRem: TSpeedButton;
     BtnEdit: TSpeedButton;
@@ -35,13 +35,17 @@ type
     procedure ListViewTemplatesDeletion(Sender: TObject; Item: TListItem);
     procedure BtnOkClick(Sender: TObject);
     procedure BtnRemClick(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
   private
     { Private declarations }
+    SynTemplates: TSynEditEx;
   protected
     procedure CreateParams(var Params: TCreateParams); override;
   public
     { Public declarations }
     AutoComplete: TSynAutoCompleteTemplate;
+    CodeTemplateFileName: string;
     procedure UpdateLangNow;
   end;
 
@@ -58,7 +62,7 @@ var
 
 implementation
 
-uses UFrmEditorOptions, UFrmMain, UFrmPromptCodeTemplate, ULanguages;
+uses UFrmMain, UFrmPromptCodeTemplate, ULanguages;
 
 {$R *.dfm}
 
@@ -95,8 +99,16 @@ var
   Rs: TResourceStream;
 begin
   AutoComplete := TSynAutoCompleteTemplate.Create(Self);
-  SynTemplates.Highlighter := FrmEditorOptions.SynCpp;
-
+  SynTemplates := TSynEditEx.Create(GroupBox1);
+  SynTemplates.Parent := GroupBox1;
+  SynTemplates.Left := 9;
+  SynTemplates.Top := 192;
+  SynTemplates.Width := 426;
+  SynTemplates.Height := 177;
+  SynTemplates.ScrollBars := ssNone;
+  SynTemplates.Highlighter := FrmFalconMain.CppHighligher;
+  TSourceFileSheet.UpdateEditor(SynTemplates);
+  SynTemplates.Gutter.Visible := False;
   Rs := TResourceStream.Create(HInstance, 'AUTOCOMPLETE', RT_RCDATA);
   Rs.Position := 0;
   AutoComplete.AutoCompleteList.LoadFromStream(Rs);
@@ -115,8 +127,8 @@ begin
   end;
   AutoComplete.AutoCompleteList.Clear;
 
-  if FileExists(FrmEditorOptions.EditCodeTemplate.Text) then
-    AutoComplete.AutoCompleteList.LoadFromFile(FrmEditorOptions.EditCodeTemplate.Text);
+  if FileExists(CodeTemplateFileName) then
+    AutoComplete.AutoCompleteList.LoadFromFile(CodeTemplateFileName);
   for I := 0 to AutoComplete.Completions.Count - 1 do
   begin
     CTI := TCodeTemplateItem.Create;
@@ -262,7 +274,7 @@ begin
     List := TStringList.Create;
     MakeCompletion(List);
     try
-      List.SaveToFile(FrmEditorOptions.EditCodeTemplate.Text);
+      List.SaveToFile(CodeTemplateFileName);
     finally
       List.Free;
     end;
@@ -303,7 +315,7 @@ begin
     List := TStringList.Create;
     MakeCompletion(List);
     try
-      List.SaveToFile(FrmEditorOptions.EditCodeTemplate.Text);
+      List.SaveToFile(CodeTemplateFileName);
     finally
       List.Free;
     end;
@@ -349,11 +361,20 @@ begin
   List := TStringList.Create;
   MakeCompletion(List);
   try
-    List.SaveToFile(FrmEditorOptions.EditCodeTemplate.Text);
+    List.SaveToFile(CodeTemplateFileName);
   finally
     List.Free;
   end;
   Item.Delete;
+end;
+
+procedure TFrmCodeTemplates.FormKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Key = VK_ESCAPE then
+    Close
+  else if (Key = VK_RETURN) and (Shift = [ssCtrl]) then
+    BtnOk.Click;
 end;
 
 end.

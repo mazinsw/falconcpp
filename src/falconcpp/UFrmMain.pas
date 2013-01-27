@@ -833,7 +833,7 @@ implementation
 uses
   UFrmAbout, UFrmNew, UFrmProperty, ExecWait, UTools, UFrmRemove,
   UFrmUpdate, ULanguages, UFrmEnvOptions, UFrmCompOptions, UFrmFind, AStyle,
-  UFrmGotoFunction, UFrmGotoLine, TBXThemes;
+  UFrmGotoFunction, UFrmGotoLine, TBXThemes, Makefile;
 
 {$R *.dfm}
 {$R resources.res}
@@ -2127,7 +2127,6 @@ end;
 
 procedure TFrmFalconMain.UpdateOpenedSheets;
 var
-  Options: TSynEditorOptions;
   I: Integer;
   SynMemo: TSynEditEx;
 begin
@@ -2140,92 +2139,7 @@ begin
   for I := 0 to PageControlEditor.PageCount - 1 do
   begin
     SynMemo := TSourceFileSheet(PageControlEditor.Pages[I]).Memo;
-    Options := SynMemo.Options;
-    with Config.Editor do
-    begin
-      Options := SynMemo.Options;
-      Include(Options, eoKeepCaretX);
-      Include(Options, eoShowIndentGuides);
-      //------------ General --------------------------//
-      if AutoIndent then
-        Include(Options, eoAutoIndent)
-      else
-        Exclude(Options, eoAutoIndent);
-      //find text at cursor
-      SynMemo.InsertMode := InsertMode;
-      if GroupUndo then
-        Include(Options, eoGroupUndo)
-      else
-        Exclude(Options, eoGroupUndo);
-      //remove file on close
-      if KeepTrailingSpaces then
-        Exclude(Options, eoTabIndent)
-      else
-        Include(Options, eoTrimTrailingSpaces);
-
-      if ScrollHint then
-        Exclude(Options, eoShowScrollHint)
-      else
-        Include(Options, eoShowScrollHint);
-      if TabIndentUnindent then
-        Include(Options, eoTabIndent)
-      else
-        Exclude(Options, eoTabIndent);
-      if SmartTabs then
-        Include(Options, eoSmartTabs)
-      else
-        Exclude(Options, eoSmartTabs);
-      if SmartTabs then
-        Include(Options, eoSmartTabs)
-      else
-        Exclude(Options, eoSmartTabs);
-      if UseTabChar then
-        Exclude(Options, eoTabsToSpaces)
-      else
-        Include(Options, eoTabsToSpaces);
-      if EnhancedHomeKey then
-        Include(Options, eoEnhanceHomeKey)
-      else
-        Exclude(Options, eoEnhanceHomeKey);
-      if ShowSpaceChars then
-        Include(Options, eoShowSpaceChars)
-      else
-        Exclude(Options, eoShowSpaceChars);
-
-      SynMemo.MaxUndo := MaxUndo;
-      SynMemo.TabWidth := TabWidth;
-
-      SynMemo.BracketHighlighting := HighligthMatchBraceParentheses;
-      SynMemo.BracketHighlight.Foreground := NormalColor;
-      SynMemo.BracketHighlight.AloneForeground := ErrorColor;
-      SynMemo.BracketHighlight.Style := [fsBold];
-      SynMemo.BracketHighlight.AloneStyle := [fsBold];
-      SynMemo.BracketHighlight.Background := BgColor;
-
-      if HighligthCurrentLine then
-        SynMemo.ActiveLineColor := CurrentLineColor
-      else
-        SynMemo.ActiveLineColor := clNone;
-
-      SynMemo.LinkEnable := LinkClick;
-      SynMemo.LinkOptions.Color := LinkColor;
-
-      //---------------- Display ---------------------//
-      SynMemo.Font.Name := FontName;
-      SynMemo.Font.Size := FontSize;
-      if ShowRightMargin then
-        SynMemo.RightEdge := RightMargin
-      else
-        SynMemo.RightEdge := 0;
-      SynMemo.Gutter.Visible := ShowGutter;
-      SynMemo.Gutter.Width := GutterWidth;
-      SynMemo.Gutter.ShowLineNumbers := ShowLineNumber;
-      SynMemo.Gutter.Gradient := GradientGutter;
-      //-------------- Colors -------------------------//
-      SintaxList.Selected.UpdateEditor(SynMemo);
-      //-------------- Code Resources -----------------//
-      SynMemo.Options := Options;
-    end;
+    TSourceFileSheet.UpdateEditor(SynMemo);
   end;
 end;
 

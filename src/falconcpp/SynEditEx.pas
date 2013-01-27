@@ -1100,10 +1100,10 @@ begin
   StrPosCaret := Copy(LineStr, c.Char, Length(LineStr) - c.Char + 1);
   lstch := GetLastNonSpaceChar(PrevLineStr);
   fstch := GetFirstNonSpaceChar(StrPosCaret);
-  AdvanceSpaceBreakLine(c.Line - 1, LeftOffset, Unindent);
+  AdvanceSpaceBreakLine(c.Line - 2, LeftOffset, Unindent);
   if (lstch = '{') and (fstch = '}') then
   begin
-    Inc(LeftOffset, TabWidth);
+    //Inc(LeftOffset, TabWidth);
     caretChanged := True;
     bCaret := CaretXY;
     bCaret.Char := LeftOffset + 1;

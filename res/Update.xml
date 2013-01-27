@@ -1,16 +1,19 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <FalconCPP>
-	<Core Version="3.2.0.0">
-		<File Name="Falcon.exe" URL="https://downloads.sourceforge.net/project/falconcpp/Binaries/3.2.0.0/Falcon C++-3.2.0.0.zip">
-			Date: 2012/11/21
-			Install packages easily
-			Site updated: falconcpp.sourceforge.net
-			Search with regular expression enabled
-			Tab navigation and tab moving
-			Indentation enhancement
-			Add referenced files to project
-			Fix goto function, memory access error
-			Parse new installed files when install a new package
+	<Core Version="3.2.0.10">
+		<File Name="Falcon.exe" URL="https://downloads.sourceforge.net/project/falconcpp/Binaries/3.2.0.10/Falcon C++-3.2.0.10.zip">
+			Date: 2013/01/26
+			Fix: Updater don't update Updater.exe, Install manually for fix it
+			Fix: Open and edit large files is too slow
+			Code completion on include
+			No makefile creation for single source file
+			Makefile rules depends on header files
+			Translation support for Package Manager
+			Cursor after end of line option
+			Auto close brackets/parentheses option
+			Syntax highligthing for types, instruction and documentation comment
+			Fix: -O2 option for default causes problems
+			Fix: Project Property include path or library with spaces in name and split
 		</File>
 	</Core>
 	<Packages>

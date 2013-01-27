@@ -506,7 +506,9 @@ procedure TFrmProperty.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
   if Key = VK_ESCAPE then
-    Close;
+    Close
+  else if (Key = VK_RETURN) and (Shift = [ssCtrl]) then
+    BtnOk.Click;
 end;
 
 procedure TFrmProperty.ListLibsClick(Sender: TObject);

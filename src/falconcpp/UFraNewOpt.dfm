@@ -80,8 +80,6 @@ object FraPrjOpt: TFraPrjOpt
           Width = 153
           Height = 17
           Caption = 'Optimize Speed'
-          Checked = True
-          State = cbChecked
           TabOrder = 2
         end
       end

@@ -20,7 +20,7 @@ function FindTarFile(const FindName, Source: string; OutFile: TStream): Boolean;
 function FindTarFile(const FindName: string; Source, OutFile: TStream): Boolean; overload;
 {no extract/search only}
 function FindedTarFile(const FindName: string; Source: TStream): Boolean;
-
+{ search match file }
 function FindZipFile(const FindName: string; Source: TZipFile; OutFile: TStream): Boolean;
 {no extract/search only}
 function FindedZipFile(const FindName: string; Source: TZipFile): Boolean;

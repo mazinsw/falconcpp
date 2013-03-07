@@ -46,7 +46,6 @@ uses UFraWelcome, UFraSteps, UFraAgrmt, UFraFnsh, UFraDesc, UFraPrgs,
   UFraReadMe, PkgUtils, ULanguages;
 
 {$R *.dfm}
-{$R resources.RES}
 
 procedure TFrmWizard.FormKeyPress(Sender: TObject; var Key: Char);
 begin

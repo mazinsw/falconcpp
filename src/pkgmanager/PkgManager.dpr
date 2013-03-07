@@ -32,6 +32,13 @@ uses
   ULanguages in 'ULanguages.pas',
   PkgUtils in 'PkgUtils.pas';
 
+//{$DEFINE PKGMAN_RUNAS}
+{$IFDEF PKGMAN_RUNAS}
+{$R resources_runas.RES}
+{$ELSE}
+{$R resources.RES}
+{$ENDIF}
+
 var
   Silent: Boolean;
   Install: Boolean;

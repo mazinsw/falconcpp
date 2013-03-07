@@ -13,4 +13,4 @@ IMAGES_16x16 RCDATA "../../res/images/pkm/pkg_download_16x16.png"
 
 MAINICON ICON "../../res/images/pkm/Icon.ico"
 
-1 24 "../../res/theme.manifest"
+1 24 "../../res/both.manifest"

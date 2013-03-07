@@ -75,7 +75,7 @@ begin
   FraGetVer := TFraGetVer.Create(Self);
   FraGetVer.Parent := PnlFra;
   FraUpdate := TFraUpdate.Create(Self);
-  //FraGetVer.PrgsUpdate.DoubleBuffered := True;//resolve flik
+  { TODO -oMazin -c : resolve flik:FraGetVer.PrgsUpdate.DoubleBuffered := True; 17/02/2013 22:39:53 }
   UpdateLangNow;
   Install := (ParamCount = 1);//has URL as parameter
   if Install then
@@ -255,7 +255,7 @@ begin
             Application.ProcessMessages;
           end;
         end;
-        //install
+        //install zip file
         DeleteFile(DownloadedFileName);
         Executor.ExecuteAndWatch(ExtractedFileName, '/S',
           ExtractFilePath(ExtractedFileName), False, INFINITE,
@@ -293,8 +293,11 @@ begin
   end;
   FraUpdate.PrgsUpdate.Max := CalculatedFileSize;
   FraUpdate.PrgsUpdate.Position := ReceivedBytes;
-  FraUpdate.LblDesc.Caption := FormatFloat(STR_FRM_UPD[11],
-               ReceivedBytes*100/CalculatedFileSize);
+  if CalculatedFileSize > 0 then
+  begin
+    FraUpdate.LblDesc.Caption := FormatFloat(STR_FRM_UPD[11],
+      ReceivedBytes*100/CalculatedFileSize);
+  end;
 end;
 
 procedure TFrmUpdate.FileDownloadStart(Sender: TObject);

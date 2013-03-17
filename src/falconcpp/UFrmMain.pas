@@ -63,6 +63,10 @@ const
   PBS_MARQUEE = $0008;
   {$EXTERNALSYM PBM_SETMARQUEE}
   PBM_SETMARQUEE = WM_USER+10;
+  {$EXTERNALSYM VK_OEM_PLUS}
+  VK_OEM_PLUS = 187;
+  {$EXTERNALSYM VK_OEM_MINUS}
+  VK_OEM_MINUS = 189;
 
 type
   TSearchItem = record
@@ -386,7 +390,6 @@ type
     procedure FalconHelpClick(Sender: TObject);
     procedure TreeViewProjectsChange(Sender: TObject; Node: TTreeNode);
     procedure EditFileClick(Sender: TObject);
-    procedure TextEditorStatusChange(Sender: TObject; Changes: TSynStatusChanges);
     procedure FileRemoveClick(Sender: TObject);
     procedure EditUndoClick(Sender: TObject);
     procedure EditRedoClick(Sender: TObject);
@@ -457,6 +460,7 @@ type
     procedure TextEditorSpecialLineColors(Sender: TObject; Line: Integer;
       var Special: Boolean; var FG, BG: TColor);
     procedure TextEditorChange(Sender: TObject);
+    procedure TextEditorStatusChange(Sender: TObject; Changes: TSynStatusChanges);
     procedure TextEditorEnter(Sender: TObject);
     procedure TextEditorExit(Sender: TObject);
     procedure TextEditorMouseMove(Sender: TObject; Shift: TShiftState; X,
@@ -645,6 +649,7 @@ type
     CurrentFileIsParsed: Boolean;
     LastMousePos: TPoint;
     LastWordHintStart: Integer;
+    ActiveErrorLine: Integer;
 
     // include list
     FIncludeFileList: TStrings;
@@ -3848,7 +3853,8 @@ begin
       end;
       if Col > 0 then
         GotoLineAndAlignCenter(Sheet.Memo, Line, Col);
-      Sheet.Memo.ActiveLineColor := clRed;
+      ActiveErrorLine := Line;
+      Sheet.Memo.InvalidateLine(ActiveErrorLine);
     end;
   end;
 end;
@@ -4469,6 +4475,8 @@ end;
 
 procedure TFrmFalconMain.TextEditorStatusChange(Sender: TObject;
   Changes: TSynStatusChanges);
+var
+  LastActiveErrorLine: Integer;
 begin
   CanShowHintTip := False;
   TimerHintTipEvent.Enabled := False;
@@ -4478,10 +4486,12 @@ begin
   begin
     UpdateMenuItems([rmEdit]);
     DetectScope(Sender as TSynEditEx);
-    if Config.Editor.HighligthCurrentLine then
-      (Sender as TSynEditEx).ActiveLineColor := Config.Editor.CurrentLineColor
-    else
-      (Sender as TSynEditEx).ActiveLineColor := clNone;
+    if ActiveErrorLine > 0 then
+    begin
+      LastActiveErrorLine := ActiveErrorLine;
+      ActiveErrorLine := 0;
+      (Sender as TSynEditEx).InvalidateLine(LastActiveErrorLine);
+    end;
   end;
 
   if HintParams.Activated and ((scCaretX in Changes) or (scCaretY in Changes))
@@ -4712,14 +4722,22 @@ procedure TFrmFalconMain.TextEditorKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 var
   Sheet: TSourceFileSheet;
+  I: Integer;
 begin
   Sheet := TSourceFileSheet(TComponent(Sender).Owner);
-
-  if (ssCtrl in Shift) and (Key = VK_ADD) then
-    Sheet.Memo.Font.Size := Sheet.Memo.Font.Size + 1;
-  if (ssCtrl in Shift) and (Key = VK_SUBTRACT) then
-    Sheet.Memo.Font.Size := Sheet.Memo.Font.Size - 1;
-
+  if (ssCtrl in Shift) and (Key = VK_OEM_PLUS) then
+    ViewZoomIncClick(ViewZoomInc);
+  if (ssCtrl in Shift) and (Key = VK_OEM_MINUS) then
+    ViewZoomDecClick(ViewZoomDec);
+  if (ssCtrl in Shift) and ((Key = VK_NUMPAD0) or (Key = Ord('0'))) then
+  begin
+    ZoomEditor := Config.Editor.FontSize;
+    for I := 0 to PageControlEditor.PageCount - 1 do
+    begin
+      if SHEET_TYPE_FILE = TPropertySheet(PageControlEditor.Pages[I]).SheetType then
+        TSourceFileSheet(PageControlEditor.Pages[I]).Memo.Font.Size := ZoomEditor;
+    end;
+  end;
   CanShowHintTip := False;
   TimerHintTipEvent.Enabled := False;
   if (Key = VK_ESCAPE) then
@@ -4988,6 +5006,13 @@ begin
   if not GetActiveSheet(sheet) then
     Exit;
   fprop := Sheet.SourceFile;
+  if ActiveErrorLine = Line then
+  begin
+    fg := clWindow;
+    bg := clRed;
+    Special := True;
+    Exit;
+  end;
   if fprop.Breakpoint.HasBreakpoint(Line) then
   begin
     fg := clWindow;

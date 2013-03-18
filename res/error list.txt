@@ -1,2 +1,7 @@
 main.cpp:15:21: fatal error: GL/glut.h: No such file or directory
 compilation terminated.
+NovoArquivo.cpp:8:2: warning: no newline at end of file
+NovoArquivo.cpp:10: error: 'int teste(int, char**)' previously defined here
+NovoArquivo.cpp:33: error: invalid use of 'class Teste'
+main.cpp:67: error: expected declaration before '}' token
+main.cpp:9: warning: 'void draw()' defined but not used

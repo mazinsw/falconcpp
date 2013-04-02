@@ -5272,6 +5272,8 @@ begin
     NewSourceFile(FileType, CompilerType, 'main' + Ext,
       STR_FRM_MAIN[13], Ext, '', SelFile, False, True).Edit.Memo.Modified := False;
   end;
+  if (SelFile <> nil) and (SelFile.FileType = FILE_TYPE_PROJECT) then
+    SelFile.Project.PropertyChanged := True;
   if TControl(Sender).Tag <> 1 then
     UpdateMenuItems([rmFile, rmFileNew, rmEdit, rmSearch, rmProject, rmRun, rmProjectsPopup]);
 end;
@@ -7736,6 +7738,7 @@ begin
       Memo.Lines.Add('');
       Memo.Lines.Add('#endif');
       Memo.CaretXY := BufferCoord(1, 4);
+      parent.Project.PropertyChanged := True;
     end;
   end
   else if GetFileType(FileName) = FILE_TYPE_H then
@@ -7758,6 +7761,8 @@ begin
         swfp.Edit;
         Exit;
       end;
+      if parent.Project.CompilerType = COMPILER_C then
+        SwapFileName := ChangeFileExt(FileName, '.c');
       resp := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[34] +
         #10 + STR_FRM_MAIN[43], [SwapFileName])),
         'Falcon C++', MB_ICONEXCLAMATION + MB_YESNOCANCEL);
@@ -7774,6 +7779,7 @@ begin
         Memo := swfp.Edit.Memo;
         Memo.Lines.Add('#include "' + ExtractFileName(FileName) + '"');
         Memo.Lines.Add('');
+        parent.Project.PropertyChanged := True;
         FindedTokenFile := FilesParsed.ItemOfByFileName(FileName);
         if FindedTokenFile <> nil then
           GenerateFunctions(FindedTokenFile, Memo.Lines, 2)

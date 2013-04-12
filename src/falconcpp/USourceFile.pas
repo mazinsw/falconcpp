@@ -252,6 +252,7 @@ type
   public
     function ConvertToSourceFile(Project: TProjectFile): TSourceFile;
     function GetFileByPathName(const RelativeName: string): TSourceFile;
+    function SearchFile(const Name: string): TSourceFile;
     procedure LoadFromFile(const FileName: string);
     procedure LoadLayout;
     procedure SaveLayout;
@@ -803,6 +804,8 @@ begin
       sheet.Memo.Modified := False;
       if not FSaved then
         FSaved := True;
+      if not Project.IsNew and Project.Saved then
+        IsNew := False;
     end // create empty file
     else if not FileExists(FileName) then
     begin
@@ -823,8 +826,7 @@ begin
         Sheet.Memo.ActiveLineColor := Config.Editor.CurrentLineColor
       else
         Sheet.Memo.ActiveLineColor := clNone;
-      FileSave.Enabled := False;
-      BtnSave.Enabled := False;
+      UpdateMenuItems([rmFile]);
       Sheet.Caption := Self.Caption;
     end;
     if Node.Text <> Self.Name then
@@ -1132,6 +1134,8 @@ var
   Template: TTemplate;
   Resources: TTemplateResources;
 begin
+  if not IsNew then
+    SomeFileChanged := False;
   if not (FileType = FILE_TYPE_PROJECT) then
   begin
     Save; //save .c or .cpp file
@@ -1228,6 +1232,12 @@ begin
     XMLDoc.LoadFromFile(FileName);
   except
     XMLDoc.Free;
+    FTarget := ExtractName(FileName) + '.exe';
+    FCompOpt := '-Wall -s';
+    FDelObjPrior := True;
+    FDelObjAfter := True;
+    FDelMakAfter := True;
+    FDelResAfter := True;
     Exit;
   end;
   XMLDoc.Options := XMLDoc.Options + [doNodeAutoIndent];
@@ -1358,6 +1368,42 @@ begin
       Exit;
     end;
     Result := Parent;
+  end;
+end;
+
+function TProjectFile.SearchFile(const Name: string): TSourceFile;
+
+  function SearchFileRec(SrcFile: TSourceFile): TSourceFile;
+  var
+    I: Integer;
+  begin
+    Result := nil;
+    if SrcFile.FileType <> FILE_TYPE_FOLDER then
+    begin
+      if CompareStr(Name, SrcFile.Name) = 0 then
+        Result := SrcFile;
+    end
+    else
+      for I := 0 to SrcFile.Node.Count - 1 do
+      begin
+        Result := SearchFileRec(TSourceFile(SrcFile.Node.Item[I].Data));
+        if Result <> nil then
+          Break;
+      end;
+  end;
+
+var
+  I: Integer;
+begin
+  Result := nil;
+  if (FileType = FILE_TYPE_PROJECT) then
+  begin
+    for I := 0 to Node.Count - 1 do
+    begin
+      Result := SearchFileRec(TSourceFile(Node.Item[I].Data));
+      if Result <> nil then
+        Break;
+    end;
   end;
 end;
 
@@ -1881,7 +1927,7 @@ var
   Makefile, FileContSpc, Temp, IncludeFileName, IncludeName: string;
   ExecFileName, ExecDirectory, ExecParams: string;
   Files: TStrings;
-  Res, MkWar, Includes: TStrings;
+  Res, MkWar, Includes, IncludeList: TStrings;
   MkRes, I, J, K: Integer;
   Manf: Byte;
   mk: TMakefile;
@@ -1919,6 +1965,8 @@ begin
     Res.Free;
     if HasResource or (FileType = FILE_TYPE_PROJECT) then
     begin
+      IncludeList := TStringList.Create;
+      GetIncludeDirs(ExtractFilePath(FileName), FFlags, IncludeList);
       for I := 0 to Files.Count - 1 do
       begin
         Includes := TStringList.Create;
@@ -1935,15 +1983,29 @@ begin
             Temp := ExpandFileName(Temp);
             if not FileExists(Temp) then
             begin
-              SkipIncludeFile := False;
-              for K := 0 to FrmFalconMain.FilesParsed.PathList.Count - 1 do
+              SkipIncludeFile := True;
+              for K := 0 to IncludeList.Count - 1 do
               begin
-                IncludeFileName := ExpandFileName(FrmFalconMain.FilesParsed.PathList.Strings[K] +
-                  IncludeName);
+                IncludeFileName := ExpandFileName(IncludeList.Strings[K] + IncludeName);
                 if FileExists(IncludeFileName) then
                 begin
-                  SkipIncludeFile := True;
+                  Temp := IncludeFileName;
+                  SkipIncludeFile := False;
                   Break;
+                end;
+              end;
+              if SkipIncludeFile then
+              begin
+                SkipIncludeFile := False;
+                for K := 0 to FrmFalconMain.FilesParsed.PathList.Count - 1 do
+                begin
+                  IncludeFileName := ExpandFileName(FrmFalconMain.FilesParsed.PathList.Strings[K] +
+                    IncludeName);
+                  if FileExists(IncludeFileName) then
+                  begin
+                    SkipIncludeFile := True;
+                    Break;
+                  end;
                 end;
               end;
               if SkipIncludeFile then
@@ -1953,6 +2015,7 @@ begin
           end;
         end;
       end;
+      IncludeList.Free;
     end;
     OldDebuggingState := Debugging;
     Debugging := HasBreakpoint or BreakpointCursor.Valid;

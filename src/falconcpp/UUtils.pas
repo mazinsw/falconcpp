@@ -63,6 +63,7 @@ function TranslateSpecialChars(const S: string): string;
 function GetLeftSpacing(CharCount, TabWidth: Integer; WantTabs: Boolean): string;
 function CanDoubleQuotedStr(const S: string): Boolean;
 procedure SplitParams(const S: string; List: TStrings);
+procedure GetIncludeDirs(const ProjectDir, Flags: string; IncludeList: TStrings);
 function ExecuteFile(Handle: HWND; const Filename, Paramaters,
   Directory: string; Options: TExecuteFileOptions): Integer;
 procedure LoadFontNames(List: TStrings);
@@ -445,6 +446,29 @@ begin
       List.Add(Temp);
     end;
   end;
+end;
+
+
+procedure GetIncludeDirs(const ProjectDir, Flags: string; IncludeList: TStrings);
+var
+  I: Integer;
+  List: TStringList;
+  Temp: string;
+begin
+  List := TStringList.Create;
+  SplitParams(Flags, List);
+  for I := List.Count - 1 downto 0 do
+  begin
+    if Copy(List.Strings[I], 1, 2) = '-I' then
+    begin
+      Temp := StringReplace(Copy(List.Strings[I], 3, Length(List.Strings[I]) - 2),
+        '"', '', [rfReplaceAll]);
+      if ExtractFileDrive(Temp) = '' then
+        Temp := ProjectDir + Temp;
+      IncludeList.Add(IncludeTrailingPathDelimiter(Temp));
+    end;
+  end;
+  List.Free;
 end;
 
 procedure BitmapToAlpha(bmp: TBitmap; Color: TColor = clFuchsia);

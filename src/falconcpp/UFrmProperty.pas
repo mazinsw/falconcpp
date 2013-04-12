@@ -225,7 +225,16 @@ begin
   Project.PropertyChanged := True;
   Project.CompilePropertyChanged := True;
   if OldFlags <> Project.Flags then
+  begin
     Project.ForceClean := True;
+    if FrmFalconMain.LastSelectedProject <> Project then
+    begin
+      FrmFalconMain.LastSelectedProject := Project;
+      FrmFalconMain.FilesParsed.IncludeList.Clear;
+      GetIncludeDirs(ExtractFilePath(Project.FileName), Project.Flags,
+        FrmFalconMain.FilesParsed.IncludeList);
+    end;
+  end;
   FrmFalconMain.TreeViewProjectsChange(Self, Project.Node);
 end;
 

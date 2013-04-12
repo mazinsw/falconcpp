@@ -392,7 +392,7 @@ begin
       Optmz := '-Wall';
     if FraPrjOpt.CHBMinSize.Checked then
       Optmz := Optmz + ' -s';
-    if FraPrjOpt.CHBMinSize.Checked then
+    if FraPrjOpt.CHBOptSpd.Checked then
       Optmz := Optmz + ' -O2';
     NewPrj.CompilerOptions := Trim(Optmz);
   end

@@ -662,6 +662,7 @@ type
     //for ThreadTokenFiles
     IsLoadingSrcFiles: Boolean;
     FLastProjectBuild: TProjectFile; //last builded project
+    FLastSelectedProject: TProjectFile;
     startBuildTicks: Cardinal;
     BuildTime: Cardinal;
     ZoomEditor: Integer; //edit zoom
@@ -695,7 +696,6 @@ type
     //functions
     procedure AddFilesToProject(Files: TStrings; Parent: TSourceFile;
       References: Boolean);
-    procedure UpdateMenuItems(Regions: TRegionMenuState);
     procedure StopAll;
     procedure RunApplication(ProjectFile: TProjectFile);
     procedure ExecuteApplication(ProjectFile: TProjectFile);
@@ -764,6 +764,7 @@ type
     FalconVersion: TVersion; //this file version
 
     procedure UpdateLangNow;
+    procedure UpdateMenuItems(Regions: TRegionMenuState);
     function RenameFileInHistory(const FileName,
       NewFileName: string): Boolean;
     procedure ToolbarCheck(const Index: Integer; const Value: Boolean);
@@ -782,6 +783,7 @@ type
       Col: Integer = 1; EndCol: Integer = 1; CursorEnd: Boolean = False);
 
     property LastProjectBuild: TProjectFile read FLastProjectBuild write FLastProjectBuild;
+    property LastSelectedProject: TProjectFile read FLastSelectedProject write FLastSelectedProject; //last selected project
     property RunNow: Boolean read FRunNow write FRunNow;
     property HandlingTabs: Boolean read FHandlingTabs write FHandlingTabs;
     property ConfigRoot: string read FConfigRoot;
@@ -1422,6 +1424,8 @@ begin
   List.Free;
 
   FilesParsed.PathList.Add(Config.Compiler.Path + '\include\');
+  FilesParsed.PathList.Add(Config.Compiler.Path + '\lib\gcc\mingw32\' +
+    Config.Compiler.Version + '\include\c++\');
   SplashScreen.TextOut(55, 300, STR_FRM_MAIN[30]);
   IsLoadingSrcFiles := False;
   FIncludeFileListFlag := 2;
@@ -1611,7 +1615,7 @@ begin
   begin
     //FileOpen.Enabled := True;
     //BtnOpen.Enabled := True;
-    Flag := Assigned(CurrentFile) and (not CurrentFile.Saved or CurrentFile.Modified);
+    Flag := Assigned(CurrentFile) and (not CurrentFile.Saved or CurrentFile.Modified or CurrentFile.IsNew);
     FileSave.Enabled := Flag;
     BtnSave.Enabled := Flag;
     PopTabsSave.Enabled := Flag;
@@ -2691,6 +2695,13 @@ begin
 
   BoldTreeNode(FileProp.Project.Node, True);
 
+  if LastSelectedProject <> FileProp.Project then
+  begin
+    LastSelectedProject := FileProp.Project;
+    FilesParsed.IncludeList.Clear;
+    GetIncludeDirs(ExtractFilePath(FileProp.Project.FileName), FileProp.Project.Flags,
+      FilesParsed.IncludeList);
+  end;
   CurrentFileIsParsed := False;
   if ViewOutline.Checked then
     PanelOutline.Show;
@@ -2841,6 +2852,12 @@ begin
     else
       ProjProp := Sheet.SourceFile.Project;
     BoldTreeNode(ProjProp.Node, True);
+    if LastSelectedProject <> ProjProp then
+    begin
+      LastSelectedProject := ProjProp;
+      FilesParsed.IncludeList.Clear;
+      GetIncludeDirs(ExtractFilePath(ProjProp.FileName), ProjProp.Flags, FilesParsed.IncludeList);
+    end;
     //Reload Tokens ?
     //if not DebugReader.Running then
     //  TreeViewOutline.Clear;
@@ -3236,6 +3253,8 @@ begin
       (ProjProp.FileType = FILE_TYPE_PROJECT) then
       ProjProp.SaveLayout;
     ProjProp.CloseAll;
+    if ProjProp = LastSelectedProject then
+      LastSelectedProject := nil;
     if LastProjectBuild = ProjProp then
     begin
       if CompilerCmd.Executing then
@@ -4605,7 +4624,7 @@ var
   Prop: TSourceFile;
   Proj: TProjectFile;
   sheet: TSourceFileSheet;
-  Files: TStrings;
+  IncludeList: TStrings;
   I: Integer;
   TokenFileItem: TTokenFile;
   Token: TTokenClass;
@@ -4621,24 +4640,32 @@ begin
       //search #include <stdio.h> in project
       Prop := Sheet.SourceFile;
       Proj := Prop.Project;
-      FileName := ExpandFileName(ExtractFilePath(Prop.FileName) + S);
       if Proj.FileType = FILE_TYPE_PROJECT then
       begin
-        Files := TStringList.Create;
-        Proj.GetFiles(Files);
-        for I := 0 to Files.Count - 1 do
+        Prop := Proj.GetFileByPathName(S);
+        if Prop <> nil then
         begin
-          Prop := TSourceFile(Files.Objects[I]);
-          if CompareText(FileName, Prop.FileName) = 0 then
+          Prop.Edit;
+          Exit;
+        end;
+        IncludeList := TStringList.Create;
+        GetIncludeDirs(ExtractFilePath(Proj.FileName), Proj.Flags, IncludeList);
+        for I := 0 to IncludeList.Count - 1 do
+        begin
+          Prop := Proj.GetFileByPathName(ExtractRelativePath(ExtractFilePath(Proj.FileName),
+            ExpandFileName(IncludeList.Strings[I] + S)));
+          if Prop <> nil then
           begin
             Prop.Edit;
-            Files.Free;
+            IncludeList.Free;
             Exit;
           end;
         end;
-        Files.Free;
+        IncludeList.Free;
+        Prop := Sheet.SourceFile;
       end;
-      //not found in project, search on file or project folder
+      // not found in project, search file on source file folder
+      FileName := ExpandFileName(ExtractFilePath(Prop.FileName) + S);
       if SearchSourceFile(FileName, Prop) then
       begin
         Prop.Edit;
@@ -4651,13 +4678,12 @@ begin
       end;
     end;
     //search in compiler folder
-    FileName := ExpandFileName(Config.Compiler.Path + '\include\' + S);
-    if not FileExists(FileName) then
-      FileName := ExpandFileName(Config.Compiler.Path + '\include\c++\' +
-        Config.Compiler.Version + '\' + S);
-    if not FileExists(FileName) then
-      FileName := ExpandFileName(Config.Compiler.Path + '\lib\gcc\mingw32\' +
-        Config.Compiler.Version + '\include\c++\' + S);
+    for I := 0 to FilesParsed.PathList.Count - 1 do
+    begin
+      FileName := ExpandFileName(FilesParsed.PathList.Strings[I] + S);
+      if FileExists(FileName) then
+        Break;
+    end;
     if SearchSourceFile(FileName, Prop) then
     begin
       Prop.Edit;
@@ -7673,10 +7699,11 @@ end;
 procedure TFrmFalconMain.EditSwapClick(Sender: TObject);
 var
   sheet: TSourceFileSheet;
-  SwapFileName, FileName, Directive: string;
+  SwapFileName, FileName, Directive, SrcName: string;
   fprop, swfp, parent: TSourceFile;
-  resp: Integer;
+  resp, I: Integer;
   Memo: TSynEditEx;
+  IncludeList: TStringList;
   FindedTokenFile: TTokenFile;
 begin
   if not GetActiveSheet(sheet) then
@@ -7692,11 +7719,36 @@ begin
     SwapFileName := ChangeFileExt(FileName, '.h');
     if Assigned(parent) then
     begin
-      if parent.FindFile(ExtractFileName(SwapFileName), swfp) then
+      SrcName := ExtractFileName(SwapFileName);
+      if parent.FindFile(SrcName, swfp) or
+         parent.FindFile(ChangeFileExt(SrcName, '.hpp'), swfp) or
+         parent.FindFile(ChangeFileExt(SrcName, '.hh'), swfp) or
+         parent.FindFile(ChangeFileExt(SrcName, '.rh'), swfp) then
       begin
         swfp.Edit;
         Exit;
       end;
+      IncludeList := TStringList.Create;
+      GetIncludeDirs(ExtractFilePath(fprop.Project.FileName), fprop.Project.Flags, IncludeList);
+      for I := 0 to IncludeList.Count - 1 do
+      begin
+        SrcName := ExtractRelativePath(ExtractFilePath(fprop.Project.FileName),
+          ExpandFileName(IncludeList.Strings[I] + SrcName));
+        swfp := fprop.Project.GetFileByPathName(SrcName);
+        if swfp = nil then
+          swfp := fprop.Project.GetFileByPathName(ChangeFileExt(SrcName, '.hpp'));
+        if swfp = nil then
+          swfp := fprop.Project.GetFileByPathName(ChangeFileExt(SrcName, '.hh'));
+        if swfp = nil then
+          swfp := fprop.Project.GetFileByPathName(ChangeFileExt(SrcName, '.rh'));
+        if swfp <> nil then
+        begin
+          swfp.Edit;
+          IncludeList.Free;
+          Exit;
+        end;
+      end;
+      IncludeList.Free;
     end
     else
     begin
@@ -7761,6 +7813,23 @@ begin
         swfp.Edit;
         Exit;
       end;
+
+      IncludeList := TStringList.Create;
+      GetIncludeDirs(ExtractFilePath(fprop.Project.FileName), fprop.Project.Flags, IncludeList);
+      if IncludeList.Count > 0 then
+      begin
+        SrcName := ChangeFileExt(ExtractFileName(SwapFileName), '.c');
+        swfp := fprop.Project.SearchFile(SrcName);
+        if swfp = nil then
+          swfp := fprop.Project.SearchFile(ChangeFileExt(SrcName, '.cpp'));
+        if swfp <> nil then
+        begin
+          swfp.Edit;
+          Exit;
+        end;
+      end;
+      IncludeList.Free;
+
       if parent.Project.CompilerType = COMPILER_C then
         SwapFileName := ChangeFileExt(FileName, '.c');
       resp := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[34] +

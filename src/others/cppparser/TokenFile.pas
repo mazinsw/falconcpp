@@ -104,10 +104,12 @@ type
     fOnProgress: TProgressEvent;
     fOnFinish: TNotifyEvent;
     fPathList: TStrings;
+    fIncludeList: TStrings;
     procedure ParserProgress(Sender: TObject; Current, Total: Integer);
     procedure Put(const FileName: string; Value: TTokenFile);
     function Get(const FileName: string): TTokenFile;
     procedure SetPathList(Value: TStrings);
+    procedure SetIncludeList(Value: TStrings);
 
     function ParseRecursiveAux(const FileName: string; FilesParsed: Integer;
       fProgressEvent: TProgressEvent): Integer;
@@ -146,6 +148,7 @@ type
     procedure Clear;
     property Items[const FileName: string]: TTokenFile read Get write Put;
     property PathList: TStrings read fPathList write SetPathList;
+    property IncludeList: TStrings read fIncludeList write SetIncludeList;
 
     //parser
     property OnStart: TNotifyEvent read fOnStart write fOnStart;
@@ -679,13 +682,15 @@ begin
   inherited Create;
   FList := TRBTree.Create;
   fPathList := TStringList.Create;
+  fIncludeList := TStringList.Create;
   fParser := TCppParser.Create;
   fParser.OnProgess := ParserProgress;
 end;
 
 destructor TTokenFiles.Destroy;
 begin
-  Clear;
+  Clear;         
+  fIncludeList.Free;
   fPathList.Free;
   fParser.Free;
   FList.Free;
@@ -693,6 +698,12 @@ begin
 end;
 
 procedure TTokenFiles.SetPathList(Value: TStrings);
+begin
+  if Assigned(Value) then
+    fIncludeList.Assign(Value);
+end;
+
+procedure TTokenFiles.SetIncludeList(Value: TStrings);
 begin
   if Assigned(Value) then
     fPathList.Assign(Value);
@@ -1459,6 +1470,17 @@ begin
         if FindedTokenFile <> nil then
           Break;
       end;
+    end;
+  end;
+  if FindedTokenFile = nil then
+  begin
+    for I := 0 to IncludeList.Count - 1 do
+    begin
+      FindName := ExpandFileName(IncludeList.Strings[I] +
+        ConvertSlashes(IncludeToken.Name));
+      FindedTokenFile := ItemOfByFileName(FindName);
+      if FindedTokenFile <> nil then
+        Break;
     end;
   end;
   //file not parsed or already searched

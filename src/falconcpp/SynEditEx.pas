@@ -63,6 +63,8 @@ type
     fCurrShiftState: TShiftState;
     fOnMouseEnter: TMouseMoveEvent;
     fOnMouseLeave: TMouseMoveEvent;
+    fLastKeyPressed: Char;
+    fCurrentKeyPressed: Char;
     procedure CMMouseEnter(var Message: TMessage); message CM_MOUSEENTER;
     procedure CMMouseLeave(var Message: TMessage); message CM_MOUSELEAVE;
     function ProcessLinkClick(X, Y: Integer): Boolean;
@@ -112,6 +114,7 @@ type
     property OnMouseLeave: TMouseMoveEvent read fOnMouseLeave write fOnMouseLeave;
     property OnLinkClick: TLinkClickEvent read fOnLinkClick write fOnLinkClick;
 		property OnContextPopup;
+    property LastKeyPressed: Char read fLastKeyPressed;
   end;
 
 implementation
@@ -293,6 +296,8 @@ end;
 
 procedure TSynEditEx.KeyPress(var Key: Char);
 begin
+  fLastKeyPressed := fCurrentKeyPressed;
+  fCurrentKeyPressed := Key;
   inherited;
   if Key = '}' then
     ProcessCloseBracketChar
@@ -1134,7 +1139,7 @@ begin
   NextLineStr := '';
   // ( is /** or * blabla ) and not /** bla bla */
   if ((Copy(TmpStr, 1, 3) = '/**') or ((Copy(TmpStr, 1, 1) = '*') and IsCommentLine))
-    and (Copy(TmpStr, Length(TmpStr) - 2, 2) <> '*/') then
+    and (Copy(TmpStr, Length(TmpStr) - 1, 2) <> '*/') then
   begin
     // get next line after /**
     if c.Line < Lines.Count then
@@ -1144,7 +1149,6 @@ begin
       NextLineStr := '* '
     else
       NextLineStr := '*/';
-    IsCommentLine := True;
     CommentStr := '* ';
     if Unindent then
       Dec(SpaceCount)
@@ -1169,7 +1173,10 @@ begin
   if not caretChanged then
     bCaret := CaretXY;
   if NextLineStr = '*/' then
+  begin
+    TmpStr := GetLeftSpacing(LeftOffset + 1, WantTabs and not (eoTabsToSpaces in Options));
     SelText := #13 + TmpStr + '*/';
+  end;
   InternalCaretXY := bCaret;
 end;
 

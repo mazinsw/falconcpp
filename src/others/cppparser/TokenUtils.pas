@@ -11,18 +11,19 @@ function GetFuncProto(Token: TTokenClass; GenName: Boolean = False): string;
 function GetFuncProtoTypes(Token: TTokenClass): string;
 procedure GetStringsFields(const S: string; List: TStrings;
   IgnoreFirst: Boolean = True);
-function GetTreeHierarchy(Token: TTokenClass): string;
+function GetTreeHierarchy(Token: TTokenClass; AddScope: Boolean = True): string;
 function MakeTokenHint(Token: TTokenClass; const FileName: string): string;
 function MakeTokenParamsHint(Token: TTokenClass): string;
 //completion list
 procedure FillCompletionTree(InsertList, ShowList: TStrings; Token: TTokenClass;
-  SelStart: Integer; CompletionColors: TCompletionColors;
+  SelStart: Integer; CompletionColors: TCompletionColors; Images: array of Integer;
   ScopeClass: TScopeClassState = []; IncludeParams: Boolean = False);
 procedure FillCompletionTreeNoRepeat(InsertList, ShowList: TStrings; Token: TTokenClass;
-  SelStart: Integer; CompletionColors: TCompletionColors; TokenList: TTokenList;
-  ScopeClass: TScopeClassState = []; IncludeParams: Boolean = False;
-  UseList: Boolean = False);
-function CompletionShowItem(Token: TTokenClass; CompletionColors: TCompletionColors): string;
+  SelStart: Integer; CompletionColors: TCompletionColors; Images: array of Integer;
+  TokenList: TTokenList; ScopeClass: TScopeClassState = [];
+  IncludeParams: Boolean = False; UseList: Boolean = False);
+function CompletionShowItem(Token: TTokenClass; CompletionColors: TCompletionColors;
+  Images: array of Integer): string;
 function CompletionInsertItem(Token: TTokenClass): string;
 
 //params
@@ -533,16 +534,17 @@ begin
 end;
 
 procedure FillCompletionTree(InsertList, ShowList: TStrings; Token: TTokenClass;
-  SelStart: Integer; CompletionColors: TCompletionColors;
+  SelStart: Integer; CompletionColors: TCompletionColors; Images: array of Integer;
   ScopeClass: TScopeClassState; IncludeParams: Boolean);
 begin
   FillCompletionTreeNoRepeat(InsertList, ShowList, Token, SelStart,
-    CompletionColors, nil, ScopeClass, IncludeParams, False);
+    CompletionColors, Images, nil, ScopeClass, IncludeParams, False);
 end;
 
 procedure FillCompletionTreeNoRepeat(InsertList, ShowList: TStrings; Token: TTokenClass;
-  SelStart: Integer; CompletionColors: TCompletionColors; TokenList: TTokenList;
-  ScopeClass: TScopeClassState; IncludeParams: Boolean; UseList: Boolean);
+  SelStart: Integer; CompletionColors: TCompletionColors; Images: array of Integer;
+  TokenList: TTokenList; ScopeClass: TScopeClassState; IncludeParams: Boolean;
+  UseList: Boolean);
 var
   I: Integer;
   NewToken: TTokenClass;
@@ -571,7 +573,7 @@ begin
       if Assigned(InsertList) then
         InsertList.AddObject(CompletionInsertItem(NewToken), NewToken);
       if Assigned(ShowList) then
-        ShowList.AddObject(CompletionShowItem(NewToken, CompletionColors), NewToken);
+        ShowList.AddObject(CompletionShowItem(NewToken, CompletionColors, Images), NewToken);
     end;
     if not IncludeParams and not (Token.Items[I].Token in [tkScopeClass]) then
       Continue;
@@ -586,14 +588,14 @@ begin
         tkEnum, tkTypeStruct, tkTypeUnion, tkTypeEnum, tkParams,
         tkScopeClass, tkNamespace:
         FillCompletionTreeNoRepeat(InsertList, ShowList,
-          Token.Items[I], SelStart, CompletionColors, TokenList,
+          Token.Items[I], SelStart, CompletionColors, Images, TokenList,
           ScopeClass, False, UseList);
     end;
   end;
 end;
 
 function CompletionShowItem(Token: TTokenClass;
-  CompletionColors: TCompletionColors): string;
+  CompletionColors: TCompletionColors; Images: array of Integer): string;
 var
   TypeName, Params, S: string;
   I, IEnd, Len: Integer;
@@ -604,44 +606,40 @@ begin
       begin
         if Length(Token.Flag) > 0 then
           Result := CompletionColors[Token.Token] + Token.Name +
-            '\style{-B} : class(' + GetLastWord(Token.Flag) + ');'
+            '\style{-B} : class(' + GetLastWord(Token.Flag) + ')'
         else
           Result := CompletionColors[Token.Token] + Token.Name +
-            '\style{-B} : class;';
+            '\style{-B} : class';
       end;
     tkFunction, tkPrototype:
       begin
         S := GetFuncProto(Token);
         Result := CompletionColors[Token.Token] + Token.Name + '\style{-B}' +
-          '\color{clMaroon}(\color{clBlack}' + S +
-          '\color{clMaroon})\color{clBlue} : \color{clBlack}' + Token.Flag + ';';
+          '(\color{clBlack}' + S + ') : \color{clBlack}' + Token.Flag;
       end;
     tkConstructor:
       begin
         S := GetFuncProto(Token);
         Result := CompletionColors[Token.Token] + Token.Name + '\style{-B}' +
-          '\color{clMaroon}(\color{clBlack}' + S +
-          '\color{clMaroon});';
+          '(\color{clBlack}' + S + ')';
       end;
     tkDestructor:
       begin
         S := GetFuncProto(Token);
         Result := CompletionColors[Token.Token] + Token.Name + '\style{-B}' +
-          '\color{clMaroon}(\color{clBlack}' + S +
-          '\color{clMaroon});';
+          '(\color{clBlack}' + S + ')';
       end;
     tkDefine:
       begin
         if Length(Token.Flag) > 0 then
           Result := CompletionColors[Token.Token] + Token.Name +
-            '\style{-B} : ' + Trim(Token.Flag) + ';'
+            '\style{-B} : ' + Trim(Token.Flag)
         else
-          Result := CompletionColors[Token.Token] + Token.Name + '\style{-B};';
+          Result := CompletionColors[Token.Token] + Token.Name + '\style{-B}';
       end;
     tkInclude:
       begin
-        Result := CompletionColors[Token.Token] + Token.Name +
-          '\style{-B};';
+        Result := CompletionColors[Token.Token] + Token.Name + '\style{-B}';
       end;
     tkVariable:
       begin
@@ -657,7 +655,7 @@ begin
           if Length(Params) > 2 then
           begin
             Params := Copy(Params, 2, I - 2);
-            Params := '\color{clMaroon}[\color{clGreen}' + Params + '\color{clMaroon}]\color{clBlack}';
+            Params := '[\color{clGreen}' + Params + ']\color{clBlack}';
           end;
         end;
 
@@ -667,13 +665,13 @@ begin
           S := CompletionColors[TTkType(17)];
           TypeName := GetAfterWord(TypeName);
         end;
-        Result := S + Token.Name + '\style{-B}' + Params + ' : ' + TypeName + ';';
+        Result := S + Token.Name + '\style{-B}' + Params + ' : ' + TypeName;
       end;
     tkTypedef, tkTypeStruct, tkTypeUnion, tkTypeEnum:
       begin
         S := ';';
         if Length(Token.Flag) > 0 then
-          S := ' : ' + Token.Flag + ';';
+          S := ' : ' + Token.Flag;
         Result := CompletionColors[Token.Token] + Token.Name + '\style{-B}' + S;
       end;
     tkTypedefProto:
@@ -686,47 +684,46 @@ begin
         I := Pos(':', Token.Flag);
         TypeName := Copy(Token.Flag, I + 1, Length(Token.Flag) - I);
         Result := CompletionColors[Token.Token] + Token.Name + '\style{-B}' +
-          '\color{clMaroon}(\color{clBlack}' + Params +
-          '\color{clMaroon})(\color{clBlack}' + S +
-          '\color{clMaroon})\color{clBlue} : \color{clBlack}' + TypeName + ';';
+          '(\color{clBlack}' + Params + ')(\color{clBlack}' + S +
+          ') : \color{clBlack}' + TypeName;
       end;
     tkStruct:
       begin
-        Result := CompletionColors[Token.Token] + Token.Name +
-          '\style{-B} : struct;';
+        Result := CompletionColors[Token.Token] + Token.Name + '\style{-B} : struct';
       end;
     tkEnum:
       begin
-        Result := CompletionColors[Token.Token] + Token.Name +
-          '\style{-B} : enum;';
+        Result := CompletionColors[Token.Token] + Token.Name + '\style{-B} : enum';
       end;
     tkUnion:
       begin
-        Result := CompletionColors[Token.Token] + Token.Name +
-          '\style{-B} : union;';
+        Result := CompletionColors[Token.Token] + Token.Name + '\style{-B} : union';
       end;
     tkNamespace:
       begin
-        Result := CompletionColors[Token.Token] + Token.Name +
-          '\style{-B};';
+        Result := CompletionColors[Token.Token] + Token.Name + '\style{-B}';
       end;
     tkEnumItem:
       begin
-        S := ';';
+        S := '';
         if Length(Token.Flag) > 0 then
-          S := ' : ' + Token.Flag + ';';
+          S := ' : ' + Token.Flag;
         Result := CompletionColors[TTkType(17)] + Token.Name + '\style{-B}' + S;
       end;
     tkUnknow: Result := CompletionColors[Token.Token] +
-      Token.Name + '\style{-B}' + ' : ' + Token.Flag + ';';
+      Token.Name + '\style{-B}' + ' : ' + Token.Flag;
     tkForward:
       begin
         if Token.Flag = 'struct' then
-          Result := CompletionColors[tkStruct] + Token.Name + '\style{-B} : struct;'
+          Result := CompletionColors[tkStruct] + Token.Name + '\style{-B} : struct'
         else
-          Result := CompletionColors[tkClass] + Token.Name + '\style{-B} : class;';
+          Result := CompletionColors[tkClass] + Token.Name + '\style{-B} : class';
       end;
   end;
+  Result := '\image{' + IntToStr(GetTokenImageIndex(Token, Images)) + '}' + Result;
+  S := GetTreeHierarchy(Token, False);
+  if S <> '' then
+    Result := Result + '\color{clGray} - ' + S;
 end;
 
 function CompletionInsertItem(Token: TTokenClass): string;
@@ -740,15 +737,17 @@ begin
   end;
 end;
 
-function GetTreeHierarchy(Token: TTokenClass): string;
+function GetTreeHierarchy(Token: TTokenClass; AddScope: Boolean): string;
 var
   Next: TTokenClass;
   Separator: string;
 begin
   Result := '';
-  Separator := '.';
+  Separator := '';
+  if AddScope then
+    Separator := '.';
   Next := Token;
-  if (Next.Token = tkClass) then
+  if (Next.Token = tkClass) and AddScope then
       Separator := '::';
   {while}if Assigned(Next.Parent) and not (Next.Parent.Token in [tkIncludeList,
     tkDefineList, tkTreeObjList,
@@ -759,10 +758,11 @@ begin
     Next := Next.Parent;
     if (Next.Token = tkScopeClass) and Assigned(Next.Parent) then
     begin
-      Separator := '::';
+      if AddScope then
+        Separator := '::';
       Next := Next.Parent;
     end
-    else if (Next.Token = tkNamespace) then
+    else if (Next.Token = tkNamespace) and AddScope then
       Separator := '::';
     Result := Next.Name + Separator + Result;
   end;

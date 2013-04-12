@@ -133,7 +133,7 @@ type
       FindedList: TRBTree): Boolean;
     procedure FillCompletionListRecursive(InsertList,
       ShowList: TStrings; TokenFile: TTokenFile; FindedList: TRBTree;
-      CompletionColors: TCompletionColors);
+      CompletionColors: TCompletionColors; Images: array of Integer);
     function SearchTreeTokenRecursive(const Fields: string;
       TokenFile: TTokenFile; var TokenFileItem: TTokenFile; var Token: TTokenClass;
       Mode: TTokenSearchMode; FindedList: TRBTree; SelStart: Integer): Boolean;
@@ -220,17 +220,17 @@ type
      //fill list
     procedure FillCompletionList(InsertList, ShowList: TStrings;
       TokenFile: TTokenFile; SelStart: Integer;
-      CompletionColors: TCompletionColors);
+      CompletionColors: TCompletionColors; Images: array of Integer);
     procedure FillCompletionClass(InsertList, ShowList: TStrings;
-      CompletionColors: TCompletionColors; TokenFile: TTokenFile;
-      Item: TTokenClass; AllowScope: TScopeClassState = []);
+      CompletionColors: TCompletionColors; Images: array of Integer;
+      TokenFile: TTokenFile; Item: TTokenClass; AllowScope: TScopeClassState = []);
 
     constructor Create;
     destructor Destroy; override;
   end;
 
 procedure FillCompletion(InsertList, ShowList: TStrings; Token: TTokenClass;
-  SelStart: Integer; CompletionColors: TCompletionColors;
+  SelStart: Integer; CompletionColors: TCompletionColors; Images: array of Integer;
   IncludeParams: Boolean = False);
 
 implementation
@@ -1723,8 +1723,8 @@ begin
 end;
 
 procedure TTokenFiles.FillCompletionClass(InsertList, ShowList: TStrings;
-  CompletionColors: TCompletionColors; TokenFile: TTokenFile; Item: TTokenClass;
-  AllowScope: TScopeClassState);
+  CompletionColors: TCompletionColors; Images: array of Integer;
+  TokenFile: TTokenFile; Item: TTokenClass; AllowScope: TScopeClassState);
 
   procedure FillCompletionClassRecursive(TokenItem: TTokenFile;
     Token: TTokenClass; aAllowScope, DenyScope: TScopeClassState;
@@ -1736,7 +1736,7 @@ procedure TTokenFiles.FillCompletionClass(InsertList, ShowList: TStrings;
   begin
     //show all objects from class, struct or scope
     FillCompletionTreeNoRepeat(InsertList, ShowList, Token, -1,
-      CompletionColors, TokenList, aAllowScope, False, True);
+      CompletionColors, Images, TokenList, aAllowScope, False, True);
     List := TStringList.Create;
     GetDescendants(Token.Flag, List, scPublic);
     for I := 0 to List.Count - 1 do
@@ -2078,16 +2078,17 @@ end;
 
 procedure TTokenFiles.FillCompletionListRecursive(InsertList,
   ShowList: TStrings; TokenFile: TTokenFile;
-  FindedList: TRBTree; CompletionColors: TCompletionColors);
+  FindedList: TRBTree; CompletionColors: TCompletionColors;
+  Images: array of Integer);
 var
   I: Integer;
   FilePath: string;
   FindedTokenFile: TTokenFile;
 begin
-  FillCompletion(InsertList, ShowList, TokenFile.VarConsts, -1, CompletionColors);
-  FillCompletion(InsertList, ShowList, TokenFile.FuncObjs, -1, CompletionColors);
-  FillCompletion(InsertList, ShowList, TokenFile.TreeObjs, -1, CompletionColors);
-  FillCompletion(InsertList, ShowList, TokenFile.Defines, -1, CompletionColors);
+  FillCompletion(InsertList, ShowList, TokenFile.VarConsts, -1, CompletionColors, Images);
+  FillCompletion(InsertList, ShowList, TokenFile.FuncObjs, -1, CompletionColors, Images);
+  FillCompletion(InsertList, ShowList, TokenFile.TreeObjs, -1, CompletionColors, Images);
+  FillCompletion(InsertList, ShowList, TokenFile.Defines, -1, CompletionColors, Images);
 
   //don't search again
   FindedList.Add(TokenFile.FileName, TokenFile);
@@ -2100,13 +2101,13 @@ begin
       FindedList) then
       Continue;
     FillCompletionListRecursive(InsertList, ShowList, FindedTokenFile,
-      FindedList, CompletionColors);
+      FindedList, CompletionColors, Images);
   end;
 end;
 
 procedure TTokenFiles.FillCompletionList(InsertList,
   ShowList: TStrings; TokenFile: TTokenFile; SelStart: Integer;
-  CompletionColors: TCompletionColors);
+  CompletionColors: TCompletionColors; Images: array of Integer);
 var
   FindedList: TRBTree;
   I: Integer;
@@ -2115,10 +2116,10 @@ var
 begin
 
   FindedList := TRBTree.Create;
-  FillCompletion(InsertList, ShowList, TokenFile.VarConsts, SelStart, CompletionColors);
-  FillCompletion(InsertList, ShowList, TokenFile.FuncObjs, SelStart, CompletionColors);
-  FillCompletion(InsertList, ShowList, TokenFile.TreeObjs, SelStart, CompletionColors);
-  FillCompletion(InsertList, ShowList, TokenFile.Defines, SelStart, CompletionColors);
+  FillCompletion(InsertList, ShowList, TokenFile.VarConsts, SelStart, CompletionColors, Images);
+  FillCompletion(InsertList, ShowList, TokenFile.FuncObjs, SelStart, CompletionColors, Images);
+  FillCompletion(InsertList, ShowList, TokenFile.TreeObjs, SelStart, CompletionColors, Images);
+  FillCompletion(InsertList, ShowList, TokenFile.Defines, SelStart, CompletionColors, Images);
 
   //don't search again
   FindedList.Add(TokenFile.FileName, TokenFile);
@@ -2131,14 +2132,15 @@ begin
       FindedList) then
       Continue;
     FillCompletionListRecursive(InsertList, ShowList, FindedTokenFile,
-      FindedList, CompletionColors);
+      FindedList, CompletionColors, Images);
   end;
 
   FindedList.Free;
 end;
 
 procedure FillCompletion(InsertList, ShowList: TStrings; Token: TTokenClass;
-  SelStart: Integer; CompletionColors: TCompletionColors; IncludeParams: Boolean);
+  SelStart: Integer; CompletionColors: TCompletionColors; Images: array of Integer;
+  IncludeParams: Boolean);
 var
   I: Integer;
   NewToken, Scope: TTokenClass;
@@ -2170,7 +2172,7 @@ begin
       if Assigned(InsertList) then
         InsertList.AddObject(CompletionInsertItem(NewToken), NewToken);
       if Assigned(ShowList) then
-        ShowList.AddObject(CompletionShowItem(NewToken, CompletionColors), NewToken);
+        ShowList.AddObject(CompletionShowItem(NewToken, CompletionColors, Images), NewToken);
       if Token.Items[I].Token in
         [tkStruct, tkTypedef, tkClass, tkUnion, tkScopeClass] then
         Continue;
@@ -2180,7 +2182,7 @@ begin
     case Token.Items[I].Token of
       {tkClass, }tkFunction {, tkStruct}, tkParams, tkEnum, tkTypeEnum:
         FillCompletion(InsertList, ShowList, Token.Items[I], SelStart,
-          CompletionColors, IncludeParams);
+          CompletionColors, Images, IncludeParams);
     end;
   end;
 end;

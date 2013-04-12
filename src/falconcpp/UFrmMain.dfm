@@ -1447,24 +1447,23 @@ object FrmFalconMain: TFrmFalconMain
   end
   object CodeCompletion: TSynCompletionProposal
     Options = [scoLimitToMatchedText, scoUseInsertList, scoUsePrettyText, scoUseBuiltInTimer, scoEndCharCompletion, scoCompleteWithTab, scoCompleteWithEnter]
+    ClSelectedText = clDefault
     ClTitleBackground = clBtnHighlight
     Width = 450
     EndOfTokenChr = '{}()[]<>.,; :=+-/*%?|~&!^"'
     TriggerChars = '.>:'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
+    Font.Height = -12
+    Font.Name = 'Segoe UI'
     Font.Style = []
     TitleFont.Charset = DEFAULT_CHARSET
     TitleFont.Color = clBtnText
     TitleFont.Height = -11
     TitleFont.Name = 'MS Sans Serif'
     TitleFont.Style = [fsBold]
-    Columns = <
-      item
-        BiggestWord = 'preprocessor'
-      end>
+    Columns = <>
+    ItemHeight = 19
     Images = ImgListOutLine
     OnExecute = CodeCompletionExecute
     ShortCut = 0

@@ -2385,7 +2385,10 @@ begin
   begin
     Sheet := TSourceFileSheet(PageControlEditor.ActivePage);
     if (Sheet.Memo.Focused) then
+    begin
       Sheet.Memo.Undo;
+      Sheet.Caption := Sheet.SourceFile.Caption;
+    end;
   end;
 end;
 
@@ -2399,7 +2402,10 @@ begin
   begin
     Sheet := TSourceFileSheet(PageControlEditor.ActivePage);
     if (Sheet.Memo.Focused) then
+    begin
       Sheet.Memo.Redo;
+      Sheet.Caption := Sheet.SourceFile.Caption;
+    end;
   end;
 end;
 
@@ -4839,7 +4845,7 @@ begin
       sheet.Memo.SelText := ']';
       sheet.Memo.CaretX := sheet.Memo.CaretX - 1;
     end
-    else if Key = ')' then
+    else if (Key = ')') then {and (sheet.Memo.LastKeyPressed = '(') and Config.Editor.AutoCloseBrackets}
     begin
       if sheet.Memo.Lines.Count >= sheet.Memo.CaretY then
       begin
@@ -6714,7 +6720,7 @@ begin
       NewToken.Flag := 'S';
       NewToken.Token := tkInclude;
       CodeCompletion.InsertList.AddObject(CompletionInsertItem(NewToken), NewToken);
-      CodeCompletion.ItemList.AddObject(CompletionShowItem(NewToken, CompletionColors), NewToken);
+      CodeCompletion.ItemList.AddObject(CompletionShowItem(NewToken, CompletionColors, OutlineImages), NewToken);
     end;
     Exit;
   end;
@@ -6733,7 +6739,7 @@ begin
     NewToken.Flag := 'L';
     NewToken.Token := tkInclude;
     CodeCompletion.InsertList.AddObject(CompletionInsertItem(NewToken), NewToken);
-    CodeCompletion.ItemList.AddObject(CompletionShowItem(NewToken, CompletionColors), NewToken);
+    CodeCompletion.ItemList.AddObject(CompletionShowItem(NewToken, CompletionColors, OutlineImages), NewToken);
   end;
   List.Free;
 end;
@@ -6911,7 +6917,7 @@ begin
       begin
         AllowScope := [];
         FilesParsed.FillCompletionClass(CodeCompletion.InsertList,
-          CodeCompletion.ItemList, CompletionColors, TokenItem, Token, AllowScope);
+          CodeCompletion.ItemList, CompletionColors, OutlineImages, TokenItem, Token, AllowScope);
         DebugHint.Cancel;
         HintTip.Cancel;
         CanExecute := True;
@@ -6946,7 +6952,7 @@ begin
       if not AllScope then
         AllowScope := AllowScope + [scPublic];
       FilesParsed.FillCompletionClass(CodeCompletion.InsertList,
-        CodeCompletion.ItemList, CompletionColors, TokenItem, Token, AllowScope);
+        CodeCompletion.ItemList, CompletionColors, OutlineImages, TokenItem, Token, AllowScope);
       //HintParams.Cancel;
       DebugHint.Cancel;
       HintTip.Cancel;
@@ -6965,7 +6971,7 @@ begin
     //fill first all object in finded object location
     FillCompletionTree(CodeCompletion.InsertList,
       CodeCompletion.ItemList, Token, SelStart,
-      CompletionColors, [], True);
+      CompletionColors, OutlineImages, [], True);
     { TODO -oMazin -c : while parent is not nil fill objects 24/08/2012 22:27:26 }
     //get parent of Token
     if Assigned(Token.Parent) and
@@ -7009,13 +7015,13 @@ begin
     if AllScope then
     begin
       FilesParsed.FillCompletionClass(CodeCompletion.InsertList,
-        CodeCompletion.ItemList, CompletionColors, TokenItem, Token);
+        CodeCompletion.ItemList, CompletionColors, OutlineImages, TokenItem, Token);
     end;
   end;
 
   FilesParsed.FillCompletionList(CodeCompletion.InsertList,
     CodeCompletion.ItemList, ActiveEditingFile, SelStart,
-    CompletionColors);
+    CompletionColors, OutlineImages);
   //HintParams.Cancel;
   DebugHint.Cancel;
   HintTip.Cancel;

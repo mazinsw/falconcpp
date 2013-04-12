@@ -43,24 +43,24 @@ const
     );
 
   CompletionNames: array[0..17] of string = (
-    '\color{%s}type \column{}\style{+B}\color{clBlack}', //tkClass
-    '\color{%s}function \column{}\style{+B}\color{clBlack}', //tkFunction
-    '\color{%s}function \column{}\style{+B}\color{clBlack}', //tkPrototype
-    '\color{%s}constructor \column{}\style{+B}\color{clBlack}', //constructor
-    '\color{%s}destructor \column{}\style{+B}\color{clBlack}', //destructor
-    '\color{%s}include \column{}\style{+B}\color{clBlack}', //tkInclude
-    '\color{%s}preprocessor \column{}\style{+B}\color{clBlack}', //tkDefine
-    '\color{%s}var \column{}\style{+B}\color{clBlack}', //tkVariable
-    '\color{%s}typedef \column{}\style{+B}\color{clBlack}', //tkTypedef
-    '\color{%s}typedef \column{}\style{+B}\color{clBlack}', //tkTypedefProto
-    '\color{%s}type \column{}\style{+B}\color{clBlack}', //tkStruct
-    '\color{%s}type \column{}\style{+B}\color{clBlack}', //tkTypeStruct
-    '\color{%s}type \column{}\style{+B}\color{clBlack}', //tkEnum
-    '\color{%s}type \column{}\style{+B}\color{clBlack}', //tkTypeEnum
-    '\color{%s}type \column{}\style{+B}\color{clBlack}', //tkUnion
-    '\color{%s}type \column{}\style{+B}\color{clBlack}', //tkTypeUnion
-    '\color{%s}namespace \column{}\style{+B}\color{clBlack}', //namespace
-    '\color{%s}constant \column{}\style{+B}\color{clBlack}' //constant
+    '\style{-B}\color{clBlack}', //tkClass
+    '\style{-B}\color{clBlack}', //tkFunction
+    '\style{-B}\color{clBlack}', //tkPrototype
+    '\style{-B}\color{clBlack}', //constructor
+    '\style{-B}\color{clBlack}', //destructor
+    '\style{-B}\color{clBlack}', //tkInclude
+    '\style{-B}\color{clBlack}', //tkDefine
+    '\style{-B}\color{clBlack}', //tkVariable
+    '\style{-B}\color{clBlack}', //tkTypedef
+    '\style{-B}\color{clBlack}', //tkTypedefProto
+    '\style{-B}\color{clBlack}', //tkStruct
+    '\style{-B}\color{clBlack}', //tkTypeStruct
+    '\style{-B}\color{clBlack}', //tkEnum
+    '\style{-B}\color{clBlack}', //tkTypeEnum
+    '\style{-B}\color{clBlack}', //tkUnion
+    '\style{-B}\color{clBlack}', //tkTypeUnion
+    '\style{-B}\color{clBlack}', //namespace
+    '\style{-B}\color{clBlack}' //constant
     );
 
   TokenNames: array[TTkType] of string = (

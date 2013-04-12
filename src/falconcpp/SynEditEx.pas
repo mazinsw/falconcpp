@@ -1085,10 +1085,12 @@ end;
 procedure TSynEditEx.ProcessBreakLine;
 var
   c, bCaret: TBufferCoord;
-  LineStr, PrevLineStr, StrPrevCaret, StrPosCaret, TmpStr: string;
+  LineStr, PrevLineStr, StrPrevCaret, StrPosCaret, TmpStr,
+    CommentStr, NextLineStr, token: string;
   LeftOffset, SpaceCount, I: Integer;
   lstch, fstch: Char;
-  Unindent, caretChanged: Boolean;
+  attri: TSynHighlighterAttributes;
+  Unindent, caretChanged, IsCommentLine: Boolean;
 begin
   if not (eoAutoIndent in Options) then
     Exit;
@@ -1123,20 +1125,51 @@ begin
   end;
   I := RightSpacesEx(StrPrevCaret, True);
   SpaceCount := LeftOffset - I;
+  CommentStr := '';
+  TmpStr := Trim(PrevLineStr);
+  IsCommentLine := False;
+  if GetHighlighterAttriAtRowCol(BufferCoord(Length(PrevLineStr), c.Line - 1), token, attri)
+    and (attri.Name = 'Documentation Comment') then
+    IsCommentLine := True;
+  NextLineStr := '';
+  // ( is /** or * blabla ) and not /** bla bla */
+  if ((Copy(TmpStr, 1, 3) = '/**') or ((Copy(TmpStr, 1, 1) = '*') and IsCommentLine))
+    and (Copy(TmpStr, Length(TmpStr) - 2, 2) <> '*/') then
+  begin
+    // get next line after /**
+    if c.Line < Lines.Count then
+      NextLineStr := Trim(Lines[c.Line]);
+    // check next line if is */ or * insert * else insert */
+    if (Copy(NextLineStr, 1, 2) = '*/') or (Copy(NextLineStr, 1, 1) = '*') then
+      NextLineStr := '* '
+    else
+      NextLineStr := '*/';
+    IsCommentLine := True;
+    CommentStr := '* ';
+    if Unindent then
+      Dec(SpaceCount)
+    else if Copy(TmpStr, 1, 3) = '/**' then
+      Inc(SpaceCount);
+  end;
+  if (TmpStr = '*/') and (SpaceCount < 0) then
+    Unindent := True; 
   if Unindent then
   begin
     TmpStr := GetLeftSpacing(-SpaceCount, WantTabs and not (eoTabsToSpaces in Options));
-    ReplaceText('', BufferCoord(CaretX - Length(TmpStr), CaretY), CaretXY);
-    if not caretChanged then
-      bCaret := CaretXY;
+    I := Length(TmpStr);
+    if RightSpacesEx(Copy(StrPrevCaret, 1, CaretX - I), True) <> LeftOffset then
+      I := RightSpacesEx(TmpStr, True);
+    ReplaceText(CommentStr, BufferCoord(CaretX - I, CaretY), CaretXY);
   end
   else
   begin
     TmpStr := GetLeftSpacing(SpaceCount, WantTabs and not (eoTabsToSpaces in Options));
-    SelText := TmpStr;
-    if not caretChanged then
-      bCaret := CaretXY;
+    SelText := TmpStr + CommentStr;
   end;
+  if not caretChanged then
+    bCaret := CaretXY;
+  if NextLineStr = '*/' then
+    SelText := #13 + TmpStr + '*/';
   InternalCaretXY := bCaret;
 end;
 

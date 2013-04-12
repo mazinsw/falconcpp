@@ -4795,7 +4795,7 @@ var
   str, LineStr, S, token: string;
   p: PChar;
   i, j, SpaceCount1: Integer;
-  bStart: TBufferCoord;
+  bStart, bEnd: TBufferCoord;
   attri: TSynHighlighterAttributes;
   bCoord: TBufferCoord;
 begin
@@ -4810,7 +4810,8 @@ begin
       bCoord.Char := Length(sheet.Memo.Lines.Strings[bCoord.Line - 1]);
     if sheet.Memo.GetHighlighterAttriAtRowCol(bCoord, token, attri) then
     begin
-      if (attri.Name = 'Comment') or (attri.Name = 'String') or (attri.Name = 'Character') then
+      if (attri.Name = 'Comment') or (attri.Name = 'Documentation Comment') or
+        (attri.Name = 'String') or (attri.Name = 'Character') then
         Exit;
       if (Key in ['"', '<']) and (attri.Name = 'Preprocessor') and (Pos('include', LineStr) > 0) and
         (Pos('"', LineStr) = 0) and (Pos('<', LineStr) = 0) and (Pos('>', LineStr) = 0) then
@@ -4873,15 +4874,21 @@ begin
       begin
         bStart.Line := sheet.Memo.BlockBegin.Line;
         bStart.Char := sheet.Memo.BlockBegin.Char;
+        bEnd.Line := sheet.Memo.BlockEnd.Line;
+        bEnd.Char := sheet.Memo.BlockEnd.Char;
       end
       else
       begin
         bStart.Line := sheet.Memo.CaretY;
         bStart.Char := sheet.Memo.CaretX;
+        bEnd.Line := bStart.Line;
+        bEnd.Char := bStart.Char;
       end;
       if sheet.Memo.Lines.Count >= bStart.Line then
       begin
         LineStr := sheet.Memo.Lines.Strings[bStart.Line - 1];
+        if not sheet.Memo.SelAvail then
+          bEnd.Char := Length(LineStr) + 1;
         LineStr := Copy(LineStr, 1, bStart.Char - 1);
         p := PChar(LineStr);
         if p^ <> #0 then
@@ -4918,19 +4925,17 @@ begin
         end;
         Key := #0;
         S := GetLeftSpacing(SpaceCount1, sheet.Memo.TabWidth, sheet.Memo.WantTabs and not (eoTabsToSpaces in sheet.Memo.Options));
-        bStart.Char := Length(S) + 1;
+        bStart.Char := 1;
         if Config.Editor.AutoCloseBrackets then
         begin
-          str := '{' + #13 + S + GetLeftSpacing(sheet.Memo.TabWidth,
+          str := '';
+          if replaceLine then
+            str := S;
+          str := str + '{' + #13 + S + GetLeftSpacing(sheet.Memo.TabWidth,
             sheet.Memo.TabWidth, sheet.Memo.WantTabs and not (eoTabsToSpaces in sheet.Memo.Options)) + #13 + S + '}';
           sheet.Memo.BeginUpdate;
           if replaceLine then
-          begin
-            if sheet.Memo.SelAvail then
-              sheet.Memo.SetCaretAndSelection(bStart, bStart, sheet.Memo.BlockEnd)
-            else
-              sheet.Memo.CaretX := bStart.Char;
-          end;
+            sheet.Memo.SetCaretAndSelection(bStart, bStart, bEnd);
           sheet.Memo.SelText := str;
           sheet.Memo.EndUpdate;
           Inc(bStart.Line);
@@ -4942,13 +4947,10 @@ begin
         begin
           sheet.Memo.BeginUpdate;
           if replaceLine then
-          begin
-            if sheet.Memo.SelAvail then
-              sheet.Memo.SetCaretAndSelection(bStart, bStart, sheet.Memo.BlockEnd)
-            else
-              sheet.Memo.CaretX := bStart.Char;
-          end;
-          sheet.Memo.SelText := '{';
+            sheet.Memo.SetCaretAndSelection(bStart, bStart, bEnd)
+          else
+            S := '';
+          sheet.Memo.SelText := S + '{';
           sheet.Memo.EndUpdate;
         end;
       end
@@ -6600,7 +6602,7 @@ begin
     //invalid attribute
     if ((not StringIn(attri.Name, ['Identifier', 'Preprocessor']) or
       (Pos('include', Input) > 0)) and not DebugReader.Running) or
-      (StringIn(attri.Name, ['String', 'Comment', 'Preprocessor']) and
+      (StringIn(attri.Name, ['String', 'Comment', 'Documentation Comment', 'Preprocessor']) and
       DebugReader.Running) then
     begin
       HintTip.Cancel;
@@ -6789,14 +6791,14 @@ begin
   end;
   if sheet.Memo.GetHighlighterAttriAtRowCol(Buffer, S, Attri) then
   begin
-    if StringIn(Attri.Name, ['Character', 'String', 'Comment',
+    if StringIn(Attri.Name, ['Character', 'String', 'Documentation Comment', 'Comment',
       'Preprocessor']) then
     begin
       Dec(Buffer.Char);
       if (Attri.Name <> 'Preprocessor') and
         sheet.Memo.GetHighlighterAttriAtRowCol(Buffer, S, Attri) then
       begin
-        if StringIn(Attri.Name, ['Character', 'String', 'Comment',
+        if StringIn(Attri.Name, ['Character', 'String', 'Documentation Comment', 'Comment',
           'Preprocessor']) then
         begin
           if (Attri.Name = 'Preprocessor') and (Pos('include', LineStr) > 0) and
@@ -6836,14 +6838,14 @@ begin
     Dec(Buffer.Char);
     if sheet.Memo.GetHighlighterAttriAtRowCol(Buffer, S, Attri) then
     begin
-      if StringIn(Attri.Name, ['Character', 'String', 'Comment',
+      if StringIn(Attri.Name, ['Character', 'String', 'Documentation Comment', 'Comment',
         'Preprocessor']) then
       begin
         Dec(Buffer.Char);
         if (Attri.Name <> 'Preprocessor') and
           sheet.Memo.GetHighlighterAttriAtRowCol(Buffer, S, Attri) then
         begin
-          if StringIn(Attri.Name, ['Character', 'String', 'Comment',
+          if StringIn(Attri.Name, ['Character', 'String', 'Documentation Comment', 'Comment',
             'Preprocessor']) then
           begin
             if (Attri.Name = 'Preprocessor') and (Pos('include', LineStr) > 0)

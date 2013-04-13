@@ -24,6 +24,9 @@ type
     fLength: Integer;
     fLevel: Integer;
     fVarFunc: Boolean;
+    fCommentLine: Integer;
+    fComment: string;
+    fOpenCommentCount: Integer;
     //parsed items
     fTokenFile: Pointer;
     //***************
@@ -191,18 +194,73 @@ begin
 end;
 
 procedure TCppParser.SkipMultLineComment;
+var
+  DocComment: Boolean;
+  fstart, fend, fastrk: Pchar;
+  s, LF_str, Comment: string;
+  CommentLine: Integer;
 begin
+  CommentLine := fCurrLine;
+  Comment := '';
+  LF_str := '';
+  DocComment := (fptr + 1)^ = '*';
+  if ((fptr + 1)^ = '@') and ((fptr + 2)^ = '{') then
+    Inc(fOpenCommentCount)
+  else if ((fptr + 1)^ = '@') and ((fptr + 2)^ = '}') and (fOpenCommentCount > 0) then
+  begin
+    Dec(fOpenCommentCount);
+    fComment := '';
+  end;
+  fstart := nil;
+  fastrk := fptr + 2;
+  fend := fptr;
   repeat
     Inc(fptr);
     Inc(fCurrPos);
     DoProgress;
     case fptr^ of
-      #10: Inc(fCurrLine); //LF
+      #10:
+      begin
+        Inc(fCurrLine); //LF
+        if DocComment and (fstart <> nil) then
+        begin
+          SetLength(s, fend - fstart + 1);
+          StrLCopy(PChar(s), fstart, fend - fstart + 1);
+          Comment := Comment + LF_str + s;
+          LF_str := #13;
+        end
+        else if Comment <> '' then
+          LF_str := LF_str + #13;
+        fstart := nil;
+        fastrk := fptr + 1;
+      end;
+      '*':
+      begin
+        if (fstart = nil) then
+          fastrk := fptr + 1;
+      end;
+    else
+      if not (fptr^ in SpaceChars+LineChars+['*']) then
+      begin
+        if fstart = nil then
+          fstart := fastrk;
+        fend := fptr;
+      end;
     end;
     if fCancel then
       Exit;
   until (fptr^ = #0) or ((fptr^ = '*') and ((fptr + 1)^ = '/'));
-
+  if DocComment and (fOpenCommentCount = 0) then
+  begin
+    if DocComment and (fstart <> nil) then
+    begin
+      SetLength(s, fend - fstart + 1);
+      StrLCopy(PChar(s), fstart, fend - fstart + 1);
+      Comment := Comment + LF_str + s;
+    end;
+    fComment := Comment;
+    fCommentLine := CommentLine;
+  end;
   if fptr^ <> #0 then
   begin
     Inc(fptr);
@@ -2101,6 +2159,7 @@ var
   lastFunc, scopeClass: TTokenClass;
 begin
   fBusy := True;
+  fOpenCommentCount := 0;
   fTokenFile := TokenFile;
   Clear;
   fSrc := Src;
@@ -2409,7 +2468,9 @@ begin
   begin
     TokenClass := Top;
     Result := TTokenClass.Create(TokenClass);
-    Result.Fill(Line, Len, Start, Level, TkType, S, Flag);
+    Result.Fill(Line, Len, Start, Level, TkType, S, Flag, FComment);
+    if fOpenCommentCount = 0 then
+      FComment := '';
     if TokenClass <> nil then
     begin
       TokenClass.Add(Result);
@@ -2435,7 +2496,9 @@ begin
         TokenClass := TTokenFile(fTokenFile).FuncObjs;
     end;
     Result := TTokenClass.Create(TokenClass);
-    Result.Fill(Line, Len, Start, Level, TkType, S, Flag);
+    Result.Fill(Line, Len, Start, Level, TkType, S, Flag, FComment);
+    if fOpenCommentCount = 0 then
+      FComment := '';
     if TokenClass <> nil then
     begin
       TokenClass.Add(Result);

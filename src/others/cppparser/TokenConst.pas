@@ -39,10 +39,11 @@ const
     '',
     '',
     '',
+    '',
     ''
     );
 
-  CompletionNames: array[0..17] of string = (
+  CompletionNames: array[0..18] of string = (
     '\style{-B}\color{clBlack}', //tkClass
     '\style{-B}\color{clBlack}', //tkFunction
     '\style{-B}\color{clBlack}', //tkPrototype
@@ -60,7 +61,8 @@ const
     '\style{-B}\color{clBlack}', //tkUnion
     '\style{-B}\color{clBlack}', //tkTypeUnion
     '\style{-B}\color{clBlack}', //namespace
-    '\style{-B}\color{clBlack}' //constant
+    '\style{-B}\color{clBlack}', //constant
+    '\style{-B}\color{$00AE7A00}'  //code template
     );
 
   TokenNames: array[TTkType] of string = (
@@ -96,7 +98,8 @@ const
     'tkScope',
     'tkScopeClass',
     'tkUsing',
-    'tkValue'
+    'tkValue',
+    'tkCodeTemplate'
     );
 
   LetterChars: set of Char = ['A'..'Z', 'a'..'z', '_'];

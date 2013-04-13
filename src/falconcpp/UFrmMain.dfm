@@ -1447,7 +1447,7 @@ object FrmFalconMain: TFrmFalconMain
   end
   object CodeCompletion: TSynCompletionProposal
     Options = [scoLimitToMatchedText, scoUseInsertList, scoUsePrettyText, scoUseBuiltInTimer, scoEndCharCompletion, scoCompleteWithTab, scoCompleteWithEnter]
-    ClSelectedText = clDefault
+    ClSelectedText = clWindowText
     ClTitleBackground = clBtnHighlight
     Width = 450
     EndOfTokenChr = '{}()[]<>.,; :=+-/*%?|~&!^"'

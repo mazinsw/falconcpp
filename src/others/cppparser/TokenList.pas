@@ -6,7 +6,7 @@ uses
   Classes, Dialogs;
 
 const
-  Sign = 'FCP 3.2';
+  Sign = 'FCP 3.3';
 
 type
   TTkType = (
@@ -42,7 +42,8 @@ type
     tkScope,
     tkScopeClass,
     tkUsing,
-    tkValue
+    tkValue,
+    tkCodeTemplate
     );
 
   TTokenSearchMode = set of TTkType;
@@ -77,6 +78,8 @@ type
     Name: string;
     Len2: Word; //Length of Flag
     Flag: string;
+    Len3: Word; //Length of Comment
+    Comment: string;
     Items: PTokenRecList; //Child objects
   end;
 
@@ -99,13 +102,12 @@ type
     FToken: TTkType;
     FName: string;
     FFlag: string;
+    FComment: string;
     FLevel: Integer;
     FData: Pointer;
     function Get(Index: Integer): TTokenClass;
     procedure Put(Index: Integer; Value: TTokenClass);
     procedure AssignRecursive(Ato, ACopy, Parent: TTokenClass);
-    {procedure ConvertToTokenRecRecursive(TokenRec: PTokenRec; ACopy: TTokenClass);
-    procedure LoadFromTokenRecRecursive(TokenRec: PTokenRec; Parent: TTokenClass);}
     function GetTokenAtRecursive(var scopeToken: TTokenClass;
       SelStart, SelLine: Integer; Finded: Boolean): Boolean;
   public
@@ -113,12 +115,11 @@ type
     constructor Create; overload;
     procedure Assign(AObject: TObject);
     procedure AssignProperty(AObject: TObject);
-    //function ConvertToTokenRec: PTokenRec;
-    //procedure LoadFromTokenRec(TokenRec: PTokenRec);
     destructor Destroy; override;
     function Add(Item: TTokenClass): Integer;
     procedure Fill(SelLine: Integer; SelLength: Integer; SelStart: Integer;
-      Level: Integer; Token: TTkType; Name: string; Flag: string);
+      Level: Integer; Token: TTkType; Name: string; Flag: string;
+      Comment: string);
     procedure Clear;
     function Count: Integer;
     procedure Delete(Index: Integer);
@@ -141,7 +142,7 @@ type
       NotAtSelStart: Integer = 0; AdvanceAfterSelStart: Boolean = False;
       ListAll: TStrings = nil; AllFunctions: Boolean = False): Boolean;
     property Items[Index: Integer]: TTokenClass read Get write Put;
-    {*** manipulate ***}
+
     property Owner: Pointer read FOwner write FOwner;
     property Parent: TTokenClass read FParent write FParent;
     property SelLine: Integer read FSelLine write FSelLine;
@@ -150,6 +151,7 @@ type
     property Token: TTkType read FToken write FToken;
     property Name: string read FName write FName;
     property Flag: string read FFlag write FFlag;
+    property Comment: string read FComment write FComment;
     property Level: Integer read FLevel write FLevel;
     property Data: Pointer read FData write FData;
   end;
@@ -209,6 +211,7 @@ begin
   NewObj.FToken := ACopy.FToken;
   NewObj.FName := ACopy.FName;
   NewObj.FFlag := ACopy.FFlag;
+  NewObj.FComment := ACopy.FComment;
   NewObj.FLevel := ACopy.FLevel;
   NewObj.FData := ACopy.FData;
   NewObj.FOwner := ACopy.FOwner;
@@ -229,15 +232,7 @@ begin
     Exit;
   Clear;
   FParent := NewObj.FParent;
-  FOwner := NewObj.FOwner;
-  FSelLine := NewObj.FSelLine;
-  FSelLength := NewObj.FSelLength;
-  FSelStart := NewObj.FSelStart;
-  FToken := NewObj.FToken;
-  FName := NewObj.FName;
-  FFlag := NewObj.FFlag;
-  FLevel := NewObj.FLevel;
-  FData := NewObj.FData;
+  AssignProperty(AObject);
   for I := 0 to NewObj.Count - 1 do
     AssignRecursive(Self, NewObj.Items[I], Self);
 end;
@@ -258,6 +253,7 @@ begin
   FToken := NewObj.FToken;
   FName := NewObj.FName;
   FFlag := NewObj.FFlag;
+  FComment := NewObj.FComment;
   FLevel := NewObj.FLevel;
   FData := NewObj.FData;
 end;
@@ -281,7 +277,8 @@ begin
 end;
 
 procedure TTokenClass.Fill(SelLine: Integer; SelLength: Integer;
-  SelStart: Integer; Level: Integer; Token: TTkType; Name: string; Flag: string);
+  SelStart: Integer; Level: Integer; Token: TTkType; Name: string;
+  Flag: string; Comment: string);
 begin
   FSelLine := SelLine;
   FSelLength := SelLength;
@@ -290,6 +287,7 @@ begin
   FName := Name;
   FFlag := Flag;
   FLevel := Level;
+  FComment := Comment;
 end;
 
 procedure TTokenClass.Clear;

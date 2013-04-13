@@ -26,35 +26,37 @@ uses
   VistaAltFixUnit, TB2Toolbar, ThreadFileDownload, NativeTreeView, SynEditEx;
 
 const
-  MAX_OUTLINE_TREE_IMAGES = 27;
+  MAX_OUTLINE_TREE_IMAGES = 29;
   TreeImages: array[0..MAX_OUTLINE_TREE_IMAGES - 1] of Integer = (
-    0, //Include List
-    1, //include
-    2, //Define List
-    18, //define
-    3, //Variables and Constants List
-    9, //public variable
-    10, //private variable
-    11, //protected variable
-    3, //Function and Prototype List
-    15, //public function
-    16, //private function
-    17, //protected function
-    14, //prototype
-    3, //Type List
-    4, //class
-    5, //struct
-    6, //union
-    7, //enum
-    19, //namespace
-    20, //typedef
-    5, //typedef struct
-    6, //typedef union
-    7, //typedef enum
-    21, //Enum Item
-    8, //typedef prototype
-    12, //constructor
-    13 //destructor
+    0,  // Include List
+    1,  // include
+    2,  // Define List
+    18, // define
+    3,  // Variables and Constants List
+    9,  // public variable
+    10, // private variable
+    11, // protected variable
+    3,  // Function and Prototype List
+    15, // public function
+    16, // private function
+    17, // protected function
+    14, // prototype
+    3,  // Type List
+    4,  // class
+    5,  // struct
+    6,  // union
+    7,  // enum
+    19, // namespace
+    20, // typedef
+    5,  // typedef struct
+    6,  // typedef union
+    7,  // typedef enum
+    21, // Enum Item
+    8,  // typedef prototype
+    12, // constructor
+    13, // destructor
+    22, // code template
+    -1  // type
     );
   WM_RELOADFTM = WM_USER + $1008;
   WM_REPARSEFILES = WM_RELOADFTM + 1;
@@ -840,7 +842,7 @@ implementation
 uses
   UFrmAbout, UFrmNew, UFrmProperty, ExecWait, UTools, UFrmRemove,
   UFrmUpdate, ULanguages, UFrmEnvOptions, UFrmCompOptions, UFrmFind, AStyle,
-  UFrmGotoFunction, UFrmGotoLine, TBXThemes, Makefile;
+  UFrmGotoFunction, UFrmGotoLine, TBXThemes, Makefile, CodeTemplate;
 
 {$R *.dfm}
 {$R resources.res}
@@ -1174,6 +1176,7 @@ begin
   CommandQueue := TCommandQueue.Create;
   WatchList := TDebugWatchList.Create;
   HintTip := TTokenHintTip.Create(Self);
+  HintTip.Images := ImgListOutLine;
   //HintTip := TTokenHintTip.Create(Self); //mouse over hint
   HintParams := TTokenHintParams.Create(Self); //Ctrl + Space or ( Trigger Key
   DebugParser := TDebugParser.Create; //fill treeview with debug variables
@@ -2017,6 +2020,7 @@ begin
   CompletionColors[TTkType(15)] := Format(CompletionNames[15], [ColorToString(EdtOpt.CompListType)]);
   CompletionColors[TTkType(16)] := Format(CompletionNames[16], [ColorToString(EdtOpt.CompListNamespace)]);
   CompletionColors[TTkType(17)] := Format(CompletionNames[17], [ColorToString(EdtOpt.CompListConstant)]);
+  CompletionColors[tkCodeTemplate] := Format(CompletionNames[18], [ColorToString(EdtOpt.CompListType)]);
 end;
 
 //get source file to parse
@@ -6656,7 +6660,8 @@ begin
       Token, I, BufferCoord.Line) then
     begin
       S := MakeTokenHint(Token, TokenFileItem.FileName);
-      HintTip.UpdateHint(S, P.X, P.Y + Memo.Canvas.TextHeight(S) + 4);
+      HintTip.UpdateHint(S, Token.Comment, P.X, P.Y + Memo.Canvas.TextHeight(S) + 4,
+        GetTokenImageIndex(Token, OutlineImages));
       Exit;
     end;
   end;
@@ -6748,7 +6753,7 @@ procedure TFrmFalconMain.CodeCompletionExecute(Kind: TSynCompletionType;
   Sender: TObject; var CurrentInput: string; var x, y: Integer;
   var CanExecute: Boolean);
 var
-  S, Fields, Input, LineStr: string;
+  S, Fields, Input, SaveInput, LineStr: string;
   sheet: TSourceFileSheet;
   TokenItem: TTokenFile;
   SelStart, I, LineLen: integer;
@@ -6768,7 +6773,7 @@ begin
     Exit;
   if not GetActiveSheet(sheet) then
     Exit;
-  if ParseFields(sheet.Memo.Text, sheet.Memo.SelStart, Input, Fields, InputError) then
+  if ParseFields(sheet.Memo.Text, sheet.Memo.SelStart, SaveInput, Fields, InputError) then
     Input := GetFirstWord(Fields);
   if InputError then
     Exit;
@@ -6898,7 +6903,6 @@ begin
       Exit;
   end;
   //End temp
-  //StartTicks := GetTickCount;
   if Input <> '' then
   begin
     if ActiveEditingFile.GetScopeAt(Token, SelStart) then
@@ -6921,9 +6925,6 @@ begin
         DebugHint.Cancel;
         HintTip.Cancel;
         CanExecute := True;
-        //StartTicks := GetTickCount - StartTicks;
-        //AddMessage(ActiveEditingFile.FileName, 'Fill list',
-        //  FormatFloat('" Items on " 0.000"s"', StartTicks / 1000), 0, 0, 0, mitCompiler);
         Exit; //?
       end;
     end;
@@ -6972,6 +6973,10 @@ begin
     FillCompletionTree(CodeCompletion.InsertList,
       CodeCompletion.ItemList, Token, SelStart,
       CompletionColors, OutlineImages, [], True);
+    if Fields = '' then
+      AddTemplates(CurrentInput, Token.Token, CodeCompletion.InsertList,
+        CodeCompletion.ItemList, CompletionColors, OutlineImages,
+        sheet.SourceFile.Project.CompilerType);
     { TODO -oMazin -c : while parent is not nil fill objects 24/08/2012 22:27:26 }
     //get parent of Token
     if Assigned(Token.Parent) and
@@ -7017,7 +7022,12 @@ begin
       FilesParsed.FillCompletionClass(CodeCompletion.InsertList,
         CodeCompletion.ItemList, CompletionColors, OutlineImages, TokenItem, Token);
     end;
-  end;
+  end
+  else if Fields = '' then
+    AddTemplates(CurrentInput, tkUnknow, CodeCompletion.InsertList,
+      CodeCompletion.ItemList, CompletionColors, OutlineImages,
+      sheet.SourceFile.Project.CompilerType);
+
 
   FilesParsed.FillCompletionList(CodeCompletion.InsertList,
     CodeCompletion.ItemList, ActiveEditingFile, SelStart,
@@ -7119,6 +7129,11 @@ begin
       Value := Value + '>'
     else if (Pos('"', LineStr) > 0) and (EndToken <> '"') and (NextChar <> '"') then
       Value := Value + '"';
+  end
+  else if (Token.Token = tkCodeTemplate) and (Token.Flag <> '') then
+  begin
+    Value := '';
+    ExecuteCompletion(CodeCompletion.CurrentString, Token, sheet.Memo);
   end;
 end;
 

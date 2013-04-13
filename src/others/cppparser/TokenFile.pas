@@ -323,6 +323,10 @@ begin
     FileRead(Handle, Buffer, TokenRec.Len2);
     Buffer[TokenRec.Len2] := #0;
     Item.Flag := StrPas(Buffer);
+    FileRead(Handle, TokenRec.Len3, SizeOf(Word));
+    FileRead(Handle, Buffer, TokenRec.Len3);
+    Buffer[TokenRec.Len3] := #0;
+    Item.Comment := StrPas(Buffer);
     LoadFromFileRecurse(Handle, Item, TokenRec.Count);
   end;
   Result := True;
@@ -398,6 +402,10 @@ begin
     FileRead(Handle, Buffer, TokenRec.Len2);
     Buffer[TokenRec.Len2] := #0;
     TokenRec.Flag := StrPas(Buffer);
+    FileRead(Handle, TokenRec.Len3, SizeOf(Word));
+    FileRead(Handle, Buffer, TokenRec.Len3);
+    Buffer[TokenRec.Len3] := #0;
+    TokenRec.Comment := StrPas(Buffer);
 
     case TokenRec.Token of
       tkIncludeList: TkList := FIncludeList;
@@ -439,6 +447,9 @@ begin
   TokenRec.Len2 := Length(ItemList.Flag);
   FileWrite(Handle, TokenRec.Len2, SizeOf(Word));
   FileWrite(Handle, PChar(ItemList.Flag)^, TokenRec.Len2);
+  TokenRec.Len3 := Length(ItemList.Comment);
+  FileWrite(Handle, TokenRec.Len3, SizeOf(Word));
+  FileWrite(Handle, PChar(ItemList.Comment)^, TokenRec.Len3);
   for I := 0 to ItemList.Count - 1 do
     SaveToFileRecurse(Handle, ItemList.Items[I]);
 end;

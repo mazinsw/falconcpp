@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, Forms, Controls, Classes, Graphics, SysUtils, Types,
-  TokenUtils;
+  TokenUtils, ImgList;
 
 type
   TTokenHintBase = class(THintWindow)
@@ -50,11 +50,18 @@ type
   end;
 
   TTokenHintTip = class(TTokenHintBase)
+  private
+    FComments: TStrings;
+    FImages: TCustomImageList;
+    FImageIndex: Integer;
+    procedure SetImages(const Value: TCustomImageList);
   protected
     procedure Paint; override;
   public
     constructor Create(AOwner: TComponent); override;
-    procedure UpdateHint(const S: string; X, Y: Integer); virtual;
+    destructor Destroy; override;
+    procedure UpdateHint(const S, Comment: string; X, Y, ImageIndex: Integer); virtual;
+    property Images: TCustomImageList read FImages write SetImages;
   end;
 
 implementation
@@ -484,18 +491,75 @@ end;
 constructor TTokenHintTip.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
+  FComments := TStringList.Create;
+  FImageIndex := -1;
 end;
 
-procedure TTokenHintTip.Paint;
+destructor TTokenHintTip.Destroy;
 begin
+  FComments.Free;
   inherited;
 end;
 
-procedure TTokenHintTip.UpdateHint(const S: string; X, Y: Integer);
+procedure TTokenHintTip.Paint;
 var
   R: TRect;
+  I, SaveLeft: Integer;
+  S: string;
 begin
+  R := ClientRect;
+  Inc(R.Left, 2);
+  SaveLeft := R.Left;
+  Inc(R.Top, 2);
+  Canvas.Font.Color := Font.Color;
+  if (Images <> nil) and (FImageIndex >= 0) then
+  begin
+    Images.Draw(Canvas, R.Left, R.Top, FImageIndex);
+    Inc(R.Left, Images.Width + 2);
+  end;
+  DrawText(Canvas.Handle, PChar(Caption), -1, R, DT_LEFT or DT_NOPREFIX or
+    DT_WORDBREAK or DrawTextBiDiModeFlagsReadingOnly);
+  R.Left := SaveLeft;
+  Inc(R.Top, Canvas.TextHeight(Caption) + 10);
+  for I := 0 to FComments.Count - 1 do
+  begin
+    S := FComments.Strings[I];
+    R.Bottom := R.Top + Canvas.TextHeight(S);
+    DrawText(Canvas.Handle, PChar(S), -1, R, DT_LEFT or DT_NOPREFIX or
+      DT_WORDBREAK or DrawTextBiDiModeFlagsReadingOnly);
+    Inc(R.Top, Canvas.TextHeight(S) + 2);
+  end;
+end;
+
+procedure TTokenHintTip.SetImages(const Value: TCustomImageList);
+begin
+  if Value = FImages then
+    Exit;
+  FImages := Value;
+end;
+
+procedure TTokenHintTip.UpdateHint(const S, Comment: string; X, Y, ImageIndex: Integer);
+var
+  R: TRect;
+  CommentHeight, I: Integer;
+begin
+  FComments.Text := Comment;
+  FImageIndex := ImageIndex;
+  if Comment = '' then
+    FComments.Clear;
   R := Rect(X, Y, Canvas.TextWidth(S) + X + 10, Canvas.TextHeight(S) + Y + 2);
+  if (Images <> nil) and (ImageIndex >= 0) then
+    Inc(R.Right, Images.Width + 2);
+  if FComments.Count > 0 then
+    CommentHeight := 8
+  else
+    CommentHeight := 0;
+  for I := 0 to FComments.Count - 1 do
+  begin
+    R.Right := Max(R.Right, X + Canvas.TextWidth(FComments.Strings[I]) + 10);
+    Inc(CommentHeight, Canvas.TextHeight(FComments.Strings[I]) + 2);
+  end;
+  Inc(R.Bottom, CommentHeight);
   if FActivated then
   begin
     Caption := S;

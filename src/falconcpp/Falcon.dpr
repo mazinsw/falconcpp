@@ -54,7 +54,8 @@ uses
   FastcodePatch in '..\others\nativehint\FastcodePatch.pas',
   NativeHintWindow in '..\others\nativehint\NativeHintWindow.pas',
   rbtree in 'rbtree.pas',
-  SynEditEx in 'SynEditEx.pas';
+  SynEditEx in 'SynEditEx.pas',
+  CodeTemplate in 'CodeTemplate.pas';
 
 function OpenWithOther: Boolean;
 var

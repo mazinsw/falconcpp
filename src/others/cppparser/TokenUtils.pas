@@ -396,6 +396,13 @@ begin
       begin
         Result := 26;
       end;
+    tkCodeTemplate:
+      begin
+        if Token.Flag = '' then
+          Result := 28
+        else
+          Result := 27;
+      end;
   else
     Result := 0;
   end;
@@ -719,6 +726,14 @@ begin
         else
           Result := CompletionColors[tkClass] + Token.Name + '\style{-B} : class';
       end;
+    tkCodeTemplate:
+      begin
+        if Token.Flag = '' then
+          Result := CompletionColors[tkCodeTemplate] + '\color{clBlack}' +
+            Token.Name + '\style{-B}'
+        else
+          Result := CompletionColors[tkCodeTemplate] + Token.Name + '\style{-B}';
+      end;
   end;
   Result := '\image{' + IntToStr(GetTokenImageIndex(Token, Images)) + '}' + Result;
   S := GetTreeHierarchy(Token, False);
@@ -765,7 +780,9 @@ begin
     else if (Next.Token = tkNamespace) and AddScope then
       Separator := '::';
     Result := Next.Name + Separator + Result;
-  end;
+  end
+  else if (Token.Token = tkCodeTemplate) and not AddScope then
+    Result := Token.Flag;
 end;
 
 procedure GetStringsFields(const S: string; List: TStrings;

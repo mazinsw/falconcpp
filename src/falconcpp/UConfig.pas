@@ -307,7 +307,7 @@ begin
     ScrollHint := ini.ReadBool('EditorOptions', 'ScrollHint', True);
     SmartTabs := ini.ReadBool('EditorOptions', 'SmartTabs', True);
     TabIndentUnindent := ini.ReadBool('EditorOptions', 'TabIndentUnindent', True);
-    UseTabChar := ini.ReadBool('EditorOptions', 'UseTabChar', False);
+    UseTabChar := ini.ReadBool('EditorOptions', 'UseTabChar', True);
     EnhancedHomeKey := ini.ReadBool('EditorOptions', 'EnhancedHomeKey', False);
     CursorPastEol := ini.ReadBool('EditorOptions', 'CursorPastEOL', False);
     ShowSpaceChars := ini.ReadBool('EditorOptions', 'ShowSpaceChars', False);

@@ -3873,10 +3873,14 @@ begin
       Temp := StringBetween(MMsg, #39, #39, False);
       if (Length(Temp) > 0) then
       begin
-        ColS := Pos(Temp, SLine);
-        if (ColS > 0) then
+        Sheet.memo.SearchEngine := EditorSearch;
+        Sheet.memo.SearchEngine.Pattern := Temp;
+        Sheet.memo.SearchEngine.Options := [ssoMatchCase, ssoWholeWord];
+        Sheet.memo.SearchEngine.FindAll(SLine);
+        if Sheet.memo.SearchEngine.ResultCount = 1 then
         begin
-          ColE := ColS + Length(Temp);
+          ColS := Sheet.memo.SearchEngine.Results[0];
+          ColE := ColS + Sheet.memo.SearchEngine.Lengths[0];
           GotoLineAndAlignCenter(Sheet.Memo, Line, ColS, ColE, True);
         end;
       end;

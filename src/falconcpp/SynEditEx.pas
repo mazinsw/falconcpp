@@ -1159,11 +1159,23 @@ begin
     Unindent := True; 
   if Unindent then
   begin
-    TmpStr := GetLeftSpacing(-SpaceCount, WantTabs and not (eoTabsToSpaces in Options));
-    I := Length(TmpStr);
-    if RightSpacesEx(Copy(StrPrevCaret, 1, CaretX - I), True) <> LeftOffset then
-      I := RightSpacesEx(TmpStr, True);
-    ReplaceText(CommentStr, BufferCoord(CaretX - I, CaretY), CaretXY);
+    SpaceCount := 0;
+    I := 1;
+    while I <= Length(LineStr) do
+    begin
+      Inc(SpaceCount, RightSpacesEx(LineStr[I], True));
+      if SpaceCount > LeftOffset then
+      begin
+        Dec(SpaceCount, RightSpacesEx(LineStr[I], True));
+        Break;
+      end;
+      Inc(I);
+    end;
+    if I <= Length(LineStr) then
+      Dec(I);
+    if SpaceCount <> LeftOffset then
+      CommentStr := GetLeftSpacing(LeftOffset - SpaceCount, WantTabs and not (eoTabsToSpaces in Options)) + CommentStr;
+    ReplaceText(CommentStr, BufferCoord(I + 1, CaretY), CaretXY);
   end
   else
   begin

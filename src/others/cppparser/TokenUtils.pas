@@ -662,7 +662,7 @@ begin
           if Length(Params) > 2 then
           begin
             Params := Copy(Params, 2, I - 2);
-            Params := '[\color{clGreen}' + Params + ']\color{clBlack}';
+            Params := '[\color{clBlack}' + Params + ']\color{clBlack}';
           end;
         end;
 

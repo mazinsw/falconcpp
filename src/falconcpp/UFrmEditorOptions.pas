@@ -1678,7 +1678,7 @@ begin
   ChbScrollHint.Checked := True;
   ChbTabUnOrIndt.Checked := True;
   ChbSmartTabs.Checked := True;
-  ChbUseTabChar.Checked := False;
+  ChbUseTabChar.Checked := True;
   ChbEnhHomeKey.Checked := False;
   ChbShowSpaceChars.Checked := False;
   ChbAutoCloseBrackets.Checked := True;

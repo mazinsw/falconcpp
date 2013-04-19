@@ -1,21 +1,22 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <FalconCPP>
-	<Core Version="3.2.0.10">
-		<File Name="Falcon.exe" URL="https://downloads.sourceforge.net/project/falconcpp/Binaries/3.2.0.10/Falcon C++-3.2.0.10.zip">
-			Date: 2013/01/26
-			Fix: Updater don't update Updater.exe, Install manually for fix it
-			Fix: Open and edit large files is too slow
-			Code completion on include
-			No makefile creation for single source file
-			Makefile rules depends on header files
-			Translation support for Package Manager
-			Cursor after end of line option
-			Auto close brackets/parentheses option
-			Syntax highligthing for types, instruction and documentation comment
-			Fix: -O2 option for default causes problems
-			Fix: Project Property include path or library with spaces in name and split
+	<Core Version="3.2.0.86">
+		<File Name="Falcon.exe" URL="https://downloads.sourceforge.net/project/falconcpp/Binaries/3.2.0.86/Falcon C++-3.2.0.86.zip">
+			Date: 2013/04/12
+			Fix: Compiling new files disable save button
+			Fix: Makefile rules fail when include headers files from directories using -I flag
+			Fix: Add new file don't changing project properties
+			Fix: OEM plus, minus shortcut for zoom, Ctrl + 0 for restore zoom 
+			Fix: Overriding source project files without prompt
+			Fix: Optimize option from new project
+			Search files on include path on compiler flags
+			Auto complete documentation comment
+			Indentation enhancement
+			remove double connecting to download and post data available to Updater and PkgManager
+			Completion list with icons
+			Code template with Ctrl + Space
+			Tips with documentation comment
+			Minor changes for indentation enhancement
 		</File>
 	</Core>
-	<Packages>
-	</Packages>
 </FalconCPP>

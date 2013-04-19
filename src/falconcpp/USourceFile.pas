@@ -307,6 +307,7 @@ uses UFrmMain, UUtils, UConfig, TokenFile, TokenList, TokenUtils;
 
 const
   filemoveError = 'Can''t move file ''%s'' to ''%s.''';
+  fileOverrideError = 'Can''t override existing file "%s".';
 
 { TSourceBase }
 
@@ -792,6 +793,11 @@ begin
   if (FileType <> FILE_TYPE_FOLDER) and (not FSaved or Modified or
     not FileExists(FileName) or FileChangedInDisk) then
   begin
+    if not FSaved and FileExists(FileName) then
+    begin
+      if not FrmFalconMain.ShowPromptOverrideFile(FileName) then
+        raise Exception.CreateFmt('Can''t override existing file "%s".', [FileName]);
+    end;
     // save parent folder
     if (Node.Parent <> nil) and (TSourceBase(Node.Parent.Data).FileType = FILE_TYPE_FOLDER) then
       TSourceBase(Node.Parent.Data).Save;
@@ -901,7 +907,15 @@ begin
       FFileDateTime := FileDateTime(ToFileName);
     end
     else
-      CopyFile(PChar(FromFileName), PChar(ToFileName), FALSE);
+    begin
+      if FileExists(ToFileName) then
+      begin
+        if not FrmFalconMain.ShowPromptOverrideFile(FileName) then
+          raise Exception.CreateFmt(fileOverrideError, [FileName]);
+      end;
+      if CopyFile(PChar(FromFileName), PChar(ToFileName), FALSE) = FALSE then
+        raise Exception.CreateFmt(fileOverrideError, [ToFileName]);
+    end;
   end;
 end;
 
@@ -1935,7 +1949,11 @@ var
   TokenFile: TTokenFile;
   HasResource: Boolean;
 begin
-  SaveAll;
+  try
+    SaveAll;
+  except
+    Exit;
+  end;
   if CompilerType in [COMPILER_CPP, COMPILER_C] then
   begin
     Files := TStringList.Create;

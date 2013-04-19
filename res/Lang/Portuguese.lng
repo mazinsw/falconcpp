@@ -329,6 +329,7 @@ Version=2.0
 1455=Continuar
 1456=Deseja remover a pasta "%s" do projeto?
 1457=Deseja excluir a pasta "%s" do disco?
+1458=O arquivo "%s" já existe.\nDeseja sobrescreve-lo?
 
 #Property Form
 #Tabs

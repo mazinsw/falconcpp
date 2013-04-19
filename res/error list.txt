@@ -5,3 +5,4 @@ NovoArquivo.cpp:10: error: 'int teste(int, char**)' previously defined here
 NovoArquivo.cpp:33: error: invalid use of 'class Teste'
 main.cpp:67: error: expected declaration before '}' token
 main.cpp:9: warning: 'void draw()' defined but not used
+mochila_backtrack.c:130: error: variable-sized object may not be initialized

@@ -329,6 +329,7 @@ Version=your translate version
 1455=Continue
 1456=Delete folder "%s" from project?
 1457=Delete folder "%s" from disk?
+1458=The file "%s" already exists.\nDo you want to override it?
 
 #Property Form
 #Tabs

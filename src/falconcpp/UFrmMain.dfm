@@ -1450,7 +1450,7 @@ object FrmFalconMain: TFrmFalconMain
     ClSelectedText = clWindowText
     ClTitleBackground = clBtnHighlight
     Width = 450
-    EndOfTokenChr = '{}()[]<>.,; :=+-/*%?|~&!^"'
+    EndOfTokenChr = '#{}()[]<>.,; :=+-/*%?|~&!^"'
     TriggerChars = '.>:'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText

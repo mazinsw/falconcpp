@@ -331,7 +331,7 @@ const
     'Clear'
     );
 
-  MAX_FRM_MAIN = 53;
+  MAX_FRM_MAIN = 54;
   CONST_STR_FRM_MAIN: array[1..MAX_FRM_MAIN] of string = (
     //Tabs Left
     'Projects',
@@ -391,7 +391,9 @@ const
     'Variables',
     'Continue',
     'Delete folder "%s" from project?',
-    'Delete folder "%s" from disk?'
+    'Delete folder "%s" from disk?',
+    'The file "%s" already exists.'#13 +
+    'Do you want to override it?'
     );
 
   MAX_FRM_PROP = 56;
@@ -1414,6 +1416,7 @@ begin
   for I := 1 to MAX_FRM_MAIN do //1405
     STR_FRM_MAIN[I] := ReadStr(I + 1404, CONST_STR_FRM_MAIN[I]);
   STR_FRM_MAIN[49] := StringReplace(STR_FRM_MAIN[49], '\n', #13, [rfReplaceAll]);
+  STR_FRM_MAIN[54] := StringReplace(STR_FRM_MAIN[54], '\n', #13, [rfReplaceAll]);
 
   for I := 1 to MAX_FRM_PROP do //1528
     STR_FRM_PROP[I] := ReadStr(I + 1527, CONST_STR_FRM_PROP[I]);

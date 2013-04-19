@@ -765,6 +765,7 @@ type
     LastSearch: TSearchItem;
     FalconVersion: TVersion; //this file version
 
+    function ShowPromptOverrideFile(const FileName: string): Boolean;
     procedure UpdateLangNow;
     procedure UpdateMenuItems(Regions: TRegionMenuState);
     function RenameFileInHistory(const FileName,
@@ -2564,6 +2565,9 @@ begin
 end;
 
 function TFrmFalconMain.SaveProject(ProjProp: TProjectFile; SaveMode: TSaveMode): Boolean;
+var
+  OldFileName: string;
+  OldIsNew, OldSaved: Boolean;
 begin
   Result := False;
   with TSaveDialog.Create(Self) do
@@ -2615,15 +2619,25 @@ begin
       ProjProp.FileType := GetFileType(FileName);
       ProjProp.CompilerType := GetCompiler(ProjProp.FileType);
     end;
+    OldFileName := ProjProp.FileName;
+    OldIsNew := ProjProp.IsNew;
+    OldSaved := ProjProp.Saved;
     ProjProp.Saved := True;
-    if SaveMode = smSaveAs then
-      ProjProp.SaveAs(FileName)
-    else
-    begin
-      ProjProp.IsNew := False;
-      ProjProp.FileName := FileName;
-      ProjProp.SaveAll;
-      ProjProp.Save;
+    try
+      if SaveMode = smSaveAs then
+        ProjProp.SaveAs(FileName)
+      else
+      begin
+        ProjProp.IsNew := False;
+        ProjProp.FileName := FileName;
+        ProjProp.SaveAll;
+        ProjProp.Save;
+      end;
+    except
+      ProjProp.Saved := OldSaved;
+      ProjProp.IsNew := OldIsNew;
+      ProjProp.FileName := OldFileName;
+      Exit;
     end;
     UpdateMenuItems([rmFile]);
     Result := True;
@@ -3877,7 +3891,7 @@ begin
         Sheet.memo.SearchEngine.Pattern := Temp;
         Sheet.memo.SearchEngine.Options := [ssoMatchCase, ssoWholeWord];
         Sheet.memo.SearchEngine.FindAll(SLine);
-        if Sheet.memo.SearchEngine.ResultCount = 1 then
+        if Sheet.memo.SearchEngine.ResultCount >= 1 then
         begin
           ColS := Sheet.memo.SearchEngine.Results[0];
           ColE := ColS + Sheet.memo.SearchEngine.Lengths[0];
@@ -6890,6 +6904,13 @@ begin
             DebugHint.Cancel;
             HintTip.Cancel;
             CanExecute := True;
+          end
+          else if Pos(' ', LineStr) = 0 then
+          begin
+            AddTemplates(Input, tkUnknow, CodeCompletion.InsertList,
+              CodeCompletion.ItemList, CompletionColors, OutlineImages,
+              sheet.SourceFile.Project.CompilerType, [tkInclude, tkDefine]);
+            CanExecute := CodeCompletion.InsertList.Count > 0;
           end;
           Exit;
         end;
@@ -7073,6 +7094,12 @@ begin
       WordBreakChars := '<>"';
     end;
   end;
+end;
+
+function TFrmFalconMain.ShowPromptOverrideFile(const FileName: string): Boolean;
+begin
+  Result := MessageBox(FrmFalconMain.Handle, PChar(Format(STR_FRM_MAIN[54],
+    [FileName])), 'Falcon C++', MB_ICONWARNING + MB_YESNOCANCEL) = IDYES;
 end;
 
 procedure TFrmFalconMain.CodeCompletionGetWordEndChars(Sender: TObject;

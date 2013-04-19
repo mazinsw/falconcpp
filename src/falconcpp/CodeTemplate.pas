@@ -7,7 +7,7 @@ uses
 
 procedure AddTemplates(Trigger: string; Scope: TTkType; ItemList,
   ShowList: TStrings; CompletionColors: TCompletionColors;
-  Images: array of Integer; CompilerType: Integer);
+  Images: array of Integer; CompilerType: Integer; Filter: TTokenSearchMode = []);
 procedure ExecuteCompletion(const Input: string; Token: TTokenClass;
   AEditor: TCustomSynEdit);
 
@@ -17,13 +17,13 @@ uses SysUtils;
 
 procedure AddTemplates(Trigger: string; Scope: TTkType; ItemList,
   ShowList: TStrings; CompletionColors: TCompletionColors;
-  Images: array of Integer; CompilerType: Integer);
+  Images: array of Integer; CompilerType: Integer; Filter: TTokenSearchMode);
 
   procedure Add(const Name, Comment, ShowCode, Code: string);
   var
     NewToken: TTokenClass;
   begin
-    if (Pos(Copy(Trigger, 1, 1), Name) <> 1) or (Trigger = '') then
+    if ((Pos(Copy(Trigger, 1, 1), Name) <> 1) or (Trigger = '')) and (Filter = []) then
       Exit;
     NewToken := TTokenClass.Create;
     NewToken.Name := Name;
@@ -34,225 +34,293 @@ procedure AddTemplates(Trigger: string; Scope: TTkType; ItemList,
     ShowList.AddObject(CompletionShowItem(NewToken, CompletionColors, Images), NewToken);
   end;
 
+var
+  Temp: string;
 begin
   Trigger := LowerCase(Trigger);
-  Add('int', '', '', '');
-  Add('unsigned', '', '', '');
-  Add('short', '', '', '');
-  Add('char', '', '', '');
-  Add('float', '', '', '');
-  Add('double', '', '', '');
-  Add('long', '', '', '');
+  if (Filter = []) or (tkVariable in Filter) then
+  begin
+    Add('char', '', '', '');
+    Add('short', '', '', '');
+    Add('int', '', '', '');
+    Add('float', '', '', '');
+    Add('double', '', '', '');
+    Add('long', '', '', '');
+    Add('unsigned', '', '', '');
+    Add('sizeof', '', '', '');
+    Add('sizeof', 'queries size of the object or type', 'sizeof(type)', 'sizeof(|)');
+    Add('signed', '', '', '');
+    Add('export', '', '', '');
+    Add('extern', '', '', '');
+    Add('return', '', '', '');
+    Add('register', '', '', '');
+    Add('static', '', '', '');
+    Add('inline', '', '', '');
+    Add('const', '', '', '');
+  end;
+  if CompilerType = COMPILER_CPP then
+  begin
+    if (Filter = []) then
+    begin
+      Add('bool', '', '', '');
+      Add('true', '', '', '');
+      Add('false', '', '', '');
+      Add('new', '', '', '');
+      Add('delete', '', '', '');
+      Add('namespace', '', '', '');
+      Add('using', '', '', '');
+      Add('virtual', '', '', '');
+      Add('const_cast', '', '', '');
+      Add('const_cast', 'const_cast conversion', 'const_cast<new_type>(expression)', 'const_cast<|>();');
+      Add('dynamic_cast', '', '', '');
+      Add('dynamic_cast', 'dynamic_cast conversion', 'dynamic_cast<new_type>(expression)', 'dynamic_cast<|>();');
+      Add('reinterpret_cast', '', '', '');
+      Add('reinterpret_cast', 'reinterpret_cast conversion', 'reinterpret_cast<new_type>(expression)', 'reinterpret_cast<|>();');
+      Add('static_cast', '', '', '');
+      Add('static_cast', 'static_cast conversion', 'static_cast<new_type>(expression)', 'static_cast<|>();');
+    end;
+  end;
   if Scope in [tkFunction, tkConstructor, tkDestructor] then
   begin
-    Add('case', '', '', '');
-    Add('while', 'while loop with condition',
-      'while(condition)'#13 +
-      '{'#13 +
-      '    '#13+
-      '}',
-      'while(|)'#13 +
-      '{'#13 +
-      '    '#13+
-      '}');
-    Add('while', '', '', '');
-    Add('do', 'do while statement',
-      'do'#13 +
-      '{'#13 +
-      '    '#13+
-      '} while(condition);',
-      'do'#13 +
-      '{'#13 +
-      '    '#13+
-      '} while(|);');
-    Add('do', '', '', '');
-    Add('break', '', '', '');
-    if CompilerType = COMPILER_CPP then
+    if (Filter = []) then
     begin
-      Add('for', 'iterate n times',
-        'for(int i = 0; i < n; i++)'#13 +
+      Add('while', 'while loop with condition',
+        'while(condition)'#13 +
         '{'#13 +
         '    '#13+
         '}',
-        'for(int i = 0; i < |; i++)'#13 +
+        'while(|)'#13 +
         '{'#13 +
         '    '#13+
         '}');
-      Add('for', 'iterate using iterator',
-        'for(it = it.begin(); it != it.end(); it++)'#13 +
+      Add('while', '', '', '');
+      Add('do', 'do while statement',
+        'do'#13 +
+        '{'#13 +
+        '    '#13+
+        '} while(condition);',
+        'do'#13 +
+        '{'#13 +
+        '    '#13+
+        '} while(|);');
+      Add('do', '', '', '');
+      Add('goto', '', '', '');
+      Add('case', '', '', '');
+      Add('continue', '', '', '');
+      Add('break', '', '', '');
+      if CompilerType = COMPILER_CPP then
+      begin
+        Add('this', '', '', '');
+        Add('friend', '', '', '');
+        Add('try', '', '', '');
+        Add('throw', '', '', '');
+        Add('catch', '', '', '');
+      end;
+      if CompilerType = COMPILER_CPP then
+      begin
+        Add('for', 'iterate n times',
+          'for(int i = 0; i < n; i++)'#13 +
+          '{'#13 +
+          '    '#13+
+          '}',
+          'for(int i = 0; i < |; i++)'#13 +
+          '{'#13 +
+          '    '#13+
+          '}');
+        Add('for', 'iterate using iterator',
+          'for(it = it.begin(); it != it.end(); it++)'#13 +
+          '{'#13 +
+          '    '#13+
+          '}',
+          'for(it = it.begin(); it != it.end(); it++)'#13 +
+          '{'#13 +
+          '    |'#13+
+          '}');
+      end
+      else
+      begin
+        Add('for', 'iterate n times',
+          'for(i = 0; i < n; i++)'#13 +
+          '{'#13 +
+          '    '#13+
+          '}',
+          'for(i = 0; i < |; i++)'#13 +
+          '{'#13 +
+          '    '#13+
+          '}');
+      end;
+      Add('for', '', '', '');
+      Add('switch', 'switch case statement',
+        'switch(key)'#13 +
+        '{'#13 +
+        'case value:'#13+
+        '    break;'#13+
+        'default:'#13+
+        '    break;'#13+
+        '}',
+        'switch(|)'#13 +
+        '{'#13 +
+        'case value:'#13+
+        '    break;'#13+
+        'default:'#13+
+        '    break;'#13+
+        '}',);
+      Add('switch', '', '', '');
+      Add('if', 'if statement',
+        'if(condition)'#13 +
         '{'#13 +
         '    '#13+
         '}',
-        'for(it = it.begin(); it != it.end(); it++)'#13 +
-        '{'#13 +
-        '    |'#13+
-        '}');
-    end
-    else
-    begin
-      Add('for', 'iterate n times',
-        'for(i = 0; i < n; i++)'#13 +
+        'if(|)'#13 +
         '{'#13 +
         '    '#13+
+        '}');
+      Add('ifelse', 'if else statement',
+        'if(condition)'#13 +
+        '{'#13 +
+        '    '#13 +
+        '}'#13 +
+        'else'#13 +
+        '{'#13 +
+        '    '#13 +
         '}',
-        'for(i = 0; i < |; i++)'#13 +
+        'if(|)'#13 +
         '{'#13 +
-        '    '#13+
+        '    '#13 +
+        '}'#13 +
+        'else'#13 +
+        '{'#13 +
+        '    '#13 +
         '}');
+      Add('if', '', '', '');
+      Add('else', 'else block',
+        'else'#13 +
+        '{'#13 +
+        '    '#13 +
+        '}',
+        'else'#13 +
+        '{'#13 +
+        '    |'#13 +
+        '}');
+      Add('elseif', 'else block',
+        'else if(condition)'#13 +
+        '{'#13 +
+        '    '#13 +
+        '}',
+        'else if(|)'#13 +
+        '{'#13 +
+        '    '#13 +
+        '}');
+      Add('else', '', '', '');
+      Add('default', '', '', '');
     end;
-    Add('for', '', '', '');
-    Add('switch', 'switch case statement',
-      'switch(key)'#13 +
-      '{'#13 +
-      'case value:'#13+
-      '    break;'#13+
-      'default:'#13+
-      '    break;'#13+
-      '}',
-      'switch(|)'#13 +
-      '{'#13 +
-      'case value:'#13+
-      '    break;'#13+
-      'default:'#13+
-      '    break;'#13+
-      '}',);
-    Add('switch', '', '', '');
-    Add('if', 'if statement',
-      'if(condition)'#13 +
-      '{'#13 +
-      '    '#13+
-      '}',
-      'if(|)'#13 +
-      '{'#13 +
-      '    '#13+
-      '}');
-    Add('ifelse', 'if else statement',
-      'if(condition)'#13 +
-      '{'#13 +
-      '    '#13 +
-      '}'#13 +
-      'else'#13 +
-      '{'#13 +
-      '    '#13 +
-      '}',
-      'if(|)'#13 +
-      '{'#13 +
-      '    '#13 +
-      '}'#13 +
-      'else'#13 +
-      '{'#13 +
-      '    '#13 +
-      '}');
-    Add('if', '', '', '');
-    Add('else', 'else block',
-      'else'#13 +
-      '{'#13 +
-      '    '#13 +
-      '}',
-      'else'#13 +
-      '{'#13 +
-      '    |'#13 +
-      '}');
-    Add('elseif', 'else block',
-      'else if(condition)'#13 +
-      '{'#13 +
-      '    '#13 +
-      '}',
-      'else if(|)'#13 +
-      '{'#13 +
-      '    '#13 +
-      '}');
-    Add('else', '', '', '');
-    Add('default', '', '', '');
   end;
-  if not (Scope in [tkFunction, tkConstructor, tkDestructor]) then
+  if not (Scope in [tkFunction, tkConstructor, tkDestructor]) and
+   (CompilerType = COMPILER_CPP) then
   begin
-    Add('class', 'class statement',
-      'class name'#13 +
+    if (Filter = []) then
+    begin
+      Add('class', 'class statement',
+        'class name'#13 +
+        '{'#13 +
+        'private:'#13 +
+        '    '#13 +
+        'protected:'#13 +
+        '    '#13 +
+        'public:'#13 +
+        '    '#13 +
+        '};',
+        'class |'#13 +
+        '{'#13 +
+        'private:'#13 +
+        '    '#13 +
+        'protected:'#13 +
+        '    '#13 +
+        'public:'#13 +
+        '    '#13 +
+        '};');
+      Add('class', '', '', '');
+      Add('public', '', '', '');
+      Add('protected', '', '', '');
+      Add('private', '', '', '');
+      Add('operator', '', '', '');
+    end;
+  end;
+  if (Filter = []) or (tkTypedef in Filter) then
+  begin
+    Add('typedef', '', '', '');
+    Add('struct', 'struct statement',
+      'struct name'#13 +
       '{'#13 +
-      'private:'#13 +
-      '    '#13 +
-      'protected:'#13 +
-      '    '#13 +
-      'public:'#13 +
       '    '#13 +
       '};',
-      'class |'#13 +
+      'struct |'#13 +
       '{'#13 +
-      'private:'#13 +
-      '    '#13 +
-      'protected:'#13 +
-      '    '#13 +
-      'public:'#13 +
       '    '#13 +
       '};');
-    Add('class', '', '', '');
-    Add('public', '', '', '');
-    Add('protected', '', '', '');
-    Add('private', '', '', '');
+    Add('struct', '', '', '');
+    Add('enum', 'enum statement',
+      'enum name'#13 +
+      '{'#13 +
+      '    '#13 +
+      '};',
+      'enum |'#13 +
+      '{'#13 +
+      '    '#13 +
+      '};');
+    Add('enum', '', '', '');
+    Add('union', 'union statement',
+      'union name'#13 +
+      '{'#13 +
+      '    '#13 +
+      '};',
+      'union |'#13 +
+      '{'#13 +
+      '    '#13 +
+      '};');
+    Add('union', '', '', '');
   end;
-  Add('typedef', '', '', '');
-  Add('struct', 'struct statement',
-    'struct name'#13 +
-    '{'#13 +
-    '    '#13 +
-    '};',
-    'struct |'#13 +
-    '{'#13 +
-    '    '#13 +
-    '};');
-  Add('struct', '', '', '');
-  Add('enum', 'enum statement',
-    'enum name'#13 +
-    '{'#13 +
-    '    '#13 +
-    '};',
-    'enum |'#13 +
-    '{'#13 +
-    '    '#13 +
-    '};');
-  Add('enum', '', '', '');
-  Add('union', 'union statement',
-    'union name'#13 +
-    '{'#13 +
-    '    '#13 +
-    '};',
-    'union |'#13 +
-    '{'#13 +
-    '    '#13 +
-    '};');
-  Add('union', '', '', '');
-  Add('static', '', '', '');
-  Add('inline', '', '', '');
-  if Scope = tkUnknow then
+  if (Filter = []) or (tkInclude in Filter) then
   begin
-    Add('include', 'include header file',
-      '#include <file>',
-      '#include <|>');
-    Add('include', 'include local header file',
-      '#include "file"',
-      '#include "|"');
-    Add('include', '', '', '');
+    Temp := '#';
+    if not (Filter = []) then
+      Temp := '';
+    if Scope = tkUnknow then
+    begin
+      Add('include', 'include header file',
+        '#include <file>',
+        Temp + 'include <|>');
+      Add('include', 'include local header file',
+        '#include "file"',
+        Temp + 'include "|"');
+      Add('include', '', '', '');
+    end;
   end;
-  Add('define', 'define macro',
-    '#define NAME',
-    '#define |');
-  Add('define', '', '', '');
-  Add('ifdef', 'ifdef macro',
-    '#ifdef NAME',
-    '#ifdef |');
-  Add('ifdef', '', '', '');
-  Add('ifndef', 'ifndef macro',
-    '#ifndef NAME',
-    '#ifndef |');
-  Add('ifndef', '', '', '');
-  Add('undef', 'undef macro',
-    '#undef NAME',
-    '#undef |');
-  Add('undef', '', '', '');
-  Add('endf', 'close ifdef or ifndef',
-    '#endif', '#endif');
-  Add('endif', '', '', '');
+  if (Filter = []) or (tkDefine in Filter) then
+  begin
+    Temp := '#';
+    if not (Filter = []) then
+      Temp := '';
+    Add('define', 'define macro',
+      '#define NAME',
+      Temp + 'define |');
+    Add('define', '', '', '');
+    Add('ifdef', 'ifdef macro',
+      '#ifdef NAME',
+      Temp + 'ifdef |');
+    Add('ifdef', '', '', '');
+    Add('ifndef', 'ifndef macro',
+      '#ifndef NAME',
+      Temp + 'ifndef |');
+    Add('ifndef', '', '', '');
+    Add('undef', 'undef macro',
+      '#undef NAME',
+      Temp + 'undef |');
+    Add('undef', '', '', '');
+    Add('endf', 'close ifdef or ifndef',
+      Temp + 'endif', '#endif');
+    Add('endif', '', '', '');
+  end;
 end;
 
 procedure ExecuteCompletion(const Input: string; Token: TTokenClass;

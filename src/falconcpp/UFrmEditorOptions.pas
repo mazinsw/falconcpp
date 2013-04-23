@@ -722,6 +722,29 @@ begin
   Stx.AddSintaxType('Selection', clHighlightText, clHighlight);
   Add(Stx);
 
+  //Obsidian
+  Stx := TSintax.Create;
+  Stx.Name := 'Obsidian';
+  Stx.ReadOnly := True;
+  Stx.AddSintaxType('Assembler', $0063C793);
+  Stx.AddSintaxType('Character', $000984FF);
+  Stx.AddSintaxType('Comment', $007B7466);
+  Stx.AddSintaxType('Documentation Comment', $02BF5F3F);
+  Stx.AddSintaxType('Float', $0022CDFF);
+  Stx.AddSintaxType('Hexadecimal', $0022CDFF);
+  Stx.AddSintaxType('Identifier', $00E4E2E0);
+  Stx.AddSintaxType('Number', $0022CDFF);
+  Stx.AddSintaxType('Octal', $0022CDFF);
+  Stx.AddSintaxType('Preprocessor', $00BD82A0);
+  Stx.AddSintaxType('Type Word', $00B18C67);
+  Stx.AddSintaxType('Instruction Word', $00C17C57);
+  Stx.AddSintaxType('Space', $02343129, $00343129);
+  Stx.AddSintaxType('String', $000076EC);
+  Stx.AddSintaxType('Symbol', $00B7E2E8);
+  Stx.AddSintaxType('Gutter', $0088806A, $003C382F);
+  Stx.AddSintaxType('Selection', $00FFFFFF, $00514E40);
+  Add(Stx);
+
   //default
   Stx := TSintax.Create;
   Stx.Name := 'Default';
@@ -1347,7 +1370,9 @@ begin
   ListBoxType.ItemIndex := Last;
   ListBoxType.Selected[Last] := True;
   ClbFore.Selected := StxTpy.Foreground;
+  ClbFore.Invalidate;
   ClbBack.Selected := StxTpy.Background;
+  ClbBack.Invalidate;
   ChbBold.Checked := (fsBold in StxTpy.Style);
   ChbItalic.Checked := (fsItalic in StxTpy.Style);
   ChbUnderl.Checked := (fsUnderline in StxTpy.Style);

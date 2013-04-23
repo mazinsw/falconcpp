@@ -1110,7 +1110,6 @@ begin
   AdvanceSpaceBreakLine(c.Line - 2, LeftOffset, Unindent);
   if (lstch = '{') and (fstch = '}') then
   begin
-    //Inc(LeftOffset, TabWidth);
     caretChanged := True;
     bCaret := CaretXY;
     bCaret.Char := LeftOffset + 1;
@@ -1121,12 +1120,15 @@ begin
     EndUndoBlock;
     Dec(LeftOffset, TabWidth);
   end
-  else if (fstch = '{') and (LeftOffset >= TabWidth) then
+  else if ((fstch = '{') or (fstch <> #0)) and
+    ((LeftOffset >= TabWidth) or (fstch = '{'))then
   begin
-    Dec(LeftOffset, TabWidth);
+    if (LeftOffset >= TabWidth) then
+      Dec(LeftOffset, TabWidth);
     caretChanged := True;
     bCaret := CaretXY;
-    Inc(bCaret.Char);
+    if fstch = '{' then
+      Inc(bCaret.Char);
   end;
   I := RightSpacesEx(StrPrevCaret, True);
   SpaceCount := LeftOffset - I;
@@ -1156,7 +1158,7 @@ begin
       Inc(SpaceCount);
   end;
   if (TmpStr = '*/') and (SpaceCount < 0) then
-    Unindent := True; 
+    Unindent := True;
   if Unindent then
   begin
     SpaceCount := 0;
@@ -1175,7 +1177,8 @@ begin
       Dec(I);
     if SpaceCount <> LeftOffset then
       CommentStr := GetLeftSpacing(LeftOffset - SpaceCount, WantTabs and not (eoTabsToSpaces in Options)) + CommentStr;
-    ReplaceText(CommentStr, BufferCoord(I + 1, CaretY), CaretXY);
+    if I <= CaretX then
+      ReplaceText(CommentStr, BufferCoord(I + 1, CaretY), CaretXY);
   end
   else
   begin

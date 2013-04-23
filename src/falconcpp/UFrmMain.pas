@@ -1176,9 +1176,8 @@ begin
   DebugReader.OnFinish := DebugReaderFinish;
   CommandQueue := TCommandQueue.Create;
   WatchList := TDebugWatchList.Create;
-  HintTip := TTokenHintTip.Create(Self);
+  HintTip := TTokenHintTip.Create(Self); //mouse over hint
   HintTip.Images := ImgListOutLine;
-  //HintTip := TTokenHintTip.Create(Self); //mouse over hint
   HintParams := TTokenHintParams.Create(Self); //Ctrl + Space or ( Trigger Key
   DebugParser := TDebugParser.Create; //fill treeview with debug variables
   DebugParser.TreeView := TreeViewOutline;
@@ -1353,7 +1352,8 @@ begin
       Template.Free;
   end;
   List.Free;
-  SplashScreen.TextOut(55, 300, STR_FRM_MAIN[27]);
+  if ParamCount > 0 then
+    SplashScreen.TextOut(55, 300, STR_FRM_MAIN[27]);
   //load projects
   for I := 1 to ParamCount do
     OpenFileWithHistoric(ParamStr(I), Proj);
@@ -7994,6 +7994,7 @@ begin
     Exit;
   with TAStyle.Create do
   begin
+    ForceUsingTabs := Config.Editor.UseTabChar;
     MaxInstatementIndent := Config.Editor.RightMargin;
     case Config.Editor.StyleIndex of
       0: // ansi

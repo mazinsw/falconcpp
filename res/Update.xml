@@ -11,7 +11,6 @@
 			Fix: Optimize option from new project
 			Search files on include path on compiler flags
 			Auto complete documentation comment
-			Indentation enhancement
 			remove double connecting to download and post data available to Updater and PkgManager
 			Completion list with icons
 			Code template with Ctrl + Space

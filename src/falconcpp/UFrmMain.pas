@@ -4663,55 +4663,37 @@ begin
   if (AttriName = 'Preprocessor') and (FirstWord = 'include') then
   begin
     S := ConvertSlashes(S);
-    if GetActiveSheet(sheet) then
+    if not GetActiveSheet(sheet) then
+      Exit;
+    //search #include <stdio.h> in project
+    Prop := Sheet.SourceFile;
+    Proj := Prop.Project;
+    if Proj.FileType = FILE_TYPE_PROJECT then
     begin
-      //search #include <stdio.h> in project
-      Prop := Sheet.SourceFile;
-      Proj := Prop.Project;
-      if Proj.FileType = FILE_TYPE_PROJECT then
-      begin
-        Prop := Proj.GetFileByPathName(S);
-        if Prop <> nil then
-        begin
-          Prop.Edit;
-          Exit;
-        end;
-        IncludeList := TStringList.Create;
-        GetIncludeDirs(ExtractFilePath(Proj.FileName), Proj.Flags, IncludeList);
-        for I := 0 to IncludeList.Count - 1 do
-        begin
-          Prop := Proj.GetFileByPathName(ExtractRelativePath(ExtractFilePath(Proj.FileName),
-            ExpandFileName(IncludeList.Strings[I] + S)));
-          if Prop <> nil then
-          begin
-            Prop.Edit;
-            IncludeList.Free;
-            Exit;
-          end;
-        end;
-        IncludeList.Free;
-        Prop := Sheet.SourceFile;
-      end;
-      // not found in project, search file on source file folder
-      FileName := ExpandFileName(ExtractFilePath(Prop.FileName) + S);
-      if SearchSourceFile(FileName, Prop) then
+      Prop := Proj.GetFileByPathName(S);
+      if Prop <> nil then
       begin
         Prop.Edit;
         Exit;
       end;
-      if FileExists(FileName) then
+      IncludeList := TStringList.Create;
+      GetIncludeDirs(ExtractFilePath(Proj.FileName), Proj.Flags, IncludeList);
+      for I := 0 to IncludeList.Count - 1 do
       begin
-        OpenFile(FileName).Edit;
-        Exit;
+        Prop := Proj.GetFileByPathName(ExtractRelativePath(ExtractFilePath(Proj.FileName),
+          ExpandFileName(IncludeList.Strings[I] + S)));
+        if Prop <> nil then
+        begin
+          Prop.Edit;
+          IncludeList.Free;
+          Exit;
+        end;
       end;
+      IncludeList.Free;
+      Prop := Sheet.SourceFile;
     end;
-    //search in compiler folder
-    for I := 0 to FilesParsed.PathList.Count - 1 do
-    begin
-      FileName := ExpandFileName(FilesParsed.PathList.Strings[I] + S);
-      if FileExists(FileName) then
-        Break;
-    end;
+    // not found in project, search file on source file folder
+    FileName := ExpandFileName(ExtractFilePath(Prop.FileName) + S);
     if SearchSourceFile(FileName, Prop) then
     begin
       Prop.Edit;
@@ -4719,14 +4701,40 @@ begin
     end;
     if FileExists(FileName) then
     begin
-      sheet := OpenFile(FileName).Edit;
-      sheet.Memo.ReadOnly := True;
-      sheet.SourceFile.ReadOnly := True;
-      sheet.Font.Color := clGrayText;
-    end
-    else
-      MessageBox(Handle, PChar(Format(STR_FRM_MAIN[34], [S])), 'Falcon C++',
-        MB_ICONEXCLAMATION);
+      OpenFile(FileName).Edit;
+      Exit;
+    end;
+    //search in compiler folder
+    for I := 0 to FilesParsed.PathList.Count - 1 do
+    begin
+      FileName := ExpandFileName(FilesParsed.PathList.Strings[I] + S);
+      if FileExists(FileName) then
+      begin
+        sheet := OpenFile(FileName).Edit;
+        sheet.Memo.ReadOnly := True;
+        sheet.SourceFile.ReadOnly := True;
+        sheet.Font.Color := clGrayText;
+        Exit;
+      end;
+    end;
+    IncludeList := TStringList.Create;
+    GetIncludeDirs(ExtractFilePath(Proj.FileName), Proj.Flags, IncludeList);
+    for I := 0 to IncludeList.Count - 1 do
+    begin
+      FileName := ExpandFileName(IncludeList.Strings[I] + S);
+      if FileExists(FileName) then
+      begin
+        sheet := OpenFile(FileName).Edit;
+        sheet.Memo.ReadOnly := True;
+        sheet.SourceFile.ReadOnly := True;
+        sheet.Font.Color := clGrayText;
+        IncludeList.Free;
+        Exit;
+      end;
+    end;
+    IncludeList.Free;
+    MessageBox(Handle, PChar(Format(STR_FRM_MAIN[34], [S])), 'Falcon C++',
+      MB_ICONEXCLAMATION);
   end
   else
   begin

@@ -243,7 +243,7 @@ begin
     begin
       FraPrjOpt.RGrpType.ItemIndex := COMPILER_CPP;
       if not FrmFalconMain.Config.Environment.DefaultCppNewFile then
-        Template.CompilerType := COMPILER_C;
+        FraPrjOpt.RGrpType.ItemIndex := COMPILER_C;
     end
     else
       FraPrjOpt.RGrpType.ItemIndex := Template.CompilerType;
@@ -422,6 +422,11 @@ begin
       begin
         SrcFileName := ChangeFileExt(SrcFileName, '.cpp');
         FileType := FILE_TYPE_CPP;
+      end
+      else if (FileType = FILE_TYPE_CPP) and (NewPrj.CompilerType = COMPILER_C) then
+      begin
+        SrcFileName := ChangeFileExt(SrcFileName, '.c');
+        FileType := FILE_TYPE_C;
       end;
       OwnerFile := NewPrj;
       SrcDir := ExtractFilePath(SrcFileName);

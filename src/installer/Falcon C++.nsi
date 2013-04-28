@@ -274,7 +274,9 @@ SectionGroup "${PROJECT_NAME}" GroupFalcon
     
     ;Custom Code Template
     SetOutPath "$APPDATA\Falcon"
+    IfFileExists "$APPDATA\Falcon\CustomAutoComplete.txt" file_found 0
     File "..\..\res\CustomAutoComplete.txt"
+    file_found:
     SetOutPath "$INSTDIR"
    
    ;reaload all source files to cache

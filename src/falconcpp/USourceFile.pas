@@ -306,7 +306,8 @@ implementation
 uses UFrmMain, UUtils, UConfig, TokenFile, TokenList, TokenUtils;
 
 const
-  filemoveError = 'Can''t move file ''%s'' to ''%s.''';
+  fileMoveError = 'Can''t move file ''%s'' to ''%s.''';
+  fileRenameError = 'Can''t rename file ''%s'' to ''%s.''';
   fileOverrideError = 'Can''t override existing file "%s".';
 
 { TSourceBase }
@@ -553,10 +554,11 @@ begin
   if (FileType <> FILE_TYPE_FOLDER) then
   begin
     { ***   PROJECT or FILE   *** }
-    if FileExists(FileName) then
+    if FileExists(FileName) and Saved then
     begin
-      if not RenameFile(FileName, ExtractFilePath(FileName) + ExtractFileName(Value)) then
-        Exit;
+      Temp := ExtractFilePath(FileName) + ExtractFileName(Value);
+      if not RenameFile(FileName, Temp) then
+        raise Exception.CreateFmt(fileRenameError, [FileName, Temp]);
       FrmFalconMain.RenameFileInHistory(FileName,
         ExtractFilePath(FileName) + ExtractFileName(Value));
     end;
@@ -793,10 +795,10 @@ begin
   if (FileType <> FILE_TYPE_FOLDER) and (not FSaved or Modified or
     not FileExists(FileName) or FileChangedInDisk) then
   begin
-    if not FSaved and FileExists(FileName) then
+    if not FSaved and FileExists(FileName) and GetSheet(Sheet) then
     begin
       if not FrmFalconMain.ShowPromptOverrideFile(FileName) then
-        raise Exception.CreateFmt('Can''t override existing file "%s".', [FileName]);
+        raise Exception.CreateFmt(fileOverrideError, [FileName]);
     end;
     // save parent folder
     if (Node.Parent <> nil) and (TSourceBase(Node.Parent.Data).FileType = FILE_TYPE_FOLDER) then
@@ -808,10 +810,6 @@ begin
       if sheet.Memo.Modified and not Project.Saved and IsNew then
         Project.SomeFileChanged := True;
       sheet.Memo.Modified := False;
-      if not FSaved then
-        FSaved := True;
-      if not Project.IsNew and Project.Saved then
-        IsNew := False;
     end // create empty file
     else if not FileExists(FileName) then
     begin
@@ -821,6 +819,10 @@ begin
         Free;
       end;
     end;
+    if not FSaved then
+      FSaved := True;
+    if not Project.IsNew and Project.Saved then
+      IsNew := False;
     FFileDateTime := FileDateTime(FileName);
   end;
   //update main form
@@ -1245,7 +1247,7 @@ begin
   try
     XMLDoc.LoadFromFile(FileName);
   except
-    XMLDoc.Free;
+    //XMLDoc.Free;
     FTarget := ExtractName(FileName) + '.exe';
     FCompOpt := '-Wall -s';
     FDelObjPrior := True;
@@ -1261,7 +1263,7 @@ begin
   ProjNode := XMLDoc.ChildNodes.FindNode('Project');
   if (ProjNode = nil) then
   begin
-    XMLDoc.Free;
+    //XMLDoc.Free;
     Exit;
   end;
 
@@ -1351,7 +1353,7 @@ begin
   end
   else
     FIcon := nil;
-  XMLDoc.Free;
+  //XMLDoc.Free;
 end;
 
 function TProjectFile.GetFileByPathName(const RelativeName: string): TSourceFile;
@@ -1457,7 +1459,7 @@ begin
   try
     XMLDoc.LoadFromFile(LytFileName);
   except
-    XMLDoc.Free;
+    //XMLDoc.Free;
     Exit;
   end;
   XMLDoc.Options := XMLDoc.Options + [doNodeAutoIndent];
@@ -1467,7 +1469,7 @@ begin
   LytNode := XMLDoc.ChildNodes.FindNode('Layout');
   if (LytNode = nil) then
   begin
-    XMLDoc.Free;
+    //XMLDoc.Free;
     Exit;
   end;
   //tag files
@@ -1585,7 +1587,7 @@ begin
   if FrmFalconMain.Visible then
     if FrmFalconMain.GetActiveSheet(sheet) then
       sheet.Memo.SetFocus;
-  XMLDoc.Free;
+  //XMLDoc.Free;
 end;
 
 procedure TProjectFile.SaveLayout;
@@ -1725,10 +1727,10 @@ begin
     else
       DeleteFile(ChangeFileExt(FileName, '.layout'));
   except
-    XMLDoc.Free;
+    //XMLDoc.Free;
     Exit;
   end;
-  XMLDoc.Free;
+  //XMLDoc.Free;
 end;
 
 procedure TProjectFile.SaveToFile(const FileName: string);
@@ -1843,10 +1845,10 @@ begin
   try
     XMLDoc.SaveToFile(FileName);
   except
-    XMLDoc.Free;
+    //XMLDoc.Free;
     Exit;
   end;
-  XMLDoc.Free;
+  //XMLDoc.Free;
   IsNew := False;
 end;
 

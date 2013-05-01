@@ -40,7 +40,6 @@ uses
   DebugConsts in '..\others\debug\DebugConsts.pas',
   DebugReader in '..\others\debug\DebugReader.pas',
   CppParser in '..\others\cppparser\CppParser.pas',
-  ThreadLoadTokenFiles in '..\others\cppparser\ThreadLoadTokenFiles.pas',
   ThreadTokenFiles in '..\others\cppparser\ThreadTokenFiles.pas',
   TokenConst in '..\others\cppparser\TokenConst.pas',
   TokenFile in '..\others\cppparser\TokenFile.pas',

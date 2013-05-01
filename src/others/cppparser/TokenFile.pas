@@ -3,27 +3,12 @@ unit TokenFile;
 interface
 
 uses
-  CppParser, TokenList, Classes, TokenConst, Dialogs, rbtree;
+  TokenList, Classes, TokenConst, Dialogs, rbtree, Contnrs;
 
 type
   //forward
   TTokenFiles = class;
   TTokenFile = class;
-  TTokenParseMethod = (
-    tpmParseAndLoad,
-    tpmParseAndSave,
-    tpmParseAndLoadRecursive,
-    tpmLoadParsedRecursive
-    );
-
-  TProgressEvent = procedure(Sender: TObject; TokenFile: TTokenFile; const FileName: string; Current,
-    Total: Integer; Parsed: Boolean; Method: TTokenParseMethod) of object;
-
-  TFileObject = class
-    ID: Pointer;
-    FileName: string;
-    Text: string;
-  end;
 
   TTokenFile = class
   private
@@ -96,25 +81,12 @@ type
   TTokenFiles = class
   private
     FList: TRBTree;
-    fParser: TCppParser;
-    fCancel: Boolean;
-    fBusy: Boolean;
-    fMethod: TTokenParseMethod;
-    fOnStart: TNotifyEvent;
-    fOnProgress: TProgressEvent;
-    fOnFinish: TNotifyEvent;
     fPathList: TStrings;
     fIncludeList: TStrings;
-    procedure ParserProgress(Sender: TObject; Current, Total: Integer);
     procedure Put(const FileName: string; Value: TTokenFile);
     function Get(const FileName: string): TTokenFile;
     procedure SetPathList(Value: TStrings);
     procedure SetIncludeList(Value: TStrings);
-
-    function ParseRecursiveAux(const FileName: string; FilesParsed: Integer;
-      fProgressEvent: TProgressEvent): Integer;
-    function LoadRecursiveAux(const FileName, BaseDir, FromBaseDir,
-      Extension: string; FilesParsed: Integer; fProgressEvent: TProgressEvent): Integer;
 
       //search
     function SearchSourceRecursive(const S: string;
@@ -149,39 +121,6 @@ type
     property Items[const FileName: string]: TTokenFile read Get write Put;
     property PathList: TStrings read fPathList write SetPathList;
     property IncludeList: TStrings read fIncludeList write SetIncludeList;
-
-    //parser
-    property OnStart: TNotifyEvent read fOnStart write fOnStart;
-    property OnProgress: TProgressEvent read fOnProgress write fOnProgress;
-    property OnFinish: TNotifyEvent read fOnFinish write fOnFinish;
-    property Parser: TCppParser read fParser;
-
-    property Busy: Boolean read fBusy;
-
-    function ParseAndSaveFiles(FileList: TStrings;
-      const BaseDir, DestBaseDir, Extension: string): Boolean; overload;
-
-    function ParseAndSaveFiles(FileList: TStrings;
-      const BaseDir, DestBaseDir, Extension: string; fStartEvent: TNotifyEvent;
-      fProgressEvent: TProgressEvent; fFinishEvent: TNotifyEvent): Boolean; overload;
-
-    function LoadRecursive(const FileName, BaseDir, FromBaseDir,
-      Extension: string): Integer; overload;
-
-    function LoadRecursive(const FileName, BaseDir, FromBaseDir,
-      Extension: string; fStartEvent: TNotifyEvent; fProgressEvent: TProgressEvent;
-      fFinishEvent: TNotifyEvent): Integer; overload;
-
-    function ParseLoad(FileList: TStrings): Boolean; overload;
-
-    function ParseLoad(FileList: TStrings; fStartEvent: TNotifyEvent;
-      fProgressEvent: TProgressEvent; fFinishEvent: TNotifyEvent): Boolean; overload;
-
-    function ParseRecursive(const FileName: string): Integer; overload;
-    function ParseRecursive(const FileName: string; fStartEvent: TNotifyEvent;
-      fProgressEvent: TProgressEvent; fFinishEvent: TNotifyEvent): Integer; overload;
-
-    procedure Cancel;
 
     //search file and update
     function RemoveWithIncludes(const FileName: string): Integer;
@@ -694,16 +633,13 @@ begin
   FList := TRBTree.Create;
   fPathList := TStringList.Create;
   fIncludeList := TStringList.Create;
-  fParser := TCppParser.Create;
-  fParser.OnProgess := ParserProgress;
 end;
 
 destructor TTokenFiles.Destroy;
 begin
-  Clear;         
+  Clear;
   fIncludeList.Free;
   fPathList.Free;
-  fParser.Free;
   FList.Free;
   inherited Destroy;
 end;
@@ -728,354 +664,6 @@ end;
 function TTokenFiles.Get(const FileName: string): TTokenFile;
 begin
   Result := TTokenFile(FList.Items[FileName]);
-end;
-
-//parse functions
-
-function TTokenFiles.ParseLoad(FileList: TStrings): Boolean;
-begin
-  Result := ParseLoad(FileList, fOnStart, fOnProgress, fOnFinish);
-end;
-
-function TTokenFiles.ParseLoad(FileList: TStrings; fStartEvent: TNotifyEvent;
-  fProgressEvent: TProgressEvent; fFinishEvent: TNotifyEvent): Boolean;
-var
-  I: Integer;
-  TokenFile: TTokenFile;
-  Text: TStringList;
-  ParserOk: Boolean;
-  FileObj: TFileObject;
-  S: string;
-begin
-  fCancel := False;
-  fBusy := True;
-  fMethod := tpmParseAndLoad;
-  if Assigned(fStartEvent) then
-    fStartEvent(Self);
-  Text := TStringList.Create;
-  I := 0;
-  while FileList.Count > 0 do
-  begin
-    ParserOk := False;
-    if fCancel then
-      Break;
-    S := FileList.Strings[0];
-    TokenFile := nil;
-    FileObj := TFileObject(FileList.Objects[0]);
-    if S <> '-' then
-    begin
-      S := FileObj.FileName;
-      if FileExists(S) and (ItemOfByFileName(S) = nil) then
-      begin
-        TokenFile := TTokenFile.Create(Self);
-        TokenFile.FileName := S;
-        TokenFile.Data := FileObj.ID;
-        Text.LoadFromFile(S);
-        fParser.Parse(Text.Text, TokenFile);
-        if fCancel then
-        begin
-          TokenFile.Free;
-          Break;
-        end;
-        Add(TokenFile);
-        ParserOk := True;
-      end;
-    end
-    else
-    begin
-      S := FileObj.FileName;
-      if ItemOfByFileName(S) = nil then
-      begin
-        TokenFile := TTokenFile.Create(Self);
-        TokenFile.FileName := S;
-        TokenFile.Data := FileObj.ID;
-        fParser.Parse(FileObj.Text, TokenFile);
-        if fCancel then
-        begin
-          TokenFile.Free;
-          FileObj.Free;
-          Break;
-        end;
-        Add(TokenFile);
-        ParserOk := True;
-      end
-      else
-        FileObj.Free;
-    end;
-    if Assigned(fProgressEvent) then
-      fProgressEvent(Self, TokenFile, S, I + 1, FileList.Count, ParserOk,
-        fMethod);
-    FileList.Delete(0);
-    Inc(I);
-  end;
-  Text.Free;
-  if Assigned(fFinishEvent) then
-    fFinishEvent(Self);
-  Result := not fCancel;
-  fBusy := False;
-end;
-
-function TTokenFiles.ParseRecursiveAux(const FileName: string;
-  FilesParsed: Integer; fProgressEvent: TProgressEvent): Integer;
-var
-  I, J: Integer;
-  TokenFile: TTokenFile;
-  Text: TStringList;
-  PathOnly, IncludeFileName, IncludeName: string;
-begin
-  Result := FilesParsed;
-  if not FileExists(FileName) then
-    Exit;
-  if ItemOfByFileName(FileName) <> nil then
-    Exit;
-  if fCancel then
-    Exit;
-  Text := TStringList.Create;
-  TokenFile := TTokenFile.Create(Self);
-  TokenFile.FileName := FileName;
-  Text.LoadFromFile(FileName);
-  fParser.Parse(Text.Text, TokenFile);
-  Text.Free;
-  if fCancel then
-  begin
-    TokenFile.Free;
-    Exit;
-  end;
-  Add(TokenFile);
-  Inc(Result);
-  if Assigned(fProgressEvent) then
-    fProgressEvent(Self, TokenFile, FileName, Result, Result, True, fMethod);
-  PathOnly := ExtractFilePath(FileName);
-  for I := 0 to TokenFile.Includes.Count - 1 do
-  begin
-    IncludeName := ConvertSlashes(TokenFile.Includes.Items[I].Name);
-    if TokenFile.Includes.Items[I].Flag = 'S' then
-    begin
-      for J := 0 to PathList.Count - 1 do
-      begin
-        IncludeFileName := ExpandFileName(PathList.Strings[J] + IncludeName);
-        if FileExists(IncludeFileName) then
-          Break;
-      end;
-    end
-    else
-    begin
-      IncludeFileName := ExpandFileName(PathOnly + IncludeName);
-      if not FileExists(IncludeFileName) then
-      begin
-        for J := 0 to PathList.Count - 1 do
-        begin
-          IncludeFileName := ExpandFileName(PathList.Strings[J] + IncludeName);
-          if FileExists(IncludeFileName) then
-            Break;
-        end;
-      end;
-    end;
-    if ItemOfByFileName(IncludeFileName) <> nil then
-      Continue;
-    if fCancel then
-      Exit;
-    Result := ParseRecursiveAux(IncludeFileName, Result, fProgressEvent);
-  end;
-end;
-
-function TTokenFiles.ParseRecursive(const FileName: string): Integer;
-begin
-  Result := ParseRecursive(FileName, fOnStart, fOnProgress, fOnFinish);
-end;
-
-function TTokenFiles.ParseRecursive(const FileName: string;
-  fStartEvent: TNotifyEvent; fProgressEvent: TProgressEvent;
-  fFinishEvent: TNotifyEvent): Integer;
-begin
-  fCancel := False;
-  fBusy := True;
-  fMethod := tpmParseAndLoadRecursive;
-  if Assigned(fStartEvent) then
-    fStartEvent(Self);
-  Result := ParseRecursiveAux(FileName, 0, fProgressEvent);
-  if Assigned(fFinishEvent) then
-    fFinishEvent(Self);
-  fBusy := False;
-end;
-
-function TTokenFiles.LoadRecursiveAux(const FileName, BaseDir, FromBaseDir,
-  Extension: string; FilesParsed: Integer; fProgressEvent: TProgressEvent): Integer;
-var
-  I, J: Integer;
-  TokenFile: TTokenFile;
-  FromName, DirFrom, DirBase, IncludeName, IncludeFileName: string;
-begin
-  Result := FilesParsed;
-  if ItemOfByFileName(FileName) <> nil then
-    Exit;
-  if fCancel then
-    Exit;
-  DirFrom := IncludeTrailingPathDelimiter(FromBaseDir);
-  DirFrom := DirFrom + ExtractRelativePath(BaseDir, ExtractFilePath(FileName));
-  DirFrom := IncludeTrailingPathDelimiter(DirFrom);
-  FromName := DirFrom + ExtractFileName(FileName);
-  FromName := ChangeFileExt(FromName, Extension);
-  if not FileExists(FromName) or not FileExists(FileName) then
-    Exit;
-  TokenFile := TTokenFile.Create(Self);
-  if not TokenFile.LoadFromFile(FileName, FromName) then
-  begin
-    TokenFile.Free;
-    Exit;
-  end;
-  if fCancel then
-  begin
-    TokenFile.Free;
-    Exit;
-  end;
-  Add(TokenFile);
-  Inc(Result);
-  if Assigned(fProgressEvent) then
-    fProgressEvent(Self, TokenFile, FileName, Result, Result, True, fMethod);
-  DirBase := ExtractFilePath(FileName);
-  for I := 0 to TokenFile.Includes.Count - 1 do
-  begin
-    IncludeName := ConvertSlashes(TokenFile.Includes.Items[I].Name);
-    if TokenFile.Includes.Items[I].Flag = 'S' then
-    begin
-      for J := 0 to PathList.Count - 1 do
-      begin
-        IncludeFileName := PathList.Strings[J] + IncludeName;
-        if FileExists(IncludeFileName) then
-          Break;
-      end;
-    end
-    else
-    begin
-      IncludeFileName := DirBase + IncludeName;
-      if not FileExists(IncludeFileName) then
-      begin
-        for J := 0 to PathList.Count - 1 do
-        begin
-          IncludeFileName := PathList.Strings[J] + IncludeName;
-          if FileExists(IncludeFileName) then
-            Break;
-        end;
-      end;
-    end;
-    if ItemOfByFileName(IncludeFileName) <> nil then
-      Continue;
-    if fCancel then
-      Exit;
-    Result := LoadRecursiveAux(IncludeFileName, BaseDir, FromBaseDir, Extension,
-      Result, fProgressEvent);
-    if fCancel then
-      Exit;
-  end;
-end;
-
-function TTokenFiles.LoadRecursive(const FileName, BaseDir, FromBaseDir,
-  Extension: string): Integer;
-begin
-  Result := LoadRecursive(FileName, BaseDir, FromBaseDir, Extension, fOnStart,
-    fOnProgress, fOnFinish);
-end;
-
-function TTokenFiles.LoadRecursive(const FileName, BaseDir, FromBaseDir,
-  Extension: string; fStartEvent: TNotifyEvent; fProgressEvent: TProgressEvent;
-  fFinishEvent: TNotifyEvent): Integer;
-begin
-  fCancel := False;
-  fBusy := True;
-  fMethod := tpmLoadParsedRecursive;
-  if Assigned(fStartEvent) then
-    fStartEvent(Self);
-  Result := LoadRecursiveAux(FileName, BaseDir, FromBaseDir, Extension, 0,
-    fProgressEvent);
-  if Assigned(fFinishEvent) then
-    fFinishEvent(Self);
-  fBusy := False;
-end;
-
-function TTokenFiles.ParseAndSaveFiles(FileList: TStrings;
-  const BaseDir, DestBaseDir, Extension: string): Boolean;
-begin
-  Result := ParseAndSaveFiles(FileList, BaseDir, DestBaseDir, Extension,
-    fOnStart, fOnProgress, fOnFinish);
-end;
-
-function TTokenFiles.ParseAndSaveFiles(FileList: TStrings; const BaseDir, DestBaseDir,
-  Extension: string; fStartEvent: TNotifyEvent; fProgressEvent: TProgressEvent;
-  fFinishEvent: TNotifyEvent): Boolean;
-var
-  I: Integer;
-  TokenFile: TTokenFile;
-  Text: TStringList;
-  ParserOk, CanParse: Boolean;
-  DestName, DirDest: string;
-  Header: TSimpleFileToken;
-begin
-  fCancel := False;
-  fBusy := True;
-  fMethod := tpmParseAndSave;
-  if Assigned(fStartEvent) then
-    fStartEvent(Self);
-  Text := TStringList.Create;
-  for I := 0 to FileList.Count - 1 do
-  begin
-    ParserOk := False;
-    if fCancel then
-      Break;
-    DestName := FileList.Strings[I];
-    if FileExists(FileList.Strings[I]) then
-    begin
-      DirDest := IncludeTrailingPathDelimiter(DestBaseDir);
-      DirDest := DirDest + ExtractRelativePath(BaseDir, ExtractFilePath(FileList.Strings[I]));
-      DirDest := IncludeTrailingPathDelimiter(DirDest);
-      DestName := DirDest + ExtractFileName(FileList.Strings[I]);
-      DestName := ChangeFileExt(DestName, Extension);
-      CanParse := True;
-      TokenFile := TTokenFile.Create(Self);
-      TokenFile.FileDate := FileDateTime(FileList.Strings[I]);
-      if FileExists(DestName) then
-      begin
-        if TokenFile.LoadHeader(DestName, Header) then
-        begin
-          CanParse := TokenFile.FileDate <> Header.DateOfFile;
-        end;
-      end;
-      if CanParse then
-      begin
-        TokenFile.FileName := FileList.Strings[I];
-        Text.LoadFromFile(FileList.Strings[I]);
-        fParser.Parse(Text.Text, TokenFile);
-        if fCancel then
-        begin
-          TokenFile.Free;
-          Break;
-        end;
-        ForceDirectories(DirDest);
-        TokenFile.SaveToFile(DestName);
-      end;
-      TokenFile.Free;
-      ParserOk := True;
-    end;
-    if Assigned(fProgressEvent) then
-      fProgressEvent(Self, nil, FileList.Strings[I], I + 1, FileList.Count, ParserOk, fMethod);
-  end;
-  Text.Free;
-  if Assigned(fFinishEvent) then
-    fFinishEvent(Self);
-  Result := not fCancel;
-  fBusy := False;
-end;
-
-procedure TTokenFiles.Cancel;
-begin
-  fCancel := True;
-  fParser.Cancel;
-end;
-
-procedure TTokenFiles.ParserProgress(Sender: TObject; Current, Total: Integer);
-begin
-  if fCancel then
-    fParser.Cancel;
 end;
 
 //List manipulation

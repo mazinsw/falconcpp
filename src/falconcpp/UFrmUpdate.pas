@@ -75,7 +75,7 @@ begin
   try
     XMLDoc.LoadFromFile(UpdateXML);
   except
-    XMLDoc.Free;
+    //XMLDoc.Free;
     BtnCancel.Caption := STR_POPUP_EDITOR[1];
     LblDesc.Caption := STR_FRM_UPD[16];
     Exit;
@@ -108,7 +108,7 @@ begin
     BtnUpdate.Caption := STR_FRM_UPD[3];
     BtnUpdate.Show;
   end;
-  XMLDoc.Free;
+  //XMLDoc.Free;
   XMLFile := UpdateXML;
 end;
 

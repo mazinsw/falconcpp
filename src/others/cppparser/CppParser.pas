@@ -42,7 +42,7 @@ type
     function StackLevel: Integer;
     //set events
     procedure DoProgress;
-    procedure DoTokenLog(const S: string);
+//    procedure DoTokenLog(const S: string);
     //skip
     procedure SkipUntilFind(Chars: TSetOfChars);
     procedure SkipSpaces;
@@ -2548,11 +2548,11 @@ begin
   fSrc := '';
 end;
 
-procedure TCppParser.DoTokenLog(const S: string);
+{procedure TCppParser.DoTokenLog(const S: string);
 begin
   if Assigned(fLogToken) then
     fLogToken(Self, S, fCurrLine);
-end;
+end;}
 
 procedure TCppParser.DoProgress;
 begin

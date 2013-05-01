@@ -27,7 +27,15 @@ type
       Selected: Boolean);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
+    procedure SBtnRemClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
+    procedure SBtnUndoClick(Sender: TObject);
+    procedure SBtnRedoClick(Sender: TObject);
   private
+    HistoryList: TList;
+    HistoryPos: Integer;
+    procedure AddItem(SourceFile: TSourceFile);
     { Private declarations }
   protected
     procedure CreateParams(var Params: TCreateParams); override;
@@ -40,7 +48,8 @@ var
 
 implementation
 
-
+uses
+  UFrmMain;
 
 {$R *.dfm}
 
@@ -55,22 +64,26 @@ begin
   end;
 end;
 
+procedure TFrmRemove.AddItem(SourceFile: TSourceFile);
+var
+  Item: TListItem;
+begin
+  Item := FileList.Items.Add;
+  Item.Caption := SourceFile.Name;
+  Item.SubItems.Add(SourceFile.FileName);
+  Item.ImageIndex := SourceFile.Node.ImageIndex;
+  Item.Data := SourceFile;
+end;
+
 procedure TFrmRemove.SetProject(Proj: TProjectFile);
 var
   I: Integer;
   Files: TStrings;
-  Item: TListItem;
 begin
   Files := TStringList.Create;
   proj.GetFiles(Files);
   for I := 0 to Files.Count - 1 do
-  begin
-    Item := FileList.Items.Add;
-    Item.Caption := TSourceFile(Files.Objects[I]).Name;
-    Item.SubItems.Add(TSourceFile(Files.Objects[I]).FileName);
-    Item.ImageIndex := TSourceFile(Files.Objects[I]).Node.ImageIndex;
-    Item.Data := Files.Objects[I];
-  end;
+    AddItem(TSourceFile(Files.Objects[I]));
   Files.Free;
 end;
 
@@ -81,13 +94,25 @@ end;
 
 procedure TFrmRemove.BtnOkClick(Sender: TObject);
 begin
-  //Save;
+  BtnApply.Click;
   Close;
 end;
 
 procedure TFrmRemove.BtnApplyClick(Sender: TObject);
+var
+  I: Integer;
 begin
-  //Save;
+  for I := HistoryPos downto 0 do
+  begin
+    if FrmFalconMain.RemoveFile(Handle, TSourceFile(HistoryList.Items[I])) then
+    begin
+      Dec(HistoryPos);
+      HistoryList.Delete(I);
+    end;
+  end;
+  SBtnUndo.Enabled := HistoryPos >= 0;
+  SBtnRedo.Enabled := HistoryPos < HistoryList.Count - 1;
+  BtnApply.Enabled := HistoryPos >= 0;
 end;
 
 procedure TFrmRemove.FileListSelectItem(Sender: TObject; Item: TListItem;
@@ -101,6 +126,60 @@ procedure TFrmRemove.FormKeyDown(Sender: TObject; var Key: Word;
 begin
   if Key = VK_ESCAPE then
     Close;
+end;
+
+procedure TFrmRemove.SBtnRemClick(Sender: TObject);
+var
+  I: Integer;
+begin
+  Inc(HistoryPos);
+  // remove redo items
+  for I := HistoryList.Count - 1 downto HistoryPos do
+    HistoryList.Delete(I);
+  HistoryList.Add(FileList.Selected.Data);
+  SBtnRedo.Enabled := False;
+  FileList.DeleteSelected;
+  SBtnUndo.Enabled := True;
+  BtnApply.Enabled := HistoryPos >= 0;
+end;
+
+procedure TFrmRemove.FormCreate(Sender: TObject);
+begin
+  HistoryPos := -1;
+  HistoryList := TList.Create;
+end;
+
+procedure TFrmRemove.FormDestroy(Sender: TObject);
+begin
+  HistoryList.Free;
+end;
+
+procedure TFrmRemove.SBtnUndoClick(Sender: TObject);
+begin
+  // undo remove
+  AddItem(TSourceFile(HistoryList.Items[HistoryPos]));
+  Dec(HistoryPos);
+  SBtnUndo.Enabled := HistoryPos >= 0;
+  SBtnRedo.Enabled := HistoryPos < HistoryList.Count - 1;
+  BtnApply.Enabled := HistoryPos >= 0;
+end;
+
+procedure TFrmRemove.SBtnRedoClick(Sender: TObject);
+var
+  I: Integer;
+begin
+  Inc(HistoryPos);
+  for I := 0 to FileList.Items.Count - 1 do
+  begin
+    if FileList.Items.Item[I].Data = HistoryList.Items[HistoryPos] then
+    begin
+      FileList.Items.Item[I].Delete;
+      Break;
+    end;
+  end;
+  SBtnUndo.Enabled := True;
+  SBtnRedo.Enabled := HistoryPos < HistoryList.Count - 1;
+  BtnApply.Enabled := HistoryPos >= 0;
 end;
 
 end.

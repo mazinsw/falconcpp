@@ -20,7 +20,7 @@ uses
   SynEditSearch, AppEvnts, ThreadTokenFiles, CppParser, TokenConst, TokenFile,
   TokenHint, TokenList, TokenUtils, SynEditAutoComplete, SynEditPrint,
   SynEditRegexSearch, CommCtrl, DebugReader, SynExportRTF, CommandQueue,
-  SynEditExport, SynExportHTML, SynExportTeX, ThreadLoadTokenFiles, DebugConsts,
+  SynEditExport, SynExportHTML, SynExportTeX, DebugConsts,
   XMLDoc, XMLIntf, BreakPoint, HintTree, DebugWatch, 
   UParseMsgs, SynEditMiscClasses, TBXStatusBars, XPPanels, ModernTabs,
   VistaAltFixUnit, TB2Toolbar, ThreadFileDownload, NativeTreeView, SynEditEx;
@@ -521,19 +521,19 @@ type
     procedure ParserProgress(Sender: TObject; TokenFile: TTokenFile;
       const FileName: string; Current, Total: Integer; Parsed: Boolean;
       Method: TTokenParseMethod);
-    procedure ParserFinish(Sender: TObject);
+    procedure ParserFinish(Sender: TObject; Canceled: Boolean);
 
     procedure AllParserStart(Sender: TObject);
     procedure AllParserProgress(Sender: TObject; TokenFile: TTokenFile;
       const FileName: string; Current, Total: Integer; Parsed: Boolean;
       Method: TTokenParseMethod);
-    procedure AllParserFinish(Sender: TObject);
+    procedure AllParserFinish(Sender: TObject; Canceled: Boolean);
 
     procedure TokenParserStart(Sender: TObject);
     procedure TokenParserProgress(Sender: TObject; TokenFile: TTokenFile;
       const FileName: string; Current, Total: Integer; Parsed: Boolean;
       Method: TTokenParseMethod);
-    procedure TokenParserFinish(Sender: TObject);
+    procedure TokenParserFinish(Sender: TObject; Canceled: Boolean);
     procedure TokenParserAllFinish(Sender: TObject); //scan current file
 
     procedure TimerHintTipEventTimer(Sender: TObject);
@@ -677,7 +677,7 @@ type
 
     //for Cache
     ParseAllFiles: TTokenFiles; //parse unparsed static files
-    ThreadLoadTkFiles: TThreadLoadTokenFiles;
+    ThreadLoadTkFiles: TThreadTokenFiles;
     ThreadTokenFiles: TThreadTokenFiles;
     HintTip: TTokenHintTip; //mouse over hint
     HintParams: TTokenHintParams;
@@ -708,7 +708,7 @@ type
       SelLine: Integer; var LastID: Integer; var VarAdded: Integer);
     function AddWatchItem(ID: Integer; const Name: string;
       token: TTokenClass; watchType: TWatchType): Boolean;
-    function DeleteWatchItem(const Name: string): Boolean;
+//    function DeleteWatchItem(const Name: string): Boolean;
     function SearchAndOpenFile(const FileName: string;
       var fp: TSourceFile): Boolean;
     procedure UpdateActiveDebugLine(fp: TSourceFile;
@@ -719,7 +719,6 @@ type
     procedure ToggleBreakpoint(aLine: Integer);
     procedure CheckIfFilesHasChanged;
     procedure DetectScope(Memo: TSynEditEx);
-    function RemoveFile(FileProp: TSourceFile; FromDisk: Boolean = False): Boolean;
     procedure UpdateCompletionColors(EdtOpt: TEditorOptions);
     procedure ParseFiles(List: TStrings);
     function GetSelectedFileInList(var ActiveFile: TSourceFile): Boolean;
@@ -765,6 +764,8 @@ type
     LastSearch: TSearchItem;
     FalconVersion: TVersion; //this file version
 
+    function RemoveFile(ParentHandle: HWND; FileProp: TSourceFile;
+      FromDisk: Boolean = False): Boolean;
     function ShowPromptOverrideFile(const FileName: string): Boolean;
     procedure UpdateLangNow;
     procedure UpdateMenuItems(Regions: TRegionMenuState);
@@ -954,6 +955,7 @@ end;
 
 destructor TParserThread.Destroy;
 begin
+  Shutdown;
   fCppParser.Free;
   fTokenFile.Free;
   if (fScanEventHandle <> 0) and (fScanEventHandle <> INVALID_HANDLE_VALUE) then
@@ -1149,24 +1151,28 @@ begin
     SplashScreen.Show;
   SplashScreen.TextOut(55, 300, STR_FRM_MAIN[45]);
   fWorkerThread := TParserThread.Create;
-  ThreadTokenFiles := TThreadTokenFiles.Create;
+  FFilesParsed := TTokenFiles.Create; // all files
+  ParseAllFiles := TTokenFiles.Create; // parse all unparsed files
+
+  // parse all header files from include path
+  ThreadTokenFiles := TThreadTokenFiles.Create(ParseAllFiles);
   ThreadTokenFiles.OnStart := ParserStart;
   ThreadTokenFiles.OnProgress := ParserProgress;
   ThreadTokenFiles.OnFinish := ParserFinish;
 
-  ThreadLoadTkFiles := TThreadLoadTokenFiles.Create;
+  // load included files
+  ThreadLoadTkFiles := TThreadTokenFiles.Create(FilesParsed);
   ThreadLoadTkFiles.OnStart := TokenParserStart;
   ThreadLoadTkFiles.OnProgress := TokenParserProgress;
   ThreadLoadTkFiles.OnFinish := TokenParserFinish;
   ThreadLoadTkFiles.OnAllFinish := TokenParserAllFinish;
 
-  ThreadFilesParsed := TThreadTokenFiles.Create;
+  // parse all source files from projects
+  ThreadFilesParsed := TThreadTokenFiles.Create(FilesParsed);
   ThreadFilesParsed.OnStart := AllParserStart;
   ThreadFilesParsed.OnProgress := AllParserProgress;
   ThreadFilesParsed.OnFinish := AllParserFinish;
 
-  ParseAllFiles := TTokenFiles.Create; //parse all unparsed files
-  FFilesParsed := TTokenFiles.Create;
   ActiveEditingFile := TTokenFile.Create;
   AllParsedList := TStringList.Create;
 
@@ -1443,7 +1449,7 @@ begin
     if FindFiles(Config.Compiler.Path + '\include\', '*.h', SourceFileList) then
     begin
       IsLoadingSrcFiles := True;
-      ThreadTokenFiles.Start(ParseAllFiles, SourceFileList,
+      ThreadTokenFiles.Start(SourceFileList,
         Config.Compiler.Path + '\include\', ConfigRoot + 'include\', '.h.prs');
       if Config.Environment.ShowSplashScreen then
         Sleep(3000);
@@ -1865,18 +1871,8 @@ begin
   if FindFiles(Config.Compiler.Path + '\include\', '*.h', SourceFileList) then
   begin
     IsLoadingSrcFiles := True;
-    if not ThreadFilesParsed.Busy then
-    begin
-      ThreadTokenFiles.Free;
-      ThreadTokenFiles := TThreadTokenFiles.Create;
-      ThreadTokenFiles.OnStart := ParserStart;
-      ThreadTokenFiles.OnProgress := ParserProgress;
-      ThreadTokenFiles.OnFinish := ParserFinish;
-      ThreadTokenFiles.Start(ParseAllFiles, SourceFileList,
-        Config.Compiler.Path + '\include\', ConfigRoot + 'include\', '.h.prs');
-    end
-    else
-      ThreadTokenFiles.AddFiles(SourceFileList);
+    ThreadTokenFiles.Start(SourceFileList,
+      Config.Compiler.Path + '\include\', ConfigRoot + 'include\', '.h.prs');
   end;
   SourceFileList.Free;
 end;
@@ -2055,24 +2051,16 @@ begin
     begin
       FileObj.FileName := List.Strings[I];
       ObjList.AddObject(prop.FileName, FileObj);
-    end;
+    end
+    else
+      FileObj.Free;
   end;
   if ObjList.Count = 0 then
   begin
     ObjList.Free;
     Exit;
   end;
-  if not ThreadFilesParsed.Busy then
-  begin
-    ThreadFilesParsed.Free;
-    ThreadFilesParsed := TThreadTokenFiles.Create;
-    ThreadFilesParsed.OnStart := AllParserStart;
-    ThreadFilesParsed.OnProgress := AllParserProgress;
-    ThreadFilesParsed.OnFinish := AllParserFinish;
-    ThreadFilesParsed.ParseLoad(FilesParsed, ObjList);
-  end
-  else
-    ThreadFilesParsed.AddFiles(ObjList);
+  ThreadFilesParsed.ParseLoad(ObjList);
   ObjList.Free;
 end;
 
@@ -2367,7 +2355,7 @@ begin
   if not TreeViewProjects.IsEditing then
   begin
     Node := TreeViewProjects.Selected;
-    RemoveFile(TSourceFile(Node.Data));
+    RemoveFile(Handle, TSourceFile(Node.Data));
   end
   else
   begin
@@ -2526,7 +2514,7 @@ begin
   if (FileProp.Project.FileType <> FILE_TYPE_PROJECT) and
     Config.Environment.RemoveFileOnClose then
   begin
-    RemoveFile(FileProp);
+    RemoveFile(Handle, FileProp);
     Exit;
   end;
   PageControlEditor.Visible := (PageControlEditor.PageCount > 1);
@@ -2890,7 +2878,7 @@ begin
       FindedTokenFile := FilesParsed.ItemOfByFileName(Prop.FileName);
       if FindedTokenFile <> nil then
         UpdateActiveFileToken(FindedTokenFile)
-      else if not FilesParsed.Busy and not DebugReader.Running then
+      else if {not FilesParsed.Busy and }not DebugReader.Running then
         TreeViewOutline.Clear;
     end;
     //adjust code completion
@@ -3218,7 +3206,8 @@ begin
   end;
 end;
 
-function TFrmFalconMain.RemoveFile(FileProp: TSourceFile; FromDisk: Boolean): Boolean;
+function TFrmFalconMain.RemoveFile(ParentHandle: HWND; FileProp:
+  TSourceFile; FromDisk: Boolean): Boolean;
 var
   Node: TTreeNode;
   ProjProp: TProjectFile;
@@ -3234,7 +3223,7 @@ begin
       if ProjProp.Modified or (not ProjProp.Saved and not ProjProp.IsNew) or
         ProjProp.FilesChanged or ProjProp.SomeFileChanged then
       begin //modified
-        I := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[10],
+        I := MessageBox(ParentHandle, PChar(Format(STR_FRM_MAIN[10],
           [ExtractFileName(ProjProp.FileName)])), 'Falcon C++',
           MB_YESNOCANCEL + MB_ICONINFORMATION);
         case I of
@@ -3261,7 +3250,7 @@ begin
         Msg := STR_FRM_MAIN[53]
       else
         Msg := STR_FRM_MAIN[21];
-      I := MessageBox(Handle, PChar(Format(Msg, [FileProp.Name])), 'Falcon C++',
+      I := MessageBox(ParentHandle, PChar(Format(Msg, [FileProp.Name])), 'Falcon C++',
         MB_YESNOCANCEL + MB_ICONEXCLAMATION);
       if I <> mrYes then
         Exit;
@@ -3312,14 +3301,14 @@ begin
           Msg := STR_FRM_MAIN[52]
         else
           Msg := STR_FRM_MAIN[20];
-        I := MessageBox(Handle, PChar(Format(Msg, [FileProp.Name])), 'Falcon C++',
+        I := MessageBox(ParentHandle, PChar(Format(Msg, [FileProp.Name])), 'Falcon C++',
           MB_YESNO + MB_ICONQUESTION);
         if I <> mrYes then
           Exit;
       end;
       if FileProp.Modified and FileProp.Saved then
       begin //modified
-        I := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[10],
+        I := MessageBox(ParentHandle, PChar(Format(STR_FRM_MAIN[10],
           [ExtractFileName(FileProp.FileName)])), 'Falcon C++',
           MB_YESNO + MB_ICONINFORMATION);
         case I of
@@ -3333,7 +3322,7 @@ begin
         Msg := STR_FRM_MAIN[53]
       else
         Msg := STR_FRM_MAIN[21];
-      I := MessageBox(Handle, PChar(Format(Msg, [FileProp.Name])), 'Falcon C++',
+      I := MessageBox(ParentHandle, PChar(Format(Msg, [FileProp.Name])), 'Falcon C++',
         MB_YESNOCANCEL + MB_ICONEXCLAMATION);
       if I <> mrYes then
         Exit;
@@ -3367,7 +3356,7 @@ begin
     begin
       Node := TreeViewProjects.Selected;
       FileProp := TSourceFile(Node.Data);
-      RemoveFile(FileProp, True)
+      RemoveFile(Handle, FileProp, True)
     end; //not editing
   end; //count > 0
 end;
@@ -3995,6 +3984,7 @@ begin
     else
     begin
       NewFile.DateOfFile := FileDateTime(NewFile.FileName);
+      NewFile.IsNew := False;
       NewFile.Saved := True;
     end;
     Files.Strings[I] := NewFile.FileName;
@@ -4449,25 +4439,22 @@ end;
 procedure TFrmFalconMain.TextEditorFileParsed(EditFile: TSourceFile;
   TokenFile: TTokenFile);
 var
-  FullIncludeName: string;
+  IncludeFileName: string;
   I: Integer;
+  FileList: TStrings;
 begin
+  if TokenFile.Includes.Count = 0 then
+    Exit;
+  FileList := TStringList.Create;
   for I := 0 to TokenFile.Includes.Count - 1 do
   begin
-    FullIncludeName := Config.Compiler.Path + '\include\' +
+    IncludeFileName := Config.Compiler.Path + '\include\' +
       ConvertSlashes(TokenFile.Includes.Items[I].Name);
-    if not ThreadLoadTkFiles.Busy then
-    begin
-      ThreadLoadTkFiles.Free;
-      ThreadLoadTkFiles := TThreadLoadTokenFiles.Create;
-      ThreadLoadTkFiles.OnStart := TokenParserStart;
-      ThreadLoadTkFiles.OnProgress := TokenParserProgress;
-      ThreadLoadTkFiles.OnFinish := TokenParserFinish;
-      ThreadLoadTkFiles.OnAllFinish := TokenParserAllFinish;
-    end;
-    ThreadLoadTkFiles.Start(FilesParsed, FullIncludeName, Config.Compiler.Path +
-      '\include\', ConfigRoot + 'include\', '.h.prs');
+    FileList.Add(IncludeFileName);
   end;
+  ThreadLoadTkFiles.LoadRecursive(FileList, Config.Compiler.Path +
+    '\include\', ConfigRoot + 'include\', '.h.prs');
+  FileList.Free;
 end;
 
 //event on change text in editor
@@ -5276,6 +5263,7 @@ begin
   ThreadLoadTkFiles.Free;
   FilesParsed.Free;
   ParseAllFiles.Free;
+  fWorkerThread.Free;
   Templates.Free;
   Config.Free;
   SintaxList.Free;
@@ -5496,7 +5484,7 @@ function TFrmFalconMain.ImportCodeBlocksProject(const FileName: string;
     TopLine, SelStart: Integer;
   begin
     TopFile := nil;
-    XMLDoc := nil;
+    //XMLDoc := nil;
     LytFileName := ChangeFileExt(FileName, '.layout');
     if FileExists(LytFileName) then
     begin
@@ -5566,8 +5554,8 @@ function TFrmFalconMain.ImportCodeBlocksProject(const FileName: string;
     end;
     if Assigned(TopFile) then
       TopFile.ViewPage;
-    if Assigned(XMLDoc) then
-      XMLDoc.Free;
+    //if Assigned(XMLDoc) then
+    //  XMLDoc.Free;
   end;
 
 var
@@ -5593,21 +5581,21 @@ begin
   ProjNode := XMLDoc.ChildNodes.FindNode('CodeBlocks_project_file');
   if (ProjNode = nil) then
   begin
-    XMLDoc.Free;
+    //XMLDoc.Free;
     Exit;
   end;
   Major := StrToInt(GetTagProperty(ProjNode, 'FileVersion', 'major', '0'));
   Minor := StrToInt(GetTagProperty(ProjNode, 'FileVersion', 'minor', '0'));
   if (Major <> 1) or (Minor <> 6) then
   begin
-    XMLDoc.Free;
+    //XMLDoc.Free;
     Exit;
   end;
   //Project tag
   ProjNode := ProjNode.ChildNodes.FindNode('Project');
   if (ProjNode = nil) then
   begin
-    XMLDoc.Free;
+    //XMLDoc.Free;
     Exit;
   end;
   Node := TreeViewProjects.Items.AddChild(nil, '');
@@ -5624,7 +5612,7 @@ begin
   BuildNode := ProjNode.ChildNodes.FindNode('Build');
   if (BuildNode = nil) then
   begin
-    XMLDoc.Free;
+    //XMLDoc.Free;
     Exit;
   end;
   TargetNode := BuildNode.ChildNodes.First;
@@ -5783,7 +5771,7 @@ begin
     //not implemented
   end;
   LoadFiles(ProjNode, NewPrj);
-  XMLDoc.Free;
+  //XMLDoc.Free;
   Proj := NewPrj;
   Result := True;
 end;
@@ -6476,13 +6464,13 @@ begin
     ProgressBarParser.Position := (Current * 100) div Total;
 end;
 
-procedure TFrmFalconMain.ParserFinish(Sender: TObject);
+procedure TFrmFalconMain.ParserFinish(Sender: TObject; Canceled: Boolean);
 var
   ini: TIniFile;
 begin
   if IsLoadingSrcFiles then
   begin
-    if not ThreadTokenFiles.Canceled then
+    if not Canceled then
     begin
       ini := TIniFile.Create(IniConfigFile);
       ini.WriteInteger('Packages', 'NewInstalled', 0);
@@ -6513,7 +6501,7 @@ begin
   ProgressBarParser.Position := (Current * 100) div Total;
 end;
 
-procedure TFrmFalconMain.AllParserFinish(Sender: TObject);
+procedure TFrmFalconMain.AllParserFinish(Sender: TObject; Canceled: Boolean);
 var
   I: Integer;
   FileToken: TTokenFile;
@@ -6548,7 +6536,7 @@ begin
   end;
 end;
 
-procedure TFrmFalconMain.TokenParserFinish(Sender: TObject);
+procedure TFrmFalconMain.TokenParserFinish(Sender: TObject; Canceled: Boolean);
 begin
   //
 end;
@@ -8401,7 +8389,7 @@ begin
   Result := True;
 end;
 
-function TFrmFalconMain.DeleteWatchItem(const Name: string): Boolean;
+{function TFrmFalconMain.DeleteWatchItem(const Name: string): Boolean;
 var
   Node: PNativeNode;
   Item: TWatchVariable;
@@ -8426,7 +8414,7 @@ begin
     end;
     Node := TreeViewOutline.GetNextSibling(Node);
   end;
-end;
+end;}
 
 function TFrmFalconMain.SearchAndOpenFile(const FileName: string;
   var fp: TSourceFile): Boolean;

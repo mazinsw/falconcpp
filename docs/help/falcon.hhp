@@ -1,0 +1,34 @@
+[OPTIONS]
+Auto Index=Yes
+Compatibility=1.1 or later
+Compiled file=falcon.chm
+Contents file=content.hhc
+Default Window=falconcpphelp
+Default topic=html\introduction.html
+Display compile progress=Yes
+Full-text search=Yes
+Index file=index.hhk
+Language=0x409 Inglês (Estados Unidos)
+Title=Falcon C++ Help
+
+[WINDOWS]
+falconcpphelp="Falcon C++ Help","content.hhc","index.hhk","html\introduction.html","html\introduction.html",,,,,0x2120,,0x3846,,,,,,,,0
+
+
+[ALIAS]
+IDH_INTRODUCTION=html\introduction.html
+IDH_BASIC=html\basic.html
+IDH_CODING=html\coding.html
+IDH_EDITOR_SET=html\editor_settings.html
+IDH_ENVIRON_SET=html\environment_settings.html
+IDH_COMPILER_SET=html\compiler_settings.html
+IDH_DEBUGGING=html\debugging.html
+IDH_PACKAGES=html\packages.html
+IDH_LICENSE=html\license.html
+IDH_APPENDIX=html\appendix.html
+
+[MAP]
+#include falcon.h
+
+[INFOTYPES]
+

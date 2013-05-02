@@ -1,0 +1,206 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<!-- Sitemap 1.0 -->
+</HEAD><BODY>
+<OBJECT type="text/site properties">
+	<param name="ImageType" value="Folder">
+</OBJECT>
+<UL>
+    <LI> <OBJECT type="text/sitemap">
+        <param name="Name" value="Falcon C++ Introduction">
+        <param name="Local" value="html\introduction.html">
+        <param name="ImageNumber" value="1">
+        </OBJECT>
+    <UL>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Welcome to Falcon C++">
+            <param name="Local" value="html\introduction.html">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="About Falcon C++">
+            <param name="Local" value="html\about.html">
+            </OBJECT>
+    </UL>
+    <LI> <OBJECT type="text/sitemap">
+        <param name="Name" value="Basic">
+        <param name="Local" value="html\basic.html">
+        <param name="ImageNumber" value="1">
+        </OBJECT>
+    <UL>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="IDE Basics">
+            <param name="Local" value="html\basic.html">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Creating the first program">
+            <param name="Local" value="html\first_program.html">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Managing projects">
+            <param name="Local" value="html\projects.html">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Importting projects">
+            <param name="Local" value="html\import.html">
+            </OBJECT>
+    </UL>
+    <LI> <OBJECT type="text/sitemap">
+        <param name="Name" value="Coding">
+        <param name="Local" value="html\coding.html">
+        <param name="ImageNumber" value="1">
+        </OBJECT>
+    <UL>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Code Completion">
+            <param name="Local" value="html\code_completion.html">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Navigation and Code Tips">
+            <param name="Local" value="html\navigation.html">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Formatting and Generating codes">
+            <param name="Local" value="html\formatting.html">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Project settings">
+            <param name="Local" value="html\properties.html">
+            </OBJECT>
+    </UL>
+    <LI> <OBJECT type="text/sitemap">
+        <param name="Name" value="Editor Settings">
+        <param name="Local" value="html\editor_settings.html">
+        <param name="ImageNumber" value="1">
+        </OBJECT>
+    <UL>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="General Settings">
+            <param name="Local" value="html\editor_settings.html">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Display Options">
+            <param name="Local" value="html\editor_display.html">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Editor colors">
+            <param name="Local" value="html\editor_colors.html">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Code Formatter Style">
+            <param name="Local" value="html\editor_formatter.html">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Code Resources">
+            <param name="Local" value="html\editor_resources.html">
+            </OBJECT>
+    </UL>
+    <LI> <OBJECT type="text/sitemap">
+        <param name="Name" value="Environment Settings">
+        <param name="Local" value="html\environment_settings.html">
+        <param name="ImageNumber" value="1">
+        </OBJECT>
+    <UL>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="General Settings">
+            <param name="Local" value="html\environment_settings.html">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="IDE Interface options">
+            <param name="Local" value="html\environment_interface.html">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Files and Directories">
+            <param name="Local" value="html\environment_files.html">
+            </OBJECT>
+    </UL>
+    <LI> <OBJECT type="text/sitemap">
+        <param name="Name" value="Compiler Settings">
+        <param name="Local" value="html\compiler_settings.html">
+        <param name="ImageNumber" value="1">
+        </OBJECT>
+    <UL>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Compiler options">
+            <param name="Local" value="html\compiler_settings.html">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Debugger options">
+            <param name="Local" value="html\compiler_debugger.html">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Compiler Directories">
+            <param name="Local" value="html\compiler_directories.html">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Programs">
+            <param name="Local" value="html\compiler_programs.html">
+            </OBJECT>
+    </UL>
+    <LI> <OBJECT type="text/sitemap">
+        <param name="Name" value="Debugging">
+        <param name="Local" value="html\debugging.html">
+        <param name="ImageNumber" value="1">
+        </OBJECT>
+    <UL>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Debugging an program">
+            <param name="Local" value="html\debugging.html">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Watching variables">
+            <param name="Local" value="html\debug_watching.html">
+            </OBJECT>
+    </UL>
+    <LI> <OBJECT type="text/sitemap">
+        <param name="Name" value="Packages">
+        <param name="Local" value="html\packages.html">
+        <param name="ImageNumber" value="1">
+        </OBJECT>
+    <UL>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Installing packages">
+            <param name="Local" value="html\packages.html">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="How to Make a Falcon C++ Package">
+            <param name="Local" value="html\packages_make.html">
+            </OBJECT>
+    </UL>
+    <LI> <OBJECT type="text/sitemap">
+        <param name="Name" value="License">
+        <param name="Local" value="html\license.html">
+        <param name="ImageNumber" value="1">
+        </OBJECT>
+    <UL>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Falcon C++ License">
+            <param name="Local" value="html\license.html">
+            </OBJECT>
+    </UL>
+    <LI> <OBJECT type="text/sitemap">
+        <param name="Name" value="Appendix">
+        <param name="Local" value="html\appendix.html">
+        <param name="ImageNumber" value="1">
+        </OBJECT>
+    <UL>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="History">
+            <param name="Local" value="html\history.html">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Credits">
+            <param name="Local" value="html\credits.html">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Privacy Policy">
+            <param name="Local" value="html\privacy.html">
+            </OBJECT>
+        <LI> <OBJECT type="text/sitemap">
+            <param name="Name" value="Contact Us">
+            <param name="Local" value="html\contact.html">
+            </OBJECT>
+    </UL>
+</UL>
+</BODY></HTML>

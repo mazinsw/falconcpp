@@ -325,7 +325,7 @@ begin
   try
     XMLDoc.LoadFromFile(UpdateXML);
   except
-    XMLDoc.Free;
+    //XMLDoc.Free;
     Exit;
   end;
   XMLDoc.Options := XMLDoc.Options + [doNodeAutoIndent];
@@ -337,7 +337,7 @@ begin
   SiteVersion := ParseVersion(Node.Attributes['Version']);
   if (CompareVersion(SiteVersion, FalconVersion) = 1) then
     Result := True;
-  XMLDoc.Free;
+  //XMLDoc.Free;
 end;
 
 procedure LoadLang;

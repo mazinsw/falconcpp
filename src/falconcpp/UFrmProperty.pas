@@ -134,6 +134,9 @@ type
     procedure EditTargetChange(Sender: TObject);
   private
     { Private declarations }
+    DefLibList: TStrings;
+    procedure ReloadLibs;
+    procedure FindLibs(LibPath: string; LibPathList: TStrings);
   protected
     procedure CreateParams(var Params: TCreateParams); override;
   public
@@ -238,6 +241,54 @@ begin
   FrmFalconMain.TreeViewProjectsChange(Self, Project.Node);
 end;
 
+procedure TFrmProperty.FindLibs(LibPath: string; LibPathList: TStrings);
+var
+  List: TStrings;
+  I: Integer;
+begin
+  if not DirectoryExists(LibPath) then
+    Exit;
+  List := TStringList.Create;
+  LibPath := IncludeTrailingPathDelimiter(LibPath);
+  FindFiles(LibPath + '*.a', List);
+  for I := 0 to List.Count - 1 do
+  begin
+    LibPathList.Add(
+      StringReplace(
+      ChangeFileExt(List.Strings[I], ''), 'lib', '-l', []));
+  end;
+  List.Clear;
+  FindFiles(LibPath + '*.lib', List);
+  for I := 0 to List.Count - 1 do
+    LibPathList.Add('-l' + ChangeFileExt(List.Strings[I], ''));
+  List.Free;
+end;
+
+procedure TFrmProperty.ReloadLibs;
+var
+  PathLibList: TStrings;
+  LibList: TStringList;
+  I: Integer;
+  Libs: string;
+begin
+  CBLibs.Clear;
+  Libs := '';
+  for I := 0 to ListLibs.Count - 1 do
+    Libs := Libs + ' ' + ListLibs.Items.Strings[I];
+  Libs := Trim(Libs);
+  PathLibList := TStringList.Create;
+  GetLibraryDirs(ExtractFilePath(Project.FileName), Libs, PathLibList);
+  LibList := TStringList.Create;
+  LibList.Duplicates := dupIgnore;
+  for I := 0 to PathLibList.Count - 1 do
+    FindLibs(ExpandFileName(PathLibList.Strings[I]), LibList);
+  PathLibList.Free;
+  LibList.AddStrings(DefLibList);
+  //LibList.Sort;
+  CBLibs.Items.AddStrings(LibList);
+  LibList.Free;
+end;
+
 procedure TFrmProperty.SetProject(Project: TProjectFile);
 begin
   if (self.Project <> Project) then
@@ -262,6 +313,7 @@ begin
     CHBMinSize.Checked := (Pos('-s', Project.CompilerOptions) > 0);
     CHBOptSpd.Checked := (Pos('-O2', Project.CompilerOptions) > 0);
     SplitParams(Trim(Project.Libs), ListLibs.Items);
+    ReloadLibs;
     SplitParams(Trim(Project.Flags), ListIncs.Items);
     ChbIncVer.Checked := Project.IncludeVersionInfo;
     ChbIncVerClick(ChbIncVer);
@@ -314,6 +366,7 @@ var
   LibPath: string;
 begin
   IsLoading := True;
+  DefLibList := TStringList.Create;
   LblLoc.Caption := GetLanguageName(0);
   List := GetLanguagesList;
   for I := 0 to List.Count - 1 do
@@ -326,23 +379,8 @@ begin
   end;
   ActIdx := SetLangImg(GetSystemDefaultLangID);
   CbbLang.ItemIndex := ActIdx;
-
   LibPath := FrmFalconMain.Config.Compiler.Path + '\lib\';
-  if DirectoryExists(LibPath) then
-  begin
-    List.Clear;
-    FindFiles(LibPath + '*.a', List);
-    for I := 0 to List.Count - 1 do
-    begin
-      CBLibs.Items.Add(
-        StringReplace(
-        ChangeFileExt(List.Strings[I], ''), 'lib', '-l', []));
-    end;
-    List.Clear;
-    FindFiles(LibPath + '*.lib', List);
-    for I := 0 to List.Count - 1 do
-      CBLibs.Items.Add('-l' + ChangeFileExt(List.Strings[I], ''));
-  end;
+  FindLibs(LibPath, DefLibList);
   List.Free;
   ListValues.ColWidths[0] := 100;
   ListValues.ColWidths[1] := 278;
@@ -514,19 +552,29 @@ end;
 procedure TFrmProperty.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-  if Key = VK_ESCAPE then
-    Close
+  if (Key = VK_ESCAPE) then
+  begin
+    if not ListLibs.Enabled then
+    begin
+      ListLibs.Enabled := True;
+      CBLibs.Text := '';
+      ListLibsSelect(ListLibs);
+    end
+    else if not ListIncs.Enabled then
+    begin
+      ListIncs.Enabled := True;
+      CBIncs.Text := '';
+      ListIncsSelect(ListIncs);
+    end
+    else
+      Close;
+  end
   else if (Key = VK_RETURN) and (Shift = [ssCtrl]) then
     BtnOk.Click;
 end;
 
 procedure TFrmProperty.ListLibsClick(Sender: TObject);
-var
-  CPos: TPoint;
 begin
-  GetCursorPos(CPos);
-  if (ListLibs.ItemAtPos(ListLibs.ScreenToClient(CPos), True) < 0) then
-    ListLibs.ItemIndex := -1;
   ListLibsSelect(Sender);
 end;
 
@@ -581,6 +629,7 @@ begin
       List.Free;
       CBLibs.Text := '';
       ListLibsSelect(Sender);
+      ReloadLibs;
       ProjectChange(Sender);
       Exit;
     end;
@@ -591,6 +640,7 @@ begin
       Exit;
     CBLibs.Text := '';
     ListLibsSelect(Sender);
+    ReloadLibs;
     ProjectChange(Sender);
   end;
 end;
@@ -605,9 +655,22 @@ begin
 end;
 
 procedure TFrmProperty.SBtnRemClick(Sender: TObject);
+var
+  I: Integer;
 begin
   if (ListLibs.ItemIndex > -1) then
+  begin
+    I := ListLibs.ItemIndex;
     ListLibs.DeleteSelected;
+    if I > ListLibs.Items.Count - 1 then
+      Dec(I);
+    if I >= 0 then
+    begin
+      ListLibs.Selected[I] := True;
+      ListLibs.ItemIndex := I;
+    end;
+    ReloadLibs;
+  end;
   ListLibsSelect(Sender);
   ProjectChange(Sender);
 end;
@@ -617,6 +680,19 @@ procedure TFrmProperty.ListLibsKeyDown(Sender: TObject; var Key: Word;
 begin
   if (ListLibs.ItemIndex >= 0) and (Key = VK_DELETE) then
     SBtnRem.Click;
+  if ([ssCtrl, ssShift] = Shift) then
+  begin
+    if (Key = VK_UP) and SBtnUp.Enabled then
+    begin
+      Key := 0;
+      SBtnUp.Click;
+    end
+    else if (Key = VK_DOWN) and SBtnDown.Enabled then
+    begin
+      Key := 0;
+      SBtnDown.Click;
+    end;
+  end;
   ListLibsSelect(Sender);
 end;
 
@@ -627,6 +703,7 @@ begin
   Index := ListLibs.ItemIndex - 1;
   ListLibs.Items.Move(ListLibs.ItemIndex, ListLibs.ItemIndex - 1);
   ListLibs.Selected[Index] := True;
+  ListLibs.ItemIndex := Index;
   ListLibsSelect(Sender);
   ProjectChange(Sender);
 end;
@@ -638,6 +715,7 @@ begin
   Index := ListLibs.ItemIndex + 1;
   ListLibs.Items.Move(ListLibs.ItemIndex, ListLibs.ItemIndex + 1);
   ListLibs.Selected[Index] := True;
+  ListLibs.ItemIndex := Index;
   ListLibsSelect(Sender);
   ProjectChange(Sender);
 end;
@@ -702,6 +780,7 @@ begin
   Index := ListIncs.ItemIndex - 1;
   ListIncs.Items.Move(ListIncs.ItemIndex, ListIncs.ItemIndex - 1);
   ListIncs.Selected[Index] := True;
+  ListIncs.ItemIndex := Index;
   ListIncsSelect(Sender);
   ProjectChange(Sender);
 end;
@@ -713,25 +792,33 @@ begin
   Index := ListIncs.ItemIndex + 1;
   ListIncs.Items.Move(ListIncs.ItemIndex, ListIncs.ItemIndex + 1);
   ListIncs.Selected[Index] := True;
+  ListIncs.ItemIndex := Index;
   ListIncsSelect(Sender);
   ProjectChange(Sender);
 end;
 
 procedure TFrmProperty.SBtnDelIncClick(Sender: TObject);
+var
+  I: Integer;
 begin
   if (ListIncs.ItemIndex > -1) then
+  begin
+    I := ListIncs.ItemIndex;
     ListIncs.DeleteSelected;
+    if I > ListIncs.Items.Count - 1 then
+      Dec(I);
+    if I >= 0 then
+    begin
+      ListIncs.Selected[I] := True;
+      ListIncs.ItemIndex := I;
+    end;
+  end;
   ListIncsSelect(Sender);
   ProjectChange(Sender);
 end;
 
 procedure TFrmProperty.ListIncsClick(Sender: TObject);
-var
-  CPos: TPoint;
 begin
-  GetCursorPos(CPos);
-  if (ListIncs.ItemAtPos(ListIncs.ScreenToClient(CPos), True) < 0) then
-    ListIncs.ItemIndex := -1;
   ListIncsSelect(Sender);
 end;
 
@@ -740,6 +827,19 @@ procedure TFrmProperty.ListIncsKeyDown(Sender: TObject; var Key: Word;
 begin
   if (ListIncs.ItemIndex >= 0) and (Key = VK_DELETE) then
     SBtnDelInc.Click;
+  if ([ssCtrl, ssShift] = Shift) then
+  begin
+    if (Key = VK_UP) and SBtnUpInc.Enabled then
+    begin
+      Key := 0;
+      SBtnUpInc.Click
+    end
+    else if (Key = VK_DOWN) and SBtnDownInc.Enabled then
+    begin
+      Key := 0;
+      SBtnDownInc.Click;
+    end;
+  end;
   ListIncsSelect(Sender);
 end;
 
@@ -851,6 +951,7 @@ procedure TFrmProperty.FormDestroy(Sender: TObject);
 var
   I: Integer;
 begin
+  DefLibList.Free;
   for I := 0 to CbbLang.ItemsEx.Count - 1 do
     TLanguageItem(CbbLang.ItemsEx.Items[I].Data).Free;
 end;

@@ -514,7 +514,7 @@ begin
   Canvas.Font.Color := Font.Color;
   if (Images <> nil) and (FImageIndex >= 0) then
   begin
-    Images.Draw(Canvas, R.Left, R.Top, FImageIndex);
+    Images.Draw(Canvas, R.Left, R.Top + (Canvas.TextHeight(Caption) - Images.Height) div 2, FImageIndex);
     Inc(R.Left, Images.Width + 2);
   end;
   DrawText(Canvas.Handle, PChar(Caption), -1, R, DT_LEFT or DT_NOPREFIX or

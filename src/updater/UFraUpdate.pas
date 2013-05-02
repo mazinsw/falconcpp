@@ -54,7 +54,7 @@ begin
   try
     XMLDoc.LoadFromFile(UpdateXML);
   except
-    XMLDoc.Free;
+    //XMLDoc.Free;
     FrmUpdate.BtnCancel.Caption := STR_FRM_UPD[22];
     LblDesc.Caption := STR_FRM_UPD[16];
     Exit;
@@ -110,7 +110,7 @@ begin
       Result := True;
     end;
   end;
-  XMLDoc.Free;
+  //XMLDoc.Free;
   DeleteFile(UpdateXML);
 end;
 

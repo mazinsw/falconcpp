@@ -64,6 +64,7 @@ function GetLeftSpacing(CharCount, TabWidth: Integer; WantTabs: Boolean): string
 function CanDoubleQuotedStr(const S: string): Boolean;
 procedure SplitParams(const S: string; List: TStrings);
 procedure GetIncludeDirs(const ProjectDir, Flags: string; IncludeList: TStrings);
+procedure GetLibraryDirs(const ProjectDir, Libs: string; PathLibList: TStrings);
 function ExecuteFile(Handle: HWND; const Filename, Paramaters,
   Directory: string; Options: TExecuteFileOptions): Integer;
 procedure LoadFontNames(List: TStrings);
@@ -448,8 +449,7 @@ begin
   end;
 end;
 
-
-procedure GetIncludeDirs(const ProjectDir, Flags: string; IncludeList: TStrings);
+procedure GetFlagDirs(const ProjectDir, Flags, Token: string; OutList: TStrings);
 var
   I: Integer;
   List: TStringList;
@@ -459,16 +459,27 @@ begin
   SplitParams(Flags, List);
   for I := List.Count - 1 downto 0 do
   begin
-    if Copy(List.Strings[I], 1, 2) = '-I' then
+    if Copy(List.Strings[I], 1, Length(Token)) = Token then
     begin
-      Temp := StringReplace(Copy(List.Strings[I], 3, Length(List.Strings[I]) - 2),
+      Temp := StringReplace(Copy(List.Strings[I], 1 + Length(Token),
+        Length(List.Strings[I]) - Length(Token)),
         '"', '', [rfReplaceAll]);
       if ExtractFileDrive(Temp) = '' then
         Temp := ProjectDir + Temp;
-      IncludeList.Add(IncludeTrailingPathDelimiter(Temp));
+      OutList.Add(IncludeTrailingPathDelimiter(Temp));
     end;
   end;
   List.Free;
+end;
+
+procedure GetIncludeDirs(const ProjectDir, Flags: string; IncludeList: TStrings);
+begin
+  GetFlagDirs(ProjectDir, Flags, '-I', IncludeList);
+end;
+
+procedure GetLibraryDirs(const ProjectDir, Libs: string; PathLibList: TStrings);
+begin
+  GetFlagDirs(ProjectDir, Libs, '-L', PathLibList);
 end;
 
 procedure BitmapToAlpha(bmp: TBitmap; Color: TColor = clFuchsia);

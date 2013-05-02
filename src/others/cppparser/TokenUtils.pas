@@ -1216,15 +1216,28 @@ end;
 function GetVarType(const S: string): string;
 var
   I: Integer;
+  Temp, lower: string;
 begin
-  Result := S;
-  I := Pos('[', Result);
+  Temp := S;
+  I := Pos('[', Temp);
   if I > 0 then
-    Result := Copy(Result, 1, I - 1);
-  Result := GetLastWord(Result, True);
-  if (Result = 'inline') or (Result = 'static') or (Result = 'extern') or
-    (Result = 'virtual') then
-    Result := GetLastWord(GetAfterWord(Result), True);
+    Temp := Copy(Temp, 1, I - 1);
+  Result := '';
+  while Temp <> '' do
+  begin
+    Result := GetLastWord(Temp, True);
+    Temp := GetPriorWord(Temp);
+    lower := LowerCase(Result);
+    if (lower = 'inline') or (lower = 'static') or (lower = 'extern') or
+      (lower = 'virtual') or (Pos('call', lower) = Length(lower) - 3) or
+      (Pos('api', lower) = Length(lower) - 2) or
+      (Pos('export', lower) in [1, Length(lower) - 5]) then
+    begin
+      if Temp <> '' then
+        Continue;
+    end;
+    Break;
+  end;
 end;
 
 function StringToScopeClass(const S: string): TScopeClass;

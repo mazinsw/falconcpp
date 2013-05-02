@@ -441,8 +441,11 @@ begin
         TMethodInfo(fFileQueue.Pop).Free;
       //LeaveCriticalSection(fLock);
     end;
-    Synchronize(DoAllFinish);
-    fBusy := False;
+    if not Terminated then
+    begin
+      Synchronize(DoAllFinish);
+      fBusy := False;
+    end;
     if Terminated then
       Break;
   end;

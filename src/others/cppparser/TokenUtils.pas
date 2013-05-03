@@ -1400,6 +1400,50 @@ begin
   Result := pair_count = 0;
 end;
 
+function SkipInvPairGetCast(const init: PChar; var ptr: PChar; cs, ce: Char;
+  var Cast: string): Boolean;
+var
+  pair_count: Integer;
+begin
+  Result := False;
+  pair_count := 1;
+  if ptr^ = ce then
+  begin
+    Cast := '';
+    Dec(ptr);
+  end;
+  if ptr < init then
+    Exit;
+  repeat
+    case ptr^ of
+      '''': SkipSingleQuotesInv(init, ptr);
+      '"': SkipStringInv(init, ptr);
+      '/':
+        if (ptr > init) and ((ptr - 1)^ = '*') then
+        begin
+          if not SkipMultlineCommentInv(init, ptr) then
+            Exit;
+        end;
+    else
+      if ptr^ = ce then
+      begin
+        Cast := '';
+        Inc(pair_count);
+      end
+      else if ptr^ = cs then
+      begin
+        Dec(pair_count);
+        if pair_count = 0 then
+          Break;
+      end
+      else if ptr^ in LetterChars + DigitChars then
+        Cast := ptr^ + Cast;
+    end;
+    Dec(ptr);
+  until (ptr < init) or (pair_count = 0);
+  Result := pair_count = 0;
+end;
+
 function GetNextValidChar(const Text: string; SelStart: Integer): Char;
 var
   ptr, init: PChar;
@@ -1440,13 +1484,14 @@ function ParseFields(const Text: string; SelStart: Integer;
 var
   ptr, init: PChar;
   skipSpace: Boolean;
-  str, field, sep, _fields: string;
+  str, field, _sep, sep, _fields, cast: string;
 begin
   Result := False;
   InputError := False;
   init := PChar(Text);
   ptr := init + SelStart;
   str := '';
+  cast := '';
   skipSpace := False;
   if (ptr^ in LetterChars + DigitChars) then
   begin
@@ -1481,7 +1526,9 @@ begin
   if not IsValidName(str) and (str <> '') then
     Exit;
   _fields := '';
+  sep := '';
   repeat
+    _sep := sep;
     sep := '';
     //get separator
     repeat
@@ -1524,9 +1571,12 @@ begin
       end;
       Dec(ptr);
     until ptr < init;
-    if (ptr < init) or ((sep = '') {and (str <> '')}) or
-      ((field <> '') and (sep = '')) then
+    if (ptr < init) or (sep = '') or (field <> '') then
+    begin
+      if (sep = '') and (field = '') and (_sep <> '') and (cast <> '') then
+        _fields := cast + _sep + _fields;
       Break;
+    end;
     //skipspace
     while (ptr >= init) and (ptr^ in LineChars + SpaceChars) do
       Dec(ptr); //comment
@@ -1541,10 +1591,11 @@ begin
       else
         Break;
     end;
+    cast := '';
     field := '';
     repeat
       case ptr^ of
-        ')': SkipInvPair(init, ptr, '(', ')');
+        ')': SkipInvPairGetCast(init, ptr, '(', ')', cast);
         ']': SkipInvPair(init, ptr, '[', ']');
         '/':
           if (ptr = init) or ((ptr - 1)^ <> '*') then
@@ -1559,7 +1610,7 @@ begin
           field := ptr^ + field;
       end;
       Dec(ptr);
-    until (ptr < init) or not (ptr^ in LetterChars + DigitChars);
+    until (ptr < init) or not (ptr^ in LetterChars + DigitChars + [')', ']', '/']);
     if field <> '' then
       _fields := field + sep + _fields;
   until false;

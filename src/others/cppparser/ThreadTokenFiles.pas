@@ -434,20 +434,15 @@ begin
         ParseRecursiveA(Temp);
       end;
     until (fFileQueue.Count = 0) or fCancel;
-    if fCancel then
-    begin
-      //EnterCriticalSection(fLock);
-      while fFileQueue.Count > 0 do
-        TMethodInfo(fFileQueue.Pop).Free;
-      //LeaveCriticalSection(fLock);
-    end;
-    if not Terminated then
-    begin
-      Synchronize(DoAllFinish);
-      fBusy := False;
-    end;
     if Terminated then
       Break;
+    if fCancel then
+    begin
+      while fFileQueue.Count > 0 do
+        TMethodInfo(fFileQueue.Pop).Free;
+    end;
+    Synchronize(DoAllFinish);
+    fBusy := False;
   end;
 end;
 
@@ -480,8 +475,8 @@ end;
 
 procedure TThreadTokenFiles.Shutdown;
 begin
-  Cancel;
   Terminate;
+  Cancel;
   if (fRunEvent <> 0) and (fRunEvent <> INVALID_HANDLE_VALUE) then
     SetEvent(fRunEvent);
 end;

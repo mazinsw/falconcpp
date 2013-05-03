@@ -844,7 +844,8 @@ implementation
 uses
   UFrmAbout, UFrmNew, UFrmProperty, ExecWait, UTools, UFrmRemove,
   UFrmUpdate, ULanguages, UFrmEnvOptions, UFrmCompOptions, UFrmFind, AStyle,
-  UFrmGotoFunction, UFrmGotoLine, TBXThemes, Makefile, CodeTemplate;
+  UFrmGotoFunction, UFrmGotoLine, TBXThemes, Makefile, CodeTemplate,
+  SynEditStrConst;
 
 {$R *.dfm}
 {$R resources.res}
@@ -2037,20 +2038,20 @@ begin
   for I := 0 to List.Count - 1 do
   begin
     prop := TSourceFile(List.Objects[I]);
-    if prop.FileType = FILE_TYPE_RC then
+    if (prop <> nil) and (prop.FileType = FILE_TYPE_RC) then
       Continue;
     FileObj := TFileObject.Create;
     FileObj.ID := Prop;
-    if prop.GetSheet(sheet) then
+    if (prop <> nil) and prop.GetSheet(sheet) then
     begin
       FileObj.FileName := prop.FileName;
       FileObj.Text := sheet.Memo.Text;
       ObjList.AddObject('-', FileObj);
     end
-    else if prop.Saved then
+    else if (prop = nil) or (prop.Saved) then
     begin
       FileObj.FileName := List.Strings[I];
-      ObjList.AddObject(prop.FileName, FileObj);
+      ObjList.AddObject(FileObj.FileName, FileObj);
     end
     else
       FileObj.Free;
@@ -2721,6 +2722,7 @@ begin
   if FindedTokenFile <> nil then
   begin
     CurrentFileIsParsed := True;
+    FindedTokenFile.Data := FileProp;
     UpdateActiveFileToken(FindedTokenFile);
   end;
 end;
@@ -3342,6 +3344,8 @@ begin
   TreeViewProjectsChange(TreeViewProjects, TreeViewProjects.Selected);
   TextEditorExit(Self);
   PanelOutline.Visible := (PageControlEditor.PageCount > 0) and ViewOutline.Checked;
+  if not PanelOutline.Visible then
+    TreeViewOutline.Clear;
   Result := True;
 end;
 
@@ -4439,21 +4443,63 @@ end;
 procedure TFrmFalconMain.TextEditorFileParsed(EditFile: TSourceFile;
   TokenFile: TTokenFile);
 var
-  IncludeFileName: string;
-  I: Integer;
-  FileList: TStrings;
+  IncludeFileName, IncludeName: string;
+  I, J: Integer;
+  FileList, ParseList: TStrings;
+  Project: TProjectFile;
+  IncludeFile: TSourceFile;
 begin
   if TokenFile.Includes.Count = 0 then
     Exit;
   FileList := TStringList.Create;
+  ParseList := TStringList.Create;
   for I := 0 to TokenFile.Includes.Count - 1 do
   begin
-    IncludeFileName := Config.Compiler.Path + '\include\' +
-      ConvertSlashes(TokenFile.Includes.Items[I].Name);
+    IncludeName := ConvertSlashes(TokenFile.Includes.Items[I].Name);
+    if TokenFile.Includes.Items[I].Flag = 'S' then
+    begin
+      for J := 0 to FilesParsed.PathList.Count - 1 do
+      begin
+        IncludeFileName := FilesParsed.PathList.Strings[J] + IncludeName;
+        if FileExists(IncludeFileName) then
+          Break;
+      end;
+    end
+    else
+    begin
+      IncludeFileName := ExtractFilePath(TokenFile.FileName) + IncludeName;
+      if not FileExists(IncludeFileName) then
+      begin
+        for J := 0 to FilesParsed.PathList.Count - 1 do
+        begin
+          IncludeFileName := FilesParsed.PathList.Strings[J] + IncludeName;
+          if FileExists(IncludeFileName) then
+            Break;
+        end;
+      end;
+    end;
+    if CompareText(IncludeFileName, Config.Compiler.Path + '\include\' +
+      IncludeName) <> 0 then
+    begin
+      if EditFile <> nil then
+      begin
+        Project := EditFile.Project;
+        IncludeFile := Project.GetFileByPathName(
+          ExtractRelativePath(ExtractFilePath(Project.FileName), IncludeFileName));
+        if (IncludeFile = nil) and (FilesParsed.ItemOfByFileName(IncludeFileName) = nil) then
+        begin
+          if FileExists(IncludeFileName) then
+            ParseList.AddObject(IncludeFileName, nil);
+        end;
+      end;
+      Continue;
+    end;
     FileList.Add(IncludeFileName);
   end;
   ThreadLoadTkFiles.LoadRecursive(FileList, Config.Compiler.Path +
     '\include\', ConfigRoot + 'include\', '.h.prs');
+  ParseFiles(ParseList);
+  ParseList.Free;
   FileList.Free;
 end;
 
@@ -4647,7 +4693,7 @@ var
   InputError: Boolean;
 begin
   //#include <stdio.h>
-  if (AttriName = 'Preprocessor') and (FirstWord = 'include') then
+  if (AttriName = SYNS_AttrPreprocessor) and (FirstWord = 'include') then
   begin
     S := ConvertSlashes(S);
     if not GetActiveSheet(sheet) then
@@ -4817,7 +4863,7 @@ var
   emptyLine, replaceLine: Boolean;
   str, LineStr, S, token: string;
   p: PChar;
-  i, j, SpaceCount1: Integer;
+  i, j, SpaceCount1, BracketBalacing: Integer;
   bStart, bEnd: TBufferCoord;
   attri: TSynHighlighterAttributes;
   bCoord: TBufferCoord;
@@ -4833,10 +4879,10 @@ begin
       bCoord.Char := Length(sheet.Memo.Lines.Strings[bCoord.Line - 1]);
     if sheet.Memo.GetHighlighterAttriAtRowCol(bCoord, token, attri) then
     begin
-      if (attri.Name = 'Comment') or (attri.Name = 'Documentation Comment') or
-        (attri.Name = 'String') or (attri.Name = 'Character') then
+      if (attri.Name = SYNS_AttrComment) or (attri.Name = SYNS_AttrDocComment) or
+        (attri.Name = SYNS_AttrString) or (attri.Name = SYNS_AttrCharacter) then
         Exit;
-      if (Key in ['"', '<']) and (attri.Name = 'Preprocessor') and (Pos('include', LineStr) > 0) and
+      if (Key in ['"', '<']) and (attri.Name = SYNS_AttrPreprocessor) and (Pos('include', LineStr) > 0) and
         (Pos('"', LineStr) = 0) and (Pos('<', LineStr) = 0) and (Pos('>', LineStr) = 0) then
       begin
         sheet.Memo.SelText := Key;
@@ -4847,17 +4893,21 @@ begin
     end;
     if Key = '(' then
     begin
-      if not Config.Editor.AutoCloseBrackets then
-        Exit;
-      Key := #0;
-      sheet.Memo.SelText := '()';
-      sheet.Memo.CaretX := sheet.Memo.CaretX - 1;
-      TimerHintParams.Enabled := False;
-      TimerHintParams.Enabled := True;
+      if Config.Editor.AutoCloseBrackets and
+        (sheet.Memo.GetBalancingBracketEx(sheet.Memo.CaretXY, '(') <= 0) then
+      begin
+        Key := #0;
+        sheet.Memo.SelText := '()';
+        sheet.Memo.CaretX := sheet.Memo.CaretX - 1;
+        TimerHintParams.Enabled := False;
+        TimerHintParams.Enabled := True;
+      end;
     end
     else if Key = '[' then
     begin
       if not Config.Editor.AutoCloseBrackets then
+        Exit;
+      if sheet.Memo.GetBalancingBracketEx(sheet.Memo.CaretXY, '[') > 0 then
         Exit;
       sheet.Memo.SelText := ']';
       sheet.Memo.CaretX := sheet.Memo.CaretX - 1;
@@ -4959,7 +5009,14 @@ begin
           sheet.Memo.BeginUpdate;
           if replaceLine then
             sheet.Memo.SetCaretAndSelection(bStart, bStart, bEnd);
-          sheet.Memo.SelText := str;
+          BracketBalacing := sheet.Memo.GetBalancingBracketEx(sheet.Memo.CaretXY, '{');
+          if BracketBalacing <= 0 then
+            sheet.Memo.SelText := str
+          else
+          begin
+            I := Pos('{', str);
+            sheet.Memo.SelText := Copy(str, 1, I);
+          end;
           sheet.Memo.EndUpdate;
           Inc(bStart.Line);
           bStart.Char := Length(GetLeftSpacing(SpaceCount1 + sheet.Memo.TabWidth,
@@ -4981,8 +5038,12 @@ begin
       begin
         if not Config.Editor.AutoCloseBrackets then
           Exit;
-        sheet.Memo.SelText := '}';
-        sheet.Memo.CaretX := sheet.Memo.CaretX - 1;
+        BracketBalacing := sheet.Memo.GetBalancingBracketEx(sheet.Memo.CaretXY, '{');
+        if BracketBalacing <= 0 then
+        begin
+          sheet.Memo.SelText := '}';
+          sheet.Memo.CaretX := sheet.Memo.CaretX - 1;
+        end;
       end;
     end;
   end;
@@ -6311,14 +6372,14 @@ begin
   QuoteChar := #0;
   if Memo.GetHighlighterAttriAtRowCol(BufferCoord, S, Attri) then
   begin
-    if StringIn(Attri.Name, ['Preprocessor']) then
+    if StringIn(Attri.Name, [SYNS_AttrPreprocessor]) then
     begin
       HintParams.Cancel;
       Exit;
     end;
-    if (Attri.Name = 'String') then
+    if (Attri.Name = SYNS_AttrString) then
       QuoteChar := '"'
-    else if (Attri.Name = 'Character') then
+    else if (Attri.Name = SYNS_AttrCharacter) then
       QuoteChar := '''';
     if QuoteChar <> #0 then
     begin
@@ -6326,9 +6387,9 @@ begin
       InQuote := True;
       if Memo.GetHighlighterAttriAtRowCol(BufferCoord, S, Attri) then
       begin
-        if (Attri.Name = 'String') then
+        if (Attri.Name = SYNS_AttrString) then
           QuoteChar := '"'
-        else if (Attri.Name = 'Character') then
+        else if (Attri.Name = SYNS_AttrCharacter) then
           QuoteChar := ''''
         else
           InQuote := False;
@@ -6365,8 +6426,6 @@ begin
   Fields := Fields + Input;
   Input := GetFirstWord(Fields);
   ParamsList := TStringList.Create;
-  //if ThreadFilesParsed.Busy then
-  //  ThreadFilesParsed.WaitFor;
   TokenFileItem := ActiveEditingFile;
   //show function params
   if not FilesParsed.GetFieldsBaseParams(Input, Fields, BracketStart,
@@ -6509,7 +6568,7 @@ begin
   for I := 0 to AllParsedList.Count - 1 do
   begin
     FileToken := TTokenFile(AllParsedList.Objects[I]);
-    TextEditorFileParsed(nil, FileToken);
+    TextEditorFileParsed(TSourceFile(FileToken.Data), FileToken);
   end;
   AllParsedList.Clear;
   //update grayed project and outline
@@ -6624,9 +6683,9 @@ begin
     attri) then
   begin
     //invalid attribute
-    if ((not StringIn(attri.Name, ['Identifier', 'Preprocessor']) or
+    if ((not StringIn(attri.Name, ['Identifier', SYNS_AttrPreprocessor]) or
       (Pos('include', Input) > 0)) and not DebugReader.Running) or
-      (StringIn(attri.Name, ['String', 'Comment', 'Documentation Comment', 'Preprocessor']) and
+      (StringIn(attri.Name, [SYNS_AttrString, SYNS_AttrComment, SYNS_AttrDocComment, SYNS_AttrPreprocessor]) and
       DebugReader.Running) then
     begin
       HintTip.Cancel;
@@ -6667,8 +6726,6 @@ begin
       end;
       Exit;
     end;
-    //if ThreadFilesParsed.Busy then
-    //  ThreadFilesParsed.WaitFor;
     // show hint
     if FilesParsed.FindDeclaration(Input, Fields, ActiveEditingFile, TokenFileItem,
       Token, I, BufferCoord.Line) then
@@ -6779,8 +6836,6 @@ var
   InputError: Boolean;
   //StartTicks: Cardinal;
 begin
-  //if ThreadFilesParsed.Busy then
-  //  ThreadFilesParsed.WaitFor;
   Input := '';
   CanExecute := False;
   if not Config.Editor.CodeCompletion then
@@ -6816,17 +6871,17 @@ begin
   end;
   if sheet.Memo.GetHighlighterAttriAtRowCol(Buffer, S, Attri) then
   begin
-    if StringIn(Attri.Name, ['Character', 'String', 'Documentation Comment', 'Comment',
-      'Preprocessor']) then
+    if StringIn(Attri.Name, [SYNS_AttrCharacter, SYNS_AttrString, SYNS_AttrDocComment, SYNS_AttrComment,
+      SYNS_AttrPreprocessor]) then
     begin
       Dec(Buffer.Char);
-      if (Attri.Name <> 'Preprocessor') and
+      if (Attri.Name <> SYNS_AttrPreprocessor) and
         sheet.Memo.GetHighlighterAttriAtRowCol(Buffer, S, Attri) then
       begin
-        if StringIn(Attri.Name, ['Character', 'String', 'Documentation Comment', 'Comment',
-          'Preprocessor']) then
+        if StringIn(Attri.Name, [SYNS_AttrCharacter, SYNS_AttrString, SYNS_AttrDocComment, SYNS_AttrComment,
+          SYNS_AttrPreprocessor]) then
         begin
-          if (Attri.Name = 'Preprocessor') and (Pos('include', LineStr) > 0) and
+          if (Attri.Name = SYNS_AttrPreprocessor) and (Pos('include', LineStr) > 0) and
             (Pos('>', LineStr) = 0) and (CountChar(LineStr, '"') <= 1) and
             ((Pos('<', LineStr) > 0) or (Pos('"', LineStr) > 0)) then
           begin
@@ -6843,7 +6898,7 @@ begin
       end
       else
       begin
-        if (Attri.Name = 'Preprocessor') and (Pos('include', LineStr) > 0) and
+        if (Attri.Name = SYNS_AttrPreprocessor) and (Pos('include', LineStr) > 0) and
           (Pos('>', LineStr) = 0) and (CountChar(LineStr, '"') <= 1) and
             ((Pos('<', LineStr) > 0) or (Pos('"', LineStr) > 0)) then
         begin
@@ -6863,17 +6918,17 @@ begin
     Dec(Buffer.Char);
     if sheet.Memo.GetHighlighterAttriAtRowCol(Buffer, S, Attri) then
     begin
-      if StringIn(Attri.Name, ['Character', 'String', 'Documentation Comment', 'Comment',
-        'Preprocessor']) then
+      if StringIn(Attri.Name, [SYNS_AttrCharacter, SYNS_AttrString, SYNS_AttrDocComment, SYNS_AttrComment,
+        SYNS_AttrPreprocessor]) then
       begin
         Dec(Buffer.Char);
-        if (Attri.Name <> 'Preprocessor') and
+        if (Attri.Name <> SYNS_AttrPreprocessor) and
           sheet.Memo.GetHighlighterAttriAtRowCol(Buffer, S, Attri) then
         begin
-          if StringIn(Attri.Name, ['Character', 'String', 'Documentation Comment', 'Comment',
-            'Preprocessor']) then
+          if StringIn(Attri.Name, [SYNS_AttrCharacter, SYNS_AttrString,
+            SYNS_AttrDocComment, SYNS_AttrComment, SYNS_AttrPreprocessor]) then
           begin
-            if (Attri.Name = 'Preprocessor') and (Pos('include', LineStr) > 0)
+            if (Attri.Name = SYNS_AttrPreprocessor) and (Pos('include', LineStr) > 0)
               and (Pos('>', LineStr) = 0) and (CountChar(LineStr, '"') <= 1) and
             ((Pos('<', LineStr) > 0) or (Pos('"', LineStr) > 0)) then
             begin
@@ -6890,7 +6945,7 @@ begin
         end
         else
         begin
-          if (Attri.Name = 'Preprocessor') and (Pos('include', LineStr) > 0)
+          if (Attri.Name = SYNS_AttrPreprocessor) and (Pos('include', LineStr) > 0)
             and (Pos('>', LineStr) = 0) and (CountChar(LineStr, '"') <= 1) and
             ((Pos('<', LineStr) > 0) or (Pos('"', LineStr) > 0)) then
           begin
@@ -7085,7 +7140,7 @@ begin
   end;
   if sheet.Memo.GetHighlighterAttriAtRowCol(bCoord, S, Attri) then
   begin
-    if (Attri.Name = 'Preprocessor') and (Pos('include', LineStr) > 0) then
+    if (Attri.Name = SYNS_AttrPreprocessor) and (Pos('include', LineStr) > 0) then
     begin
       WordBreakChars := '<>"';
     end;
@@ -8355,6 +8410,7 @@ begin
     scopeToken := TTokenClass(List.Objects[I]);
     AddWatchDebugVariables(scopeToken, Line, LastID, VarAdded);
   end;
+  AddWatchDebugVariables(ActiveEditingFile.VarConsts, Line, LastID, VarAdded);
   if ShowContent and (VarAdded > 0) then
     DebugReader.SendCommand(GDB_DISPLAY);
   List.Free;

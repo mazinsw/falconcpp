@@ -103,6 +103,8 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+    function GetBalancingBracketEx(const APoint: TBufferCoord;
+      Bracket: Char): Integer;
     property LinkEnable: Boolean read fLinkEnable write fLinkEnable;
     property LinkOptions: TSynLinkOptions
       read fLinkOptions write fLinkOptions;
@@ -121,7 +123,7 @@ implementation
 
 
 uses
-  SysUtils;
+  SysUtils, Contnrs;
 
 function GetFirstWord(const S: String): String;
 const
@@ -1257,6 +1259,139 @@ begin
     Dec(I, J)
   else if I <= J then
     I := TabWidth;
+end;
+
+function TSynEditEx.GetBalancingBracketEx(
+  const APoint: TBufferCoord; Bracket: Char): Integer;
+const
+  Brackets: array[0..7] of char = ('(', ')', '[', ']', '{', '}', '<', '>');    
+var
+  Line: string;
+  i, PosX, PosY, Len: integer;
+  Test, BracketInc, BracketDec: char;
+  vDummy: string;
+  OpenCount, CloseCount: Integer;
+  attr:TSynHighlighterAttributes;
+  p: TBufferCoord;
+  isCommentOrString:boolean;
+  Stack: TStack;
+begin
+  Test := Bracket;
+  OpenCount := 0;
+  CloseCount := 0;
+  // is it one of the recognized brackets?
+  for i := Low(Brackets) to High(Brackets) do
+    if Test = Brackets[i] then
+    begin
+      // this is the bracket, get the matching one and the direction
+      if i < (i xor 1) then
+      begin
+        BracketInc := Brackets[i];
+        BracketDec := Brackets[i xor 1]; // 0 -> 1, 1 -> 0, ...
+      end
+      else
+      begin
+        BracketInc := Brackets[i xor 1]; // 0 -> 1, 1 -> 0, ...
+        BracketDec := Brackets[i];
+      end;
+      // position of balancing
+      PosX := APoint.Char;
+      PosY := APoint.Line;
+      Line := Lines[PosY - 1];
+      // count the matching bracket
+      Stack := TStack.Create;
+      repeat
+        // search until start of line
+        while PosX > 1 do
+        begin
+          Dec(PosX);
+          Test := Line[PosX];
+{$IFDEF SYN_MBCSSUPPORT}
+          if (Test in LeadBytes) then
+          begin
+            Dec(PosX);
+            Continue;
+          end;
+{$ENDIF}
+          p.Char := PosX;
+          p.Line := PosY;
+          if (Test = BracketInc) or (Test = BracketDec) then
+          begin
+            if GetHighlighterAttriAtRowCol( p, vDummy, attr ) then
+              isCommentOrString:=
+               (attr = Highlighter.StringAttribute) or (attr=Highlighter.CommentAttribute) or
+               (attr.Name = SYNS_AttrDocComment) or (attr.Name = SYNS_AttrCharacter)
+            else isCommentOrString:=false;
+            if (Test = BracketInc) and (not isCommentOrString) then
+            begin
+              if (Stack.Count > 0) and (Char(Stack.Peek) = BracketDec) then
+                Stack.Pop
+              else
+                Inc(OpenCount);
+            end
+            else if (Test = BracketDec) and (not isCommentOrString) then
+              Stack.Push(Pointer(BracketDec));
+          end;
+        end;
+        // get previous line if possible
+        Dec(PosY);
+        if PosY = 0 then Break;
+        Line := Lines[PosY - 1];
+        PosX := Length(Line) + 1;
+      until False;
+      Stack.Free;
+
+      // position of balancing
+      PosX := APoint.Char - 1;
+      PosY := APoint.Line;
+      Line := Lines[PosY - 1];
+      Stack := TStack.Create;
+      repeat
+        // search until end of line
+        Len := Length(Line);
+        while PosX < Len do
+        begin
+          Inc(PosX);
+          Test := Line[PosX];
+{$IFDEF SYN_MBCSSUPPORT}
+          if (Test in LeadBytes) then
+          begin
+            Inc(PosX);
+            Continue;
+          end;
+{$ENDIF}
+          p.Char := PosX;
+          p.Line := PosY;
+          if (Test = BracketInc) or (Test = BracketDec) then
+          begin
+            if GetHighlighterAttriAtRowCol( p, vDummy, attr ) then
+              isCommentOrString:=
+                (attr=Highlighter.StringAttribute) or (attr=Highlighter.CommentAttribute) or
+                (attr.Name = SYNS_AttrDocComment) or (attr.Name = SYNS_AttrCharacter)
+            else isCommentOrString:=false;
+            if (Test = BracketInc) and (not isCommentOrString) then
+              Stack.Push(Pointer(BracketInc))
+            else if (Test = BracketDec)and (not isCommentOrString) then
+            begin
+              if (Stack.Count > 0) and (Char(Stack.Peek) = BracketInc) then
+                Stack.Pop
+              else
+                Inc(CloseCount);
+            end;
+          end;
+        end;
+        // get next line if possible
+        if PosY = Lines.Count then
+          Break;
+        Inc(PosY);
+        Line := Lines[PosY - 1];
+        PosX := 0;
+      until False;
+      Stack.Free;
+      // don't test the other brackets, we're done
+      Break;
+    end;
+  Result := CloseCount - OpenCount;
 end;
 
 end.

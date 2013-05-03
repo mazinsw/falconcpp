@@ -437,7 +437,6 @@ object FrmFalconMain: TFrmFalconMain
           end
           object FileImpMSVC: TTBXItem
             Caption = 'MS Visual C++ Project'
-            Enabled = False
             OnClick = ImportFromMSVC
           end
         end

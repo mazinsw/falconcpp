@@ -1571,7 +1571,7 @@ begin
       end;
       Dec(ptr);
     until ptr < init;
-    if (ptr < init) or (sep = '') or (field <> '') then
+    if (ptr < init) or (sep = '') then
     begin
       if (sep = '') and (field = '') and (_sep <> '') and (cast <> '') then
         _fields := cast + _sep + _fields;

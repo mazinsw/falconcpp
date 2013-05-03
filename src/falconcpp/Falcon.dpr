@@ -54,7 +54,8 @@ uses
   NativeHintWindow in '..\others\nativehint\NativeHintWindow.pas',
   rbtree in 'rbtree.pas',
   SynEditEx in 'SynEditEx.pas',
-  CodeTemplate in 'CodeTemplate.pas';
+  CodeTemplate in 'CodeTemplate.pas',
+  UFrmVisualCppOptions in 'UFrmVisualCppOptions.pas' {FrmVisualCppOptions};
 
 function OpenWithOther: Boolean;
 var

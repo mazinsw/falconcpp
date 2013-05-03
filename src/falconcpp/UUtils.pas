@@ -63,8 +63,10 @@ function TranslateSpecialChars(const S: string): string;
 function GetLeftSpacing(CharCount, TabWidth: Integer; WantTabs: Boolean): string;
 function CanDoubleQuotedStr(const S: string): Boolean;
 procedure SplitParams(const S: string; List: TStrings);
-procedure GetIncludeDirs(const ProjectDir, Flags: string; IncludeList: TStrings);
-procedure GetLibraryDirs(const ProjectDir, Libs: string; PathLibList: TStrings);
+procedure GetIncludeDirs(const ProjectDir, Flags: string; IncludeList: TStrings;
+  Expand: Boolean = False);
+procedure GetLibraryDirs(const ProjectDir, Libs: string; PathLibList: TStrings;
+  Expand: Boolean = False);
 function ExecuteFile(Handle: HWND; const Filename, Paramaters,
   Directory: string; Options: TExecuteFileOptions): Integer;
 procedure LoadFontNames(List: TStrings);
@@ -449,7 +451,8 @@ begin
   end;
 end;
 
-procedure GetFlagDirs(const ProjectDir, Flags, Token: string; OutList: TStrings);
+procedure GetFlagDirs(const ProjectDir, Flags, Token: string; OutList: TStrings;
+  Expand: Boolean);
 var
   I: Integer;
   List: TStringList;
@@ -466,20 +469,25 @@ begin
         '"', '', [rfReplaceAll]);
       if ExtractFileDrive(Temp) = '' then
         Temp := ProjectDir + Temp;
-      OutList.Add(IncludeTrailingPathDelimiter(Temp));
+      if Expand then
+        OutList.Add(ExpandFileName(IncludeTrailingPathDelimiter(Temp)))
+      else
+        OutList.Add(IncludeTrailingPathDelimiter(Temp));
     end;
   end;
   List.Free;
 end;
 
-procedure GetIncludeDirs(const ProjectDir, Flags: string; IncludeList: TStrings);
+procedure GetIncludeDirs(const ProjectDir, Flags: string; IncludeList: TStrings;
+  Expand: Boolean);
 begin
-  GetFlagDirs(ProjectDir, Flags, '-I', IncludeList);
+  GetFlagDirs(ProjectDir, Flags, '-I', IncludeList, Expand);
 end;
 
-procedure GetLibraryDirs(const ProjectDir, Libs: string; PathLibList: TStrings);
+procedure GetLibraryDirs(const ProjectDir, Libs: string; PathLibList: TStrings;
+  Expand: Boolean);
 begin
-  GetFlagDirs(ProjectDir, Libs, '-L', PathLibList);
+  GetFlagDirs(ProjectDir, Libs, '-L', PathLibList, Expand);
 end;
 
 procedure BitmapToAlpha(bmp: TBitmap; Color: TColor = clFuchsia);

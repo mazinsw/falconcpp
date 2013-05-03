@@ -697,7 +697,7 @@ type
 
     //functions
     procedure AddFilesToProject(Files: TStrings; Parent: TSourceFile;
-      References: Boolean);
+      References: Boolean; ImportMode: Boolean = False);
     procedure StopAll;
     procedure RunApplication(ProjectFile: TProjectFile);
     procedure ExecuteApplication(ProjectFile: TProjectFile);
@@ -845,7 +845,7 @@ uses
   UFrmAbout, UFrmNew, UFrmProperty, ExecWait, UTools, UFrmRemove,
   UFrmUpdate, ULanguages, UFrmEnvOptions, UFrmCompOptions, UFrmFind, AStyle,
   UFrmGotoFunction, UFrmGotoLine, TBXThemes, Makefile, CodeTemplate,
-  SynEditStrConst;
+  SynEditStrConst, StrUtils, UFrmVisualCppOptions;
 
 {$R *.dfm}
 {$R resources.res}
@@ -2870,7 +2870,8 @@ begin
     begin
       LastSelectedProject := ProjProp;
       FilesParsed.IncludeList.Clear;
-      GetIncludeDirs(ExtractFilePath(ProjProp.FileName), ProjProp.Flags, FilesParsed.IncludeList);
+      GetIncludeDirs(ExtractFilePath(ProjProp.FileName), ProjProp.Flags,
+        FilesParsed.IncludeList, True);
     end;
     //Reload Tokens ?
     //if not DebugReader.Running then
@@ -3919,7 +3920,7 @@ begin
 end;
 
 procedure TFrmFalconMain.AddFilesToProject(Files: TStrings; Parent: TSourceFile;
-  References: Boolean);
+  References: Boolean; ImportMode: Boolean);
 var
   NewFile, OwnerFile: TSourceFile;
   I: Integer;
@@ -3981,8 +3982,11 @@ begin
       OwnerFile,
       True,
       False);
-    NewFile.Project.PropertyChanged := True;
-    NewFile.Project.CompilePropertyChanged := True;
+    if not ImportMode then
+    begin
+      NewFile.Project.PropertyChanged := True;
+      NewFile.Project.CompilePropertyChanged := True;
+    end;
     if not References then
       NewFile.Edit.Memo.Lines.LoadFromFile(Files.Strings[I])
     else
@@ -4445,52 +4449,79 @@ procedure TFrmFalconMain.TextEditorFileParsed(EditFile: TSourceFile;
 var
   IncludeFileName, IncludeName: string;
   I, J: Integer;
-  FileList, ParseList: TStrings;
+  FileList, ParseList, IncludeList: TStrings;
   Project: TProjectFile;
   IncludeFile: TSourceFile;
+  FileExistsFlag, CompilerHeaderFile: Boolean;
 begin
   if TokenFile.Includes.Count = 0 then
     Exit;
   FileList := TStringList.Create;
   ParseList := TStringList.Create;
+  IncludeList := TStringList.Create;
+  Project := nil;
+  if (EditFile <> nil) then
+    Project := EditFile.Project;
+  if (Project <> nil) then
+    GetIncludeDirs(ExtractFilePath(Project.FileName), Project.Flags, IncludeList, True);
   for I := 0 to TokenFile.Includes.Count - 1 do
   begin
+    FileExistsFlag := False;
     IncludeName := ConvertSlashes(TokenFile.Includes.Items[I].Name);
-    if TokenFile.Includes.Items[I].Flag = 'S' then
+    // search include file on same directory
+    if TokenFile.Includes.Items[I].Flag = 'L' then
     begin
+      IncludeFileName := ExtractFilePath(TokenFile.FileName) + IncludeName;
+      if FileExists(IncludeFileName) then
+        FileExistsFlag := True;
+    end;
+    if not FileExistsFlag then
+    begin
+      // search include file on project flags include directories
+      for J := 0 to IncludeList.Count - 1 do
+      begin
+        IncludeFileName := IncludeList.Strings[J] + IncludeName;
+        if FileExists(IncludeFileName) then
+        begin
+          FileExistsFlag := True;
+          Break;
+        end;
+      end;
+    end;
+    CompilerHeaderFile := False;
+    if not FileExistsFlag then
+    begin
+      // search include file on compiler include path
       for J := 0 to FilesParsed.PathList.Count - 1 do
       begin
         IncludeFileName := FilesParsed.PathList.Strings[J] + IncludeName;
         if FileExists(IncludeFileName) then
-          Break;
-      end;
-    end
-    else
-    begin
-      IncludeFileName := ExtractFilePath(TokenFile.FileName) + IncludeName;
-      if not FileExists(IncludeFileName) then
-      begin
-        for J := 0 to FilesParsed.PathList.Count - 1 do
         begin
-          IncludeFileName := FilesParsed.PathList.Strings[J] + IncludeName;
-          if FileExists(IncludeFileName) then
-            Break;
+          FileExistsFlag := True;
+          CompilerHeaderFile := True;
+          Break;
         end;
       end;
     end;
-    if CompareText(IncludeFileName, Config.Compiler.Path + '\include\' +
-      IncludeName) <> 0 then
+    if not FileExistsFlag then
+      Continue;
+    // don't parse compiler header file
+    if not CompilerHeaderFile then
     begin
-      if EditFile <> nil then
+      //if CompareText(IncludeFileName, Config.Compiler.Path + '\include\' + IncludeName) = 0 then
+      //  raise Exception.Create('Cannot load compiler header file');
+      // check if file is an project
+      if (Project <> nil) then
       begin
-        Project := EditFile.Project;
         IncludeFile := Project.GetFileByPathName(
           ExtractRelativePath(ExtractFilePath(Project.FileName), IncludeFileName));
-        if (IncludeFile = nil) and (FilesParsed.ItemOfByFileName(IncludeFileName) = nil) then
-        begin
-          if FileExists(IncludeFileName) then
-            ParseList.AddObject(IncludeFileName, nil);
-        end;
+      end
+      else
+        IncludeFile := nil;
+      if IncludeFile = nil then
+      begin
+        if (FilesParsed.ItemOfByFileName(IncludeFileName) = nil) then
+          ParseList.AddObject(IncludeFileName, nil);
       end;
       Continue;
     end;
@@ -4499,6 +4530,7 @@ begin
   ThreadLoadTkFiles.LoadRecursive(FileList, Config.Compiler.Path +
     '\include\', ConfigRoot + 'include\', '.h.prs');
   ParseFiles(ParseList);
+  IncludeList.Free;
   ParseList.Free;
   FileList.Free;
 end;
@@ -4734,7 +4766,15 @@ begin
     end;
     if FileExists(FileName) then
     begin
-      OpenFile(FileName).Edit;
+      with OpenFile(FileName).Edit do
+      begin
+        if sheet.Memo.ReadOnly then
+        begin
+          Memo.ReadOnly := True;
+          SourceFile.ReadOnly := True;
+          Font.Color := clGrayText;
+        end;
+      end;
       Exit;
     end;
     //search in compiler folder
@@ -5839,8 +5879,312 @@ end;
 
 function TFrmFalconMain.ImportMSVCProject(const FileName: string;
   var Proj: TProjectFile): Boolean;
+
+  function GetTagProperty(Node: IXMLNode; Tag, Attribute: string;
+    Default: string = ''): string;
+  var
+    Temp: IXMLNode;
+  begin
+    Temp := Node.ChildNodes.FindNode(Tag);
+    if (Temp <> nil) and Temp.HasAttribute(Attribute) then
+      Result := Temp.Attributes[Attribute]
+    else
+      Result := Default;
+  end;
+
+  function GetAttribute(Node: IXMLNode; Attribute: string;
+    Default: string = ''): string;
+  begin
+    if (Node <> nil) and Node.HasAttribute(Attribute) then
+      Result := Node.Attributes[Attribute]
+    else
+      Result := Default;
+  end;
+
+  procedure LoadFiles(XMLNode: IXMLNode; FileList: TStrings);
+  var
+    TempNode: IXMLNode;
+    RelativePath, ProjectPath: string;
+  begin
+    TempNode := XMLNode.ChildNodes.First;
+    while TempNode <> nil do
+    begin
+      if TempNode.NodeName = 'Filter' then
+      begin
+        LoadFiles(TempNode, FileList);
+        TempNode := TempNode.NextSibling;
+        Continue;
+      end;
+      if TempNode.NodeName <> 'File' then
+      begin
+        TempNode := TempNode.NextSibling;
+        Continue;
+      end;
+      ProjectPath := ExtractFilePath(FileName);
+      RelativePath := TempNode.Attributes['RelativePath'];
+      if not (GetFileType(RelativePath) in [FILE_TYPE_C, FILE_TYPE_CPP,
+        FILE_TYPE_H, FILE_TYPE_RC]) or not FileExists(ProjectPath + RelativePath) then
+      begin
+        TempNode := TempNode.NextSibling;
+        Continue;
+      end;
+      FileList.Add(RelativePath);
+      TempNode := TempNode.NextSibling;
+    end;
+  end;
+
+var
+  XMLDoc: TXMLDocument;
+  ProjNode, ConfigNode, FilesNode, TempNode: IXMLNode;
+  Node: TTreeNode;
+  NewPrj: TProjectFile;
+  I, J, ConfigurationType: Integer;
+  TempStr, ProjectType, ProjectVersion, OutputDirectory, Flags, Libs,
+  TempName, OutputFile: string;
+  ExtAuto, createStaticLib, createDefFile: Boolean;
+  Version: TVersion;
+  List: TStringList;
 begin
   Result := False;
+  if not FileExists(FileName) then
+    Exit;
+  XMLDoc := TXMLDocument.Create(FrmFalconMain);
+  try
+    XMLDoc.LoadFromFile(FileName);
+  except
+    Exit;
+  end;
+  //main tag
+  ProjNode := XMLDoc.ChildNodes.FindNode('VisualStudioProject');
+  if (ProjNode = nil) then
+  begin
+    //XMLDoc.Free;
+    Exit;
+  end;
+  ProjectType := GetAttribute(ProjNode, 'ProjectType');
+  ProjectVersion := GetAttribute(ProjNode, 'Version');
+  ProjectVersion := StringReplace(ProjectVersion, ',', '.', [rfReplaceAll]);
+  case CountChar(ProjectVersion, '.') of
+    0: ProjectVersion := ProjectVersion + '.0.0.0';
+    1: ProjectVersion := ProjectVersion + '.0.0';
+    2: ProjectVersion := ProjectVersion + '.0';
+  end;
+  Version := ParseVersion(ProjectVersion);
+  if (ProjectType <> 'Visual C++') or not
+    ((CompareVersion(Version, ParseVersion('7.10.0.0')) >= 0) and
+     (CompareVersion(Version, ParseVersion('9.00.0.0')) <= 0)) then
+  begin
+    //XMLDoc.Free;
+    Exit;
+  end;
+  //Configurations tag
+  ConfigNode := ProjNode.ChildNodes.FindNode('Configurations');
+  if ConfigNode = nil then
+  begin
+    //XMLDoc.Free;
+    Exit;
+  end;
+  I := -1;
+  List := TStringList.Create;
+  TempNode := ConfigNode.ChildNodes.First;
+  while TempNode <> nil do
+  begin
+    if (TempNode.NodeName = 'Configuration') then
+    begin
+      List.AddObject(TempNode.Attributes['Name'], Pointer(TempNode));
+      if (Pos('DEBUG', UpperCase(TempNode.Attributes['Name'])) = 0) and (I < 0) then
+        I := List.Count - 1;
+    end;
+    TempNode := TempNode.NextSibling;
+  end;
+  if (List.Count > 1) and ShowVisualCppOptions(Handle, List, I) then
+    TempNode := IXMLNode(Pointer(List.Objects[I]))
+  else if (List.Count = 1) then
+    TempNode := IXMLNode(Pointer(List.Objects[0]));
+  List.Free;
+  ConfigNode := TempNode;
+  if ConfigNode = nil then
+  begin
+    //XMLDoc.Free;
+    Exit;
+  end;
+  OutputDirectory := GetAttribute(ConfigNode, 'OutputDirectory');
+  ConfigurationType := StrToInt(GetAttribute(ConfigNode, 'ConfigurationType', '0'));
+  Node := TreeViewProjects.Items.AddChild(nil, '');
+  NewPrj := TProjectFile.Create(Node);
+  NewPrj.Project := NewPrj;
+  NewPrj.FileType := FILE_TYPE_PROJECT;
+  Node.Data := NewPrj;
+  NewPrj.FileName := ChangeFileExt(FileName, '.fpj');
+  NewPrj.Compiled := False;
+  NewPrj.CompilerType := COMPILER_CPP;
+  Node.Text := NewPrj.Name;
+  Node.Selected := True;
+  Node.Focused := True;
+
+  TempNode := ConfigNode.ChildNodes.First;
+  while TempNode <> nil do
+  begin
+    if (TempNode.NodeName = 'Tool') and
+      (TempNode.Attributes['Name'] = 'VCCLCompilerTool') then
+      Break;
+    TempNode := TempNode.NextSibling;
+  end;
+  Flags := '';
+  if TempNode <> nil then
+  begin
+    TempStr := GetAttribute(TempNode, 'AdditionalIncludeDirectories');
+    List := TStringList.Create;
+    List.Delimiter := ';';
+    List.DelimitedText := TempStr;
+    for I := 0 to List.Count - 1 do
+    begin
+      List.Strings[I] := ConvertSlashes(List.Strings[I]);
+      if ExtractFileDrive(List.Strings[I]) <> '' then
+        TempStr := List.Strings[I]
+      else
+        TempStr := ExtractFilePath(FileName) + List.Strings[I];
+      if not DirectoryExists(TempStr) then
+      begin
+        // computer with different directory structure
+        // try find parent folder
+        if ExtractFileDrive(List.Strings[I]) <> '' then
+        begin
+          TempStr := ExtractFileDrive(TempStr) + '\';
+          TempStr := ExtractRelativePath(TempStr, List.Strings[I]);
+          TempName := '..\' + TempStr;
+          TempStr := ExtractFilePath(FileName);
+          J := 0;
+          repeat
+            if DirectoryExists(TempStr + TempName) then
+              Break;
+            J := PosEx('\', TempName, 4);
+            if J > 0 then
+              TempName := '..' + Copy(TempName, J, Length(TempName) - J + 1);
+          until J = 0;
+          if not DirectoryExists(TempStr + TempName) then
+            Continue;
+          List.Strings[I] := TempName;
+        end
+        else
+          Continue;
+      end;
+      if (Pos('\', List.Strings[I]) > 0) then
+        Flags := Flags + ' -I"' + List.Strings[I] + '"'
+      else
+        Flags := Flags + ' -I' + List.Strings[I];
+    end;
+    TempStr := GetAttribute(TempNode, 'PreprocessorDefinitions');
+    List.DelimitedText := TempStr;
+    for I := 0 to List.Count - 1 do
+      Flags := Flags + ' -D' + List.Strings[I];
+    List.Free;
+    Flags := Trim(Flags);
+  end;
+  TempNode := ConfigNode.ChildNodes.First;
+  TempStr := 'VCLinkerTool';
+  if ConfigurationType = 4 then
+    TempStr := 'VCLibrarianTool';
+  while TempNode <> nil do
+  begin
+    if (TempNode.NodeName = 'Tool') and (TempNode.Attributes['Name'] = TempStr) then
+      Break;
+    TempNode := TempNode.NextSibling;
+  end;
+  Libs := '';
+  if OutputDirectory <> '' then
+    OutputDirectory := IncludeTrailingPathDelimiter(OutputDirectory);
+  OutputFile := OutputDirectory + RemoveFileExt(ExtractFileName(FileName));
+  ExtAuto := True;
+  if TempNode <> nil then
+  begin
+    OutputFile := ConvertSlashes(GetAttribute(TempNode, 'OutputFile'));
+    if OutputFile <> '' then
+    begin
+      OutputFile := StringReplace(OutputFile, '$(OutDir)',
+        ExcludeTrailingPathDelimiter(OutputDirectory), []);
+      if not DirectoryExists(ExtractFilePath(FileName) + ExtractFileName(OutputFile)) then
+        OutputFile := ExtractFileName(OutputFile);
+      if (ConfigurationType <> 4) or
+        (UpperCase(ExtractFileExt(OutputFile)) <> '.LIB') then
+        ExtAuto := False;
+    end;
+    if ConfigurationType <> 4 then
+    begin
+      TempStr := GetAttribute(TempNode, 'AdditionalDependencies');
+      List := TStringList.Create;
+      List.Delimiter := ' ';
+      List.DelimitedText := TempStr;
+      for I := 0 to List.Count - 1 do
+      begin
+        TempStr := ConvertSlashes(List.Strings[I]);
+        if ExtractFilePath(TempStr) <> '' then
+        begin
+          TempStr := ExcludeTrailingPathDelimiter(ExtractFilePath(TempStr));
+          if (Pos('\', TempStr) > 0) then
+            Libs := Libs + ' -L"' + TempStr + '"'
+          else
+            Libs := Libs + ' -L' + TempStr;
+        end;
+        TempStr := ConvertSlashes(List.Strings[I]);
+        TempStr := RemoveFileExt(ExtractFileName(TempStr));
+        Libs := Libs + ' -l' + TempStr;
+      end;
+      List.Free;
+      Libs := Trim(Libs);
+    end;
+  end;
+  createStaticLib := False;
+  createDefFile := False;
+  NewPrj.CompilerOptions := '-Wall';
+  NewPrj.Target := OutputFile;
+  NewPrj.Flags := Flags;
+  NewPrj.Libs := Libs;
+  if ConfigurationType = 0 then
+  begin
+    NewPrj.AppType := APPTYPE_GUI;
+    NewPrj.Libs := Trim('-mwindows ' + NewPrj.Libs);
+  end
+  else if ConfigurationType = 2 then
+  begin
+    NewPrj.AppType := APPTYPE_DLL;
+    NewPrj.Libs := Trim('-shared ' + NewPrj.Libs);
+  end
+  else if ConfigurationType = 4 then
+    NewPrj.AppType := APPTYPE_LIB
+  else // 1
+  begin
+    NewPrj.AppType := APPTYPE_CONSOLE
+  end;
+  if ExtAuto then
+  begin
+    case NewPrj.AppType of
+      APPTYPE_DLL: NewPrj.Target := RemoveFileExt(NewPrj.Target) + '.dll';
+      APPTYPE_LIB: NewPrj.Target := RemoveFileExt(NewPrj.Target) + '.a';
+    else
+      NewPrj.Target := RemoveFileExt(NewPrj.Target) + '.exe';
+    end;
+  end;
+  if createStaticLib then
+  begin
+    NewPrj.Libs := Trim(NewPrj.Libs + ' ' +
+      Format(LD_DLL_STATIC_LIB, [ExtractFilePath(NewPrj.Target), ChangeFileExt(ExtractFileName(NewPrj.Target), 'dll.a')]));
+  end;
+  if createDefFile then
+  begin
+    //not implemented
+  end;
+  FilesNode := ProjNode.ChildNodes.FindNode('Files');
+  if (FilesNode <> nil) then
+  begin
+    List := TStringList.Create;
+    LoadFiles(FilesNode, List);
+    AddFilesToProject(List, NewPrj, True, True);
+    List.Free;
+  end;
+  //XMLDoc.Free;
+  Proj := NewPrj;
+  Result := True;
 end;
 
 procedure TFrmFalconMain.ImportFromDevCpp(Sender: TObject);
@@ -5855,8 +6199,9 @@ begin
     begin
       if not ImportDevCppProject(FileName, Proj) then
         MessageBox(Self.Handle, PChar(Format(STR_FRM_MAIN[47], ['Dev-C++'])),
-          'Falcon C++', MB_ICONEXCLAMATION);
-      ParseProjectFiles(Proj);
+          'Falcon C++', MB_ICONEXCLAMATION)
+      else
+        ParseProjectFiles(Proj);
     end;
     Free;
   end;
@@ -5875,8 +6220,9 @@ begin
       if not ImportCodeBlocksProject(FileName, Proj) then
         MessageBox(Self.Handle,
           PChar(Format(STR_FRM_MAIN[47], ['Code::Blocks'])), 'Falcon C++',
-          MB_ICONEXCLAMATION);
-      ParseProjectFiles(Proj);
+          MB_ICONEXCLAMATION)
+      else
+        ParseProjectFiles(Proj);
     end;
     Free;
   end;
@@ -5895,8 +6241,9 @@ begin
       if not ImportMSVCProject(FileName, Proj) then
         MessageBox(Self.Handle,
           PChar(Format(STR_FRM_MAIN[47], ['MS Visual C++'])), 'Falcon C++',
-          MB_ICONEXCLAMATION);
-      ParseProjectFiles(Proj);
+          MB_ICONEXCLAMATION)
+      else
+        ParseProjectFiles(Proj);
     end;
     Free;
   end;

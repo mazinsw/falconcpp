@@ -6,3 +6,7 @@ NovoArquivo.cpp:33: error: invalid use of 'class Teste'
 main.cpp:67: error: expected declaration before '}' token
 main.cpp:9: warning: 'void draw()' defined but not used
 mochila_backtrack.c:130: error: variable-sized object may not be initialized
+math.h:58:1: warning: this is the location of the previous definition
+glh_linear.h:180: warning: friend declaration 'bool glh::operator==(const glh::vec<N, T>&, const glh::vec<N, T>&)' declares a non-template function
+glh_linear.h:180: note: (if this is not what you intended, make sure the function template has already been declared and add <> after the function name here) 
+InvMatrix.hpp:28: error: 'boost' has not been declared

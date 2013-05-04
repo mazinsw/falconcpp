@@ -643,9 +643,7 @@ begin
   else
   begin
     if FileExists(FileName) then
-      ShellExecute(0, 'open', 'explorer.exe',
-        PChar('/select, "' + FileName + '"'), nil, SW_SHOW);
-    //Edit;
+      OpenFolderAndSelectFile(FileName);
   end;
 end;
 

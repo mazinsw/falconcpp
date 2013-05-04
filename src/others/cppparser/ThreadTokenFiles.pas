@@ -479,6 +479,7 @@ begin
   Cancel;
   if (fRunEvent <> 0) and (fRunEvent <> INVALID_HANDLE_VALUE) then
     SetEvent(fRunEvent);
+  WaitFor;
 end;
 
 procedure TThreadTokenFiles.Start(FileList: TStrings; const BaseDir,

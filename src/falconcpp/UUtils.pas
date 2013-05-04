@@ -27,6 +27,8 @@ const
   PBS_MARQUEE = $0008;
 {$EXTERNALSYM PBM_SETMARQUEE}
   PBM_SETMARQUEE = WM_USER + 10;
+  OFASI_EDIT = $0001;
+  OFASI_OPENDESKTOP = $0002;
 
 type
   TLanguageItem = class
@@ -55,6 +57,16 @@ type
 
 {$EXTERNALSYM SwitchToThisWindow}
 procedure SwitchToThisWindow(hWnd: HWND; fAltTab: BOOL); stdcall;
+{$IFDEF UNICODE}
+function ILCreateFromPath(pszPath: PChar): PItemIDList stdcall; external shell32
+  name 'ILCreateFromPathW';
+{$ELSE}
+function ILCreateFromPath(pszPath: PChar): PItemIDList stdcall; external shell32
+  name 'ILCreateFromPathA';
+{$ENDIF}
+procedure ILFree(pidl: PItemIDList) stdcall; external shell32;
+function SHOpenFolderAndSelectItems(pidlFolder: PItemIDList; cidl: Cardinal;
+  apidl: pointer; dwFlags: DWORD): HRESULT; stdcall; external shell32;
 
 function GetTickTime(ticks: Cardinal; fmt: string): string;
 procedure GetNameAndVersion(const S: string; var aName, aVersion: string);
@@ -78,6 +90,7 @@ function ParseVersion(Version: string): TVersion;
 function CompareVersion(Ver1, Ver2: TVersion): Integer;
 function VersionToStr(Version: TVersion): string;
 function CanUpdate(UpdateXML: string): Boolean;
+function OpenFolderAndSelectFile(const FileName: string): boolean;
 function GetUserFolderPath(nFolder: Integer = CSIDL_PERSONAL): string;
 function GetTempDirectory: string;
 procedure SetProgsType(PrgsBar: TProgressBar; Infinity: Boolean);
@@ -304,35 +317,12 @@ begin
     (findString(BaseDir, List) < 0) then
     List.Add(BaseDir);
 
-  BaseDir := ProgFiles + '\CodeBlocks 8.02\MinGW';
-  if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
-    (findString(BaseDir, List) < 0) then
-    List.Add(BaseDir);
-
   //MinGW
   BaseDir := ExtractFileDrive(ProgFiles) + '\MinGW';
   if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
     (findString(BaseDir, List) < 0) then
     List.Add(BaseDir);
 
-  //Dev-C++
-  BaseDir := ExtractFileDrive(ProgFiles) + '\Dev-Cpp';
-  if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
-    (findString(BaseDir, List) < 0) then
-    List.Add(BaseDir);
-
-  BaseDir := ProgFiles + '\Dev-Cpp\MinGW';
-  if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
-    (findString(BaseDir, List) < 0) then
-    List.Add(BaseDir);
-  BaseDir := ProgFiles + '\Dev-Cpp\MinGW32';
-  if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
-    (findString(BaseDir, List) < 0) then
-    List.Add(BaseDir);
-  BaseDir := ProgFiles + '\Dev-Cpp\MinGW64';
-  if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
-    (findString(BaseDir, List) < 0) then
-    List.Add(BaseDir);
   Path := GetEnvironmentVariable('PATH');
   Temp := UpperCase(Path);
   I := Pos('MINGW', Temp);
@@ -373,6 +363,26 @@ begin
       List.Add(BaseDir);
     I := Pos('MINGW', Temp);
   end;
+
+  //Dev-C++
+  BaseDir := ProgFiles + '\Dev-Cpp\MinGW';
+  if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
+    (findString(BaseDir, List) < 0) then
+    List.Add(BaseDir);
+  BaseDir := ProgFiles + '\Dev-Cpp\MinGW32';
+  if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
+    (findString(BaseDir, List) < 0) then
+    List.Add(BaseDir);
+  BaseDir := ProgFiles + '\Dev-Cpp\MinGW64';
+  if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
+    (findString(BaseDir, List) < 0) then
+    List.Add(BaseDir);
+
+  //Dev-C++ - Last option to choose (very old compiler)
+  BaseDir := ExtractFileDrive(ProgFiles) + '\Dev-Cpp';
+  if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
+    (findString(BaseDir, List) < 0) then
+    List.Add(BaseDir);
 end;
 
 function TranslateSpecialChars(const S: string): string;
@@ -697,6 +707,20 @@ begin
   SiteVersion := ParseVersion(Node.Attributes['Version']);
   if (CompareVersion(SiteVersion, FrmFalconMain.FalconVersion) = 1) then
     Result := True;
+end;
+
+function OpenFolderAndSelectFile(const FileName: string): boolean;
+var
+  IIDL: PItemIDList;
+begin
+  result := false;
+  IIDL := ILCreateFromPath(PChar(FileName));
+  if IIDL <> nil then
+    try
+      result := SHOpenFolderAndSelectItems(IIDL, 0, nil, 0) = S_OK;
+    finally
+      ILFree(IIDL);
+    end;
 end;
 
 function GetUserFolderPath(nFolder: Integer = CSIDL_PERSONAL): string;

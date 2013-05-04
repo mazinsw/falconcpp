@@ -845,7 +845,8 @@ uses
   UFrmAbout, UFrmNew, UFrmProperty, ExecWait, UTools, UFrmRemove,
   UFrmUpdate, ULanguages, UFrmEnvOptions, UFrmCompOptions, UFrmFind, AStyle,
   UFrmGotoFunction, UFrmGotoLine, TBXThemes, Makefile, CodeTemplate,
-  SynEditStrConst, StrUtils, UFrmVisualCppOptions;
+  SynEditStrConst, StrUtils, UFrmVisualCppOptions,
+  SynEditPrintHeaderFooter;
 
 {$R *.dfm}
 {$R resources.res}
@@ -867,38 +868,52 @@ end;
 
 procedure SetActiveCompiler(OldPath, Actpath: string;
   SplashScreen: TSplashScreen = nil);
+
+  function RemoveFromPath(const path, dir: string): string;
+  begin
+    Result := path;
+    Result := StringReplace(Result, dir, '', [rfIgnoreCase]);
+    Result := StringReplace(Result, ';;', ';', [rfReplaceAll]);
+    if (Length(Result) > 0) and (Result[Length(Result)] = ';') then
+      Delete(Result, Length(Result), 1);
+    if (Length(Result) > 0) and (Result[1] = ';') then
+      Delete(Result, 1, 1);
+  end;
+
 var
-  path, temp: string;
+  path, mingw_PathEnv: string;
+  UpdatePath: Boolean;
 begin
   Actpath := ExcludeTrailingPathDelimiter(Actpath);
   path := GetEnvironmentVariable('PATH');
+  mingw_PathEnv := GetEnvironmentVariable('MINGW_PATH');
   if (CompareText(OldPath, Actpath) = 0) and
-    (Pos(UpperCase(Actpath + '\bin'), UpperCase(path)) > 0) then
+    (Pos(UpperCase(Actpath + '\bin'), UpperCase(path)) = 1) and
+    (CompareText(mingw_PathEnv, Actpath) = 0) then
   begin
     Exit;
   end;
+  UpdatePath := False;
   //remove old from path
   if (Oldpath <> '') and
     (Pos(UpperCase(Oldpath + '\bin'), UpperCase(path)) > 0) then
   begin
-    temp := StringReplace(path, Oldpath + '\bin', '', [rfIgnoreCase]);
-    temp := StringReplace(temp, ';;', ';', [rfReplaceAll]);
-    if (Length(temp) > 0) and (temp[Length(temp)] = ';') then
-      Delete(temp, Length(temp), 1);
-    if (Length(temp) > 0) and (temp[1] = ';') then
-      Delete(temp, 1, 1);
-    SetEnvironmentVariable('PATH', PChar(temp));
+    path := RemoveFromPath(path, Oldpath + '\bin');
+    UpdatePath := True;
   end;
   //add active to path
-  if CompareText(GetEnvironmentVariable('MINGW_PATH'), Actpath) <> 0 then
+  if CompareText(mingw_PathEnv, Actpath) <> 0 then
     SetEnvironmentVariable('MINGW_PATH', PChar(Actpath));
-  if Pos(UpperCase(Actpath + '\bin'), UpperCase(path)) = 0 then
+  if Pos(UpperCase(Actpath + '\bin'), UpperCase(path)) <> 1 then
   begin
-    temp := path + ';' + Actpath + '\bin';
+    path := RemoveFromPath(path, Actpath + '\bin');
+    path := Actpath + '\bin;' + path;
     if Assigned(SplashScreen) then
       SplashScreen.TextOut(55, 300, STR_FRM_MAIN[29]);
-    SetEnvironmentVariable('PATH', PChar(temp));
+    UpdatePath := True;
   end;
+  if UpdatePath then
+    SetEnvironmentVariable('PATH', PChar(path));
 end;
 
 procedure BoldTreeNode(treeNode: TTreeNode; Value: Boolean);
@@ -1116,6 +1131,7 @@ begin
   Terminate;
   if (fScanEventHandle <> 0) and (fScanEventHandle <> INVALID_HANDLE_VALUE) then
     SetEvent(fScanEventHandle);
+  WaitFor;
 end;
 
 {TFrmFalconMain}
@@ -7520,6 +7536,7 @@ var
   NextChar: Char;
   LineStr: string;
   sheet: TSourceFileSheet;
+  BalancingBracket: Integer;
 begin
   if not GetActiveSheet(sheet) then
     Exit;
@@ -7533,10 +7550,16 @@ begin
     NextChar := GetNextValidChar(sheet.Memo.Text, sheet.Memo.SelStart);
     if EndToken <> '(' then
     begin
+      BalancingBracket := sheet.Memo.GetBalancingBracketEx(sheet.Memo.CaretXY, '(');
       if (NextChar in LetterChars + ['{', '}']) and (EndToken <> ';') then
         Value := Value + '();'
       else if NextChar in DigitChars + ArithmChars + CloseBraceChars + [';'] then
-        Value := Value + '()'
+      begin
+        if BalancingBracket <= 0 then
+          Value := Value + '()'
+        else
+          Value := Value + '(';
+      end
       else if NextChar <> '(' then
         Value := Value + '(';
       LastKeyPressed := '(';
@@ -7572,7 +7595,8 @@ var
   Token: TTokenClass;
   I: Integer;
   NextChar: Char;
-  sheet: TSourceFileSheet;
+  sheet: TSourceFileSheet;     
+  BalancingBracket: Integer;
 begin
   if not GetActiveSheet(sheet) then
   begin
@@ -7585,14 +7609,18 @@ begin
   Token := TTokenClass(CodeCompletion.ItemList.Objects[Index]);
   NextChar := GetNextValidChar(sheet.Memo.Text, sheet.Memo.SelStart);
   I := 0;
+  BalancingBracket := sheet.Memo.GetBalancingBracketEx(sheet.Memo.CaretXY, '(');
   if EndToken = ')' then
   begin
     //nothing
   end
   else if EndToken = '(' then
   begin
-    Inc(I);
-    sheet.Memo.CommandProcessor(ecChar, ')', nil);
+    if BalancingBracket <= 0 then
+    begin
+      Inc(I);
+      sheet.Memo.CommandProcessor(ecChar, ')', nil);
+    end;
     if (NextChar in LetterChars) and (EndToken <> ';') then
     begin
       sheet.Memo.CommandProcessor(ecChar, ';', nil);
@@ -7604,7 +7632,10 @@ begin
     if (NextChar in LetterChars + ['{', '}']) and (EndToken <> ';') then
       Inc(I, 2);
     if NextChar in DigitChars + ArithmChars + [';'] + (CloseBraceChars - ['{', '}']) then
-      Inc(I);
+    begin
+      if BalancingBracket < 0 then
+        Inc(I);
+    end;
   end;
   if EndToken <> ';' then
   begin
@@ -7943,6 +7974,7 @@ begin
     AFont := TFont.Create;
     with EditorPrint.Header do
     begin
+      Clear;
       AFont.Assign(DefaultFont);
       AFont.Size := 7;
       AFont.Style := [fsBold];
@@ -7951,6 +7983,7 @@ begin
     end;
     with EditorPrint.Footer do
     begin
+      Clear;
       AFont.Assign(DefaultFont);
       AFont.Size := 8;
       Add('-$PAGENUM$-', AFont, taCenter, 1);
@@ -8045,15 +8078,17 @@ var
 begin
   if not GetActiveSheet(sheet) then
     Exit;
+  ExporterHTML.Clear;
   ExporterHTML.Highlighter := sheet.Memo.Highlighter;
   ExporterHTML.Title := Sheet.SourceFile.Name;
-  ExporterHTML.ExportAll(sheet.Memo.Lines);
   ExporterHTML.ExportAsText := True;
+  ExporterHTML.ExportAll(sheet.Memo.Lines);
 
   with TSaveDialog.Create(Self) do
   begin
     Filter := ExporterHTML.DefaultFilter;
     DefaultExt := '.html';
+    Options := Options + [ofOverwritePrompt];
     FileName := ChangeFileExt(Sheet.SourceFile.Name, '.html');
     if Execute then
     begin
@@ -8072,12 +8107,12 @@ begin
   ExporterRTF.Highlighter := sheet.Memo.Highlighter;
   ExporterRTF.Title := Sheet.SourceFile.Name;
   ExporterRTF.ExportAll(sheet.Memo.Lines);
-  //ExporterRTF.ExportAsText := True;
 
   with TSaveDialog.Create(Self) do
   begin
     Filter := ExporterRTF.DefaultFilter;
     DefaultExt := '.rtf';
+    Options := Options + [ofOverwritePrompt];
     FileName := ChangeFileExt(Sheet.SourceFile.Name, '.rtf');
     if Execute then
     begin
@@ -8095,13 +8130,14 @@ begin
     Exit;
   ExporterTeX.Highlighter := sheet.Memo.Highlighter;
   ExporterTeX.Title := Sheet.SourceFile.Name;
-  ExporterTeX.ExportAll(sheet.Memo.Lines);
   ExporterTeX.TabWidth := sheet.Memo.TabWidth;
+  ExporterTeX.ExportAll(sheet.Memo.Lines);
 
   with TSaveDialog.Create(Self) do
   begin
     Filter := ExporterTeX.DefaultFilter;
     DefaultExt := '.tex';
+    Options := Options + [ofOverwritePrompt];
     FileName := ChangeFileExt(Sheet.SourceFile.Name, '.tex');
     if Execute then
     begin

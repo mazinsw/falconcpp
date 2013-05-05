@@ -8,6 +8,7 @@ uses
 //make hint
 function GetFuncScope(Token: TTokenClass): string;
 function GetFuncProto(Token: TTokenClass; GenName: Boolean = False): string;
+function GetStructProto(Token: TTokenClass; GenName: Boolean = False): string;
 function GetFuncProtoTypes(Token: TTokenClass): string;
 procedure GetStringsFields(const S: string; List: TStrings;
   IgnoreFirst: Boolean = True);
@@ -61,8 +62,10 @@ function IsNumber(const S: string): Boolean;
 function ScopeInState(const S: string; ScopeClass: TScopeClassState): Boolean;
 function ConvertSlashes(const Path: string): string;
 function ConvertToUnixSlashes(const Path: string): string;
-function GetFirstOpenBrace(const S: string; QuoteChar: Char;
+function GetFirstOpenParentheses(const S: string; QuoteChar: Char;
   var SelStart: Integer): Boolean;
+function GetFirstOpenBracket(const S: string; QuoteChar: Char;
+  var BracketStart, VarEnd: Integer; var StructParams: string): Boolean;
 function ParseFields(const Text: string; SelStart: Integer;
   var S, Fields: string; var InputError: Boolean): Boolean;
 function GetNextValidChar(const Text: string; SelStart: Integer): Char;
@@ -445,6 +448,50 @@ begin
     Exit;
   for I := 0 to Params.Count - 1 do
   begin
+    TypeName := Params.Items[I].Flag;
+    X := Pos('[', TypeName);
+    Len := Length(TypeName);
+    Vector := '';
+    if X > 0 then
+    begin
+      Vector := Copy(TypeName, X, Len - X + 1);
+      TypeName := Copy(TypeName, 1, X - 1);
+    end;
+    ParamName := Params.Items[I].Name;
+    BraceOpen := '';
+    BraceClose := '';
+    if (ParamName = '') and GenName then
+    begin
+      ParamName := 'var' + IntToStr(VarNum);
+      Inc(VarNum);
+    end
+    else if Params.Items[I].Count = 1 then
+    begin
+      BraceOpen := '[';
+      BraceClose := ']';
+    end;
+    Result := Result + Sep + BraceOpen + Trim(TypeName + ' ' + ParamName + Vector) + BraceClose;
+    Sep := ', ';
+  end;
+  Result := Trim(Result);
+end;
+
+function GetStructProto(Token: TTokenClass; GenName: Boolean): string;
+var
+  I, X, VarNum, Len: Integer;
+  Params: TTokenClass;
+  TypeName, Vector, Sep, ParamName, BraceOpen, BraceClose: string;
+begin
+  Result := '';
+  Sep := '';
+  VarNum := 1;
+  if not (Token.Token in [tkTypeStruct, tkStruct, tkTypeUnion, tkUnion]) then
+    Exit;
+  Params := Token;
+  for I := 0 to Params.Count - 1 do
+  begin
+    if Params.Items[I].Token <> tkVariable then
+      Continue;
     TypeName := Params.Items[I].Flag;
     X := Pos('[', TypeName);
     Len := Length(TypeName);
@@ -1640,7 +1687,7 @@ begin
 end;
 
 { TODO -oMazin -c : Convert to Lines 04/05/2013 22:08:19 }
-function GetFirstOpenBrace(const S: string; QuoteChar: Char;
+function GetFirstOpenParentheses(const S: string; QuoteChar: Char;
   var SelStart: Integer): Boolean;
 var
   init, ptr, skip: PChar;
@@ -1661,7 +1708,7 @@ begin
       Dec(ptr);
   end;
   repeat
-    while (ptr^ <> '(') and (ptr >= init) do
+    while (ptr >= init) and (ptr^ <> '(') do
     begin
       case ptr^ of
         ')': SkipInvPair(init, ptr, '(', ')');
@@ -1696,6 +1743,79 @@ begin
   if ptr^ <> '(' then
     Exit;
   SelStart := ptr - init;
+  Result := True;
+end;
+
+{ TODO -oMazin -c : Convert to Lines 04/05/2013 22:08:19 }
+function GetFirstOpenBracket(const S: string; QuoteChar: Char;
+  var BracketStart, VarEnd: Integer; var StructParams: string): Boolean;
+var
+  init, ptr, last, first: PChar;
+  params: string;
+begin
+  Result := False;
+  init := PChar(S);
+  ptr := init + BracketStart;
+  last := nil;
+  first := nil;
+  params := '';
+  if (ptr^ in ['{', '}', ';', '(', ')', ',']) and (QuoteChar = #0) then
+    Dec(ptr);
+  if QuoteChar = '"' then
+  begin
+    if SkipStringInv(init, ptr) then
+      Dec(ptr);
+  end
+  else if QuoteChar = '''' then
+  begin
+    if SkipSingleQuotesInv(init, ptr) then
+      Dec(ptr);
+  end;
+  while (ptr >= init) and ((ptr^ <> '=') or (last = nil))  do
+  begin
+    case ptr^ of
+      '{':
+      begin
+        if first = nil then
+          first := ptr;
+        params := '.' + params;
+        last := ptr;
+      end;
+      '}': SkipInvPair(init, ptr, '{', '}');
+      ',':
+      begin
+        last := nil;
+        params := ',' + params;
+      end;
+      '/':
+        if (ptr > init) and ((ptr - 1)^ = '*') then
+          SkipMultlineCommentInv(init, ptr);
+      '"': SkipStringInv(init, ptr);
+      '''': SkipSingleQuotesInv(init, ptr);
+      ';': Exit;
+      ')': SkipInvPair(init, ptr, '(', ')');
+    else
+      if not (ptr^ in SpaceChars + LineChars) and (last <> nil) then
+        last := nil;
+    end;
+    Dec(ptr);
+  end;
+  if (ptr^ <> '=') or (last = nil) then
+    Exit;
+  Dec(ptr);
+  // get end of variable
+  while (ptr >= init) and (ptr^ in SpaceChars + LineChars + [']']) do
+  begin
+    if ptr^ = ']' then
+      SkipInvPair(init, ptr, '[', ']');
+    Dec(ptr);
+  end;
+  if (ptr < init) then
+    Exit;
+  // start of {
+  BracketStart := first - init;
+  VarEnd := ptr - init;
+  StructParams := params;
   Result := True;
 end;
 

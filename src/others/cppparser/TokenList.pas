@@ -110,6 +110,7 @@ type
     procedure AssignRecursive(Ato, ACopy, Parent: TTokenClass);
     function GetTokenAtRecursive(var scopeToken: TTokenClass;
       SelStart, SelLine: Integer; Finded: Boolean): Boolean;
+    function GetCount: Integer;
   public
     constructor Create(Parent: TTokenClass); overload;
     constructor Create; overload;
@@ -121,7 +122,6 @@ type
       Level: Integer; Token: TTkType; Name: string; Flag: string;
       Comment: string);
     procedure Clear;
-    function Count: Integer;
     procedure Delete(Index: Integer);
     function Remove(Item: TTokenClass): Integer;
     function IndexOf(Item: TTokenClass): Integer;
@@ -141,6 +141,7 @@ type
     function SearchSource(const S: string; var Item: TTokenClass;
       NotAtSelStart: Integer = 0; AdvanceAfterSelStart: Boolean = False;
       ListAll: TStrings = nil; AllFunctions: Boolean = False): Boolean;
+    property Count: Integer read GetCount;
     property Items[Index: Integer]: TTokenClass read Get write Put;
 
     property Owner: Pointer read FOwner write FOwner;
@@ -299,7 +300,7 @@ begin
   FList.Clear;
 end;
 
-function TTokenClass.Count: Integer;
+function TTokenClass.GetCount: Integer;
 begin
   Result := FList.Count;
 end;

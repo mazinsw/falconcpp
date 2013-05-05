@@ -1670,7 +1670,7 @@ begin
   XMLDoc.Active := True;
   XMLDoc.Version := '1.0';
   XMLDoc.Options := XMLDoc.Options + [doNodeAutoIndent];
-  XMLDoc.Encoding := 'ISO-8859-1';
+  XMLDoc.Encoding := 'UTF-8';
   XMLDoc.NodeIndentStr := '    ';
 
   LytNode := XMLDoc.AddChild('Layout');
@@ -1782,7 +1782,7 @@ begin
   XMLDoc.Active := True;
   XMLDoc.Version := '1.0';
   XMLDoc.Options := XMLDoc.Options + [doNodeAutoIndent];
-  XMLDoc.Encoding := 'ISO-8859-1';
+  XMLDoc.Encoding := 'UTF-8';
   XMLDoc.NodeIndentStr := '    ';
 
   ProjNode := XMLDoc.AddChild('Project');

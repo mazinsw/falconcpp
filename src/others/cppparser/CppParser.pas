@@ -967,9 +967,19 @@ begin
           begin
             TempWord := GetFirstWord(RetType);
             if TempWord = 'struct' then
-              ProcessStruct(False, StartPos, StartLine, RetType)
+            begin
+              ProcessStruct(False, StartPos, StartLine, RetType);
+              RetType := '';
+              CurrStr := '';
+              AccessChars := '';
+            end
             else if TempWord = 'union' then
-              ProcessUnion(False, StartPos, StartLine, CurrStr)
+            begin
+              ProcessUnion(False, StartPos, StartLine, CurrStr);
+              RetType := '';
+              CurrStr := '';
+              AccessChars := '';
+            end
             else
             begin
               SkipPair('{', '}');

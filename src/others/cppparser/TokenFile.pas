@@ -1196,10 +1196,28 @@ begin
         AllFields := Item.Name + '::' + AllFields;
       end;
     end;
+    AllowScope := [];
+    Scope := Item;
+    SaveScope := Scope;
+    Scope := GetTokenByName(Scope, 'Scope', tkScope);
     if (AllFields <> '') and SearchTreeToken(AllFields, TokenFile,
       TokenFileItem, Item, [tkClass, tkNamespace], Item.SelStart) then
     begin
-      if (Input <> '') and Item.SearchSource(Input, Item) then
+      AllScope := Assigned(Scope) and (Scope.Flag = Item.Name);
+      if not AllScope then
+      begin
+        SaveScope := SaveScope.Parent;
+        if Assigned(SaveScope) and (SaveScope.Token = tkScopeClass) then
+          SaveScope := SaveScope.Parent;
+        if Assigned(SaveScope) and (SaveScope.Token in [tkClass, tkStruct, tkUnion]) and
+          (SaveScope.Name = Item.Name) then
+          AllScope := True;
+      end;
+      if not AllScope then
+        AllowScope := AllowScope + [scPublic];
+      if (Input <> '') and
+      SearchClassSource(Input, Item, TokenFileItem, TokenFileItem, Item, nil,
+      False, AllowScope) then
       begin
         //finded
         Result := True;

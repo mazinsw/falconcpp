@@ -105,6 +105,8 @@ type
     destructor Destroy; override;
     function GetBalancingBracketEx(const APoint: TBufferCoord;
       Bracket: Char): Integer;
+    procedure MoveSelectionDown;
+    procedure MoveSelectionUp;
     property LinkEnable: Boolean read fLinkEnable write fLinkEnable;
     property LinkOptions: TSynLinkOptions
       read fLinkOptions write fLinkOptions;
@@ -1392,6 +1394,47 @@ begin
       Break;
     end;
   Result := CloseCount - OpenCount;
+end;
+
+procedure TSynEditEx.MoveSelectionUp;
+var
+  BS, BE: TBufferCoord;
+  {PrevLine, S: string;
+  I: Integer;}
+begin
+  if SelAvail then
+  begin
+    BS := BufferCoord(1, BlockBegin.Line);
+    BE := BufferCoord(Length(Lines[BlockEnd.Line -  1]) + 1, BlockEnd.Line);
+  end
+  else
+  begin
+    BS := BufferCoord(1, CaretY);
+    BE := BufferCoord(Length(LineText) + 1, CaretY);
+  end;
+  if BS.Line < 2 then
+    Exit;
+  {PrevLine := Lines[BS.Line - 2];
+  BeginUndoBlock;
+  BeginUpdate;
+  SetCaretAndSelection(BS, BS, BE);
+  S := SelText;
+  Dec(BS.Line);
+  SetCaretAndSelection(BS, BS, BE);
+  S := S + #13 + PrevLine;
+  SelText := S;
+  CaretXY := BS;
+  for I := BS.Line - 1 to BE.Line - 1 do
+  begin
+
+  end;
+  EndUpdate;
+  EndUndoBlock;}
+end;
+
+procedure TSynEditEx.MoveSelectionDown;
+begin
+  //
 end;
 
 end.

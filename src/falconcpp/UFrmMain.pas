@@ -1242,8 +1242,8 @@ begin
   ViewZoomDec.ShortCut := ShortCut(VK_SUBTRACT, [ssCtrl]); //Ctrl + -
   BtnPrevPage.ShortCut := ShortCut(VK_TAB, [ssCtrl, ssShift]); //Ctrl + Shift + Tab
   BtnNextPage.ShortCut := ShortCut(VK_TAB, [ssCtrl]); //Ctrl + Tab
-  SearchGotoPrevFunc.ShortCut := ShortCut(VK_UP, [ssCtrl, ssShift]); //Ctrl + Shift + UP
-  SearchGotoNextFunc.ShortCut := ShortCut(VK_DOWN, [ssCtrl, ssShift]); //Ctrl + Shift + DOWN
+  SearchGotoPrevFunc.ShortCut := ShortCut(VK_UP, [ssCtrl, ssAlt]); //Ctrl + Alt + UP
+  SearchGotoNextFunc.ShortCut := ShortCut(VK_DOWN, [ssCtrl, ssAlt]); //Ctrl + Alt + DOWN
 
   FalconVersion := GetFileVersionA(Application.ExeName);
   ActDropDownBtn := True;
@@ -3203,7 +3203,7 @@ begin
     if (TreeViewProjects.SelectionCount = 1) then
       TreeViewProjects.Selected.EditText;
   end
-  else if ([ssCtrl] = Shift) and (TreeViewProjects.SelectionCount = 1) then
+  else if ([ssCtrl, ssShift] = Shift) and (TreeViewProjects.SelectionCount = 1) then
   begin
     Node := TreeViewProjects.Selected;
     if Key = VK_UP then
@@ -4618,7 +4618,7 @@ begin
         TimerChangeDelay.Enabled := True;
       end;
     end;
-    if LastKeyPressed = '(' then
+    if LastKeyPressed in ['(', '{'] then
     begin
       LastKeyPressed := #0;
       ShowHintParams(Sender as TSynEditEx);
@@ -4924,18 +4924,26 @@ begin
     DebugHint.Cancel;
     //HintParams.Cancel; no cancel
   end;
+  // show parameters hit
   if ([ssShift, ssCtrl] = Shift) and (Key = VK_SPACE) then
   begin
     Key := 0;
     ShowHintParams(Sheet.Memo);
   end
+  // show code completion
   else if ([ssCtrl] = Shift) and (Key = VK_SPACE) then
   begin
     Key := 49;
     UsingCtrlSpace := True;
     CodeCompletion.ActivateCompletion;
     UsingCtrlSpace := False;
-  end;
+  end
+  // move code up
+  else if ([ssCtrl, ssShift] = Shift) and (Key = VK_UP) then
+    Sheet.Memo.MoveSelectionUp
+  // move code down
+  else if ([ssCtrl, ssShift] = Shift) and (Key = VK_DOWN) then
+    Sheet.Memo.MoveSelectionDown;
 
 end;
 
@@ -4982,9 +4990,9 @@ begin
         Key := #0;
         sheet.Memo.SelText := '()';
         sheet.Memo.CaretX := sheet.Memo.CaretX - 1;
-        TimerHintParams.Enabled := False;
-        TimerHintParams.Enabled := True;
       end;
+      TimerHintParams.Enabled := False;
+      TimerHintParams.Enabled := True;
     end
     else if Key = '[' then
     begin
@@ -5117,10 +5125,8 @@ begin
           sheet.Memo.EndUpdate;
         end;
       end
-      else
+      else if Config.Editor.AutoCloseBrackets then
       begin
-        if not Config.Editor.AutoCloseBrackets then
-          Exit;
         BracketBalacing := sheet.Memo.GetBalancingBracketEx(sheet.Memo.CaretXY, '{');
         if BracketBalacing <= 0 then
         begin
@@ -5128,6 +5134,8 @@ begin
           sheet.Memo.CaretX := sheet.Memo.CaretX - 1;
         end;
       end;
+      TimerHintParams.Enabled := False;
+      TimerHintParams.Enabled := True;
     end;
   end;
 end;
@@ -6553,7 +6561,9 @@ begin
   if not GetActiveSheet(sheet) then
     Exit;
   dc := sheet.Memo.PixelsToRowColumn(MousePos.X, MousePos.Y);
-  if (dc.Column = 0) or (dc.Row = 0) or (sheet.Memo.SelLength > 0) then
+  if (dc.Column = 0) or (dc.Row = 0) or
+    (sheet.Memo.SelAvail and sheet.Memo.IsPointInSelection(sheet.Memo.DisplayToBufferPos(dc))) or
+    ((MousePos.X = -1) and (MousePos.Y = -1)) then
     Exit;
   sheet.Memo.SetFocus;
   EditorGotoXY(sheet.Memo, dc.Column, dc.Row);
@@ -6747,11 +6757,12 @@ var
   QuoteChar: Char;
   Attri: TSynHighlighterAttributes;
   BufferCoord, BufferCoordStart, BufferCoordEnd: TBufferCoord;
-  I, SelStart, BracketEnd, ParamIndex, LineLen, BracketStart: Integer;
+  I, J, SelStart, BracketEnd, ParamIndex, LineLen, BracketStart: Integer;
   P: TPoint;
   ParamsList: TStringList;
   TokenFileItem: TTokenFile;
-  TempText: string;
+  TempText, StructParams: string;
+  ShowStructParams: Boolean;
 begin
   if not Config.Editor.CodeParameters then
     Exit;
@@ -6798,12 +6809,93 @@ begin
   BracketStart := SelStart;
   { TODO -oMazin -c : Remove use of memo.Text 04/05/2013 22:11:00 }
   TempText := memo.Text;
-  if not GetFirstOpenBrace(TempText, QuoteChar, BracketStart) then
+  ShowStructParams := False;
+  if not GetFirstOpenParentheses(TempText, QuoteChar, BracketStart) then
   begin
-    HintParams.Cancel;
-    Exit;
+    if not GetFirstOpenBracket(TempText, QuoteChar, BracketStart, SelStart, StructParams) then
+    begin
+      HintParams.Cancel;
+      Exit;
+    end
+    else
+      ShowStructParams := True;
   end;
   BufferCoordStart := Memo.CharIndexToRowCol(BracketStart);
+  if ShowStructParams then
+  begin
+    if not ParseFields(TempText, SelStart, Input, Fields, InputError) then
+    begin
+      HintParams.Cancel;
+      Exit;
+    end;
+    SaveFields := Fields;
+    SaveInput := Input;
+    Fields := Fields + Input;
+    Input := GetFirstWord(Fields);
+    TokenFileItem := ActiveEditingFile;
+    if not FilesParsed.GetFieldsBaseType(Input, Fields, BracketStart,
+      TokenFileItem, TokenFileItem, Token) then
+    begin
+      HintParams.Cancel;
+      Exit;
+    end;
+    StructParams := Copy(StructParams, 2, Length(StructParams) - 1);
+    ParamIndex := 0;
+    while StructParams <> '' do
+    begin
+      case StructParams[1] of
+        '.':
+        begin
+          J := -1;
+          for I := 0 to Token.Count - 1 do
+          begin
+            if Token.Items[I].Token = tkVariable then
+            begin
+              Inc(J);
+              if ParamIndex = J then
+                Break;
+            end;
+          end;
+          if ParamIndex <> J then
+          begin
+            HintParams.Cancel;
+            Exit;
+          end;
+          Scope := Token;
+          Token := Token.Items[I];
+          if Token.Token = tkVariable then
+          begin
+            Input := GetVarType(Token.Flag);
+            if StringIn(Input, ReservedTypes) or
+              (not scope.SearchToken(Input, Token, 0, False, [tkStruct,
+                tkTypeStruct, tkUnion, tkTypeUnion]) and
+              not FilesParsed.GetBaseType(Input, 0, TokenFileItem,
+                TokenFileItem, Token)) then
+            begin
+              HintParams.Cancel;
+              Exit;
+            end;
+          end;
+          ParamIndex := 0;
+        end;
+        ',':
+        begin
+          Inc(ParamIndex);
+        end;
+      end;
+      StructParams := Copy(StructParams, 2, Length(StructParams) - 1);
+    end;
+    P := Memo.RowColumnToPixels(Memo.BufferToDisplayPos(BufferCoordStart));
+    P := Memo.ClientToScreen(P);
+    ParamsList := TStringList.Create;
+    Params := GetStructProto(Token);
+    ParamsList.Add(Params);
+    HintTip.Cancel;
+    DebugHint.Cancel;
+    HintParams.UpdateHint(ParamsList, ParamIndex, P.X, P.Y);
+    ParamsList.Free;
+    Exit;
+  end;
   BufferCoordEnd := Memo.GetMatchingBracketEx(BufferCoordStart);
   if (BufferCoordEnd.Char > 0) and (BufferCoordEnd.Line > 0) then
   begin
@@ -6817,6 +6909,7 @@ begin
     HintParams.Cancel;
     Exit;
   end;
+
   SaveFields := Fields;
   SaveInput := Input;
   Fields := Fields + Input;
@@ -7597,7 +7690,8 @@ begin
       BalancingBracket := sheet.Memo.GetBalancingBracketEx(sheet.Memo.CaretXY, '(');
       if (NextChar in LetterChars + ['{', '}']) and (EndToken <> ';') then
         Value := Value + '();'
-      else if NextChar in DigitChars + ArithmChars + CloseBraceChars + [';'] then
+      else if (NextChar in DigitChars + ArithmChars + CloseBraceChars + [';']) or
+        (EndToken = ';') then
       begin
         if BalancingBracket <= 0 then
           Value := Value + '()'
@@ -7677,7 +7771,8 @@ begin
       Inc(I, 2);
     if NextChar in DigitChars + ArithmChars + [';'] + (CloseBraceChars - ['{', '}']) then
     begin
-      if BalancingBracket < 0 then
+      if (BalancingBracket < 0) or ((BalancingBracket = 0) and ((NextChar = ';') or
+        ((Length(Value) > 1) and (Copy(Value, Length(Value) - 1, 2) = '()')))) then
         Inc(I);
     end;
   end;

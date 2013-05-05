@@ -1217,6 +1217,7 @@ function GetVarType(const S: string): string;
 var
   I: Integer;
   Temp, lower: string;
+  ContinueFlag: Boolean;
 begin
   Temp := S;
   I := Pos('[', Temp);
@@ -1228,10 +1229,24 @@ begin
     Result := GetLastWord(Temp, True);
     Temp := GetPriorWord(Temp);
     lower := LowerCase(Result);
-    if (lower = 'inline') or (lower = 'static') or (lower = 'extern') or
-      (lower = 'virtual') or (Pos('call', lower) = Length(lower) - 3) or
-      (Pos('api', lower) = Length(lower) - 2) or
-      (Pos('export', lower) in [1, Length(lower) - 5]) then
+    ContinueFlag := (lower = 'inline') or (lower = 'static') or
+      (lower = 'extern') or (lower = 'virtual');
+    if not ContinueFlag then
+    begin
+      I := Pos('call', lower);
+      ContinueFlag := (I = Length(lower) - Length('call') + 1) and (I > 0);
+    end;
+    if not ContinueFlag then
+    begin
+      I := Pos('api', lower);
+      ContinueFlag := (I = Length(lower) - Length('api') + 1) and (I > 0);
+    end;
+    if not ContinueFlag then
+    begin
+      I := Pos('export', lower);
+      ContinueFlag := (I = Length(lower) - Length('export') + 1) and (I > 0);
+    end;
+    if ContinueFlag then
     begin
       if Temp <> '' then
         Continue;
@@ -1444,6 +1459,7 @@ begin
   Result := pair_count = 0;
 end;
 
+{ TODO -oMazin -c : Convert to Lines 04/05/2013 22:12:39 }
 function GetNextValidChar(const Text: string; SelStart: Integer): Char;
 var
   ptr, init: PChar;
@@ -1479,6 +1495,7 @@ begin
   Result := ptr^;
 end;
 
+{ TODO -oMazin -c : Convert to Lines 04/05/2013 22:09:11 }
 function ParseFields(const Text: string; SelStart: Integer;
   var S, Fields: string; var InputError: Boolean): Boolean;
 var
@@ -1622,6 +1639,7 @@ begin
   end;
 end;
 
+{ TODO -oMazin -c : Convert to Lines 04/05/2013 22:08:19 }
 function GetFirstOpenBrace(const S: string; QuoteChar: Char;
   var SelStart: Integer): Boolean;
 var

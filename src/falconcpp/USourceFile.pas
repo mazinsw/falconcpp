@@ -84,6 +84,8 @@ type
 
   TSourceFileSheet = class;
   TProjectFile = class;
+  TSourceBase = class;
+  TSourceDeletionEvent = procedure(Source: TSourceBase) of object;
 
   TSourceBase = class(TInterfacedObject)
   private
@@ -94,6 +96,7 @@ type
     FSaved: Boolean;
     FIsNew: Boolean;
     FReadOnly: Boolean;
+    FOnDeletion: TSourceDeletionEvent;
   protected
     procedure SetProject(Value: TProjectFile); virtual;
     procedure SetFileType(Value: Integer); virtual;
@@ -117,6 +120,7 @@ type
     property Saved: Boolean read FSaved write FSaved;
     property IsNew: Boolean read FIsNew write FIsNew;
     property ReadOnly: Boolean read FReadOnly write FReadOnly;
+    property OnDeletion: TSourceDeletionEvent read FOnDeletion write FOnDeletion;
   end;
 
   TSourceFile = class(TSourceBase)
@@ -321,6 +325,7 @@ begin
   FSaved := Value.FSaved;
   FIsNew := Value.FIsNew;
   FReadOnly := Value.FReadOnly;
+  FOnDeletion := Value.FOnDeletion;
 end;
 
 constructor TSourceBase.Create(Node: TTreeNode);
@@ -332,6 +337,8 @@ end;
 
 procedure TSourceBase.Delete;
 begin
+  if Assigned(fOnDeletion) then
+    fOnDeletion(Self);
   FNode.Delete;
   Free;
 end;
@@ -452,8 +459,7 @@ begin
   Close;
   Project.PropertyChanged := True;
   Project.CompilePropertyChanged := True;
-  Node.Delete;
-  Free;
+  inherited Delete;
 end;
 
 function TSourceFile.FileChangedInDisk: Boolean;
@@ -2265,7 +2271,7 @@ begin
   //FSynMemo.BorderStyle := bsNone;
   with FrmFalconMain.Config.Editor do
   begin
-    Options := SynMemo.Options;
+    Options := SYNEDIT_DEFAULT_OPTIONS;
     Include(Options, eoKeepCaretX);
     Include(Options, eoShowIndentGuides);
     //------------ General --------------------------//

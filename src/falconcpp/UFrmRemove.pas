@@ -32,6 +32,8 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure SBtnUndoClick(Sender: TObject);
     procedure SBtnRedoClick(Sender: TObject);
+    procedure FileListKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
   private
     HistoryList: TList;
     HistoryPos: Integer;
@@ -131,14 +133,21 @@ end;
 procedure TFrmRemove.SBtnRemClick(Sender: TObject);
 var
   I: Integer;
+  Item: TListItem;
 begin
-  Inc(HistoryPos);
   // remove redo items
-  for I := HistoryList.Count - 1 downto HistoryPos do
+  for I := HistoryList.Count - 1 downto HistoryPos + 1 do
     HistoryList.Delete(I);
-  HistoryList.Add(FileList.Selected.Data);
+  for I := FileList.Items.Count - 1 downto 0 do
+  begin
+    if not FileList.Items.Item[I].Selected then
+      Continue;
+    Item := FileList.Items.Item[I];
+    Inc(HistoryPos);
+    HistoryList.Add(Item.Data);
+    Item.Delete;
+  end;
   SBtnRedo.Enabled := False;
-  FileList.DeleteSelected;
   SBtnUndo.Enabled := True;
   BtnApply.Enabled := HistoryPos >= 0;
 end;
@@ -180,6 +189,13 @@ begin
   SBtnUndo.Enabled := True;
   SBtnRedo.Enabled := HistoryPos < HistoryList.Count - 1;
   BtnApply.Enabled := HistoryPos >= 0;
+end;
+
+procedure TFrmRemove.FileListKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if (Key = VK_DELETE) and SBtnRem.Enabled then
+    SBtnRem.Click;
 end;
 
 end.

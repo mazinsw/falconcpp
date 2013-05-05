@@ -47,6 +47,7 @@ object FrmRemove: TFrmRemove
       RowSelect = True
       TabOrder = 0
       ViewStyle = vsReport
+      OnKeyDown = FileListKeyDown
       OnSelectItem = FileListSelectItem
     end
   end

@@ -1318,6 +1318,7 @@ begin
   end;
   Node := FrmFalconMain.TreeViewProjects.Items.AddChild(Parent.Node, Name);
   Result := TSourceFile.Create(Node);
+  Result.OnDeletion := FrmFalconMain.DoDeleteSource;
   Node.Data := Result;
   Result.FileType := FILE_TYPE_FOLDER;
   Result.Project := Parent.Project;
@@ -1373,6 +1374,7 @@ var
         AName := ExtractFileName(FileName);
       Node := TreeViewProjects.Items.Add(nil, AName);
       NewPrj := TProjectFile.Create(Node);
+      NewPrj.OnDeletion := DoDeleteSource;
       NewPrj.Project := NewPrj;
       NewPrj.FileType := FileType;
       NewPrj.CompilerType := Compiler;
@@ -1426,6 +1428,7 @@ begin
       end;
       Node := TreeViewProjects.Items.AddChild(OwnerFile.Node, AName);
       NewFile := TSourceFile.Create(Node);
+      NewFile.OnDeletion := DoDeleteSource;
       NewFile.Project := Proj;
       NewFile.FileName := AName;
       NewFile.FileType := FileType;

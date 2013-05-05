@@ -315,6 +315,7 @@ begin
   FrmFalconMain.IsLoading := True;
   Node := FrmFalconMain.TreeViewProjects.Items.AddChild(nil, '');
   NewPrj := TProjectFile.Create(Node);
+  NewPrj.OnDeletion := FrmFalconMain.DoDeleteSource;
   NewPrj.Project := NewPrj;
   NewPrj.FileType := FILE_TYPE_PROJECT;
   Node.Data := NewPrj;

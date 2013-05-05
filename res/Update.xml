@@ -2,19 +2,37 @@
 <FalconCPP>
 	<Core Version="3.2.0.86">
 		<File Name="Falcon.exe" URL="https://downloads.sourceforge.net/project/falconcpp/Binaries/3.2.0.86/Falcon C++-3.2.0.86.zip">
-			Date: 2013/04/12
+			Date: 2013/05/04
 			Fix: Compiling new files disable save button
 			Fix: Makefile rules fail when include headers files from directories using -I flag
 			Fix: Add new file don't changing project properties
 			Fix: OEM plus, minus shortcut for zoom, Ctrl + 0 for restore zoom 
 			Fix: Overriding source project files without prompt
 			Fix: Optimize option from new project
-			Search files on include path on compiler flags
-			Auto complete documentation comment
-			remove double connecting to download and post data available to Updater and PkgManager
+			Fix: Race condition between parse files and load includes
+			Fix: Treeview selection color on Windows XP
+			Fix: Read only file open writable include file
+			Fix: HTML exporter export empty file
+			Fix: Invalid memory access on close when parsing files
+			Fix: Overriding CustomAutoComplete.txt file on update
+			Fix: Detecting return value as STDCALL on functions
+			Debugger auto watch global variables from current file
+			Changed default compiler path selection order
+			Import Visual C++ project from 7.10 to 9.00 version
+			Implemented Remove files from project menu
+			Search files on include path of compiler flags
+			Ctrl + Click works on included files from directories added from -I flag
+			Statement using cast now work on code completion
+			Parse header files out of project
 			Completion list with icons
-			Code template with Ctrl + Space
+			Code completion now insert only necessary bracket, using BalancingBracket function
+			Balancing bracket when auto close {, [ and ( chars
+			Add libs from path when -L found on libs list to selection list on project property
+			Auto complete documentation comment
 			Tips with documentation comment
+			Code template with Ctrl + Space
+			Open file and select it on folder more fast using ShellAPI functions
+			remove double connecting to download and post data available to Updater and PkgManager
 			Minor changes for indentation enhancement
 		</File>
 	</Core>

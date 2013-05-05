@@ -718,7 +718,8 @@ type
       ShowContent: Boolean = False);
     procedure ToggleBreakpoint(aLine: Integer);
     procedure CheckIfFilesHasChanged;
-    procedure DetectScope(Memo: TSynEditEx);
+    function DetectScope(Memo: TSynEditEx;
+      TokenFile: TTokenFile; ShowInTreeview: Boolean): TTokenClass;
     procedure UpdateCompletionColors(EdtOpt: TEditorOptions);
     procedure ParseFiles(List: TStrings);
     function GetSelectedFileInList(var ActiveFile: TSourceFile): Boolean;
@@ -759,11 +760,15 @@ type
     procedure PaintTokenItemV2(const ToCanvas: TCanvas; DisplayRect: TRect;
       Token: TTokenClass; Selected, Focused: Boolean; var DefaultDraw: Boolean);
     function FillIncludeList(IncludePathFilesOnly: Boolean): Boolean;
+    procedure SwapHeaderSource(FromSrc, ToSrc: TSourceFile);
+    function SearchImplementationFile(HeaderFile: TSourceFile;
+      var SrcFile: TSourceFile; var SrcFileName: string): Boolean;
   public
     { Public declarations }
     LastSearch: TSearchItem;
     FalconVersion: TVersion; //this file version
 
+    procedure DoDeleteSource(Source: TSourceBase);
     function RemoveFile(ParentHandle: HWND; FileProp: TSourceFile;
       FromDisk: Boolean = False): Boolean;
     function ShowPromptOverrideFile(const FileName: string): Boolean;
@@ -1654,7 +1659,7 @@ begin
     PopTabsSaveAll.Enabled := Flag;
     Flag := Assigned(CurrentFile) and not (CurrentFile.FileType in [FILE_TYPE_FOLDER, FILE_TYPE_PROJECT]);
     FileExport.Enabled := Flag;
-    Flag := Assigned(CurrentFile) and CurrentFile.Editing;
+    Flag := PageControlEditor.PageCount > 0;
     FileClose.Enabled := Flag;
     PopTabsClose.Enabled := Flag;
     FileCloseAll.Enabled := Flag;
@@ -3292,7 +3297,7 @@ begin
       if CompilerCmd.Executing then
         CompilerCmd.Stop;
       if DebugReader.Running then
-        DebugReader.Stop; { TODO -oMazin -c : Call OnFinish? 27/08/2012 14:02:45 }
+        DebugReader.Stop;
       if Executor.Running and
         (CompareText(Executor.FileName, ProjProp.GetTarget) = 0) then
         Executor.Reset;
@@ -3364,6 +3369,19 @@ begin
   if not PanelOutline.Visible then
     TreeViewOutline.Clear;
   Result := True;
+end;
+
+procedure TFrmFalconMain.DoDeleteSource(Source: TSourceBase);
+var
+  TokenFile: TTokenFile;
+begin
+  if not (Source.FileType in [FILE_TYPE_H, FILE_TYPE_CPP]) then
+    Exit;
+  TokenFile := FilesParsed.ItemOfByFileName(Source.FileName);
+  if TokenFile = nil then
+    Exit;
+  // remove references
+  TokenFile.Data := nil;
 end;
 
 procedure TFrmFalconMain.PopProjDelFromDskClick(Sender: TObject);
@@ -4397,13 +4415,15 @@ begin
   end;
 end;
 
-procedure TFrmFalconMain.DetectScope(Memo: TSynEditEx);
+function TFrmFalconMain.DetectScope(Memo: TSynEditEx;
+  TokenFile: TTokenFile; ShowInTreeview: Boolean): TTokenClass;
 var
   Token: TTokenClass;
   Node, Parent: PNativeNode;
   SelLine, SelStart: Integer;
   BufferCoord: TBufferCoord;
 begin
+  Result := nil;
   BufferCoord := Memo.CaretXY;
   SelLine := BufferCoord.Line;
   if BufferCoord.Line > 0 then
@@ -4411,10 +4431,10 @@ begin
     if BufferCoord.Char > (Length(Memo.Lines[SelLine - 1]) + 1) then
       BufferCoord.Char := Length(Memo.Lines[SelLine - 1]) + 1;
   end;
-  if DebugReader.Running then
+  if ShowInTreeview and DebugReader.Running then
     Exit;
   SelStart := Memo.RowColToCharIndex(BufferCoord);
-  if ActiveEditingFile.GetTokenAt(Token, SelStart, SelLine) then
+  if TokenFile.GetTokenAt(Token, SelStart, SelLine) then
   begin
     if Assigned(Token.Parent) and
       (Token.Parent.Token in [tkParams, tkFunction, tkPrototype,
@@ -4424,6 +4444,9 @@ begin
       if (Token.Token = tkParams) and Assigned(Token.Parent) then
         Token := Token.Parent;
     end;
+    Result := Token;
+    if not ShowInTreeview then
+      Exit;
     Node := PNativeNode(Token.Data);
     //unknow bug
     if not Assigned(Node) or (TreeViewOutline.GetFirst = nil) then
@@ -4439,8 +4462,11 @@ begin
     TreeViewOutline.ScrollIntoView(Node, True);
     TreeViewOutline.EndUpdate;
   end
-  else if ActiveEditingFile.GetScopeAt(Token, SelStart) then
+  else if TokenFile.GetScopeAt(Token, SelStart) then
   begin
+    Result := Token;
+    if not ShowInTreeview then
+      Exit;
     Node := PNativeNode(Token.Data);
     //unknow bug
     if not Assigned(Node) or (TreeViewOutline.GetFirst = nil) then
@@ -4521,6 +4547,7 @@ begin
     end;
     if not FileExistsFlag then
       Continue;
+    IncludeFileName := ExpandFileName(IncludeFileName);
     // don't parse compiler header file
     if not CompilerHeaderFile then
     begin
@@ -4613,7 +4640,7 @@ begin
   if (Sender is TSynEditEx) then
   begin
     UpdateMenuItems([rmEdit]);
-    DetectScope(Sender as TSynEditEx);
+    DetectScope(Sender as TSynEditEx, ActiveEditingFile, True);
     if ActiveErrorLine > 0 then
     begin
       LastActiveErrorLine := ActiveErrorLine;
@@ -5486,6 +5513,7 @@ begin
   end;
   Node := TreeViewProjects.Items.AddChild(nil, '');
   NewPrj := TProjectFile.Create(Node);
+  NewPrj.OnDeletion := DoDeleteSource;
   NewPrj.Project := NewPrj;
   NewPrj.FileType := FILE_TYPE_PROJECT;
   Node.Data := NewPrj;
@@ -5717,6 +5745,7 @@ begin
   end;
   Node := TreeViewProjects.Items.AddChild(nil, '');
   NewPrj := TProjectFile.Create(Node);
+  NewPrj.OnDeletion := DoDeleteSource;
   NewPrj.Project := NewPrj;
   NewPrj.FileType := FILE_TYPE_PROJECT;
   Node.Data := NewPrj;
@@ -6028,6 +6057,7 @@ begin
   ConfigurationType := StrToInt(GetAttribute(ConfigNode, 'ConfigurationType', '0'));
   Node := TreeViewProjects.Items.AddChild(nil, '');
   NewPrj := TProjectFile.Create(Node);
+  NewPrj.OnDeletion := DoDeleteSource;
   NewPrj.Project := NewPrj;
   NewPrj.FileType := FILE_TYPE_PROJECT;
   Node.Data := NewPrj;
@@ -6704,7 +6734,7 @@ begin
   end;
   //TreeViewOutline.Invalidate;
   if GetActiveSheet(sheet) then
-    DetectScope(sheet.Memo);
+    DetectScope(sheet.Memo, ActiveEditingFile, True);
 end;
 
 //hint functions
@@ -6721,6 +6751,7 @@ var
   P: TPoint;
   ParamsList: TStringList;
   TokenFileItem: TTokenFile;
+  TempText: string;
 begin
   if not Config.Editor.CodeParameters then
     Exit;
@@ -6765,7 +6796,9 @@ begin
     end;
   end;
   BracketStart := SelStart;
-  if not GetFirstOpenBrace(memo.Text, QuoteChar, BracketStart) then
+  { TODO -oMazin -c : Remove use of memo.Text 04/05/2013 22:11:00 }
+  TempText := memo.Text;
+  if not GetFirstOpenBrace(TempText, QuoteChar, BracketStart) then
   begin
     HintParams.Cancel;
     Exit;
@@ -6775,11 +6808,11 @@ begin
   if (BufferCoordEnd.Char > 0) and (BufferCoordEnd.Line > 0) then
   begin
     BracketEnd := Memo.RowColToCharIndex(BufferCoordEnd);
-    Params := Copy(Memo.Text, BracketStart + 2, BracketEnd - BracketStart - 1);
+    Params := Copy(TempText, BracketStart + 2, BracketEnd - BracketStart - 1);
   end
   else
-    Params := Copy(Memo.Text, BracketStart + 2, SelStart - BracketStart - 1);
-  if not ParseFields(Memo.Text, BracketStart, Input, Fields, InputError) then
+    Params := Copy(TempText, BracketStart + 2, SelStart - BracketStart - 1);
+  if not ParseFields(TempText, BracketStart, Input, Fields, InputError) then
   begin
     HintParams.Cancel;
     Exit;
@@ -7334,12 +7367,23 @@ begin
   end;
   SelStart := sheet.Memo.RowColToCharIndex(Buffer);
   //Temp skip Scope:
-  if (SelStart >= 1) and (sheet.Memo.Text[SelStart] = ':') then
+  if (Buffer.Line > 0) then
   begin
-    if (SelStart >= 2) and (sheet.Memo.Text[SelStart - 1] <> ':') then
-      Exit
-    else if (SelStart < 2) then
-      Exit;
+    LineStr := sheet.Memo.Lines.Strings[Buffer.Line - 1];
+    LineLen := Length(LineStr);
+    if (Buffer.Char - 1 <= LineLen) and (Buffer.Char - 1 > 0) then
+    begin
+      if LineStr[Buffer.Char - 1] = ':' then
+      begin
+        if (Buffer.Char - 1 > 1) then
+        begin
+          if LineStr[Buffer.Char - 2] <> ':' then
+            Exit;
+        end
+        else
+          Exit;
+      end;
+    end;
   end;
   //End temp
   if Input <> '' then
@@ -8184,6 +8228,66 @@ begin
   UpdateMenuItems([rmPageCtrlPopup]);
 end;
 
+procedure TFrmFalconMain.SwapHeaderSource(FromSrc, ToSrc: TSourceFile);
+var
+  FromTokenFile, ToTokenFile: TTokenFile;
+  FromSheet, ToSheet: TSourceFileSheet;
+  ScopeToken, Token: TTokenClass;
+  Buffer: TBufferCoord;
+  FuncScope: string;
+begin
+  FromTokenFile := FilesParsed.ItemOfByFileName(FromSrc.FileName);
+  ToTokenFile := FilesParsed.ItemOfByFileName(ToSrc.FileName);
+  ToSheet := ToSrc.Edit;
+  if not FromSrc.GetSheet(FromSheet) or (FromTokenFile = nil) or
+    (ToTokenFile = nil) then
+    Exit;
+  ScopeToken := DetectScope(FromSheet.Memo, FromTokenFile, False);
+  if FromSrc.FileType = FILE_TYPE_H then
+  begin
+    // only prototype
+    if (ScopeToken = nil) or not (ScopeToken.Token in [tkPrototype,
+      tkConstructor, tkDestructor]) and
+      (GetTokenByName(ScopeToken, 'Scope', tkScope) = nil) then
+      Exit;
+    // search implementation function
+    if not ToTokenFile.SearchToken(ScopeToken.Name, Token, 0, True,
+      [tkFunction, tkConstructor, tkDestructor]) then
+      Exit;
+    Token := GetTokenByName(Token, 'Scope', tkScope);
+    // only function implementation
+    if Token = nil then
+      Exit;
+    Buffer := ToSheet.Memo.CharIndexToRowCol(Token.SelStart);
+    GotoLineAndAlignCenter(ToSheet.Memo, Buffer.Line, Buffer.Char);
+  end
+  else
+  begin
+    // only function
+    if (ScopeToken = nil) or not (ScopeToken.Token in [tkFunction,
+      tkConstructor, tkDestructor]) and
+      (GetTokenByName(ScopeToken, 'Scope', tkScope) <> nil) then
+      Exit;
+    // search scope
+    FuncScope := GetFuncScope(ScopeToken);
+    if (FuncScope <> '') then
+    begin
+      if not ToTokenFile.SearchTreeToken(FuncScope, Token,
+        [tkClass, tkNamespace], 0) then
+        Exit;
+      if not Token.SearchToken(ScopeToken.Name, Token, 0, False,
+        [tkPrototype, tkConstructor, tkDestructor]) then
+        Exit;
+    end
+    // search function
+    else if not ToTokenFile.SearchToken(ScopeToken.Name, Token, 0, False,
+      [tkPrototype, tkConstructor, tkDestructor]) then
+      Exit;
+    Buffer := ToSheet.Memo.CharIndexToRowCol(Token.SelStart);
+    GotoLineAndAlignCenter(ToSheet.Memo, Buffer.Line, Buffer.Char);
+  end;
+end;
+
 procedure TFrmFalconMain.EditSwapClick(Sender: TObject);
 var
   sheet: TSourceFileSheet;
@@ -8213,7 +8317,7 @@ begin
          parent.FindFile(ChangeFileExt(SrcName, '.hh'), swfp) or
          parent.FindFile(ChangeFileExt(SrcName, '.rh'), swfp) then
       begin
-        swfp.Edit;
+        SwapHeaderSource(fprop, swfp);
         Exit;
       end;
       IncludeList := TStringList.Create;
@@ -8231,7 +8335,7 @@ begin
           swfp := fprop.Project.GetFileByPathName(ChangeFileExt(SrcName, '.rh'));
         if swfp <> nil then
         begin
-          swfp.Edit;
+          SwapHeaderSource(fprop, swfp);
           IncludeList.Free;
           Exit;
         end;
@@ -8242,12 +8346,12 @@ begin
     begin
       if SearchSourceFile(SwapFileName, swfp) then
       begin
-        swfp.Edit;
+        SwapHeaderSource(fprop, swfp);
         Exit;
       end;
       if FileExists(SwapFileName) then
       begin
-        OpenFile(SwapFileName).Edit;
+        SwapHeaderSource(fprop, OpenFile(SwapFileName));
         Exit;
       end;
       MessageBox(Handle, PChar(Format(STR_FRM_MAIN[34], [SwapFileName])),
@@ -8279,26 +8383,23 @@ begin
       Memo.Lines.Add('#endif');
       Memo.CaretXY := BufferCoord(1, 4);
       parent.Project.PropertyChanged := True;
+      SwapHeaderSource(fprop, swfp);
     end;
   end
   else if GetFileType(FileName) = FILE_TYPE_H then
   begin
     if Assigned(parent) then
     begin
-      //if parent.Project.CompilerType = COMPILER_C then
-      //  SwapFileName := ChangeFileExt(SwapFileName, '.c')
-      //else
-      //  SwapFileName := ChangeFileExt(SwapFileName, '.cpp');
       SwapFileName := ChangeFileExt(FileName, '.c');
       if parent.FindFile(ExtractFileName(SwapFileName), swfp) then
       begin
-        swfp.Edit;
+        SwapHeaderSource(fprop, swfp);
         Exit;
       end;
       SwapFileName := ChangeFileExt(FileName, '.cpp');
       if parent.FindFile(ExtractFileName(SwapFileName), swfp) then
       begin
-        swfp.Edit;
+        SwapHeaderSource(fprop, swfp);
         Exit;
       end;
 
@@ -8312,7 +8413,8 @@ begin
           swfp := fprop.Project.SearchFile(ChangeFileExt(SrcName, '.cpp'));
         if swfp <> nil then
         begin
-          swfp.Edit;
+          SwapHeaderSource(fprop, swfp);
+          IncludeList.Free;
           Exit;
         end;
       end;
@@ -8343,6 +8445,7 @@ begin
         else
           Memo.Lines.Add(''); //Caret here
         Memo.CaretXY := BufferCoord(1, 3);
+        SwapHeaderSource(fprop, swfp);
       end;
     end
     else
@@ -8350,23 +8453,23 @@ begin
       SwapFileName := ChangeFileExt(FileName, '.cpp');
       if SearchSourceFile(SwapFileName, swfp) then
       begin
-        swfp.Edit;
+        SwapHeaderSource(fprop, swfp);
         Exit;
       end;
       if FileExists(SwapFileName) then
       begin
-        OpenFile(SwapFileName).Edit;
+        SwapHeaderSource(fprop, OpenFile(SwapFileName));
         Exit;
       end;
       SwapFileName := ChangeFileExt(FileName, '.c');
       if SearchSourceFile(SwapFileName, swfp) then
       begin
-        swfp.Edit;
+        SwapHeaderSource(fprop, swfp);
         Exit;
       end;
       if FileExists(SwapFileName) then
       begin
-        OpenFile(SwapFileName).Edit;
+        SwapHeaderSource(fprop, OpenFile(SwapFileName));
         Exit;
       end;
       if fprop is TProjectFile then
@@ -8624,17 +8727,113 @@ begin
     HintTip.Cancel;
 end;
 
+function TFrmFalconMain.SearchImplementationFile(HeaderFile: TSourceFile;
+  var SrcFile: TSourceFile; var SrcFileName: string): Boolean;
+var
+  parent, temp: TSourceFile;
+  FileName, SwapFileName, SrcName: string;
+  IncludeList: TStringList;
+begin
+  parent := nil;
+  Result := False;
+  if (HeaderFile <> nil) then
+  begin
+    if (HeaderFile.FileType <> FILE_TYPE_H) then
+      Exit;
+    FileName := HeaderFile.FileName;
+    if Assigned(HeaderFile.Node.Parent) then
+      parent := TSourceFile(HeaderFile.Node.Parent.Data);
+  end
+  else
+    FileName := SrcFileName;
+  if Assigned(parent) then
+  begin
+    // search on parent folder
+    SwapFileName := ChangeFileExt(FileName, '.c');
+    if parent.FindFile(ExtractFileName(SwapFileName), SrcFile) then
+    begin
+      Result := True;
+      SrcFileName := SrcFile.FileName;
+      Exit;
+    end;
+    SwapFileName := ChangeFileExt(FileName, '.cpp');
+    if parent.FindFile(ExtractFileName(SwapFileName), SrcFile) then
+    begin
+      Result := True;
+      SrcFileName := SrcFile.FileName;
+      Exit;
+    end;
+
+    // search using project compiler flag
+    IncludeList := TStringList.Create;
+    GetIncludeDirs(ExtractFilePath(HeaderFile.Project.FileName),
+      HeaderFile.Project.Flags, IncludeList);
+    if IncludeList.Count > 0 then
+    begin
+      SrcName := ChangeFileExt(ExtractFileName(SwapFileName), '.c');
+      temp := HeaderFile.Project.SearchFile(SrcName);
+      if temp = nil then
+        temp := HeaderFile.Project.SearchFile(ChangeFileExt(SrcName, '.cpp'));
+      if temp <> nil then
+      begin
+        IncludeList.Free;
+        SrcFile := temp;
+        Result := True;
+        SrcFileName := SrcFile.FileName;
+        Exit;
+      end;
+    end;
+    IncludeList.Free;
+  end
+  else
+  begin
+    // search out of project
+    SwapFileName := ChangeFileExt(FileName, '.cpp');
+    if SearchSourceFile(SwapFileName, SrcFile) then
+    begin
+      Result := True;
+      SrcFileName := SrcFile.FileName;
+      Exit;
+    end;
+    if FileExists(SwapFileName) then
+    begin
+      Result := True;
+      SrcFileName := SwapFileName;
+      Exit;
+    end;
+    SwapFileName := ChangeFileExt(FileName, '.c');
+    if SearchSourceFile(SwapFileName, SrcFile) then
+    begin
+      Result := True;
+      SrcFileName := SrcFile.FileName;
+      Exit;
+    end;
+    if FileExists(SwapFileName) then
+    begin
+      Result := True;
+      SrcFileName := SwapFileName;
+      Exit;
+    end;
+  end;
+end;
+
 procedure TFrmFalconMain.PopEditorOpenDeclClick(Sender: TObject);
 var
+  CurrentTokenFile, SrcTokenFile: TTokenFile;
   sheet: TSourceFileSheet;
+  ScopeToken, Token, ParentToken: TTokenClass;
+  SrcFileName: string;
+  CurrentSrcFile, SrcFile: TSourceFile;
   SelStart, SelLine: Integer;
-  Input, Fields: string;
-  Token: TTokenClass;
-  TokenFile: TTokenFile;
   BufferCoord: TBufferCoord;
+  Input, Fields: string;
   InputError: Boolean;
 begin
   if not GetActiveSheet(sheet) then
+    Exit;
+  CurrentSrcFile := sheet.SourceFile;
+  CurrentTokenFile := FilesParsed.ItemOfByFileName(CurrentSrcFile.FileName);
+  if (CurrentTokenFile = nil) then
     Exit;
   BufferCoord := sheet.Memo.CaretXY;
   SelLine := BufferCoord.Line;
@@ -8644,12 +8843,63 @@ begin
       BufferCoord.Char := Length(sheet.Memo.Lines[SelLine - 1]) + 1;
   end;
   SelStart := sheet.Memo.RowColToCharIndex(BufferCoord);
-  if not ParseFields(sheet.Memo.Text, SelStart, Input, Fields, InputError) then
+  SrcFile := CurrentSrcFile;
+  SrcFileName := CurrentSrcFile.FileName;
+  // get prototype
+  if not CurrentTokenFile.GetTokenAt(ScopeToken, SelStart) then
+  begin
+    if not ParseFields(sheet.Memo.Text, SelStart, Input, Fields, InputError) then
+      Exit;
+    if not FilesParsed.FindDeclaration(Input, Fields, CurrentTokenFile, CurrentTokenFile,
+      ScopeToken, SelStart, SelLine) then
+      Exit;
+    SrcFileName := CurrentTokenFile.FileName;
+    CurrentSrcFile := TSourceFile(CurrentTokenFile.Data);
+  end;
+  // only prototype
+  if not (ScopeToken.Token in [tkPrototype, tkConstructor, tkDestructor]) and
+    (GetTokenByName(ScopeToken, 'Scope', tkScope) = nil) then
     Exit;
-  if not FilesParsed.FindDeclaration(Input, Fields, ActiveEditingFile, TokenFile,
-    Token, SelStart, SelLine) then
+  { TODO -oMazin -c : get all parent scope 04/05/2013 21:17:55 }
+  //get parent of Token
+  ParentToken := ScopeToken.Parent;
+  if Assigned(ParentToken) and
+    (ParentToken.Token in [tkClass, tkStruct, tkScopeClass]) then
+    ParentToken := ParentToken.Parent;
+  //tree parent object?
+  if Assigned(ParentToken) and Assigned(ParentToken.Parent) and
+    (ParentToken.Parent.Token in [tkClass, tkStruct]) then
+    ParentToken := ParentToken.Parent;
+  if (ParentToken <> nil) and not (ParentToken.Token in [tkClass, tkStruct]) then
+    ParentToken := nil;
+  // implementation on same file
+  { TODO -oMazin -c : Search with scope 04/05/2013 21:20:23 }
+  if not CurrentTokenFile.SearchToken(ScopeToken.Name, Token, ScopeToken.SelStart,
+    True, [tkFunction, tkConstructor, tkDestructor]) then
+  begin
+    // search on source file
+    SrcFile := nil;
+    if not SearchImplementationFile(CurrentSrcFile, SrcFile, SrcFileName) then
+      Exit;
+    SrcTokenFile := FilesParsed.ItemOfByFileName(SrcFileName);
+    if SrcTokenFile = nil then
+      Exit;
+    if not SrcTokenFile.SearchToken(ScopeToken.Name, Token, 0, True,
+      [tkFunction, tkConstructor, tkDestructor]) then
+      Exit;
+  end;
+  // only function implementation
+  if GetTokenByName(Token, 'Scope', tkScope) = nil then
     Exit;
-  ShowMessage(TokenFile.FileName + ' - ' + Token.Flag + ' ' + Token.Name);
+  if SrcFile = nil then
+  begin
+    if FileExists(SrcFileName) then
+      SrcFile := OpenFile(SrcFileName)
+    else
+      Exit;
+  end;
+  SrcFile.Edit;
+  SelectToken(Token);
 end;
 
 procedure TFrmFalconMain.InvalidateDebugLine;

@@ -60,6 +60,8 @@ type
     function SearchSource(const S: string; var Item: TTokenClass;
       NotAtSelStart: Integer; AdvanceAfterSelStart: Boolean = False;
       ListAll: TStrings = nil; AllFunctions: Boolean = False): Boolean;
+    function SearchTreeToken(const Fields: string; var Token: TTokenClass;
+      Mode: TTokenSearchMode; SelStart: Integer): Boolean;
 
     function LoadHeader(const ParsedFileName: string;
       var Header: TSimpleFileToken): Boolean;
@@ -508,7 +510,7 @@ function TTokenFile.SearchToken(const S: string; var Item: TTokenClass;
 
   function HasOneToken(aCheck, aMode: TTokenSearchMode): Boolean;
   begin
-    Result := not ((aCheck - aMode) = aMode) or (aMode = []);
+    Result := not ((aMode - aCheck) = aMode) or (aMode = []);
   end;
 
 begin
@@ -522,7 +524,7 @@ begin
     if FVarConstList.SearchToken(S, Item, SelStart,
       AdvanceAfterSelStart, Mode) then
       Exit;
-  if HasOneToken([tkPrototype, tkFunction], Mode) then
+  if HasOneToken([tkPrototype, tkFunction, tkConstructor, tkDestructor], Mode) then
     if FFuncObjList.SearchToken(S, Item, SelStart, AdvanceAfterSelStart,
       Mode) then
       Exit;
@@ -554,6 +556,32 @@ begin
     Exit;
   //if FIncludeList.SearchSource(S, Item, NotAtSelStart, AdvanceAfterSelStart) then Exit;
   Result := False;
+end;
+
+function TTokenFile.SearchTreeToken(const Fields: string; var Token: TTokenClass;
+  Mode: TTokenSearchMode; SelStart: Integer): Boolean;
+var
+  List: TStrings;
+  I: Integer;
+begin
+  Result := False;
+  List := TStringList.Create;
+  GetStringsFields(Fields, List, False);
+  if (List.Count > 0) and SearchToken(List.Strings[0], Token, SelStart, False, Mode) then
+  begin
+    Result := True;
+    //direction ------>---->---->>>
+    //fields = namespace1::namespace2::myclass
+    for I := 1 to List.Count - 1 do
+    begin
+      if not Token.SearchToken(List.Strings[I], Token, SelStart, False, Mode) then
+      begin
+        Result := False;
+        Break;
+      end;
+    end;
+  end;
+  List.Free;
 end;
 
 function TTokenFile.GetScopeAt(var scopeToken: TTokenClass;
@@ -1102,29 +1130,11 @@ function TTokenFiles.SearchTreeTokenRecursive(const Fields: string;
   TokenFile: TTokenFile; var TokenFileItem: TTokenFile; var Token: TTokenClass;
   Mode: TTokenSearchMode; FindedList: TRBTree; SelStart: Integer): Boolean;
 var
-  List: TStrings;
   I: Integer;
   FilePath: string;
   FindedTokenFile: TTokenFile;
 begin
-  Result := False;
-  List := TStringList.Create;
-  GetStringsFields(Fields, List, False);
-  if TokenFile.SearchToken(List.Strings[0], Token, SelStart, False, Mode) then
-  begin
-    Result := True;
-    //direction ------>---->---->>>
-    //fields = namespace1::namespace2::myclass
-    for I := 1 to List.Count - 1 do
-    begin
-      if not Token.SearchToken(List.Strings[I], Token, SelStart, False, Mode) then
-      begin
-        Result := False;
-        Break;
-      end;
-    end;
-  end;
-  List.Free;
+  Result := TokenFile.SearchTreeToken(Fields, Token, Mode, SelStart);
   if Result then
   begin
     TokenFileItem := TokenFile;
@@ -1160,6 +1170,7 @@ begin
   FindedList := TRBTree.Create;
   Result := SearchTreeTokenRecursive(Fields, TokenFile, TokenFileItem, Token,
     Mode, FindedList, SelStart);
+  { TODO -oMazin -c : Search when scope is Scope::Function() 04/05/2013 21:28:56 }
   FindedList.Free;
 end;
 
@@ -1316,6 +1327,7 @@ begin
     end;
   end;
   FindedList := TRBTree.Create;
+  { TODO -oMazin -c : Use Scope, Ex: Scope::Function() 04/05/2013 21:33:01 }
   Result := GetBaseTypeRecursive(S, SelStart, TokenFile, TokenFileItem,
     Token, FindedList, ListAll, AllFunctions);
   FindedList.Free;
@@ -1427,6 +1439,7 @@ begin
     GetBaseType(GetVarType(Token.Flag), 0,
       TokenFile, TokenFileItem, Token);
   end;
+  { TODO -oMazin -c : Consider Scope::Function() 04/05/2013 21:33:01 }
   for I := 0 to List.Count - 1 do
   begin
     if Token.Token in [tkClass, tkTypeStruct, tkStruct, tkUnion,
@@ -1569,6 +1582,7 @@ begin
         ParamsList.AddObject('', Token);
     end;
   end;
+  { TODO -oMazin -c : Consider Scope::Function() 04/05/2013 21:33:01 }
   for I := 0 to List.Count - 1 do
   begin
     if (Token.Token in [tkClass, tkTypeStruct, tkStruct, tkUnion,

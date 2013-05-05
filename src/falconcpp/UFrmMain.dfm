@@ -467,6 +467,7 @@ object FrmFalconMain: TFrmFalconMain
         object FileCloseAll: TTBXItem
           Caption = 'C&lose All'
           Enabled = False
+          ShortCut = 24663
           OnClick = FileCloseAllClick
         end
         object FileRemove: TTBXItem

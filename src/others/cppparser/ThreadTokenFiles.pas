@@ -535,20 +535,20 @@ end;
 
 procedure TThreadTokenFiles.DoStart;
 begin
-  if Assigned(fOnStart) then
+  if Assigned(fOnStart) and not Terminated then
     fOnStart(Self);
 end;
 
 procedure TThreadTokenFiles.DoProgress;
 begin
-  if Assigned(fOnProgress) then
+  if Assigned(fOnProgress) and not Terminated then
     fOnProgress(Self, fTokenFile, fFileName, fCurrent, fTotal, fParsed,
       fMethod);
 end;
 
 procedure TThreadTokenFiles.DoFinish;
 begin
-  if Assigned(fOnFinish) then
+  if Assigned(fOnFinish) and not Terminated then
     fOnFinish(Self, fCancel);
 end;
 
@@ -556,7 +556,7 @@ procedure TThreadTokenFiles.DoAllFinish;
 begin
   fCurrent := 0;
   fTotal := 0;
-  if Assigned(fOnAllFinish) then
+  if Assigned(fOnAllFinish) and not Terminated then
     fOnAllFinish(Self);
 end;
 

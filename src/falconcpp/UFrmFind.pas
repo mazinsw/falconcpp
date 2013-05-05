@@ -151,6 +151,7 @@ begin
     memo.SearchEngine := frm.EditorSearch;
   memo.SearchEngine.Pattern := LastSearch.Search;
   memo.SearchEngine.Options := sopt;
+  { TODO -oMazin -c : Change to Lines 04/05/2013 22:14:59 }
   memo.SearchEngine.FindAll(memo.Text);
   Start := 0;
   Count := 0;
@@ -214,6 +215,7 @@ begin
     memo.SearchEngine := frm.EditorSearch;
   memo.SearchEngine.Pattern := LastSearch.Search;
   memo.SearchEngine.Options := sopt;
+  { TODO -oMazin -c : Change to Lines 04/05/2013 22:14:59 }
   memo.SearchEngine.FindAll(memo.Text);
   Start := 0;
   Count := 0;
@@ -779,6 +781,7 @@ begin
     memo.SearchEngine := FrmFalconMain.EditorSearch;
   memo.SearchEngine.Pattern := search;
   memo.SearchEngine.Options := sopt;
+  { TODO -oMazin -c : Change to Lines 04/05/2013 22:14:59 }
   memo.SearchEngine.FindAll(memo.Text);
   Count := memo.SearchEngine.ResultCount;
   Start := 0;

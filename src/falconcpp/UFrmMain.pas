@@ -409,7 +409,8 @@ type
     procedure FileCloseClick(Sender: TObject);
     procedure RunExecuteClick(Sender: TObject);
     procedure TreeViewProjectsEnter(Sender: TObject);
-    procedure PageControlEditorPageChange(Sender: TObject; TabIndex: Integer);
+    procedure PageControlEditorPageChange(Sender: TObject; TabIndex,
+      PrevTabIndex: Integer);
     procedure RunRunClick(Sender: TObject);
     procedure LauncherFinished(Sender: TObject);
     procedure RunStopClick(Sender: TObject);
@@ -543,9 +544,6 @@ type
     procedure CodeCompletionCodeCompletion(Sender: TObject;
       var Value: string; Shift: TShiftState; Index: Integer;
       EndToken: Char);
-    procedure TreeViewOutlineAdvancedCustomDrawItem(
-      Sender: TCustomTreeView; Node: TTreeNode; State: TCustomDrawState;
-      Stage: TCustomDrawStage; var PaintImages, DefaultDraw: Boolean);
     procedure TimerHintParamsTimer(Sender: TObject);
     procedure ViewCompOutClick(Sender: TObject);
     procedure FilePrintClick(Sender: TObject);
@@ -613,6 +611,7 @@ type
       var WordBreakChars: String);
     procedure CodeCompletionGetWordEndChars(Sender: TObject;
       var WordEndChars: String; Index: Integer; var Handled: Boolean);
+    procedure PopEditorCompClassClick(Sender: TObject);
     //**********************************************/
   private
     { Private declarations }
@@ -721,6 +720,7 @@ type
     function DetectScope(Memo: TSynEditEx;
       TokenFile: TTokenFile; ShowInTreeview: Boolean): TTokenClass;
     procedure UpdateCompletionColors(EdtOpt: TEditorOptions);
+    procedure ParseFile(FileName: string; SourceFile: TSourceFile);
     procedure ParseFiles(List: TStrings);
     function GetSelectedFileInList(var ActiveFile: TSourceFile): Boolean;
     function GetActiveProject(var Project: TProjectFile): Boolean;
@@ -751,11 +751,9 @@ type
     procedure ShowHintParams(Memo: TSynEditEx);
     procedure ProcessHintView(FileProp: TSourceFile;
       Memo: TSynEditEx; const X, Y: Integer);
-    procedure PaintTokenItem(const ToCanvas: TCanvas;
-      DisplayRect: TRect; Token: TTokenClass; State: TCustomDrawState);
     procedure TextEditorUpdateStatusBar(Sender: TObject);
     procedure ExecutorStart(Sender: TObject);
-    function FillTreeViewV2(Parent: PNativeNode; Token: TTokenClass;
+    function FillTreeView(Parent: PNativeNode; Token: TTokenClass;
       DeleteNext: Boolean = False): PNativeNode;
     procedure PaintTokenItemV2(const ToCanvas: TCanvas; DisplayRect: TRect;
       Token: TTokenClass; Selected, Focused: Boolean; var DefaultDraw: Boolean);
@@ -763,6 +761,10 @@ type
     procedure SwapHeaderSource(FromSrc, ToSrc: TSourceFile);
     function SearchImplementationFile(HeaderFile: TSourceFile;
       var SrcFile: TSourceFile; var SrcFileName: string): Boolean;
+    function CreateTODOSourceFile(FileName: string; TokenFile: TTokenFile;
+      SourceFile: TSourceFile; var TODOSourceFile: TSourceFile): Boolean;
+    function SearchHeaderFile(SourceFile: TSourceFile;
+      var HdrFile: TSourceFile; var HdrFileName: string): Boolean;
   public
     { Public declarations }
     LastSearch: TSearchItem;
@@ -1673,17 +1675,16 @@ begin
   end;
   if rmFileNew in Regions then
   begin
-    //FileNewProject.Enabled := True;
-    //BtnNewProj.Enabled := True;
-    Flag := not Assigned(SelectedFile) or (SelectedFile.FileType in [FILE_TYPE_FOLDER, FILE_TYPE_PROJECT])
-      or (Assigned(SelectedFile.Node.Parent) and
-      (TSourceFile(SelectedFile.Node.Parent.Data).FileType in [FILE_TYPE_FOLDER, FILE_TYPE_PROJECT]));
+    Flag := True;
     FileNewC.Enabled := Flag;
     FileNewCpp.Enabled := Flag;
     FileNewHeader.Enabled := Flag;
     FileNewResource.Enabled := Flag;
     FileNewEmpty.Enabled := Flag;
-    FileNewFolder.Enabled := Flag and Assigned(SelectedFile);
+    FileNewFolder.Enabled := Flag and Assigned(SelectedFile) and
+      ((SelectedFile.FileType in [FILE_TYPE_FOLDER, FILE_TYPE_PROJECT]) or
+      (Assigned(SelectedFile.Node.Parent) and
+      (TSourceFile(SelectedFile.Node.Parent.Data).FileType in [FILE_TYPE_FOLDER, FILE_TYPE_PROJECT])));
   end;
   if rmEdit in Regions then
   begin
@@ -1899,7 +1900,7 @@ begin
   SourceFileList.Free;
 end;
 
-function TFrmFalconMain.FillTreeViewV2(Parent: PNativeNode;
+function TFrmFalconMain.FillTreeView(Parent: PNativeNode;
   Token: TTokenClass; DeleteNext: Boolean): PNativeNode;
 var
   I: Integer;
@@ -1938,86 +1939,12 @@ begin
     end;
 
     if not (Token.Items[I].Token in [tkParams, tkScope, tkFunction,
-      tkConstructor, tkDestructor]) then
+      tkConstructor, tkDestructor, tkPrototype]) then
     begin
-      FillTreeViewV2(Node, Token.Items[I], True);
+      FillTreeView(Node, Token.Items[I], True);
     end;
   end;
 end;
-
-{function TFrmFalconMain.FillTreeViewV2(Sibling, Parent: PNativeNode;
-  Token: TTokenClass; DeleteNext: Boolean): PNativeNode;
-var
-  I: Integer;
-  Temp: PNativeNode;
-  Avance: Boolean;
-  S: string;
-  NodeObject: TNodeObject;
-begin
-  if Assigned(Parent) then
-    Sibling := TreeViewOutline.GetFirstChild(Parent);
-  for I := 0 to Token.Count - 1 do
-  begin
-    Avance := False;
-    if not (Token.Items[I].Token in [tkParams, tkScope, tkScopeClass, tkUsing]) then
-    begin
-      if Token.Items[I].Token in [tkFunction, tkProtoType, tkConstructor, tkDestructor] then
-      begin
-        if Token.Items[I].Token in [tkConstructor, tkDestructor] then
-        begin
-          S := GetFuncScope(Token.Items[I]) +
-            Token.Items[I].Name + GetFuncProtoTypes(Token.Items[I]);
-
-        end
-        else
-        begin
-          S := Token.Items[I].Name +
-            GetFuncProtoTypes(Token.Items[I]) + ' : ' + Token.Items[I].Flag;
-        end;
-      end
-      else
-        S := Token.Items[I].Name;
-      Avance := True;
-      if not Assigned(Sibling) then
-      begin
-        NodeObject := TNodeObject.Create;
-        NodeObject.Data := Token.Items[I];
-        NodeObject.Caption := S;
-        Sibling := TreeViewOutline.AddChild(Parent, NodeObject);
-      end
-      else
-      begin
-        NodeObject := TNodeObject(TreeViewOutline.GetNodeData(Sibling)^);
-        NodeObject.Data := Token.Items[I];
-        NodeObject.Caption := S;
-      end;
-      Token.Items[I].Data := Sibling;
-      NodeObject.ImageIndex := GetTokenImageIndex(Token.Items[I], OutlineImages);
-    end;
-
-    if not (Token.Items[I].Token in [tkParams, tkScope, tkFunction,
-      tkConstructor, tkDestructor]) then
-    begin
-      FillTreeViewV2(nil, Sibling, Token.Items[I], True);
-    end;
-    if Avance then
-      Sibling := TreeViewOutline.GetNextSibling(Sibling);
-  end;
-  if DeleteNext then
-  begin
-    while Assigned(Sibling) do
-    begin
-      Temp := Sibling;
-      Sibling := TreeViewOutline.GetNextSibling(Sibling);
-      TreeViewOutline.DeleteNode(Temp);
-    end;
-    Result := nil;
-  end
-  else if Assigned(Parent) then
-    Result := TreeViewOutline.GetNextSibling(Parent)
-  else
-    Result := Sibling;
-end;}
 
 procedure TFrmFalconMain.UpdateCompletionColors(EdtOpt: TEditorOptions);
 begin
@@ -2043,6 +1970,26 @@ begin
 end;
 
 //get source file to parse
+procedure TFrmFalconMain.ParseFile(FileName: string; SourceFile: TSourceFile);
+var
+  ObjList: TStrings;
+  FileObj: TFileObject;
+  sheet: TSourceFileSheet;
+begin
+  ObjList := TStringList.Create;
+  FileObj := TFileObject.Create;
+  FileObj.ID := SourceFile;
+  if (FileName = '-') and (SourceFile <> nil) and SourceFile.GetSheet(sheet) then
+  begin
+    FileObj.FileName := SourceFile.FileName;
+    FileObj.Text := sheet.Memo.Text;
+  end
+  else
+    FileObj.FileName := FileName;
+  ObjList.AddObject(FileName, FileObj);
+  ThreadFilesParsed.ParseLoad(ObjList);
+  ObjList.Free;
+end;
 
 procedure TFrmFalconMain.ParseFiles(List: TStrings);
 var
@@ -2547,7 +2494,12 @@ begin
   begin
     PanelOutline.Hide;
   end;
-
+  if FileProp.Modified then
+  begin
+    FilesParsed.Delete(FileProp.FileName);
+    if FileProp.Saved then
+      ParseFile(FileProp.FileName, FileProp);
+  end;
   if not PageControlEditor.Visible and (PageControlProjects.ActivePageIndex = 0) then
   begin
     StatusBar.Panels.Items[1].Caption := '';
@@ -2859,11 +2811,11 @@ end;
 //on change the active tab
 
 procedure TFrmFalconMain.PageControlEditorPageChange(Sender: TObject;
-  TabIndex: Integer);
+  TabIndex, PrevTabIndex: Integer);
 var
   ProjProp: TProjectFile;
-  Sheet: TSourceFileSheet;
-  Prop: TSourceFile;
+  Sheet, prevSheet: TSourceFileSheet;
+  Prop, PrevProp: TSourceFile;
   FindedTokenFile: TTokenFile;
   Index: Integer;
   prjs: TTreeNode;
@@ -2904,6 +2856,15 @@ begin
         UpdateActiveFileToken(FindedTokenFile)
       else if {not FilesParsed.Busy and }not DebugReader.Running then
         TreeViewOutline.Clear;
+      if TimerChangeDelay.Enabled and (PrevTabIndex >= 0) then
+      begin
+        TimerChangeDelay.Enabled := False;
+        // parse changed file
+        prevSheet := TSourceFileSheet(PageControlEditor.Pages[PrevTabIndex]);
+        PrevProp := prevSheet.SourceFile;
+        FilesParsed.Delete(PrevProp.FileName);
+        ParseFile('-', PrevProp);
+      end;
     end;
     //adjust code completion
     CodeCompletion.Editor := Sheet.Memo;
@@ -3433,7 +3394,7 @@ begin
   end;
   HandlingTabs := False;
   PageControlEditorPageChange(PageControlEditor,
-    PageControlEditor.ActivePageIndex);
+    PageControlEditor.ActivePageIndex, -1);
 end;
 
 procedure TFrmFalconMain.ToolsClick(Sender: TObject);
@@ -4614,8 +4575,16 @@ begin
       //ignore on loading
       if not IsLoading then
       begin
-        TimerChangeDelay.Enabled := False;
-        TimerChangeDelay.Enabled := True;
+        if Sheet.Selected then
+        begin
+          TimerChangeDelay.Enabled := False;
+          TimerChangeDelay.Enabled := True;
+        end
+        else
+        begin
+          FilesParsed.Delete(FilePrp.FileName);
+          ParseFile('-', FilePrp);
+        end;
       end;
     end;
     if LastKeyPressed in ['(', '{'] then
@@ -6662,12 +6631,12 @@ procedure TFrmFalconMain.UpdateActiveFileToken(NewToken: TTokenFile;
       NodeObject.ImageIndex := GetTokenImageIndex(TokenList, OutlineImages);
     end;
     if not Static then
-      FillTreeViewV2(Parent, TokenList)
+      FillTreeView(Parent, TokenList)
     else if Assigned(Parent) then
-      FillTreeViewV2(Parent, TokenList);
+      FillTreeView(Parent, TokenList);
   end;
 
-  procedure ReloadTreeViewV2(var Sibling, Parent: PNativeNode);
+  procedure ReloadTreeView(var Sibling, Parent: PNativeNode);
   begin
     Sibling := TreeViewOutline.GetFirst;
     FillTokenList(Sibling, Parent, ActiveEditingFile.Includes, tkIncludeList, True, False);
@@ -6739,10 +6708,9 @@ begin
   begin
     TreeViewOutline.BeginUpdate;
     TreeViewOutline.Clear;
-    ReloadTreeViewV2(Sibling, Parent);
+    ReloadTreeView(Sibling, Parent);
     TreeViewOutline.EndUpdate;
   end;
-  //TreeViewOutline.Invalidate;
   if GetActiveSheet(sheet) then
     DetectScope(sheet.Memo, ActiveEditingFile, True);
 end;
@@ -6867,7 +6835,7 @@ begin
           begin
             Input := GetVarType(Token.Flag);
             if StringIn(Input, ReservedTypes) or
-              (not scope.SearchToken(Input, Token, 0, False, [tkStruct,
+              (not scope.SearchToken(Input, '', Token, 0, False, [tkStruct,
                 tkTypeStruct, tkUnion, tkTypeUnion]) and
               not FilesParsed.GetBaseType(Input, 0, TokenFileItem,
                 TokenFileItem, Token)) then
@@ -7062,7 +7030,7 @@ begin
   AllParsedList.Clear;
   //update grayed project and outline
   PageControlEditorPageChange(PageControlEditor,
-    PageControlEditor.ActivePageIndex);
+    PageControlEditor.ActivePageIndex, -1);
   if not ThreadLoadTkFiles.Busy and not ThreadTokenFiles.Busy then
     ProgressBarParser.Hide;
 end;
@@ -7322,7 +7290,7 @@ var
   AllowScope: TScopeClassState;
   Buffer: TBufferCoord;
   Attri: TSynHighlighterAttributes;
-  InputError: Boolean;
+  InputError, SkipFirst: Boolean;
   //StartTicks: Cardinal;
 begin
   Input := '';
@@ -7544,6 +7512,7 @@ begin
   //get current object in location
   if ActiveEditingFile.GetScopeAt(Token, SelStart) then
   begin
+    SaveScope := Token;
     AllScope := False;
     //fill first all object in finded object location
     FillCompletionTree(CodeCompletion.InsertList,
@@ -7568,6 +7537,8 @@ begin
     begin
       Token := Token.Parent;
     end;
+    AllowScope := [];
+    SkipFirst := False;
     //Get class of scope
     Scope := GetTokenByName(Token, 'Scope', tkScope);
     if not AllScope and Assigned(Scope) and (Scope.Flag <> '') then
@@ -7580,6 +7551,14 @@ begin
       end;
       AllScope := FilesParsed.SearchTreeToken(Fields, ActiveEditingFile,
         TokenItem, Token, [tkClass, tkNamespace], Token.SelStart);
+    end
+    else if not AllScope and (SaveScope.Token in [tkClass, tkStruct, tkUnion]) then
+    begin
+      TokenItem := ActiveEditingFile;
+      SkipFirst := True;
+      AllowScope := [scProtected, scPublic];
+      Token := SaveScope;
+      AllScope := True;
     end
     else if (Token.Token in [tkNamespace]) then
     begin
@@ -7596,7 +7575,8 @@ begin
     if AllScope then
     begin
       FilesParsed.FillCompletionClass(CodeCompletion.InsertList,
-        CodeCompletion.ItemList, CompletionColors, OutlineImages, TokenItem, Token);
+        CodeCompletion.ItemList, CompletionColors, OutlineImages, TokenItem,
+        Token, AllowScope, SkipFirst);
     end;
   end
   else if Fields = '' then
@@ -7669,11 +7649,12 @@ end;
 procedure TFrmFalconMain.CodeCompletionCodeCompletion(Sender: TObject;
   var Value: string; Shift: TShiftState; Index: Integer; EndToken: Char);
 var
-  Token: TTokenClass;
+  Token, ClassToken: TTokenClass;
   NextChar: Char;
   LineStr: string;
   sheet: TSourceFileSheet;
-  BalancingBracket: Integer;
+  BalancingBracket, SelStart, Len, AfterLen, I: Integer;
+  p: TBufferCoord;
 begin
   if not GetActiveSheet(sheet) then
     Exit;
@@ -7684,6 +7665,30 @@ begin
   end
   else if Token.Token in [tkFunction, tkPrototype] then
   begin
+    SelStart := sheet.Memo.RowColToCharIndex(sheet.Memo.CaretXY);
+    if ActiveEditingFile.GetScopeAt(ClassToken, SelStart) and
+      (ClassToken.Token in [tkClass, tkStruct, tkUnion]) then
+    begin
+      p := sheet.Memo.CaretXY;
+      Len := Length(CodeCompletion.CurrentString);
+      AfterLen := 0;
+      LineStr := sheet.Memo.Lines[p.Line - 1];
+      for I := p.Char to Length(LineStr) do
+      begin
+        if LineStr[I] in LetterChars + DigitChars then
+          Inc(AfterLen)
+        else
+          Break;
+      end;
+      sheet.Memo.BeginUpdate;
+      sheet.Memo.BlockBegin := BufferCoord(p.Char - Len, p.Line);
+      sheet.Memo.BlockEnd := BufferCoord(p.Char + AfterLen, p.Line);
+      sheet.Memo.SelText := GeneratePrototype(Token, Config.Editor.TabWidth,
+        Config.Editor.UseTabChar, Config.Editor.StyleIndex = 4, 0);
+      sheet.Memo.EndUpdate;
+      Value := '';
+      Exit;
+    end;
     NextChar := GetNextValidChar(sheet.Memo.Text, sheet.Memo.SelStart);
     if EndToken <> '(' then
     begin
@@ -7730,11 +7735,11 @@ end;
 procedure TFrmFalconMain.CodeCompletionAfterCodeCompletion(Sender: TObject;
   const Value: string; Shift: TShiftState; Index: Integer; EndToken: Char);
 var
-  Token: TTokenClass;
+  Token, ClassToken: TTokenClass;
   I: Integer;
   NextChar: Char;
   sheet: TSourceFileSheet;     
-  BalancingBracket: Integer;
+  BalancingBracket, SelStart: Integer;
 begin
   if not GetActiveSheet(sheet) then
   begin
@@ -7767,13 +7772,18 @@ begin
   end
   else if Token.Token in [tkFunction, tkPrototype] then
   begin
-    if (NextChar in LetterChars + ['{', '}']) and (EndToken <> ';') then
-      Inc(I, 2);
-    if NextChar in DigitChars + ArithmChars + [';'] + (CloseBraceChars - ['{', '}']) then
+    SelStart := sheet.Memo.RowColToCharIndex(sheet.Memo.CaretXY);
+    if not ActiveEditingFile.GetScopeAt(ClassToken, SelStart) or
+      not (ClassToken.Token in [tkClass, tkStruct, tkUnion]) then
     begin
-      if (BalancingBracket < 0) or ((BalancingBracket = 0) and ((NextChar = ';') or
-        ((Length(Value) > 1) and (Copy(Value, Length(Value) - 1, 2) = '()')))) then
-        Inc(I);
+      if (NextChar in LetterChars + ['{', '}']) and (EndToken <> ';') then
+        Inc(I, 2);
+      if NextChar in DigitChars + ArithmChars + [';'] + (CloseBraceChars - ['{', '}']) then
+      begin
+        if (BalancingBracket < 0) or ((BalancingBracket = 0) and ((NextChar = ';') or
+          ((Length(Value) > 1) and (Copy(Value, Length(Value) - 1, 2) = '()')))) then
+          Inc(I);
+      end;
     end;
   end;
   if EndToken <> ';' then
@@ -7811,151 +7821,6 @@ begin
   Item.Data := MsgItem;
   if AlignCenter then
     ListViewMsg.Scroll(0, Item.Top - (ListViewMsg.Height div 2));
-end;
-
-procedure TFrmFalconMain.TreeViewOutlineAdvancedCustomDrawItem(
-  Sender: TCustomTreeView; Node: TTreeNode; State: TCustomDrawState;
-  Stage: TCustomDrawStage; var PaintImages, DefaultDraw: Boolean);
-begin
-  if Stage = cdPostPaint then
-  begin
-    if not DebugReader.Running then
-      //PaintDebugTokenItem(Sender.Canvas, Node.DisplayRect(True),
-      //  TTokenClass(Node.Data), State)
-    //else
-      PaintTokenItem(Sender.Canvas, Node.DisplayRect(True),
-        TTokenClass(Node.Data), State);
-  end;
-end;
-
-procedure TFrmFalconMain.PaintTokenItem(const ToCanvas: TCanvas;
-  DisplayRect: TRect; Token: TTokenClass; State: TCustomDrawState);
-var
-  Flag, FullFlag, Vector, Params: string;
-  HasVector, ChangeTextColor: Boolean;
-  I, Len: Integer;
-begin
-  if Token.Token in [tkInclude, tkTypedefProto] then
-    Exit;
-  ChangeTextColor := not (cdsSelected in State);
-  if Token.Token in [tkFunction, tkProtoType, tkConstructor, tkDestructor] then
-  begin
-    Params := GetFuncScope(Token) + Token.Name + GetFuncProtoTypes(Token);
-    Flag := Token.Flag;
-    if Flag = '' then
-      DisplayRect.Right := DisplayRect.Left + 5 +
-        ToCanvas.TextWidth(Params) + 2
-    else
-      DisplayRect.Right := DisplayRect.Left + 5 +
-        ToCanvas.TextWidth(Params + ' : ' + Flag) + 2;
-    if (cdsSelected in State) and not (cdsFocused in State) then
-    begin
-      ToCanvas.Brush.Color := clBtnFace;
-      ToCanvas.Font.Color := clWindowText;
-      ChangeTextColor := False;
-      ToCanvas.Refresh;
-    end;
-    ToCanvas.FillRect(DisplayRect);
-    if (cdsFocused in State) then
-      ToCanvas.DrawFocusRect(DisplayRect);
-    ToCanvas.TextOut(DisplayRect.Left + 2, DisplayRect.Top + 1, Params);
-    if Flag = '' then
-      Exit;
-    //custom return type or value defined
-    if ChangeTextColor then
-      ToCanvas.Font.Color := clBlue;
-    ToCanvas.Refresh;
-    Inc(DisplayRect.Left, 2 + ToCanvas.TextWidth(Params));
-    ToCanvas.TextOut(DisplayRect.Left, DisplayRect.Top + 1, ' : ');
-    if ChangeTextColor then
-      ToCanvas.Font.Color := clOlive;
-    ToCanvas.Refresh;
-    Inc(DisplayRect.Left, ToCanvas.TextWidth(' : '));
-    ToCanvas.TextOut(DisplayRect.Left, DisplayRect.Top + 1, Flag);
-    Exit;
-  end;
-  Len := Length(Token.Flag);
-  if Len = 0 then
-    Exit;
-  if (Token.Token = tkDefine) and not IsNumber(Token.Flag) then
-    Exit;
-  DisplayRect.Right := DisplayRect.Left + 5 + ToCanvas.TextWidth(
-    Token.Name + ' : ' + Token.Flag) + 2;
-  if (cdsSelected in State) and not (cdsFocused in State) then
-  begin
-    ToCanvas.Brush.Color := clBtnFace;
-    ToCanvas.Font.Color := clWindowText;
-    ChangeTextColor := False;
-    ToCanvas.Refresh;
-  end;
-  ToCanvas.FillRect(DisplayRect);
-  if (cdsFocused in State) then
-    ToCanvas.DrawFocusRect(DisplayRect);
-  ToCanvas.TextOut(DisplayRect.Left + 2, DisplayRect.Top + 1, Token.Name);
-  //custom return type or value defined
-  if ChangeTextColor then
-    ToCanvas.Font.Color := clBlue;
-  ToCanvas.Refresh;
-  Inc(DisplayRect.Left, 2 + ToCanvas.TextWidth(Token.Name));
-  ToCanvas.TextOut(DisplayRect.Left, DisplayRect.Top + 1, ' : ');
-
-  if ChangeTextColor then
-    ToCanvas.Font.Color := clOlive;
-  ToCanvas.Refresh;
-  Inc(DisplayRect.Left, ToCanvas.TextWidth(' : '));
-  FullFlag := Token.Flag;
-  Flag := Token.Flag;
-  Len := Length(FullFlag);
-  HasVector := False;
-  I := Pos('[', FullFlag);
-  if I > 0 then
-  begin
-    Vector := Copy(FullFlag, I + 1, Len - I);
-    Flag := Copy(FullFlag, 1, I - 1);
-    FullFlag := Vector;
-    I := Pos(']', Vector);
-    Vector := Copy(Vector, 1, I - 1);
-    FullFlag := Copy(FullFlag, I + 1, Len - I);
-    HasVector := True;
-  end;
-  ToCanvas.TextOut(DisplayRect.Left, DisplayRect.Top + 1, Flag);
-  if not HasVector or (Token.Token <> tkVariable) then
-    Exit;
-  if ChangeTextColor then
-    ToCanvas.Font.Color := clMaroon;
-  ToCanvas.Refresh;
-  Inc(DisplayRect.Left, ToCanvas.TextWidth(Flag) + 1);
-  while True do
-  begin
-    ToCanvas.TextOut(DisplayRect.Left, DisplayRect.Top + 1, '[');
-
-    if ChangeTextColor then
-      ToCanvas.Font.Color := clGreen;
-    ToCanvas.Refresh;
-    Inc(DisplayRect.Left, ToCanvas.TextWidth('[') + 1);
-    ToCanvas.TextOut(DisplayRect.Left, DisplayRect.Top + 1, Vector);
-
-    if ChangeTextColor then
-      ToCanvas.Font.Color := clMaroon;
-    ToCanvas.Refresh;
-    Inc(DisplayRect.Left, ToCanvas.TextWidth(Vector) + 1);
-    ToCanvas.TextOut(DisplayRect.Left, DisplayRect.Top + 1, ']');
-    Inc(DisplayRect.Left, ToCanvas.TextWidth(']') + 1);
-
-    Len := Length(FullFlag);
-    I := Pos('[', FullFlag);
-    if I > 0 then
-    begin
-      Vector := Copy(FullFlag, I + 1, Len - I);
-      Flag := Copy(FullFlag, 1, I - 1);
-      FullFlag := Vector;
-      I := Pos(']', Vector);
-      Vector := Copy(Vector, 1, I - 1);
-      FullFlag := Copy(FullFlag, I + 1, Len - I);
-    end
-    else
-      Break;
-  end;
 end;
 
 procedure TFrmFalconMain.PaintTokenItemV2(const ToCanvas: TCanvas;
@@ -8308,7 +8173,7 @@ begin
   sheet.Memo.SetFocus;
   HandlingTabs := False;
   PageControlEditorPageChange(PageControlEditor,
-    PageControlEditor.ActivePageIndex);
+    PageControlEditor.ActivePageIndex, -1);
 end;
 
 procedure TFrmFalconMain.PopTabsTabsAtTopClick(Sender: TObject);
@@ -8325,11 +8190,11 @@ end;
 
 procedure TFrmFalconMain.SwapHeaderSource(FromSrc, ToSrc: TSourceFile);
 var
-  FromTokenFile, ToTokenFile: TTokenFile;
+  FromTokenFile, ToTokenFile, TempTokenFile: TTokenFile;
   FromSheet, ToSheet: TSourceFileSheet;
-  ScopeToken, Token: TTokenClass;
+  ScopeToken, Token, ParentToken: TTokenClass;
   Buffer: TBufferCoord;
-  FuncScope: string;
+  FuncScope, ScopeFlag: string;
 begin
   FromTokenFile := FilesParsed.ItemOfByFileName(FromSrc.FileName);
   ToTokenFile := FilesParsed.ItemOfByFileName(ToSrc.FileName);
@@ -8345,16 +8210,39 @@ begin
       tkConstructor, tkDestructor]) and
       (GetTokenByName(ScopeToken, 'Scope', tkScope) = nil) then
       Exit;
+    ScopeFlag := '';
+    FuncScope := '';
+    ParentToken := ScopeToken.Parent;
+    if Assigned(ParentToken) and (ParentToken.Token = tkScopeClass) then
+    begin
+      ParentToken := ParentToken.Parent;
+      if ParentToken.Token = tkClass then
+      begin
+        FuncScope := ParentToken.Name;
+        ParentToken := ParentToken.Parent;
+      end;
+    end;
+    while Assigned(ParentToken) and (ParentToken.Token = tkNamespace) do
+    begin
+      ScopeFlag := ParentToken.Name  + '::' + ScopeFlag;
+      ParentToken := ParentToken.Parent;
+    end;
+    // search scope
+    if (ScopeFlag <> '') and ToTokenFile.SearchTreeToken(ScopeFlag, Token,
+      [tkNamespace], 0) then
+    begin
+      if not Token.SearchToken(ScopeToken.Name, FuncScope, Token, 0, True,
+        [tkFunction, tkConstructor, tkDestructor]) then
+        Exit;
+    end
     // search implementation function
-    if not ToTokenFile.SearchToken(ScopeToken.Name, Token, 0, True,
+    else if not ToTokenFile.SearchToken(ScopeToken.Name, ScopeFlag, Token, 0, True,
       [tkFunction, tkConstructor, tkDestructor]) then
       Exit;
     Token := GetTokenByName(Token, 'Scope', tkScope);
     // only function implementation
     if Token = nil then
       Exit;
-    Buffer := ToSheet.Memo.CharIndexToRowCol(Token.SelStart);
-    GotoLineAndAlignCenter(ToSheet.Memo, Buffer.Line, Buffer.Char);
   end
   else
   begin
@@ -8365,215 +8253,155 @@ begin
       Exit;
     // search scope
     FuncScope := GetFuncScope(ScopeToken);
-    if (FuncScope <> '') then
+    if FilesParsed.FindDeclaration(ScopeToken.Name, FuncScope, FromTokenFile,
+      TempTokenFile, Token, ScopeToken.SelStart, 0) then
     begin
-      if not ToTokenFile.SearchTreeToken(FuncScope, Token,
-        [tkClass, tkNamespace], 0) then
-        Exit;
-      if not Token.SearchToken(ScopeToken.Name, Token, 0, False,
-        [tkPrototype, tkConstructor, tkDestructor]) then
+      if ToTokenFile <> TempTokenFile then
         Exit;
     end
     // search function
-    else if not ToTokenFile.SearchToken(ScopeToken.Name, Token, 0, False,
+    else if not ToTokenFile.SearchToken(ScopeToken.Name, '', Token, 0, False,
       [tkPrototype, tkConstructor, tkDestructor]) then
       Exit;
-    Buffer := ToSheet.Memo.CharIndexToRowCol(Token.SelStart);
-    GotoLineAndAlignCenter(ToSheet.Memo, Buffer.Line, Buffer.Char);
   end;
+  Buffer := ToSheet.Memo.CharIndexToRowCol(Token.SelStart);
+  GotoLineAndAlignCenter(ToSheet.Memo, Buffer.Line, Buffer.Char);
+end;
+
+function TFrmFalconMain.CreateTODOSourceFile(FileName: string;
+  TokenFile: TTokenFile; SourceFile: TSourceFile;
+  var TODOSourceFile: TSourceFile): Boolean;
+var
+  I: Integer;
+  Project: TProjectBase;
+  Parent: TSourceFile;
+  Memo: TSynEditEx;
+  Directive: string;
+begin
+  Result := False;
+  if (SourceFile.Project.FileType <> FILE_TYPE_PROJECT) or
+    (SourceFile.Node.Parent = nil) then
+    Exit;
+  I := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[34] + #10 + STR_FRM_MAIN[43],
+    [FileName])), 'Falcon C++', MB_ICONEXCLAMATION + MB_YESNOCANCEL);
+  if I <> IDYES then
+    Exit;
+  Project := SourceFile.Project;
+  Parent := TSourceFile(SourceFile.Node.Parent.Data);
+  if SourceFile.FileType = FILE_TYPE_H then
+  begin
+    { TODO -oMazin -c : Get Source file extension standard 06/05/2013 22:59:19 }
+    if Project.CompilerType = COMPILER_C then
+      TODOSourceFile := NewSourceFile(FILE_TYPE_C, Project.CompilerType,
+        ExtractFileName(FileName), ExtractName(FileName), '.c', '', Parent,
+        False, False)
+    else
+      TODOSourceFile := NewSourceFile(FILE_TYPE_CPP, Project.CompilerType,
+        ExtractFileName(FileName), ExtractName(FileName), '.cpp', '', Parent,
+        False, False);
+    Memo := TODOSourceFile.Edit(False).Memo;
+    Memo.Lines.Add('#include "' + ExtractFileName(SourceFile.FileName) + '"');
+    Memo.Lines.Add('');
+    if TokenFile <> nil then
+      GenerateFunctions(TokenFile, Memo.Lines, 2, Config.Editor.TabWidth,
+      Config.Editor.UseTabChar, Config.Editor.StyleIndex = 4)
+    else
+      Memo.Lines.Add(''); //Caret here
+    Memo.CaretXY := BufferCoord(1, 3);
+    Project.PropertyChanged := True;
+  end
+  else
+  begin
+    { TODO -oMazin -c : Get Header file extension standard 06/05/2013 22:59:19 }
+    TODOSourceFile := NewSourceFile(FILE_TYPE_H, NO_COMPILER,
+      ExtractFileName(FileName), ExtractName(FileName), '.h', '',
+      Parent, False, False);
+
+    Directive := UpperCase(ExtractFileName(FileName));
+    Directive := '_' + StringReplace(Directive, '.', '_', []) + '_';
+    Directive := StringReplace(Directive, ' ', '_', []);
+
+    Memo := TODOSourceFile.Edit(False).Memo;
+    Memo.Lines.Add('#ifndef ' + Directive);
+    { TODO -oMazin -c : Add GNU License 24/08/2012 22:29:54 }
+    Memo.Lines.Add('#define ' + Directive);
+    Memo.Lines.Add('');
+    if TokenFile <> nil then
+      GenerateFunctionPrototype(TokenFile, Memo.Lines, 3)
+    else
+      Memo.Lines.Add(''); //Caret here
+    Memo.Lines.Add('');
+    Memo.Lines.Add('#endif');
+    Memo.CaretXY := BufferCoord(1, 4);
+    Project.PropertyChanged := True;
+  end;
+  Result := True;
 end;
 
 procedure TFrmFalconMain.EditSwapClick(Sender: TObject);
 var
   sheet: TSourceFileSheet;
-  SwapFileName, FileName, Directive, SrcName: string;
-  fprop, swfp, parent: TSourceFile;
-  resp, I: Integer;
-  Memo: TSynEditEx;
-  IncludeList: TStringList;
-  FindedTokenFile: TTokenFile;
+  OtherFileName, FileName: string;
+  CurrentSourceFile, OtherSourceFile: TSourceFile;
+  CurrentTokenFile: TTokenFile;
 begin
   if not GetActiveSheet(sheet) then
     Exit;
-  fprop := Sheet.SourceFile;
-  parent := nil;
-  if Assigned(fprop.Node.Parent) then
-    parent := TSourceFile(fprop.Node.Parent.Data);
-
-  FileName := fprop.FileName;
+  CurrentSourceFile := Sheet.SourceFile;
+  FileName := CurrentSourceFile.FileName;
+  OtherSourceFile := nil;
   if (GetFileType(FileName) in [FILE_TYPE_CPP, FILE_TYPE_C]) then
   begin
-    SwapFileName := ChangeFileExt(FileName, '.h');
-    if Assigned(parent) then
+    // find header file
+    if not SearchHeaderFile(CurrentSourceFile, OtherSourceFile, OtherFileName) then
     begin
-      SrcName := ExtractFileName(SwapFileName);
-      if parent.FindFile(SrcName, swfp) or
-         parent.FindFile(ChangeFileExt(SrcName, '.hpp'), swfp) or
-         parent.FindFile(ChangeFileExt(SrcName, '.hh'), swfp) or
-         parent.FindFile(ChangeFileExt(SrcName, '.rh'), swfp) then
+      OtherFileName := ChangeFileExt(FileName, '.h');
+      // header file not found and can't create a header file out of project
+      if CurrentSourceFile is TProjectFile then
       begin
-        SwapHeaderSource(fprop, swfp);
-        Exit;
-      end;
-      IncludeList := TStringList.Create;
-      GetIncludeDirs(ExtractFilePath(fprop.Project.FileName), fprop.Project.Flags, IncludeList);
-      for I := 0 to IncludeList.Count - 1 do
-      begin
-        SrcName := ExtractRelativePath(ExtractFilePath(fprop.Project.FileName),
-          ExpandFileName(IncludeList.Strings[I] + SrcName));
-        swfp := fprop.Project.GetFileByPathName(SrcName);
-        if swfp = nil then
-          swfp := fprop.Project.GetFileByPathName(ChangeFileExt(SrcName, '.hpp'));
-        if swfp = nil then
-          swfp := fprop.Project.GetFileByPathName(ChangeFileExt(SrcName, '.hh'));
-        if swfp = nil then
-          swfp := fprop.Project.GetFileByPathName(ChangeFileExt(SrcName, '.rh'));
-        if swfp <> nil then
-        begin
-          SwapHeaderSource(fprop, swfp);
-          IncludeList.Free;
-          Exit;
-        end;
-      end;
-      IncludeList.Free;
-    end
-    else
-    begin
-      if SearchSourceFile(SwapFileName, swfp) then
-      begin
-        SwapHeaderSource(fprop, swfp);
-        Exit;
-      end;
-      if FileExists(SwapFileName) then
-      begin
-        SwapHeaderSource(fprop, OpenFile(SwapFileName));
-        Exit;
-      end;
-      MessageBox(Handle, PChar(Format(STR_FRM_MAIN[34], [SwapFileName])),
-        'Falcon C++', MB_ICONINFORMATION);
-      Exit;
-    end;
-    resp := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[34] +
-      #10 + STR_FRM_MAIN[43], [SwapFileName])),
-      'Falcon C++', MB_ICONEXCLAMATION + MB_YESNOCANCEL);
-    if resp = IDYES then
-    begin
-      swfp := NewSourceFile(FILE_TYPE_H, NO_COMPILER,
-        ExtractFileName(SwapFileName), ExtractName(SwapFileName), '.h', '',
-        parent, False, False);
-      Directive := UpperCase(ExtractFileName(SwapFileName));
-      Directive := '_' + StringReplace(Directive, '.', '_', []) + '_';
-      Directive := StringReplace(Directive, ' ', '_', []);
-      Memo := swfp.Edit.Memo;
-      Memo.Lines.Add('#ifndef ' + Directive);
-      { TODO -oMazin -c : Add GNU License 24/08/2012 22:29:54 }
-      Memo.Lines.Add('#define ' + Directive);
-      Memo.Lines.Add('');
-      FindedTokenFile := FilesParsed.ItemOfByFileName(FileName);
-      if FindedTokenFile <> nil then
-        GenerateFunctionPrototype(FindedTokenFile, Memo.Lines, 3)
-      else
-        Memo.Lines.Add(''); //Caret here
-      Memo.Lines.Add('');
-      Memo.Lines.Add('#endif');
-      Memo.CaretXY := BufferCoord(1, 4);
-      parent.Project.PropertyChanged := True;
-      SwapHeaderSource(fprop, swfp);
-    end;
-  end
-  else if GetFileType(FileName) = FILE_TYPE_H then
-  begin
-    if Assigned(parent) then
-    begin
-      SwapFileName := ChangeFileExt(FileName, '.c');
-      if parent.FindFile(ExtractFileName(SwapFileName), swfp) then
-      begin
-        SwapHeaderSource(fprop, swfp);
-        Exit;
-      end;
-      SwapFileName := ChangeFileExt(FileName, '.cpp');
-      if parent.FindFile(ExtractFileName(SwapFileName), swfp) then
-      begin
-        SwapHeaderSource(fprop, swfp);
-        Exit;
-      end;
-
-      IncludeList := TStringList.Create;
-      GetIncludeDirs(ExtractFilePath(fprop.Project.FileName), fprop.Project.Flags, IncludeList);
-      if IncludeList.Count > 0 then
-      begin
-        SrcName := ChangeFileExt(ExtractFileName(SwapFileName), '.c');
-        swfp := fprop.Project.SearchFile(SrcName);
-        if swfp = nil then
-          swfp := fprop.Project.SearchFile(ChangeFileExt(SrcName, '.cpp'));
-        if swfp <> nil then
-        begin
-          SwapHeaderSource(fprop, swfp);
-          IncludeList.Free;
-          Exit;
-        end;
-      end;
-      IncludeList.Free;
-
-      if parent.Project.CompilerType = COMPILER_C then
-        SwapFileName := ChangeFileExt(FileName, '.c');
-      resp := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[34] +
-        #10 + STR_FRM_MAIN[43], [SwapFileName])),
-        'Falcon C++', MB_ICONEXCLAMATION + MB_YESNOCANCEL);
-      if resp = IDYES then
-      begin
-        if parent.Project.CompilerType = COMPILER_C then
-          swfp := NewSourceFile(FILE_TYPE_C, parent.Project.CompilerType,
-            ExtractFileName(SwapFileName),
-            ExtractName(SwapFileName), '.c', '', parent, False, False)
-        else
-          swfp := NewSourceFile(FILE_TYPE_CPP, parent.Project.CompilerType,
-            ExtractFileName(SwapFileName),
-            ExtractName(SwapFileName), '.cpp', '', parent, False, False);
-        Memo := swfp.Edit.Memo;
-        Memo.Lines.Add('#include "' + ExtractFileName(FileName) + '"');
-        Memo.Lines.Add('');
-        parent.Project.PropertyChanged := True;
-        FindedTokenFile := FilesParsed.ItemOfByFileName(FileName);
-        if FindedTokenFile <> nil then
-          GenerateFunctions(FindedTokenFile, Memo.Lines, 2)
-        else
-          Memo.Lines.Add(''); //Caret here
-        Memo.CaretXY := BufferCoord(1, 3);
-        SwapHeaderSource(fprop, swfp);
-      end;
-    end
-    else
-    begin
-      SwapFileName := ChangeFileExt(FileName, '.cpp');
-      if SearchSourceFile(SwapFileName, swfp) then
-      begin
-        SwapHeaderSource(fprop, swfp);
-        Exit;
-      end;
-      if FileExists(SwapFileName) then
-      begin
-        SwapHeaderSource(fprop, OpenFile(SwapFileName));
-        Exit;
-      end;
-      SwapFileName := ChangeFileExt(FileName, '.c');
-      if SearchSourceFile(SwapFileName, swfp) then
-      begin
-        SwapHeaderSource(fprop, swfp);
-        Exit;
-      end;
-      if FileExists(SwapFileName) then
-      begin
-        SwapHeaderSource(fprop, OpenFile(SwapFileName));
-        Exit;
-      end;
-      if fprop is TProjectFile then
-      begin
-        MessageBox(Handle, PChar(Format(STR_FRM_MAIN[34], [SwapFileName])),
+        MessageBox(Handle, PChar(Format(STR_FRM_MAIN[34], [OtherFileName])),
           'Falcon C++', MB_ICONINFORMATION);
         Exit;
       end;
+      // want to create a header file?
+      CurrentTokenFile := FilesParsed.ItemOfByFileName(FileName);
+      if not CreateTODOSourceFile(OtherFileName, CurrentTokenFile,
+        CurrentSourceFile, OtherSourceFile) then
+        Exit;
     end;
+    // file found but is not open
+    if OtherSourceFile = nil then
+      OtherSourceFile := OpenFile(OtherFileName);
+    // swap source to header file
+    SwapHeaderSource(CurrentSourceFile, OtherSourceFile);
+  end
+  else if GetFileType(FileName) = FILE_TYPE_H then
+  begin
+    // find source file
+    if not SearchImplementationFile(CurrentSourceFile, OtherSourceFile,
+      OtherFileName) then
+    begin
+      OtherFileName := ChangeFileExt(FileName, '.c');
+      // source file not found and can't create a source file out of project
+      if CurrentSourceFile is TProjectFile then
+      begin
+        MessageBox(Handle, PChar(Format(STR_FRM_MAIN[34], [OtherFileName])),
+          'Falcon C++', MB_ICONINFORMATION);
+        Exit;
+      end;
+      // change extension to cpp if is a c++ project
+      if CurrentSourceFile.Project.CompilerType = COMPILER_CPP then
+        OtherFileName := ChangeFileExt(FileName, '.cpp');
+      // want to create a source file?
+      CurrentTokenFile := FilesParsed.ItemOfByFileName(FileName);
+      if not CreateTODOSourceFile(OtherFileName, CurrentTokenFile,
+        CurrentSourceFile, OtherSourceFile) then
+        Exit;
+    end;
+    // file found but is not open
+    if OtherSourceFile = nil then
+      OtherSourceFile := OpenFile(OtherFileName);
+    SwapHeaderSource(CurrentSourceFile, OtherSourceFile);
   end;
 end;
 
@@ -8912,16 +8740,114 @@ begin
   end;
 end;
 
+function TFrmFalconMain.SearchHeaderFile(SourceFile: TSourceFile;
+  var HdrFile: TSourceFile; var HdrFileName: string): Boolean;
+var
+  parent, temp: TSourceFile;
+  FileName, SwapFileName, SrcName: string;
+  IncludeList: TStringList;
+  I: Integer;
+begin
+  parent := nil;
+  Result := False;
+  if (SourceFile <> nil) then
+  begin
+    if not (SourceFile.FileType in [FILE_TYPE_CPP, FILE_TYPE_C]) then
+      Exit;
+    FileName := SourceFile.FileName;
+    if Assigned(SourceFile.Node.Parent) then
+      parent := TSourceFile(SourceFile.Node.Parent.Data);
+  end
+  else
+    FileName := HdrFileName;
+  if Assigned(parent) then
+  begin
+    // search on parent folder
+    SwapFileName := ChangeFileExt(FileName, '.h');
+    if parent.FindFile(ExtractFileName(SwapFileName), HdrFile) then
+    begin
+      Result := True;
+      HdrFileName := HdrFile.FileName;
+      Exit;
+    end;
+    SwapFileName := ChangeFileExt(FileName, '.hpp');
+    if parent.FindFile(ExtractFileName(SwapFileName), HdrFile) then
+    begin
+      Result := True;
+      HdrFileName := HdrFile.FileName;
+      Exit;
+    end;
+    SwapFileName := ChangeFileExt(FileName, '.hh');
+    if parent.FindFile(ExtractFileName(SwapFileName), HdrFile) then
+    begin
+      Result := True;
+      HdrFileName := HdrFile.FileName;
+      Exit;
+    end;
+    SwapFileName := ChangeFileExt(FileName, '.rh');
+    if parent.FindFile(ExtractFileName(SwapFileName), HdrFile) then
+    begin
+      Result := True;
+      HdrFileName := HdrFile.FileName;
+      Exit;
+    end;
+
+    // search using project compiler flag
+    IncludeList := TStringList.Create;
+    GetIncludeDirs(ExtractFilePath(SourceFile.Project.FileName),
+      SourceFile.Project.Flags, IncludeList);
+    for I := 0 to IncludeList.Count - 1 do
+    begin
+      SrcName := ChangeFileExt(ExtractFileName(SwapFileName), '.h');
+      SrcName := ExtractRelativePath(ExtractFilePath(SourceFile.Project.FileName),
+        ExpandFileName(IncludeList.Strings[I] + SrcName));
+      temp := SourceFile.Project.GetFileByPathName(SrcName);
+      if temp = nil then
+        temp := SourceFile.Project.GetFileByPathName(ChangeFileExt(SrcName, '.hpp'));
+      if temp = nil then
+        temp := SourceFile.Project.GetFileByPathName(ChangeFileExt(SrcName, '.hh'));
+      if temp = nil then
+        temp := SourceFile.Project.GetFileByPathName(ChangeFileExt(SrcName, '.rh'));
+      if temp <> nil then
+      begin
+        IncludeList.Free;
+        HdrFile := temp;
+        Result := True;
+        HdrFileName := HdrFile.FileName;
+        Exit;
+      end;
+    end;
+    IncludeList.Free;
+  end
+  else
+  begin
+    // search out of project
+    SwapFileName := ChangeFileExt(FileName, '.h');
+    if SearchSourceFile(SwapFileName, HdrFile) then
+    begin
+      Result := True;
+      HdrFileName := HdrFile.FileName;
+      Exit;
+    end;
+    if FileExists(SwapFileName) then
+    begin
+      Result := True;
+      HdrFileName := SwapFileName;
+      Exit;
+    end;
+  end;
+end;
+
 procedure TFrmFalconMain.PopEditorOpenDeclClick(Sender: TObject);
 var
   CurrentTokenFile, SrcTokenFile: TTokenFile;
   sheet: TSourceFileSheet;
-  ScopeToken, Token, ParentToken: TTokenClass;
+  Scope, ScopeToken, Token(*, ParentToken*): TTokenClass;
   SrcFileName: string;
   CurrentSrcFile, SrcFile: TSourceFile;
   SelStart, SelLine: Integer;
   BufferCoord: TBufferCoord;
-  Input, Fields: string;
+  Input, Fields, ScopeFlag: string;
   InputError: Boolean;
 begin
   if not GetActiveSheet(sheet) then
@@ -8952,24 +8878,28 @@ begin
     CurrentSrcFile := TSourceFile(CurrentTokenFile.Data);
   end;
   // only prototype
+  Scope := GetTokenByName(ScopeToken, 'Scope', tkScope);
   if not (ScopeToken.Token in [tkPrototype, tkConstructor, tkDestructor]) and
-    (GetTokenByName(ScopeToken, 'Scope', tkScope) = nil) then
+    (Scope = nil) then
     Exit;
+  ScopeFlag := '';
+  if Scope <> nil then
+    ScopeFlag := Scope.Flag;
   { TODO -oMazin -c : get all parent scope 04/05/2013 21:17:55 }
   //get parent of Token
-  ParentToken := ScopeToken.Parent;
-  if Assigned(ParentToken) and
-    (ParentToken.Token in [tkClass, tkStruct, tkScopeClass]) then
-    ParentToken := ParentToken.Parent;
+//  ParentToken := ScopeToken.Parent;
+//  if Assigned(ParentToken) and
+//    (ParentToken.Token in [tkClass, tkStruct, tkScopeClass]) then
+//    ParentToken := ParentToken.Parent;
   //tree parent object?
-  if Assigned(ParentToken) and Assigned(ParentToken.Parent) and
-    (ParentToken.Parent.Token in [tkClass, tkStruct]) then
-    ParentToken := ParentToken.Parent;
-  if (ParentToken <> nil) and not (ParentToken.Token in [tkClass, tkStruct]) then
-    ParentToken := nil;
+//  if Assigned(ParentToken) and Assigned(ParentToken.Parent) and
+//    (ParentToken.Parent.Token in [tkClass, tkStruct]) then
+//    ParentToken := ParentToken.Parent;
+//  if (ParentToken <> nil) and not (ParentToken.Token in [tkClass, tkStruct]) then
+//    ParentToken := nil;
   // implementation on same file
   { TODO -oMazin -c : Search with scope 04/05/2013 21:20:23 }
-  if not CurrentTokenFile.SearchToken(ScopeToken.Name, Token, ScopeToken.SelStart,
+  if not CurrentTokenFile.SearchToken(ScopeToken.Name, ScopeFlag, Token, ScopeToken.SelStart,
     True, [tkFunction, tkConstructor, tkDestructor]) then
   begin
     // search on source file
@@ -8979,7 +8909,7 @@ begin
     SrcTokenFile := FilesParsed.ItemOfByFileName(SrcFileName);
     if SrcTokenFile = nil then
       Exit;
-    if not SrcTokenFile.SearchToken(ScopeToken.Name, Token, 0, True,
+    if not SrcTokenFile.SearchToken(ScopeToken.Name, ScopeFlag, Token, 0, True,
       [tkFunction, tkConstructor, tkDestructor]) then
       Exit;
   end;
@@ -8995,6 +8925,337 @@ begin
   end;
   SrcFile.Edit;
   SelectToken(Token);
+end;
+
+
+procedure TFrmFalconMain.PopEditorCompClassClick(Sender: TObject);
+var
+  CurrentTokenFile, SrcTokenFile, ClassTokenFile: TTokenFile;
+  sheet: TSourceFileSheet;
+  Scope, ScopeToken, ParentToken, ClassToken, FuncToken, FuncValue: TTokenClass;
+  SrcFileName: string;
+  CurrentSrcFile, ClassFile, SrcFile: TSourceFile;
+  SelStart, SelLine, I, LastFuncSelEnd, LastPrivFuncLine: Integer;
+  BS: TBufferCoord;
+  LastLineText, ScopeFlag: string;
+  ClassFuncList, FuncList, TODOFuncList: TStrings;
+  Memo: TSynEditEx;
+  ClassHasFound: Boolean;
+begin
+  if not GetActiveSheet(sheet) then
+    Exit;
+  CurrentSrcFile := sheet.SourceFile;
+  CurrentTokenFile := FilesParsed.ItemOfByFileName(CurrentSrcFile.FileName);
+  if (CurrentTokenFile = nil) then
+    Exit;
+  BS := sheet.Memo.CaretXY;
+  SelLine := BS.Line;
+  if BS.Line > 0 then
+  begin
+    if BS.Char > (Length(sheet.Memo.Lines[SelLine - 1]) + 1) then
+      BS.Char := Length(sheet.Memo.Lines[SelLine - 1]) + 1;
+  end;
+  SelStart := sheet.Memo.RowColToCharIndex(BS);
+  SrcFile := CurrentSrcFile;
+  SrcFileName := CurrentSrcFile.FileName;
+  // get prototype
+  if not CurrentTokenFile.GetScopeAt(ScopeToken, SelStart) then
+    Exit;
+  if (ScopeToken.Token in [TkVariable]) and Assigned(ScopeToken.Parent) and
+    (ScopeToken.Parent.Token in [tkScopeClass]) then
+    ScopeToken := ScopeToken.Parent;
+  // only class, struct, union or class function
+  if not (ScopeToken.Token in [TkFunction, tkPrototype, tkConstructor,
+    tkDestructor, tkClass, tkStruct, tkUnion]) then
+    Exit;
+  { TODO -oMazin -c : get all parent scope 04/05/2013 21:17:55 }
+  //get parent of Token
+  ParentToken := ScopeToken;
+  if not (ScopeToken.Token in [tkClass, tkStruct, tkUnion]) then
+    ParentToken := ScopeToken.Parent;
+  if Assigned(ParentToken) and (ParentToken.Token in [tkScopeClass]) then
+    ParentToken := ParentToken.Parent;
+  if (ParentToken <> nil) and not (ParentToken.Token in [tkClass, tkStruct, tkUnion]) then
+    ParentToken := nil;
+  Scope := GetTokenByName(ScopeToken, 'Scope', tkScope);
+  ScopeFlag := '';
+  if ScopeToken.Token in [tkClass, tkStruct, tkUnion] then
+    ScopeFlag := ScopeToken.Name
+  else if Scope <> nil then
+    ScopeFlag := Scope.Flag;
+  // only class, struct, union or class function
+  if (ScopeFlag = '') and not (ScopeToken.Token in [tkClass, tkStruct, tkUnion]) then
+    Exit;
+  ClassHasFound := ParentToken <> nil;
+  if ParentToken <> nil then
+  begin
+    ClassFile := CurrentSrcFile;
+    ClassToken := ParentToken;
+    ClassTokenFile := CurrentTokenFile;
+    if CurrentSrcFile.FileType = FILE_TYPE_H then
+    begin
+      // search on source file
+      SrcFile := nil;
+      if not SearchImplementationFile(CurrentSrcFile, SrcFile, SrcFileName) then
+      begin
+        SrcFileName := ChangeFileExt(CurrentSrcFile.FileName, '.c');
+        // source file not found and can't create a source file out of project
+        if CurrentSrcFile is TProjectFile then
+        begin
+          MessageBox(Handle, PChar(Format(STR_FRM_MAIN[34], [SrcFileName])),
+            'Falcon C++', MB_ICONINFORMATION);
+          Exit;
+        end;
+        // change extension to cpp if is a c++ project
+        if CurrentSrcFile.Project.CompilerType = COMPILER_CPP then
+          SrcFileName := ChangeFileExt(SrcFileName, '.cpp');
+        // want to create a source file?
+        if CreateTODOSourceFile(SrcFileName, CurrentTokenFile,
+          CurrentSrcFile, SrcFile) then
+          SwapHeaderSource(CurrentSrcFile, SrcFile);
+        Exit
+      end
+      else
+      begin
+        SrcTokenFile := FilesParsed.ItemOfByFileName(SrcFileName);
+        if SrcTokenFile = nil then
+          Exit;
+        if SrcFile = nil then
+          SrcFile := TSourceFile(SrcTokenFile.Data);
+      end;
+    end
+    else
+    begin
+      SrcTokenFile := CurrentTokenFile;
+      SrcFile := CurrentSrcFile;
+    end;
+  end
+  else
+  begin
+    ClassTokenFile := nil;
+    if FilesParsed.FindDeclaration(ScopeFlag, '', CurrentTokenFile,
+      SrcTokenFile, ClassToken, ScopeToken.SelStart, 0) then
+      ClassHasFound := ClassToken.Token in [tkClass, tkStruct, tkUnion];
+    if ClassHasFound then
+    begin
+      ClassTokenFile := SrcTokenFile;
+      SrcTokenFile := CurrentTokenFile;
+      ClassFile := TSourceFile(ClassTokenFile.Data);
+    end;
+  end;
+  if not ClassHasFound then
+  begin
+    if CurrentSrcFile.FileType in [FILE_TYPE_C, FILE_TYPE_CPP] then
+    begin
+      // search on source file
+      ClassFile := nil;
+      if not SearchHeaderFile(CurrentSrcFile, ClassFile, SrcFileName) then
+      begin
+        SrcFileName := ChangeFileExt(CurrentSrcFile.FileName, '.h');
+        // header file not found and can't create a header file out of project
+        if CurrentSrcFile is TProjectFile then
+        begin
+          MessageBox(Handle, PChar(Format(STR_FRM_MAIN[34], [SrcFileName])),
+            'Falcon C++', MB_ICONINFORMATION);
+          Exit;
+        end;
+        // want to create header file?
+        if CreateTODOSourceFile(SrcFileName, CurrentTokenFile,
+          CurrentSrcFile, ClassFile) then
+          SwapHeaderSource(CurrentSrcFile, ClassFile);
+        Exit
+      end
+      else
+      begin
+        ClassTokenFile := FilesParsed.ItemOfByFileName(SrcFileName);
+        if ClassTokenFile = nil then
+          Exit;
+        SrcTokenFile := CurrentTokenFile;
+        if not ClassTokenFile.SearchToken(ScopeFlag, '', ClassToken,
+          0, True, [tkClass, tkStruct, tkUnion]) then
+          Exit;
+        if ClassFile = nil then
+          ClassFile := TSourceFile(ClassTokenFile.Data);
+      end;
+    end
+    // implementation in header file without a class
+    else
+      Exit;
+  end;
+  if (ClassFile = nil) or (SrcFile = nil) then
+    Exit;
+  ClassFuncList := TStringList.Create;
+  ClassToken.GetFunctions(ClassFuncList, '', False, False, True);
+  // function implementation on same file of class declaration
+  FuncList := TStringList.Create;
+  if SrcTokenFile <> ClassTokenFile then
+    ClassTokenFile.GetFunctions(FuncList, ScopeFlag, True, False);
+  TODOFuncList := TStringList.Create;
+  SrcTokenFile.GetFunctions(FuncList, ScopeFlag, True, False);
+  LastFuncSelEnd := -1;
+  for I := FuncList.Count - 1 downto 0 do
+  begin
+    FuncToken := TTokenClass(FuncList.Objects[I]);
+    if FuncToken.SelStart < LastFuncSelEnd then
+      Continue;
+    Scope := GetTokenByName(FuncToken, 'Scope', tkScope);
+    if (Scope <> nil) and (Scope.SelLine > LastFuncSelEnd) then
+      LastFuncSelEnd := Scope.SelStart + Scope.SelLength + 1;
+  end;
+  LastPrivFuncLine := 0;
+  I := 0;
+  while I <= ClassFuncList.Count - 1 do
+  begin
+    FuncToken := TTokenClass(ClassFuncList.Objects[I]);
+    if Pos('virtual', FuncToken.Flag) > 0 then
+    begin
+      FuncValue := GetTokenByName(FuncToken, 'Value', tkValue);
+      if FuncValue <> nil then
+      begin
+        ClassFuncList.Delete(I);
+        Continue;
+      end;
+    end;
+    if (FuncToken.SelLine < LastPrivFuncLine) or (FuncToken.Parent.Token <>
+      tkScopeClass) or (FuncToken.Parent.Name <> 'private') then
+    begin
+      Inc(I);
+      Continue;
+    end;
+    LastPrivFuncLine := FuncToken.SelLine;
+    Inc(I);
+  end;
+  if LastPrivFuncLine = 0 then
+  begin
+    Scope := GetTokenByName(ClassToken, 'private', tkScopeClass);
+    if (Scope <> nil) and (Scope.Count > 0) then
+      LastPrivFuncLine := Scope.Items[Scope.Count - 1].SelLine;
+  end;
+  GetDiffFunction(ClassFuncList, FuncList, TODOFuncList);
+  FuncList.Free;
+  ClassFuncList.Free;
+  if TODOFuncList.Count = 0 then
+  begin
+    TODOFuncList.Free;
+    Exit;
+  end;
+  ClassFuncList := TStringList.Create;
+  FuncList := TStringList.Create;
+  for I := 0 to TODOFuncList.Count - 1 do
+  begin
+    FuncToken := TTokenClass(TODOFuncList.Objects[I]);
+    if TODOFuncList.Strings[I] = 'class' then
+    begin
+      if (Pos('virtual', FuncToken.Flag) = 1) and
+        (GetTokenByName(FuncToken, 'Value', tkValue) <> nil) then
+        Continue;
+      FuncList.Insert(FuncList.Count, '');
+      SelLine := FuncList.Count;
+      InsertFunction(FuncToken, FuncList, SelLine, Config.Editor.TabWidth,
+        Config.Editor.UseTabChar, Config.Editor.StyleIndex = 4);
+    end
+    else
+    begin
+      SelLine := ClassFuncList.Count;
+      InsertFunction(FuncToken, ClassFuncList, SelLine, Config.Editor.TabWidth,
+        Config.Editor.UseTabChar, Config.Editor.StyleIndex = 4, True, ClassToken.Level + 1);
+    end;
+  end;
+  if FuncList.Count > 0 then
+  begin
+    FuncList.Insert(0, '');
+    Memo := SrcFile.Edit.Memo;
+    if LastFuncSelEnd = -1 then
+    begin
+      ParentToken := ClassToken.Parent;
+      ScopeFlag := '';
+      while Assigned(ParentToken) and (ParentToken.Token = tkNamespace) do
+      begin
+        ScopeFlag := ParentToken.Name  + '::' + ScopeFlag;
+        ParentToken := ParentToken.Parent;
+      end;
+      if ScopeFlag <> '' then
+      begin
+        if SrcTokenFile.SearchTreeToken(ScopeFlag, ScopeToken, [tkNamespace], 0) then
+        begin
+          if ScopeToken.Count > 0 then
+          begin
+            Scope := GetTokenByName(ScopeToken.Items[ScopeToken.Count - 1],
+              'Scope', tkScope);
+            if (Scope <> nil) then
+              LastFuncSelEnd := Scope.SelStart + Scope.SelLength + 1
+            else
+            begin
+              Scope := GetTokenByName(ScopeToken, 'Scope', tkScope);
+              if (Scope <> nil) then
+                LastFuncSelEnd := Scope.SelStart;
+            end;
+          end;
+        end;
+      end;
+      if LastFuncSelEnd = -1 then
+      begin
+        // non class function out of class
+        LastLineText := '';
+        if Memo.Lines.Count > 0 then
+          LastLineText := Memo.Lines[Memo.Lines.Count - 1];
+        BS := BufferCoord(Length(LastLineText) + 1, Memo.Lines.Count);
+        if SrcTokenFile.GetPreviousFunction(FuncToken,
+          Memo.RowColToCharIndex(BS)) then
+        begin
+          Scope := GetTokenByName(FuncToken, 'Scope', tkScope);
+          if (Scope <> nil) then
+            LastFuncSelEnd := Scope.SelStart + Scope.SelLength + 1;
+        end;
+        if LastFuncSelEnd = -1 then
+        begin
+          if SrcTokenFile = ClassTokenFile then
+          begin
+            Scope := GetTokenByName(ClassToken, 'Scope', tkScope);
+            if (Scope <> nil) then
+              LastFuncSelEnd := Scope.SelStart + Scope.SelLength + 2;
+          end;
+          if LastFuncSelEnd = -1 then
+            LastFuncSelEnd := Memo.RowColToCharIndex(BS);
+        end;
+      end;
+    end;
+    BS := Memo.CharIndexToRowCol(LastFuncSelEnd);
+    Memo.BeginUpdate;
+    Memo.CaretXY := BS;
+    Memo.SelText := FuncList.Text;
+    Memo.EndUpdate;
+  end;
+  if ClassFuncList.Count > 0 then
+  begin
+    ClassFuncList.Insert(0, '');
+    if LastPrivFuncLine = 0 then
+    begin
+      // no private scope
+      Scope := GetTokenByName(ClassToken, 'Scope', tkScope);
+      if Scope <> nil then
+        LastPrivFuncLine := Scope.SelLine;
+      ClassFuncList.Insert(1, GetLeftSpacing(Config.Editor.TabWidth * ClassToken.Level,
+        Config.Editor.TabWidth, Config.Editor.UseTabChar) + 'private:');
+    end;
+    LastLineText := '';
+    Memo := ClassFile.Edit.Memo;
+    if (LastPrivFuncLine > 0) and (LastPrivFuncLine <= Memo.Lines.Count) then
+      LastLineText := Memo.Lines[LastPrivFuncLine - 1];
+    BS := BufferCoord(Length(LastLineText) + 1, LastPrivFuncLine);
+    Memo.BeginUpdate;
+    Memo.CaretXY := BS;
+    LastLineText := ClassFuncList.Strings[0];
+    for I := 1 to ClassFuncList.Count - 1 do
+      LastLineText := LastLineText + #13#10 + ClassFuncList.Strings[I];
+    Memo.SelText := LastLineText;
+    Memo.EndUpdate;
+  end;
+  ClassFuncList.Free;
+  FuncList.Free;
+  TODOFuncList.Free;
+  {SrcFile.Edit;
+  SelectToken(FuncToken);}
 end;
 
 procedure TFrmFalconMain.InvalidateDebugLine;
@@ -9606,7 +9867,7 @@ begin
     begin
       FindedTokenFile := FilesParsed.ItemOfByFileName(Files.Strings[I]);
       if FindedTokenFile <> nil then
-        FindedTokenFile.GetFunctions(List);
+        FindedTokenFile.GetFunctions(List, '');
     end;
     Node := Node.getNextSibling;
   end;
@@ -9742,6 +10003,7 @@ begin
   if not DebugReader.Running then
     SelectToken(Token);
 end;
+
 
 end.
 

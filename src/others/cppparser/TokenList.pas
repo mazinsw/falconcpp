@@ -129,13 +129,15 @@ type
       SelStart: Integer; SelLine: Integer): Boolean;
     function GetScopeAt(var scopeToken: TTokenClass;
       SelStart: Integer): Boolean;
-    procedure GetFunctions(List: TStrings);
+    procedure GetFunctions(List: TStrings; const ScopeFlag: string;
+      UseScope: Boolean = False; MakeCopy: Boolean = True;
+      OnlyPrototype: Boolean =  False);
     function GetPreviousFunction(var Token: TTokenClass;
       SelStart: Integer = 0): Boolean;
     function GetNextFunction(var Token: TTokenClass;
       SelStart: Integer = 0): Boolean;
     function Copy: TTokenClass;
-    function SearchToken(const S: string; var Item: TTokenClass;
+    function SearchToken(const S, ScopeFlag: string; var Item: TTokenClass;
       NotAtSelStart: Integer = 0; AdvanceAfterSelStart: Boolean = False;
       Mode: TTokenSearchMode = []): Boolean;
     function SearchSource(const S: string; var Item: TTokenClass;
@@ -404,26 +406,49 @@ begin
   Result := GetTokenAtRecursive(scopeToken, SelStart, SelLine, False);
 end;
 
-procedure TTokenClass.GetFunctions(List: TStrings);
+procedure TTokenClass.GetFunctions(List: TStrings; const ScopeFlag: string;
+  UseScope, MakeCopy, OnlyPrototype: Boolean);
 var
   I: Integer;
   scope: TTokenClass;
+  Mode: TTokenSearchMode;
 begin
+  Mode := [tkDestructor, tkConstructor];
+  if OnlyPrototype then
+    Mode := Mode + [tkPrototype]
+  else
+    Mode := Mode + [tkFunction];
   for I := 0 to Count - 1 do
   begin
-    if (Items[I].Token in [tkDestructor, tkConstructor, tkFunction]) then
+    if (Items[I].Token in Mode) then
     begin
       if (Items[I].Token in [tkDestructor, tkConstructor]) then
       begin
         scope := GetTokenByName(Items[I], 'Scope', tkScope);
-        if Assigned(scope) then
-          List.AddObject('', Items[I].Copy);
+        if OnlyPrototype then
+        begin
+          if Assigned(scope) then
+            Continue;
+        end
+        else if not Assigned(scope) or (UseScope and (Scope.Flag <> ScopeFlag)) then
+          Continue;
       end
       else
-        List.AddObject('', Items[I].Copy);
-    end;
-    if Items[I].Token in [tkNamespace, tkClass, tkScopeClass] then
-      Items[I].GetFunctions(List);
+      begin
+        if UseScope and not OnlyPrototype then
+        begin
+          scope := GetTokenByName(Items[I], 'Scope', tkScope);
+          if not Assigned(scope) or (UseScope and (Scope.Flag <> ScopeFlag)) then
+            Continue;
+        end;
+      end;
+      if MakeCopy then
+        List.AddObject('', Items[I].Copy)
+      else
+        List.AddObject('', Items[I]);
+    end
+    else if Items[I].Token in [tkNamespace, tkClass, tkScopeClass] then
+      Items[I].GetFunctions(List, ScopeFlag, UseScope, MakeCopy, OnlyPrototype);
   end;
 end;
 
@@ -433,11 +458,12 @@ begin
   Result.Assign(Self);
 end;
 
-function TTokenClass.SearchToken(const S: string; var Item: TTokenClass;
+function TTokenClass.SearchToken(const S, ScopeFlag: string; var Item: TTokenClass;
   NotAtSelStart: Integer; AdvanceAfterSelStart: Boolean;
   Mode: TTokenSearchMode): Boolean;
 var
   I: Integer;
+  Scope: TTokenClass;
 begin
   Result := False;
   for I := 0 to Count - 1 do
@@ -451,13 +477,26 @@ begin
     end;
     if (S = Items[I].Name) and (Items[I].Token in Mode) then
     begin
-      Item := Items[I];
-      Result := True;
-      Exit;
+      if ScopeFlag <> '' then
+      begin
+        Scope := GetTokenByName(Items[I], 'Scope', tkScope);
+        if Assigned(Scope) and (Scope.Flag = ScopeFlag) then
+        begin
+          Item := Items[I];
+          Result := True;
+          Exit;
+        end;
+      end
+      else
+      begin
+        Item := Items[I];
+        Result := True;
+        Exit;
+      end;
     end;
     if Items[I].Token in [tkEnum, tkTypeEnum, tkParams, tkScopeClass] then
     begin
-      if Items[I].SearchToken(S, Item, NotAtSelStart, AdvanceAfterSelStart, Mode) then
+      if Items[I].SearchToken(S, ScopeFlag, Item, NotAtSelStart, AdvanceAfterSelStart, Mode) then
       begin
         Result := True;
         Exit;

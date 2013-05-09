@@ -1867,6 +1867,7 @@ var
   Len, I: Integer;
   FuncToken, Params: TTokenClass;
   TokenType: TTkType;
+  PureVirtual: Boolean;
 begin
   //DoTokenLog('ProcessFunction - ' + S);
   TokenType := tkFunction;
@@ -1945,11 +1946,18 @@ begin
       Inc(fCurrPos);
     end;
 
-    SkipUntilFind(['{', ';']);
+    SkipUntilFind(['=', '{', ';']);
 
-    if fptr^ = ';' then
+    if fptr^ in ['=', ';'] then
     begin
-      Pop; //pop function
+      PureVirtual := False;
+      if fptr^ = '=' then
+      begin
+        PureVirtual := Pos('virtual', FuncToken.Flag) = 1;
+        SkipUntilFind([';']);
+        if fptr^ <> ';' then
+          Exit;
+      end;
       if Assigned(FuncToken.Parent) and (FuncToken.Parent.Token in
         [tkFunction, tkConstructor, tkDestructor]) and (RetType <> '') then
       begin
@@ -1960,8 +1968,16 @@ begin
       else
       begin
         if FuncToken.Token = tkFunction then
+        begin
           FuncToken.Token := tkPrototype;
+          if PureVirtual then
+          begin
+            AddToken('Value', '0', tkValue, FuncToken.SelLine, FuncToken.SelStart,
+              FuncToken.SelLength, FuncToken.Level);
+          end;
+        end;
       end;
+      Pop; //pop function
     end
     else if (fptr^ = '{') then
     begin

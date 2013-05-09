@@ -1565,7 +1565,7 @@ begin
     //update grayed project and outline
     FrmFalconMain.HandlingTabs := False;
     FrmFalconMain.PageControlEditorPageChange(FrmFalconMain.PageControlEditor,
-      FrmFalconMain.PageControlEditor.ActivePageIndex);
+      FrmFalconMain.PageControlEditor.ActivePageIndex, -1);
   end;
   //load expanded folders
   FoldersNode := LytNode.ChildNodes.FindNode('Folders');

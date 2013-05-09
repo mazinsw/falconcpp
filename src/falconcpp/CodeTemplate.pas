@@ -326,7 +326,7 @@ end;
 procedure ExecuteCompletion(const Input: string; Token: TTokenClass;
   AEditor: TCustomSynEdit);
 var
-  i, j, Len, IndentLen: integer;
+  i, j, Len, IndentLen, AfterLen: integer;
   s: string;
   ptr, iptr, pcode, ipcode: PChar;
   p: TBufferCoord;
@@ -339,11 +339,19 @@ begin
 {begin}                                                                         //mh 2000-11-08
   AEditor.BeginUpdate;
   try
+    AfterLen := 0;
+    s := AEditor.Lines[p.Line - 1];
+    for I := p.Char to Length(s) do
+    begin
+      if s[I] in LetterChars + DigitChars then
+        Inc(AfterLen)
+      else
+        Break;
+    end;
     AEditor.BlockBegin := BufferCoord(p.Char - Len, p.Line);
-    AEditor.BlockEnd := p;
+    AEditor.BlockEnd := BufferCoord(p.Char + AfterLen, p.Line);
     // indent the completion string if necessary, determine the caret pos
     IndentLen := 0;
-    s := AEditor.Lines[p.Line - 1];
     ptr := PChar(s);
     if Assigned(ptr) and (ptr^ <> #0) then
       repeat

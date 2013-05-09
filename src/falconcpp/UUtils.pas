@@ -72,7 +72,6 @@ function GetTickTime(ticks: Cardinal; fmt: string): string;
 procedure GetNameAndVersion(const S: string; var aName, aVersion: string);
 procedure SearchCompilers(List: TStrings; var PathCompiler: string);
 function TranslateSpecialChars(const S: string): string;
-function GetLeftSpacing(CharCount, TabWidth: Integer; WantTabs: Boolean): string;
 function CanDoubleQuotedStr(const S: string): Boolean;
 procedure SplitParams(const S: string; List: TStrings);
 procedure GetIncludeDirs(const ProjectDir, Flags: string; IncludeList: TStrings;
@@ -388,13 +387,6 @@ end;
 function TranslateSpecialChars(const S: string): string;
 begin
   Result := StringReplace(S, '\n', #13, [rfReplaceAll]);
-end;
-
-function GetLeftSpacing(CharCount, TabWidth: Integer; WantTabs: Boolean): string;
-begin
-  if (WantTabs) and (CharCount>=TabWidth) then
-      Result:=StringOfChar(#9,CharCount div TabWidth)+StringOfChar(#32,CharCount mod TabWidth)
-  else Result:=StringOfChar(#32,CharCount);
 end;
 
 function CanDoubleQuotedStr(const S: string): Boolean;

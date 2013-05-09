@@ -5,14 +5,14 @@ interface
 uses
   TokenList, SysUtils, Classes, TokenConst, TokenFile, Dialogs;
 
-//make hint
-function GetFuncScope(Token: TTokenClass): string;
+function GetFuncScope(Token: TTokenClass; AddSeparator: Boolean = True): string;
 function GetFuncProto(Token: TTokenClass; GenName: Boolean = False): string;
 function GetStructProto(Token: TTokenClass; GenName: Boolean = False): string;
 function GetFuncProtoTypes(Token: TTokenClass): string;
 procedure GetStringsFields(const S: string; List: TStrings;
   IgnoreFirst: Boolean = True);
 function GetTreeHierarchy(Token: TTokenClass; AddScope: Boolean = True): string;
+//make hint
 function MakeTokenHint(Token: TTokenClass; const FileName: string): string;
 function MakeTokenParamsHint(Token: TTokenClass): string;
 //completion list
@@ -36,6 +36,7 @@ function GetActiveParams(const S: string; Index: Integer): string;
 function GetParamsAfter(const S: string; Index: Integer): string;
 
 //strings
+function GetLeftSpacing(CharCount, TabWidth: Integer; WantTabs: Boolean): string;
 function GetFirstWord(const S: string): string;
 function GetAfterWord(const S: string): string;
 procedure GetDescendants(const S: string; List: TStrings; scope: TScopeClass);
@@ -52,8 +53,16 @@ function GetTokenByName(Token: TTokenClass; const Name: string;
 
 //others
 function HasTODO(const S: string): Boolean;
+procedure GetDiffFunction(const ClassFuncList, FuncList: TStrings;
+  DiffFuncList: TStrings);
+function GeneratePrototype(func: TTokenClass; TabWidth: Integer; WantTabs,
+  JavaStyle: Boolean; OverrideLevel: Integer = -1): string;
+procedure InsertFunction(func: TTokenClass; Source: TStrings;
+  var StartLine: Integer; TabWidth: Integer; WantTabs, JavaStyle: Boolean;
+  Prototype: Boolean = False; OverrideLevel: Integer = -1;
+  ExcludeScope: Boolean = False);
 procedure GenerateFunctions(TokenFile: TTokenFile; Source: TStrings;
-  StartLine: Integer);
+  StartLine, TabWidth: Integer; WantTabs, JavaStyle: Boolean);
 procedure GenerateFunctionPrototype(TokenFile: TTokenFile; Source: TStrings;
   StartLine: Integer; AddNameParams: Boolean = True);
 function GetTokenImageIndex(Token: TTokenClass; Images: array of Integer): Integer;
@@ -77,27 +86,60 @@ begin
   Result := FileDateToDateTime(FileAge(FileName));
 end;
 
-procedure InsertFunction(func: TTokenClass; Source: TStrings;
-  var StartLine: Integer; Indentation: Integer; JavaStyle: Boolean);
+function GeneratePrototype(func: TTokenClass; TabWidth: Integer; WantTabs,
+  JavaStyle: Boolean; OverrideLevel: Integer): string;
 var
-  S, FuncImp, IndentStr, Scope, RetValue: string;
+  S: TStrings;
+  StartLine: Integer;
+begin
+  S := TStringList.Create;
+  StartLine := 0;
+  InsertFunction(func, S, StartLine, TabWidth, WantTabs, JavaStyle, True,
+    OverrideLevel, True);
+  Result := S.Strings[0];
+  S.Free;
+end;
+
+procedure InsertFunction(func: TTokenClass; Source: TStrings;
+  var StartLine: Integer; TabWidth: Integer; WantTabs, JavaStyle,
+  Prototype: Boolean; OverrideLevel: Integer; ExcludeScope: Boolean);
+var
+  S, FuncImp, IndentStr, Scope, RetValue, FuncRet: string;
+  Level: Integer;
 begin
   if not (func.Token in [tkFunction, tkPrototype, tkConstructor,
     tkDestructor]) then
     Exit;
   Scope := '';
   S := func.Name + '(' + GetFuncProto(func, True) + ')';
-  IndentStr := StringOfChar(' ', Indentation * func.Level);
+  if OverrideLevel >= 0 then
+    Level := OverrideLevel
+  else
+    Level := func.Level;
+  IndentStr := GetLeftSpacing(TabWidth * Level, TabWidth, WantTabs);
   if Assigned(func.Parent) and Assigned(func.Parent.Parent) and
-    (func.Parent.Parent.Token = tkClass) then
+    (func.Parent.Parent.Token = tkClass) and not ExcludeScope then
   begin
-    IndentStr := StringOfChar(' ', Indentation * (func.Level - 2));
+    IndentStr := GetLeftSpacing(TabWidth * (Level - 2), TabWidth, WantTabs);
     if func.Token in [tkDestructor] then
       Scope := func.Parent.Parent.Name + '::~'
     else
       Scope := func.Parent.Parent.Name + '::';
+    FuncRet := func.Flag;
+    if (Pos('virtual', FuncRet) = 1) then
+      FuncRet := Trim(Copy(FuncRet, 8, Length(FuncRet) - 7))
+    else if Pos('static', FuncRet) = 1 then
+      FuncRet := Trim(Copy(FuncRet, 7, Length(FuncRet) - 6));
+  end
+  else
+    FuncRet := func.Flag;
+  FuncImp := IndentStr + Trim(FuncRet + ' ' + Scope + S);
+  if Prototype then
+  begin
+    Source.Insert(StartLine, FuncImp + ';');
+    Inc(StartLine);
+    Exit;
   end;
-  FuncImp := IndentStr + Trim(func.Flag + ' ' + Scope + S);
   if JavaStyle then
     Source.Insert(StartLine, FuncImp + ' {')
   else
@@ -107,7 +149,7 @@ begin
     Source.Insert(StartLine, IndentStr + '{');
   end;
   Inc(StartLine);
-  Source.Insert(StartLine, IndentStr + StringOfChar(' ', Indentation) +
+  Source.Insert(StartLine, IndentStr + GetLeftSpacing(TabWidth, TabWidth, WantTabs) +
     '//TODO Generated function');
   Inc(StartLine);
   S := GetVarType(func.Flag);
@@ -120,7 +162,7 @@ begin
       RetValue := 'false'
     else if S = 'string' then
       RetValue := '""';
-    Source.Insert(StartLine, IndentStr + StringOfChar(' ', Indentation) +
+    Source.Insert(StartLine, IndentStr + GetLeftSpacing(TabWidth, TabWidth, WantTabs) +
       'return ' + RetValue + ';');
     Inc(StartLine);
   end;
@@ -128,16 +170,52 @@ begin
   Inc(StartLine);
 end;
 
-procedure GenerateFunctions(TokenFile: TTokenFile; Source: TStrings;
-  StartLine: Integer);
+procedure GetDiffFunction(const ClassFuncList, FuncList: TStrings;
+  DiffFuncList: TStrings);
 
-  procedure GenerateGroup(Item: TTokenClass; var InsertLine: Integer;
-    Indentation: Integer);
+var
+  TempFuncList: TStrings;
+  I, J: Integer;
+  TkFunc1, TkFunc2: TTokenClass;
+  tkp1, tkp2: TTokenClass;
+begin
+  for I := 0 to ClassFuncList.Count - 1 do
+    DiffFuncList.AddObject('class', ClassFuncList.Objects[I]);
+  TempFuncList := TStringList.Create;
+  TempFuncList.AddStrings(FuncList);
+  for I := DiffFuncList.Count - 1 downto 0 do
+  begin
+    TkFunc1 := TTokenClass(DiffFuncList.Objects[I]);
+    for J := TempFuncList.Count - 1 downto 0 do
+    begin
+      TkFunc2 := TTokenClass(TempFuncList.Objects[J]);
+      if (TkFunc1.Name = TkFunc2.Name) then
+      begin
+        tkp1 := GetTokenByName(TkFunc1, 'Params', tkParams);
+        tkp2 := GetTokenByName(TkFunc2, 'Params', tkParams);
+        if tkp1.Count = tkp2.Count then
+        begin
+          DiffFuncList.Delete(I);
+          TempFuncList.Delete(J);
+          Break;
+        end;
+      end;
+    end;
+  end;
+  for I := 0 to TempFuncList.Count - 1 do
+    DiffFuncList.AddObject('func', TempFuncList.Objects[I]);
+end;
+
+procedure GenerateFunctions(TokenFile: TTokenFile; Source: TStrings;
+  StartLine, TabWidth: Integer; WantTabs, JavaStyle: Boolean);
+
+  procedure GenerateGroup(Item: TTokenClass; var InsertLine: Integer);
   var
     IndentStr: string;
     I: Integer;
+    FuncValue: TTokenClass;
   begin
-    IndentStr := StringOfChar(' ', Indentation * Item.Level);
+    IndentStr := GetLeftSpacing(TabWidth * Item.Level, TabWidth, WantTabs);
     if Item.Token = tkNamespace then
     begin
       Source.Insert(InsertLine, IndentStr + 'namespace ' + Item.Name);
@@ -152,8 +230,13 @@ procedure GenerateFunctions(TokenFile: TTokenFile; Source: TStrings;
         if Item.Items[I].Token in [tkPrototype, tkConstructor, tkDestructor] then
         begin
           if Pos('virtual', Item.Items[I].Flag) > 0 then
-            Continue;
-          InsertFunction(Item.Items[I], Source, InsertLine, Indentation, False);
+          begin
+            FuncValue := GetTokenByName(Item.Items[I], 'Value', tkValue);
+            if FuncValue <> nil then
+              Continue;
+          end;
+          InsertFunction(Item.Items[I], Source, InsertLine, TabWidth,
+            WantTabs, JavaStyle);
           if I < Item.Count - 1 then
           begin
             Source.Insert(InsertLine, '');
@@ -162,7 +245,7 @@ procedure GenerateFunctions(TokenFile: TTokenFile; Source: TStrings;
         end;
         Continue;
       end;
-      GenerateGroup(Item.Items[I], InsertLine, 4);
+      GenerateGroup(Item.Items[I], InsertLine);
     end;
     if Item.Token = tkNamespace then
     begin
@@ -182,7 +265,7 @@ begin
   begin
     if not (Item.Items[I].Token in [tkPrototype]) then
       Continue;
-    InsertFunction(Item.Items[I], Source, InsertLine, 4, False);
+    InsertFunction(Item.Items[I], Source, InsertLine, TabWidth, WantTabs, JavaStyle);
     Source.Insert(InsertLine, '');
     Inc(InsertLine);
   end;
@@ -191,7 +274,7 @@ begin
   begin
     if not (Item.Items[I].Token in [tkClass, tkNamespace]) then
       Continue;
-    GenerateGroup(Item.Items[I], InsertLine, 4);
+    GenerateGroup(Item.Items[I], InsertLine);
   end;
 end;
 
@@ -232,7 +315,7 @@ begin
       //if not Assigned(Scope) then
       //  Continue;
       if (Scope.Flag <> '') and not
-        TokenFile.SearchToken(Scope.Flag, SearchItem, Scope.SelStart,
+        TokenFile.SearchToken(Scope.Flag, '', SearchItem, Scope.SelStart,
         False, [tkClass]) then
       begin
         if HasClass and (LastClass <> Scope.Flag) then
@@ -414,7 +497,7 @@ begin
     Result := Images[Result];
 end;
 
-function GetFuncScope(Token: TTokenClass): string;
+function GetFuncScope(Token: TTokenClass; AddSeparator: Boolean): string;
 var
   Scope: TTokenClass;
 begin
@@ -426,7 +509,7 @@ begin
   if not Assigned(Scope) then
     Exit;
   Result := Scope.Flag;
-  if Length(Result) > 0 then
+  if (Length(Result) > 0) and AddSeparator then
     Result := Result + '::';
   Result := Result;
 end;
@@ -987,6 +1070,13 @@ begin
   end;
 end;
 
+function GetLeftSpacing(CharCount, TabWidth: Integer; WantTabs: Boolean): string;
+begin
+  if (WantTabs) and (CharCount>=TabWidth) then
+      Result:=StringOfChar(#9,CharCount div TabWidth)+StringOfChar(#32,CharCount mod TabWidth)
+  else Result:=StringOfChar(#32,CharCount);
+end;
+
 function CommaCountAt(const S: string; Init: Integer): Integer;
 var
   ptr: PChar;
@@ -1397,13 +1487,67 @@ begin
   Result := ptr^ = #0;
 end;
 
+
+function StartOfCommentInv(const init, ptr: PChar): PChar;
+var
+  cmmptr: PChar;
+begin
+  Result := ptr;
+  cmmptr := ptr - 1;
+  // back one line
+  while (cmmptr >= init) and not (cmmptr^ in LineChars) do
+    Dec(cmmptr);
+  // check for line comment
+  while (cmmptr < ptr) do
+  begin
+    case cmmptr^ of
+      '/':
+      begin
+        if (cmmptr + 1)^ = '/' then Break;
+        // skip /* */ comment
+        if (cmmptr + 1)^ = '*' then
+        begin
+          Inc(cmmptr, 2);
+          while (cmmptr < ptr) and ((cmmptr^ <> '*') or ((cmmptr + 1)^ <> '/')) do
+            Inc(cmmptr);
+        end;
+      end;
+      '''': // skip single quote '?'
+      begin
+        Inc(cmmptr);
+        while (cmmptr < ptr) and ((cmmptr^ <> '''') or (cmmptr^ = '\')) do
+          Inc(cmmptr);
+      end;
+      '"': // skip string
+      begin
+        Inc(cmmptr);
+        while (cmmptr < ptr) and ((cmmptr^ <> '"') or (cmmptr^ = '\')) do
+          Inc(cmmptr);
+      end;
+    end;
+    Inc(cmmptr);
+  end;
+  // jump to start of comment
+  if (cmmptr^ = '/') and ((cmmptr + 1)^ = '/') then
+    Result := cmmptr - 1;
+end;
+
 function SkipStringInv(const init: PChar; var ptr: PChar): Boolean;
 begin
   if ptr^ = '"' then
     Dec(ptr);
   while (ptr >= init) and (ptr^ <> #10) and ((ptr^ <> '"') or
     (((ptr - 1)^ = '\') and (ptr^ = '"'))) do
+  begin
+    // jump sigle line comment
+    if ptr^ in LineChars then
+    begin
+      if (ptr > init) and ((ptr - 1)^ in LineChars) then
+        Dec(ptr);
+      ptr := StartOfCommentInv(init, ptr);
+    end;
     Dec(ptr);
+  end;
   Result := (ptr^ = '"');
 end;
 
@@ -1413,7 +1557,16 @@ begin
     Dec(ptr);
   while (ptr >= init) and ((ptr^ <> '''') or (((ptr - 1)^ = '\') and
     (ptr^ = ''''))) do
+  begin
+    // jump sigle line comment
+    if ptr^ in LineChars then
+    begin
+      if (ptr > init) and ((ptr - 1)^ in LineChars) then
+        Dec(ptr);
+      ptr := StartOfCommentInv(init, ptr);
+    end;
     Dec(ptr);
+  end;
   Result := (ptr^ = '''');
 end;
 
@@ -1423,6 +1576,13 @@ begin
     Dec(ptr);
   repeat
     Dec(ptr);
+    // jump sigle line comment
+    if ptr^ in LineChars then
+    begin
+      if (ptr > init) and ((ptr - 1)^ in LineChars) then
+        Dec(ptr);
+      ptr := StartOfCommentInv(init, ptr);
+    end;
   until (ptr < init) or ((ptr^ = '/') and ((ptr + 1)^ = '*'));
   Result := (ptr >= init) and (ptr^ = '/') and ((ptr + 1)^ = '*');
 end;
@@ -1455,6 +1615,13 @@ begin
         Dec(pair_count);
         if pair_count = 0 then
           Break;
+      end
+      // jump sigle line comment
+      else if ptr^ in LineChars then
+      begin
+        if (ptr > init) and ((ptr - 1)^ in LineChars) then
+          Dec(ptr);
+        ptr := StartOfCommentInv(init, ptr);
       end;
     end;
     Dec(ptr);
@@ -1499,7 +1666,14 @@ begin
           Break;
       end
       else if ptr^ in LetterChars + DigitChars then
-        Cast := ptr^ + Cast;
+        Cast := ptr^ + Cast
+      // jump sigle line comment
+      else if ptr^ in LineChars then
+      begin
+        if (ptr > init) and ((ptr - 1)^ in LineChars) then
+          Dec(ptr);
+        ptr := StartOfCommentInv(init, ptr);
+      end;
     end;
     Dec(ptr);
   until (ptr < init) or (pair_count = 0);
@@ -1569,7 +1743,16 @@ begin
   ptr := init + SelStart - 1;
   //get string before selstart
   while not skipSpace and (ptr >= init) and (ptr^ in LineChars + SpaceChars) do
-    Dec(ptr); //comment
+  begin
+    // jump sigle line comment
+    if ptr^ in LineChars then
+    begin
+      if (ptr > init) and ((ptr - 1)^ in LineChars) then
+        Dec(ptr);
+      ptr := StartOfCommentInv(init, ptr);
+    end;
+    Dec(ptr);
+  end;
   if (ptr^ in LetterChars + DigitChars) then
   begin
     repeat
@@ -1628,10 +1811,19 @@ begin
           end;
         '/':
           if (ptr > init) and ((ptr - 1)^ = '*') then
-            SkipMultlineCommentInv(init, ptr);
+            SkipMultlineCommentInv(init, ptr)
+          else
+            Exit; // syntax error ex:  blabla./ or bla.bla/
       else
         if not (ptr^ in LineChars + SpaceChars) then
-          Break;
+          Break
+        // jump sigle line comment
+        else if ptr^ in LineChars then
+        begin
+          if (ptr > init) and ((ptr - 1)^ in LineChars) then
+            Dec(ptr);
+          ptr := StartOfCommentInv(init, ptr);
+        end;
       end;
       Dec(ptr);
     until ptr < init;
@@ -1643,7 +1835,16 @@ begin
     end;
     //skipspace
     while (ptr >= init) and (ptr^ in LineChars + SpaceChars) do
-      Dec(ptr); //comment
+    begin
+      // jump sigle line comment
+      if ptr^ in LineChars then
+      begin
+        if (ptr > init) and ((ptr - 1)^ in LineChars) then
+          Dec(ptr);
+        ptr := StartOfCommentInv(init, ptr);
+      end;
+      Dec(ptr);
+    end;
     if not (ptr^ in LetterChars + DigitChars + [')', ']', '/']) then
     begin
       if sep <> '' then
@@ -1669,7 +1870,15 @@ begin
             if sep <> '::' then
               InputError := True; //;.blabla
             Exit; //syntax error     /->blabla /.blabla /::blabla
-          end
+          end;
+      else
+        // jump sigle line comment
+        if ptr^ in LineChars then
+        begin
+          if (ptr > init) and ((ptr - 1)^ in LineChars) then
+            Dec(ptr);
+          ptr := StartOfCommentInv(init, ptr);
+        end
         else
           field := ptr^ + field;
       end;
@@ -1719,7 +1928,13 @@ begin
         '''': SkipSingleQuotesInv(init, ptr);
         ';', '{', '}': Exit;
       else
-        ;
+        // jump sigle line comment
+        if ptr^ in LineChars then
+        begin
+          if (ptr > init) and ((ptr - 1)^ in LineChars) then
+            Dec(ptr);
+          ptr := StartOfCommentInv(init, ptr);
+        end;
       end;
       Dec(ptr);
     end;
@@ -1729,12 +1944,22 @@ begin
     Dec(skip);
     while (skip >= init) and (skip^ in LineChars + SpaceChars) do
     begin
-      Dec(skip);
       case skip^ of
         '/':
-          if (ptr > init) and ((ptr - 1)^ = '*') then
+          if (skip > init) and ((skip - 1)^ = '*') then
             SkipMultlineCommentInv(init, skip);
+        '"': SkipStringInv(init, skip);
+        '''': SkipSingleQuotesInv(init, skip);
+      else
+        // jump sigle line comment
+        if skip^ in LineChars then
+        begin
+          if (skip > init) and ((skip - 1)^ in LineChars) then
+            Dec(skip);
+          skip := StartOfCommentInv(init, skip);
+        end;
       end;
+      Dec(skip);
     end;
     if skip^ in LetterChars + DigitChars then
       Break;
@@ -1795,7 +2020,14 @@ begin
       ';': Exit;
       ')': SkipInvPair(init, ptr, '(', ')');
     else
-      if not (ptr^ in SpaceChars + LineChars) and (last <> nil) then
+      // jump sigle line comment
+      if ptr^ in LineChars then
+      begin
+        if (ptr > init) and ((ptr - 1)^ in LineChars) then
+          Dec(ptr);
+        ptr := StartOfCommentInv(init, ptr);
+      end
+      else if not (ptr^ in SpaceChars) and (last <> nil) then
         last := nil;
     end;
     Dec(ptr);
@@ -1806,8 +2038,22 @@ begin
   // get end of variable
   while (ptr >= init) and (ptr^ in SpaceChars + LineChars + [']']) do
   begin
-    if ptr^ = ']' then
-      SkipInvPair(init, ptr, '[', ']');
+    case ptr^ of
+      '/':
+        if (ptr > init) and ((ptr - 1)^ = '*') then
+          SkipMultlineCommentInv(init, ptr);
+      '"': SkipStringInv(init, ptr);
+      '''': SkipSingleQuotesInv(init, ptr);
+      ']': SkipInvPair(init, ptr, '[', ']');
+    else
+      // jump sigle line comment
+      if ptr^ in LineChars then
+      begin
+        if (ptr > init) and ((ptr - 1)^ in LineChars) then
+          Dec(ptr);
+        ptr := StartOfCommentInv(init, ptr);
+      end;
+    end;
     Dec(ptr);
   end;
   if (ptr < init) then

@@ -1584,6 +1584,7 @@ object FrmFalconMain: TFrmFalconMain
     object PopEditorCompClass: TTBXItem
       Caption = 'Complete class at cursor'
       ShortCut = 24643
+      OnClick = PopEditorCompClassClick
     end
     object PopEditorSwap: TTBXItem
       Caption = 'Swap header/source'

@@ -18,7 +18,7 @@ const
   ('Software\Microsoft\Windows\CurrentVersion',
     'Software\Microsoft\Windows NT\CurrentVersion');
   CSIDL_COMMON_APPDATA = $0023;
-  Ident = '        ';
+  Ident = #9#9;
   NewLine = #13 + #10;
   TwoParms = NewLine + Ident;
   FALCON_URL_UPDATE = 'https://downloads.sourceforge.net/project/falconcpp/' +
@@ -1246,7 +1246,7 @@ begin
   end;
   if (Rest > 0) then
     Ret := Ret + TwoParms + Copy(HEXText, Length(HEXText) - Rest + 1, Rest);
-  Result := Ret + NewLine + '    ';
+  Result := Ret + NewLine + #9;
 end;
 
 function FileDateTime(const FileName: string): TDateTime;

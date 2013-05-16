@@ -1261,7 +1261,7 @@ begin
     Exit;
   end;
   XMLDoc.Options := XMLDoc.Options + [doNodeAutoIndent];
-  XMLDoc.NodeIndentStr := '    ';
+  XMLDoc.NodeIndentStr := #9;
 
   //tag project
   ProjNode := XMLDoc.ChildNodes.FindNode('Project');
@@ -1467,7 +1467,7 @@ begin
     Exit;
   end;
   XMLDoc.Options := XMLDoc.Options + [doNodeAutoIndent];
-  XMLDoc.NodeIndentStr := '    ';
+  XMLDoc.NodeIndentStr := #9;
 
   //tag project
   LytNode := XMLDoc.ChildNodes.FindNode('Layout');
@@ -1671,7 +1671,7 @@ begin
   XMLDoc.Version := '1.0';
   XMLDoc.Options := XMLDoc.Options + [doNodeAutoIndent];
   XMLDoc.Encoding := 'UTF-8';
-  XMLDoc.NodeIndentStr := '    ';
+  XMLDoc.NodeIndentStr := #9;
 
   LytNode := XMLDoc.AddChild('Layout');
   pageIndex := FrmFalconMain.PageControlEditor.ActivePageIndex;
@@ -1783,7 +1783,7 @@ begin
   XMLDoc.Version := '1.0';
   XMLDoc.Options := XMLDoc.Options + [doNodeAutoIndent];
   XMLDoc.Encoding := 'UTF-8';
-  XMLDoc.NodeIndentStr := '    ';
+  XMLDoc.NodeIndentStr := #9;
 
   ProjNode := XMLDoc.AddChild('Project');
 

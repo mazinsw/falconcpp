@@ -2,7 +2,7 @@
 <FalconCPP>
 	<Core Version="3.2.0.86">
 		<File Name="Falcon.exe" URL="https://downloads.sourceforge.net/project/falconcpp/Binaries/3.2.0.86/Falcon C++-3.2.0.86.zip">
-			Date: 2013/05/04
+			Date: 2013/05/09
 			Fix: Compiling new files disable save button
 			Fix: Makefile rules fail when include headers files from directories using -I flag
 			Fix: Add new file don't changing project properties
@@ -16,6 +16,9 @@
 			Fix: Invalid memory access on close when parsing files
 			Fix: Overriding CustomAutoComplete.txt file on update
 			Fix: Detecting return value as STDCALL on functions
+			Fix: don't parsing changed files when tab changed
+			Fix: keeping erroneous parsed file when discard changes on close file
+			Complete class at cursor implemented
 			Debugger auto watch global variables from current file
 			Changed default compiler path selection order
 			Import Visual C++ project from 7.10 to 9.00 version
@@ -34,6 +37,8 @@
 			Open file and select it on folder more fast using ShellAPI functions
 			remove double connecting to download and post data available to Updater and PkgManager
 			Minor changes for indentation enhancement
+			Override virtual functions in class with code completion
+			Disabling menu items from new file menu when a file is selected in project list
 		</File>
 	</Core>
 </FalconCPP>

@@ -26,7 +26,7 @@ type
     procedure ProjectListMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     procedure PageControlPageChange(Sender: TObject;
-      TabIndex: Integer);
+      TabIndex, PrevTabIndex: Integer);
   private
     { Private declarations }
   public
@@ -191,7 +191,7 @@ begin
 end;
 
 procedure TFraProjs.PageControlPageChange(Sender: TObject;
-  TabIndex: Integer);
+  TabIndex, PrevTabIndex: Integer);
 var
   Tmplt: TTemplate;
   ListV: TListView;

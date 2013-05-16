@@ -5,6 +5,7 @@ for %%A in ("%~dp0\..\.") do (set currdir=%%~nA)
 SET filename="%~dp0backup\%currdir% %mydate%_%mytime%.7z"
 call src/clean
 call res/clean
+"%programfiles%\7-zip\7z" a -r %filename% docs\help
 "%programfiles%\7-zip\7z" a -r %filename% src
 "%programfiles%\7-zip\7z" a -r %filename% tests
 "%programfiles%\7-zip\7z" a -r %filename% bin\make_installer.bat

@@ -1493,6 +1493,8 @@ function TTokenFiles.GetFieldsBaseType(const S, Fields: string;
 var
   List: TStrings;
   I: Integer;
+  Temp: string;
+  ScopeClass: TScopeClassState;
 begin
   //search var->
   Result := SearchSource(S, TokenFile, TokenFileItem, Token, SelStart);
@@ -1502,7 +1504,7 @@ begin
   GetStringsFields(Fields, List);
   if (S <> 'this') then
   begin //'prototype var()->' or var.bla or func()->bla
-    if (Token.Token in [tkVariable, tkFunction, tkPrototype, tkDefine]) then
+    if (Token.Token in RetTypeTokens + [tkDefine]) then
     begin
       if not GetBaseType(GetVarType(Token.Flag), Token.SelStart,
         TokenFileItem, TokenFileItem, Token) then
@@ -1514,72 +1516,23 @@ begin
     end;
   end;
   if (Token.Token in [tkTypedef]) and (Pos('struct', Token.Flag) > 0) then
-  begin
-    GetBaseType(GetVarType(Token.Flag), 0,
-      TokenFile, TokenFileItem, Token);
-  end;
+    GetBaseType(GetVarType(Token.Flag), 0, TokenFile, TokenFileItem, Token);
   { TODO -oMazin -c : Consider Scope::Function() 04/05/2013 21:33:01 }
   for I := 0 to List.Count - 1 do
   begin
-    if Token.Token in [tkClass, tkTypeStruct, tkStruct, tkUnion,
-      tkTypeUnion] then
+    ScopeClass := [scPublic];
+    if Token.Token in RetTypeTokens then
     begin
+      Temp := GetVarType(Token.Flag);
       //get var.field    note: field can be an function
-      Result := SearchClassSource(List.Strings[I], Token, TokenFileItem,
-        TokenFileItem, Token, nil, False, [scPublic]);
-      if not Result then
+      if StringIn(Temp, ReservedTypes) or not
+        GetBaseType(Temp, 0, TokenFileItem, TokenFileItem, Token) then
       begin
         Result := False;
         List.Free;
         Exit;
       end;
-      //last parameter and get tree for completion
-      // var.field()->
-      if (I = List.Count - 1) and
-        (not StringIn(GetVarType(Token.Flag), ReservedTypes) and
-        not GetBaseType(GetVarType(Token.Flag), 0, TokenFileItem,
-        TokenFileItem, Token)) then
-      begin
-        Result := False;
-        List.Free;
-        Exit;
-      end;
-    end
-    else if Token.Token in [tkFunction, tkPrototype, tkVariable] then
-    begin
-      //get var.field    note: field can be an function
-      if StringIn(GetVarType(Token.Flag), ReservedTypes) or
-        not GetBaseType(GetVarType(Token.Flag), 0, TokenFileItem,
-        TokenFileItem, Token) then
-      begin
-        Result := False;
-        List.Free;
-        Exit;
-      end;
-      //get var.field    field is an tree object variable
-      if Token.Token in [tkClass, tkTypeStruct, tkStruct, tkUnion,
-        tkTypeUnion] then
-        Result := SearchClassSource(List.Strings[I], Token, TokenFileItem,
-          TokenFileItem, Token)
-      else
-        Result := False;
-      if not Result then
-      begin
-        Result := False;
-        List.Free;
-        Exit;
-      end;
-      //last parameter and get tree for completion
-      // var.field()->
-      if (I = List.Count - 1) and
-        (not StringIn(GetVarType(Token.Flag), ReservedTypes) and
-        not GetBaseType(GetVarType(Token.Flag), 0, TokenFileItem,
-        TokenFileItem, Token)) then
-      begin
-        Result := False;
-        List.Free;
-        Exit;
-      end;
+      ScopeClass := [];
     end
     else if Token.Token in [tkNamespace] then
     begin
@@ -1591,13 +1544,39 @@ begin
         List.Free;
         Exit;
       end;
+      Continue;
     end
-    else
+    else if not (Token.Token in TreeTokens) then
     begin
       Result := False;
       List.Free;
       Exit;
     end;
+    if Token.Token in TreeTokens then
+    begin
+      //get var.field    note: field can be an function
+      Result := SearchClassSource(List.Strings[I], Token, TokenFileItem,
+        TokenFileItem, Token, nil, False, ScopeClass);
+    end;
+    if not Result then
+    begin
+      Result := False;
+      List.Free;
+      Exit;
+    end;
+    Temp := GetVarType(Token.Flag);
+    //last parameter and get tree for completion
+    // var.function()->
+    if (Token.Token in RetTypeTokens) and not StringIn(Temp, ReservedTypes)
+      and not GetBaseType(Temp, 0, TokenFileItem, TokenFileItem, Token) then
+    begin
+      Result := False;
+      List.Free;
+      Exit;
+    end;
+    // for linked lists
+    if (Token.Token in [tkTypedef]) and (Pos('struct', Token.Flag) > 0) then
+      GetBaseType(GetVarType(Token.Flag), 0, TokenFile, TokenFileItem, Token);
   end;
   List.Free;
   Result := True;

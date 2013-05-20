@@ -1299,8 +1299,6 @@ end;
 
 function CreateSourceFolder(const Name: string;
   Parent: TSourceFile): TSourceFile;
-var
-  Node: TTreeNode;
 begin
   if not Assigned(Parent) or not
     (Parent.FileType in [FILE_TYPE_FOLDER, FILE_TYPE_PROJECT]) then
@@ -1308,12 +1306,8 @@ begin
     Result := nil;
     Exit;
   end;
-  Node := FrmFalconMain.TreeViewProjects.Items.AddChild(Parent.Node, Name);
-  Result := TSourceFile.Create(Node);
-  Result.OnDeletion := FrmFalconMain.DoDeleteSource;
-  Node.Data := Result;
+  Result := FrmFalconMain.CreateSource(Parent.Node, Name);
   Result.FileType := FILE_TYPE_FOLDER;
-  Result.Project := Parent.Project;
   Result.FileName := Name;
   Parent.Node.Expanded := True;
 end;
@@ -1345,13 +1339,10 @@ end;
 function NewSourceFile(FileType, Compiler: Integer; FirstName, BaseName,
   Ext, FileName: string; OwnerFile: TSourceFile; UseFileName,
   Expand: Boolean): TSourceFile;
-var
-  Node: TTreeNode;
-  NewPrj, Proj: TProjectFile;
-  NewFile: TSourceFile;
-  AName: string;
 
-  function NewProject: TSourceFile;
+  function NewProject: TProjectFile;
+  var
+    AName: string;
   begin
     with FrmFalconMain do
     begin
@@ -1364,28 +1355,24 @@ var
       end
       else
         AName := ExtractFileName(FileName);
-      Node := TreeViewProjects.Items.Add(nil, AName);
-      NewPrj := TProjectFile.Create(Node);
-      NewPrj.OnDeletion := DoDeleteSource;
-      NewPrj.Project := NewPrj;
-      NewPrj.FileType := FileType;
-      NewPrj.CompilerType := Compiler;
+      Result := CreateProject(AName, FileType);
+      Result.CompilerType := Compiler;
       if not UseFileName then
       begin
-        NewPrj.FileName := Config.Environment.ProjectsDir + AName;
-        if (NewPrj.FileType = FILE_TYPE_RC) then
-          NewPrj.Target := RemoveFileExt(AName) + '.res'
+        Result.FileName := Config.Environment.ProjectsDir + AName;
+        if (Result.FileType = FILE_TYPE_RC) then
+          Result.Target := RemoveFileExt(AName) + '.res'
         else
-          NewPrj.Target := RemoveFileExt(AName) + '.exe';
-        NewPrj.CompilerOptions := '-Wall -s';
+          Result.Target := RemoveFileExt(AName) + '.exe';
+        Result.CompilerOptions := '-Wall -s';
       end
       else
-        NewPrj.FileName := FileName;
-      Node.Data := NewPrj;
-      Result := NewPrj;
+        Result.FileName := FileName;
     end;
   end;
 
+var
+  AName: string;
 begin
   with FrmFalconMain do
   begin
@@ -1393,8 +1380,7 @@ begin
     begin
       if (OwnerFile is TProjectFile) then
       begin
-        Proj := TProjectFile(OwnerFile);
-        if (Proj.FileType <> FILE_TYPE_PROJECT) then
+        if (TProjectFile(OwnerFile).FileType <> FILE_TYPE_PROJECT) then
         begin
           Result := NewProject;
           Exit;
@@ -1415,19 +1401,14 @@ begin
           end;
           OwnerFile := TSourceFile(OwnerFile.Node.Parent.Data);
         end;
-        Proj := OwnerFile.Project;
         AName := NextFileName(BaseName, Ext, OwnerFile.Node);
       end;
-      Node := TreeViewProjects.Items.AddChild(OwnerFile.Node, AName);
-      NewFile := TSourceFile.Create(Node);
-      NewFile.OnDeletion := DoDeleteSource;
-      NewFile.Project := Proj;
-      NewFile.FileName := AName;
-      NewFile.FileType := FileType;
-      Node.Data := NewFile;
+
+      Result := CreateSource(OwnerFile.Node, AName);
+      Result.FileName := AName;
+      Result.FileType := FileType;
       if Expand or (OwnerFile.FileType = FILE_TYPE_PROJECT) then
         OwnerFile.Node.Expanded := True;
-      Result := NewFile;
     end
     else
       Result := NewProject;

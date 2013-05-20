@@ -86,6 +86,8 @@ type
   TProjectFile = class;
   TSourceBase = class;
   TSourceDeletionEvent = procedure(Source: TSourceBase) of object;
+  TSourceRenameEvent = procedure(Source: TSourceBase;
+    const NewFileName: string) of object;
 
   TSourceBase = class(TInterfacedObject)
   private
@@ -97,6 +99,7 @@ type
     FIsNew: Boolean;
     FReadOnly: Boolean;
     FOnDeletion: TSourceDeletionEvent;
+    FOnRename: TSourceRenameEvent;
   protected
     procedure SetProject(Value: TProjectFile); virtual;
     procedure SetFileType(Value: Integer); virtual;
@@ -104,6 +107,7 @@ type
     function IsModified: Boolean; virtual;
     function GetFileName: string; virtual;
     procedure SetFileName(Value: string); virtual;
+    procedure DoRename(const OldFileName: string); virtual;
   public
     constructor Create(Node: TTreeNode);
     procedure Assign(Value: TSourceBase);
@@ -121,6 +125,7 @@ type
     property IsNew: Boolean read FIsNew write FIsNew;
     property ReadOnly: Boolean read FReadOnly write FReadOnly;
     property OnDeletion: TSourceDeletionEvent read FOnDeletion write FOnDeletion;
+    property OnRename: TSourceRenameEvent read FOnRename write FOnRename;
   end;
 
   TSourceFile = class(TSourceBase)
@@ -326,6 +331,7 @@ begin
   FIsNew := Value.FIsNew;
   FReadOnly := Value.FReadOnly;
   FOnDeletion := Value.FOnDeletion;
+  FOnRename := Value.FOnRename;
 end;
 
 constructor TSourceBase.Create(Node: TTreeNode);
@@ -348,6 +354,12 @@ begin
   Delete;
 end;
 
+procedure TSourceBase.DoRename(const OldFileName: string);
+begin
+  if Assigned(FOnRename) then
+    FOnRename(Self, OldFileName);
+end;
+
 function TSourceBase.GetFileName: string;
 begin
   Result := FFileName;
@@ -368,9 +380,17 @@ begin
 end;
 
 procedure TSourceBase.SetFileName(Value: string);
+var
+  OldFileName, OldName: string;
 begin
   if FFileName <> Value then
+  begin
+    OldFileName := FileName;
+    OldName := Name;
     FFileName := Value;
+    if OldName <> '' then
+      DoRename(OldFileName);
+  end;
 end;
 
 procedure TSourceBase.SetFileType(Value: Integer);
@@ -582,7 +602,7 @@ begin
       end;
     end;
   end;
-  FFileName := Value;
+  inherited SetFileName(Value);
   Node.Text := Name;
   if GetSheet(Sheet) then
     Sheet.Caption := Caption;
@@ -1878,6 +1898,8 @@ begin
 end;
 
 procedure TProjectFile.SaveAs(const FileName: string);
+var
+  OldFileName, OldName: string;
 begin
   if CompareText(FileName, FFileName) <> 0 then
   begin
@@ -1893,7 +1915,11 @@ begin
     else
       CopySavedFilesTo(ExtractFilePath(FileName));
     UpdateTarget(FileName);
+    OldFileName := FFileName;
+    OldName := Name;
     FFileName := FileName;
+    if OldName <> '' then
+      DoRename(OldFileName);
   end
   else if Saved and not IsModified and not IsNew then
     Exit;
@@ -2212,6 +2238,7 @@ end;
 procedure TProjectFile.SetFileName(Value: string);
 var
   Sheet: TSourceFileSheet;
+  OldFileName, OldName: string;
 begin
   if (CompareText(FileName, Value) = 0) or (Value = '') then
     Exit;
@@ -2223,7 +2250,11 @@ begin
   end;
   UpdateTarget(Value);
   MoveSavedFilesTo(ExtractFilePath(Value));
+  OldFileName := FFileName;
+  OldName := Name;
   FFileName := Value;
+  if OldName <> '' then
+    DoRename(OldFileName);
   Node.Text := Name;
   if GetSheet(Sheet) then
     Sheet.Caption := Caption;
@@ -2398,10 +2429,8 @@ begin
   FSynMemo.OnGutterClick := FrmFalconMain.TextEditorGutterClick;
   FSynMemo.OnGutterPaint := FrmFalconMain.TextEditorGutterPaint;
   FSynMemo.OnSpecialLineColors := FrmFalconMain.TextEditorSpecialLineColors;
-  PageCtrl.OnPageChange := nil;
   if SelectTab then
     PageCtrl.ActivePageIndex := PageIndex;
-  PageCtrl.OnPageChange := FrmFalconMain.PageControlEditorPageChange;
 end;
 
 procedure TSourceFileSheet.TextEditorMouseDown(Sender: TObject;

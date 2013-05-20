@@ -770,7 +770,11 @@ type
     LastSearch: TSearchItem;
     FalconVersion: TVersion; //this file version
 
+    function CreateProject(NodeText: string; FileType: Integer): TProjectFile;
+    function CreateSource(ParentNode: TTreeNode;
+      NodeText: string): TSourceFile;
     procedure DoDeleteSource(Source: TSourceBase);
+    procedure DoRenameSource(Source: TSourceBase; const OldFileName: string);
     function RemoveFile(ParentHandle: HWND; FileProp: TSourceFile;
       FromDisk: Boolean = False): Boolean;
     function ShowPromptOverrideFile(const FileName: string): Boolean;
@@ -3088,12 +3092,8 @@ end;
 procedure TFrmFalconMain.TreeViewProjectsEdited(Sender: TObject; Node: TTreeNode;
   var S: string);
 var
-  OldFileName, NewFileName, FilePath: string;
+  OldFileName, FilePath: string;
   Ext: string;
-  FindedTokenFile: TTokenFile;
-  Sheet: TSourceFileSheet;
-  ParseList, RemoveList: TStrings;
-  I: Integer;
 begin
   if Trim(S) = '' then
   begin
@@ -3110,22 +3110,15 @@ begin
       S := TSourceFile(Node.Data).Name;
       Exit;
     end;
-    ParseList := TStringList.Create;
-    RemoveList := TStringList.Create;
     Ext := ExtractFileExt(TSourceFile(Node.Data).FileName);
     if Ext <> ExtractFileExt(S) then
       TSourceFile(Node.Data).Rename(FilePath + ExtractName(S) + Ext)
     else
       TSourceFile(Node.Data).Rename(FilePath + S);
     S := TSourceFile(Node.Data).Name;
-    NewFileName := TSourceFile(Node.Data).FileName;
-    ParseList.AddObject(NewFileName, TSourceFile(Node.Data));
-    RemoveList.AddObject(OldFileName, TSourceFile(Node.Data));
   end
   else
   begin
-    ParseList := TStringList.Create;
-    RemoveList := TStringList.Create;
     if TSourceFile(Node.Data).FileType <> FILE_TYPE_FOLDER then
     begin
       Ext := ExtractFileExt(OldFileName);
@@ -3133,34 +3126,11 @@ begin
         TSourceFile(Node.Data).Rename(ChangeFileExt(S, Ext))
       else
         TSourceFile(Node.Data).Rename(S);
-      ParseList.AddObject(NewFileName, TSourceFile(Node.Data));
-      RemoveList.AddObject(OldFileName, TSourceFile(Node.Data));
     end
     else // folder
-    begin
-      TSourceFile(Node.Data).GetSubFiles(RemoveList);
       TSourceFile(Node.Data).Rename(S);
-      TSourceFile(Node.Data).GetSubFiles(ParseList);
-    end;
     S := TSourceFile(Node.Data).Name;
   end;
-  for I := 0 to RemoveList.Count - 1 do
-  begin
-    FindedTokenFile := FilesParsed.ItemOfByFileName(RemoveList.Strings[I]);
-    if FindedTokenFile <> nil then
-      FilesParsed.Remove(FindedTokenFile);
-  end;
-  RemoveList.Free;
-  if GetActiveSheet(sheet) then
-  begin
-    for I := 0 to ParseList.Count - 1 do
-    begin
-      if Sheet.SourceFile = TSourceFile(ParseList.Objects[I]) then
-        ActiveEditingFile.FileName := TSourceFile(ParseList.Objects[I]).FileName;
-    end;
-  end;
-  ParseFiles(ParseList);
-  ParseList.Free;
 end;
 
 procedure TFrmFalconMain.TreeViewProjectsKeyDown(Sender: TObject; var Key: Word;
@@ -3341,6 +3311,33 @@ begin
   Result := True;
 end;
 
+function TFrmFalconMain.CreateProject(NodeText: string;
+  FileType: Integer): TProjectFile;
+var
+  Node: TTreeNode;
+begin
+  Node := TreeViewProjects.Items.AddChild(nil, NodeText);
+  Result := TProjectFile.Create(Node);
+  Result.OnDeletion := DoDeleteSource;
+  Result.OnRename := DoRenameSource;
+  Result.Project := Result;
+  Result.FileType := FileType;
+  Node.Data := Result;
+end;
+
+function TFrmFalconMain.CreateSource(ParentNode: TTreeNode;
+  NodeText: string): TSourceFile;
+var
+  Node: TTreeNode;
+begin
+  Node := TreeViewProjects.Items.AddChild(ParentNode, NodeText);
+  Result := TSourceFile.Create(Node);
+  Result.OnDeletion := DoDeleteSource;
+  Result.OnRename := DoRenameSource;
+  Result.Project := TSourceFile(ParentNode.Data).Project;
+  Node.Data := Result;
+end;
+
 procedure TFrmFalconMain.DoDeleteSource(Source: TSourceBase);
 var
   TokenFile: TTokenFile;
@@ -3352,6 +3349,68 @@ begin
     Exit;
   // remove references
   TokenFile.Data := nil;
+end;
+
+procedure TFrmFalconMain.DoRenameSource(Source: TSourceBase;
+  const OldFileName: string);
+var
+  FindedTokenFile: TTokenFile;
+  Temp, FilePath, CurrentFilePath: string;
+  ParseList, RemoveList: TStrings;
+  I: Integer;
+begin
+  FilePath := ExtractFilePath(ExcludeTrailingPathDelimiter(OldFileName));
+  if Source is TProjectBase then
+  begin
+    if (Source.FileType = FILE_TYPE_PROJECT) and
+      (CompareText(FilePath, ExtractFilePath(Source.FileName)) = 0) then
+      Exit;
+    ParseList := TStringList.Create;
+    RemoveList := TStringList.Create;
+    if (Source.FileType = FILE_TYPE_PROJECT) then
+    begin
+      TProjectBase(Source).GetFiles(ParseList);
+      CurrentFilePath := ExtractFilePath(ExcludeTrailingPathDelimiter(Source.FileName));
+      for I := 0 to ParseList.Count - 1 do
+      begin
+        Temp := ExtractRelativePath(CurrentFilePath, ParseList.Strings[I]);
+        RemoveList.AddObject(FilePath + Temp, ParseList.Objects[I]);
+      end;
+    end
+    else
+    begin
+      ParseList.AddObject(Source.FileName, Source);
+      RemoveList.AddObject(OldFileName, Source);
+    end;
+  end
+  else
+  begin
+    ParseList := TStringList.Create;
+    RemoveList := TStringList.Create;
+    if Source.FileType <> FILE_TYPE_FOLDER then
+    begin
+      ParseList.AddObject(Source.FileName, Source);
+      RemoveList.AddObject(OldFileName, Source);
+    end
+    else // folder
+    begin
+      TSourceFile(Source).GetSubFiles(ParseList);
+      for I := 0 to ParseList.Count - 1 do
+      begin
+        Temp := ExtractRelativePath(Source.FileName, ParseList.Strings[I]);
+        RemoveList.AddObject(OldFileName + Temp, ParseList.Objects[I]);
+      end;
+    end;
+  end;
+  for I := 0 to RemoveList.Count - 1 do
+  begin
+    FindedTokenFile := FilesParsed.ItemOfByFileName(RemoveList.Strings[I]);
+    if FindedTokenFile <> nil then
+      FilesParsed.Remove(FindedTokenFile);
+  end;
+  RemoveList.Free;
+  ParseFiles(ParseList);
+  ParseList.Free;
 end;
 
 procedure TFrmFalconMain.PopProjDelFromDskClick(Sender: TObject);
@@ -5497,12 +5556,8 @@ begin
     ini.Free;
     Exit;
   end;
-  Node := TreeViewProjects.Items.AddChild(nil, '');
-  NewPrj := TProjectFile.Create(Node);
-  NewPrj.OnDeletion := DoDeleteSource;
-  NewPrj.Project := NewPrj;
-  NewPrj.FileType := FILE_TYPE_PROJECT;
-  Node.Data := NewPrj;
+  NewPrj := CreateProject('', FILE_TYPE_PROJECT);
+  Node := NewPrj.Node;
   NewPrj.FileName := ChangeFileExt(FileName, '.fpj');
   NewPrj.Compiled := False;
   Node.Text := NewPrj.Name;
@@ -5729,12 +5784,8 @@ begin
     //XMLDoc.Free;
     Exit;
   end;
-  Node := TreeViewProjects.Items.AddChild(nil, '');
-  NewPrj := TProjectFile.Create(Node);
-  NewPrj.OnDeletion := DoDeleteSource;
-  NewPrj.Project := NewPrj;
-  NewPrj.FileType := FILE_TYPE_PROJECT;
-  Node.Data := NewPrj;
+  NewPrj := CreateProject('', FILE_TYPE_PROJECT);
+  Node := NewPrj.Node;
   NewPrj.FileName := ChangeFileExt(FileName, '.fpj');
   NewPrj.Compiled := False;
   NewPrj.CompilerType := COMPILER_C;
@@ -6041,12 +6092,8 @@ begin
   end;
   OutputDirectory := GetAttribute(ConfigNode, 'OutputDirectory');
   ConfigurationType := StrToInt(GetAttribute(ConfigNode, 'ConfigurationType', '0'));
-  Node := TreeViewProjects.Items.AddChild(nil, '');
-  NewPrj := TProjectFile.Create(Node);
-  NewPrj.OnDeletion := DoDeleteSource;
-  NewPrj.Project := NewPrj;
-  NewPrj.FileType := FILE_TYPE_PROJECT;
-  Node.Data := NewPrj;
+  NewPrj := CreateProject('', FILE_TYPE_PROJECT);
+  Node := NewPrj.Node;
   NewPrj.FileName := ChangeFileExt(FileName, '.fpj');
   NewPrj.Compiled := False;
   NewPrj.CompilerType := COMPILER_CPP;

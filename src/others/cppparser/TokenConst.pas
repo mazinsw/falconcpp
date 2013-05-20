@@ -130,6 +130,10 @@ type
   TScopeClass = (scPrivate, scProtected, scPublic, scNone);
   TScopeClassState = set of TScopeClass;
 
+const
+  TreeTokens = [tkClass, tkTypeStruct, tkStruct, tkUnion, tkTypeUnion];
+  RetTypeTokens = [tkVariable, tkFunction, tkPrototype];
+
 implementation
 
 end.

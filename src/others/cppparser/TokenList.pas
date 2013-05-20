@@ -517,7 +517,8 @@ begin
     if (NotAtSelStart > 0) and (NotAtSelStart >= Items[I].FSelStart) and
       (NotAtSelStart <= (Items[I].FSelStart + Items[I].FSelLength)) then
     begin
-      if not AdvanceAfterSelStart and (Items[I].Token <> tkScope) then
+      if not AdvanceAfterSelStart and not
+        (Items[I].Token in [tkScope, tkTypedef, tkForward]) then
         Exit;
       Continue;
     end;

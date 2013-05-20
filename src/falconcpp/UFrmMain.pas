@@ -5647,6 +5647,15 @@ end;
 function TFrmFalconMain.ImportCodeBlocksProject(const FileName: string;
   var Proj: TProjectFile): Boolean;
 
+  function GetAttribute(Node: IXMLNode; Attribute: string;
+    Default: string = ''): string;
+  begin
+    if (Node <> nil) and Node.HasAttribute(Attribute) then
+      Result := Node.Attributes[Attribute]
+    else
+      Result := Default;
+  end;
+
   function GetTagProperty(Node: IXMLNode; Tag, Attribute: string;
     Default: string = ''): string;
   var
@@ -5654,7 +5663,7 @@ function TFrmFalconMain.ImportCodeBlocksProject(const FileName: string;
   begin
     Temp := Node.ChildNodes.FindNode(Tag);
     if (Temp <> nil) then
-      Result := Temp.Attributes[Attribute]
+      Result := GetAttribute(Temp, Attribute, Default)
     else
       Result := Default;
   end;
@@ -5663,14 +5672,17 @@ function TFrmFalconMain.ImportCodeBlocksProject(const FileName: string;
   var
     XMLDoc: TXMLDocument;
     Temp, LytRoot, FileNode: IXMLNode;
-    STemp, StrProp, LytFileName: string;
+    STemp, StrProp, LytFileName, RootPath: string;
     FileProp, TopFile: TSourceFile;
     CaretXY: TBufferCoord;
     sheet: TSourceFileSheet;
-    TopLine, SelStart: Integer;
+    TopLine, SelStart, I: Integer;
+    List: TStringList;
+    FromStart: Boolean;
   begin
     TopFile := nil;
     //XMLDoc := nil;
+    RootPath := ExtractFilePath(Parent.FileName);
     LytFileName := ChangeFileExt(FileName, '.layout');
     if FileExists(LytFileName) then
     begin
@@ -5683,65 +5695,71 @@ function TFrmFalconMain.ImportCodeBlocksProject(const FileName: string;
       LytRoot := XMLDoc.ChildNodes.FindNode('CodeBlocks_layout_file');
     end;
     Temp := XMLNode.ChildNodes.First;
-    while (Temp <> nil) do
+    List := TStringList.Create;
+    while Temp <> nil do
     begin
       if Temp.NodeName <> 'Unit' then
       begin
         Temp := Temp.NextSibling;
         Continue;
       end;
-      STemp := Temp.Attributes['filename'];
-      FileProp := NewSourceFile(GetFileType(STemp),
-        GetCompiler(GetFileType(STemp)), STemp,
-        RemoveFileExt(STemp), ExtractFileExt(STemp), '', Parent,
-        False, False);
-      STemp := FileProp.FileName;
-      if FileExists(STemp) then
-      begin
-        FileProp.DateOfFile := FileDateTime(STemp);
-        FileProp.Saved := True;
-        if FileProp.FileType = FILE_TYPE_CPP then
-          FileProp.Project.CompilerType := COMPILER_CPP;
-      end;
-      if Assigned(LytRoot) then
-      begin
-        FileNode := LytRoot.ChildNodes.First;
-        while FileNode <> nil do
-        begin
-          if FileNode.NodeName <> 'File' then
-          begin
-            FileNode := FileNode.NextSibling;
-            Continue;
-          end;
-          LytFileName := FileNode.Attributes['name'];
-          if CompareText(LytFileName, FileProp.Name) = 0 then
-          begin
-            StrProp := FileNode.Attributes['top'];
-            if StrProp = '1' then
-              TopFile := FileProp;
-            SelStart := StrToInt(GetTagProperty(FileNode, 'Cursor',
-              'position', '0'));
-            TopLine := StrToInt(GetTagProperty(FileNode, 'Cursor',
-              'topLine', '0')) + 1;
-            StrProp := FileNode.Attributes['open'];
-            if StrProp = '1' then
-            begin
-              sheet := FileProp.Edit;
-              CaretXY := sheet.Memo.CharIndexToRowCol(SelStart);
-              sheet.Memo.CaretXY := CaretXY;
-              sheet.Memo.TopLine := TopLine;
-            end;
-            Break;
-          end;
-          FileNode := FileNode.NextSibling;
-        end;
-      end;
+      STemp := GetAttribute(Temp, 'filename');
+      List.Add(STemp);
       Temp := Temp.NextSibling;
     end;
+    AddFilesToProject(List, Parent, True, True);
+    if not Assigned(LytRoot) then
+    begin
+      List.Free;
+      Exit;
+    end;
+    I := 0;
+    while I < List.Count do
+    begin
+      FileProp := TSourceFile(List.Objects[I]);
+      STemp := FileProp.FileName;
+      FromStart := True;
+      FileNode := LytRoot.ChildNodes.First;
+      while FileNode <> nil do
+      begin
+        if FileNode.NodeName <> 'File' then
+        begin
+          FileNode := FileNode.NextSibling;
+          Continue;
+        end;
+        LytFileName :=  ExpandFileName(RootPath + GetAttribute(FileNode, 'name'));
+        if CompareText(LytFileName, FileProp.FileName) = 0 then
+        begin
+          StrProp := GetAttribute(FileNode, 'top');
+          if StrProp = '1' then
+            TopFile := FileProp;
+          SelStart := StrToInt(GetTagProperty(FileNode, 'Cursor',
+            'position', '0'));
+          TopLine := StrToInt(GetTagProperty(FileNode, 'Cursor',
+            'topLine', '0')) + 1;
+          StrProp := GetAttribute(FileNode, 'open');
+          if StrProp = '1' then
+          begin
+            sheet := FileProp.Edit;
+            CaretXY := sheet.Memo.CharIndexToRowCol(SelStart);
+            sheet.Memo.CaretXY := CaretXY;
+            sheet.Memo.TopLine := TopLine;
+          end;
+          if I + 1 >= List.Count then
+            Break;
+          Inc(I);
+          FromStart := False;
+          FileProp := TSourceFile(List.Objects[I]);
+          STemp := FileProp.FileName;
+        end;
+        FileNode := FileNode.NextSibling;
+      end;
+      if (FileNode <> nil) or FromStart then
+        Inc(I);
+    end;
+    List.Free;
     if Assigned(TopFile) then
       TopFile.ViewPage;
-    //if Assigned(XMLDoc) then
-    //  XMLDoc.Free;
   end;
 
 var
@@ -5819,13 +5837,13 @@ begin
       begin
         if TempNode.HasAttribute('output') then
         begin
-          TempStr := TempNode.Attributes['extension_auto'];
+          TempStr := GetAttribute(TempNode, 'extension_auto');
           ExtAuto := TempStr = '1';
-          NewPrj.Target := TempNode.Attributes['output'];
+          NewPrj.Target := GetAttribute(TempNode, 'output');
         end
         else if TempNode.HasAttribute('type') then
         begin
-          TempStr := TempNode.Attributes['type'];
+          TempStr := GetAttribute(TempNode, 'type');
           if TempStr = '0' then
           begin
             NewPrj.AppType := APPTYPE_GUI;
@@ -5843,12 +5861,12 @@ begin
         end
         else if TempNode.HasAttribute('createStaticLib') then
         begin
-          TempStr := TempNode.Attributes['createStaticLib'];
+          TempStr := GetAttribute(TempNode, 'createStaticLib');
           createStaticLib := TempStr = '1';
         end
         else if TempNode.HasAttribute('createDefFile') then
         begin
-          TempStr := TempNode.Attributes['createDefFile'];
+          TempStr := GetAttribute(TempNode, 'createDefFile');
           createDefFile := TempStr = '1';
         end;
       end
@@ -5857,7 +5875,7 @@ begin
         AddNode := TempNode.ChildNodes.First;
         while AddNode <> nil do
         begin
-          TempStr := AddNode.Attributes['option'];
+          TempStr := GetAttribute(AddNode, 'option');
           if TempStr = '-Wall' then
             NewPrj.CompilerOptions := Trim(NewPrj.CompilerOptions + ' ' + TempStr)
           else if TempStr = '-O2' then
@@ -5874,7 +5892,7 @@ begin
         begin
           if AddNode.HasAttribute('option') then
           begin
-            TempStr := AddNode.Attributes['option'];
+            TempStr := GetAttribute(AddNode, 'option');
             if TempStr = '-s' then
               NewPrj.CompilerOptions := Trim(NewPrj.CompilerOptions + ' ' +
                 TempStr)
@@ -5883,7 +5901,7 @@ begin
           end
           else if AddNode.HasAttribute('library') then
           begin
-            TempStr := AddNode.Attributes['library'];
+            TempStr := GetAttribute(AddNode, 'library');
             NewPrj.Libs := Trim(NewPrj.Libs + ' -l' + TempStr);
           end;
           AddNode := AddNode.NextSibling;
@@ -5891,7 +5909,7 @@ begin
       end;
       TempNode := TempNode.NextSibling;
     end;
-    TempStr := TargetNode.Attributes['title'];
+    TempStr := GetAttribute(TargetNode, 'title');
     if TempStr = 'Release' then
       Break;
     TargetNode := TargetNode.NextSibling;
@@ -5902,7 +5920,7 @@ begin
     AddNode := CompNode.ChildNodes.First;
     while AddNode <> nil do
     begin
-      TempStr := AddNode.Attributes['option'];
+      TempStr := GetAttribute(AddNode, 'option');
       if TempStr = '-Wall' then
         NewPrj.CompilerOptions := Trim(NewPrj.CompilerOptions + ' ' + TempStr)
       else if TempStr = '-O2' then
@@ -5920,7 +5938,7 @@ begin
     begin
       if AddNode.HasAttribute('option') then
       begin
-        TempStr := AddNode.Attributes['option'];
+        TempStr := GetAttribute(AddNode, 'option');
         if TempStr = '-s' then
           NewPrj.CompilerOptions := Trim(NewPrj.CompilerOptions + ' ' + TempStr)
         else
@@ -5928,7 +5946,7 @@ begin
       end
       else if AddNode.HasAttribute('library') then
       begin
-        TempStr := AddNode.Attributes['library'];
+        TempStr := GetAttribute(AddNode, 'library');
         NewPrj.Libs := Trim(NewPrj.Libs + ' -l' + TempStr);
       end;
       AddNode := AddNode.NextSibling;
@@ -5962,6 +5980,15 @@ end;
 function TFrmFalconMain.ImportMSVCProject(const FileName: string;
   var Proj: TProjectFile): Boolean;
 
+  function GetAttribute(Node: IXMLNode; Attribute: string;
+    Default: string = ''): string;
+  begin
+    if (Node <> nil) and Node.HasAttribute(Attribute) then
+      Result := Node.Attributes[Attribute]
+    else
+      Result := Default;
+  end;
+
   function GetTagProperty(Node: IXMLNode; Tag, Attribute: string;
     Default: string = ''): string;
   var
@@ -5969,16 +5996,7 @@ function TFrmFalconMain.ImportMSVCProject(const FileName: string;
   begin
     Temp := Node.ChildNodes.FindNode(Tag);
     if (Temp <> nil) and Temp.HasAttribute(Attribute) then
-      Result := Temp.Attributes[Attribute]
-    else
-      Result := Default;
-  end;
-
-  function GetAttribute(Node: IXMLNode; Attribute: string;
-    Default: string = ''): string;
-  begin
-    if (Node <> nil) and Node.HasAttribute(Attribute) then
-      Result := Node.Attributes[Attribute]
+      Result := GetAttribute(Temp, Attribute, Default)
     else
       Result := Default;
   end;
@@ -6003,7 +6021,7 @@ function TFrmFalconMain.ImportMSVCProject(const FileName: string;
         Continue;
       end;
       ProjectPath := ExtractFilePath(FileName);
-      RelativePath := TempNode.Attributes['RelativePath'];
+      RelativePath := GetAttribute(TempNode, 'RelativePath');
       if not (GetFileType(RelativePath) in [FILE_TYPE_C, FILE_TYPE_CPP,
         FILE_TYPE_H, FILE_TYPE_RC]) or not FileExists(ProjectPath + RelativePath) then
       begin
@@ -6073,8 +6091,8 @@ begin
   begin
     if (TempNode.NodeName = 'Configuration') then
     begin
-      List.AddObject(TempNode.Attributes['Name'], Pointer(TempNode));
-      if (Pos('DEBUG', UpperCase(TempNode.Attributes['Name'])) = 0) and (I < 0) then
+      List.AddObject(GetAttribute(TempNode, 'Name'), Pointer(TempNode));
+      if (Pos('DEBUG', UpperCase(GetAttribute(TempNode, 'Name'))) = 0) and (I < 0) then
         I := List.Count - 1;
     end;
     TempNode := TempNode.NextSibling;
@@ -6105,7 +6123,7 @@ begin
   while TempNode <> nil do
   begin
     if (TempNode.NodeName = 'Tool') and
-      (TempNode.Attributes['Name'] = 'VCCLCompilerTool') then
+      (GetAttribute(TempNode, 'Name') = 'VCCLCompilerTool') then
       Break;
     TempNode := TempNode.NextSibling;
   end;
@@ -6166,7 +6184,7 @@ begin
     TempStr := 'VCLibrarianTool';
   while TempNode <> nil do
   begin
-    if (TempNode.NodeName = 'Tool') and (TempNode.Attributes['Name'] = TempStr) then
+    if (TempNode.NodeName = 'Tool') and (GetAttribute(TempNode, 'Name') = TempStr) then
       Break;
     TempNode := TempNode.NextSibling;
   end;

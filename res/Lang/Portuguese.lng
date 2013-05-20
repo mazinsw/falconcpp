@@ -239,12 +239,18 @@ Version=2.0
 1355=Salvar
 1356=Salvar todos
 #------------
-1358=Trocar cabeçalho/fonte
+1358=Copiar o nome completo do arquivo
+1359=Copiar apenas o nome do arquivo
+1360=Copiar o caminho da pasta
 #------------
-1360=Abas no topo
-1361=Abas em baixo
+1362=Trocar cabeçalho/fonte
 #------------
-1363=Propriedades...
+1364=Somente leitura
+#------------
+1366=Abas no topo
+1367=Abas em baixo
+#------------
+1369=Propriedades...
 
 #PopupMenu from Messages
 1375=Copiar
@@ -361,6 +367,7 @@ Version=2.0
 #3.2.0.0
 1582=Selecione uma pasta para incluir na compilação
 1583=Editar selecionado
+1584=Selecione uma pasta contendo bibliotecas
 
 #Btns
 1541=Ok

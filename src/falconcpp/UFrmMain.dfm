@@ -1811,7 +1811,6 @@ object FrmFalconMain: TFrmFalconMain
   object PopupTabs: TTBXPopupMenu
     Images = ImgListMenus
     OwnerDraw = True
-    OnPopup = PopupTabsPopup
     Left = 316
     Top = 67
     object PopTabsClose: TTBXItem
@@ -1843,9 +1842,30 @@ object FrmFalconMain: TFrmFalconMain
     end
     object TBXSeparatorItem39: TTBXSeparatorItem
     end
+    object PopTabsCopyFullFileName: TTBXItem
+      Caption = 'Copy full filename'
+      OnClick = PopTabsCopyFullFileNameClick
+    end
+    object PopTabsCopyFileName: TTBXItem
+      Caption = 'Copy filename'
+      OnClick = PopTabsCopyFileNameClick
+    end
+    object PopTabsCopyDir: TTBXItem
+      Caption = 'Copy directory path'
+      OnClick = PopTabsCopyDirClick
+    end
+    object TBXSeparatorItem14: TTBXSeparatorItem
+    end
     object PopTabsSwap: TTBXItem
       Caption = 'Swap header/source'
       OnClick = EditSwapClick
+    end
+    object TBXSeparatorItem17: TTBXSeparatorItem
+    end
+    object PopTabsReadOnly: TTBXItem
+      AutoCheck = True
+      Caption = 'Read only'
+      OnClick = PopTabsReadOnlyClick
     end
     object TBXSeparatorItem40: TTBXSeparatorItem
     end

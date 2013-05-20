@@ -384,6 +384,12 @@ type
     ListViewMsg: TListView;
     VistaAltFix1: TVistaAltFix;
     TreeViewOutline: TNativeTreeView;
+    TBXSeparatorItem14: TTBXSeparatorItem;
+    PopTabsCopyDir: TTBXItem;
+    PopTabsCopyFullFileName: TTBXItem;
+    PopTabsCopyFileName: TTBXItem;
+    TBXSeparatorItem17: TTBXSeparatorItem;
+    PopTabsReadOnly: TTBXItem;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure About1Click(Sender: TObject);
@@ -561,7 +567,6 @@ type
     procedure PopTabsTabsAtTopClick(Sender: TObject);
     procedure PopTabsTabsAtBottomClick(Sender: TObject);
     procedure EditSwapClick(Sender: TObject);
-    procedure PopupTabsPopup(Sender: TObject);
     procedure PageControlEditorTabClick(Sender: TObject);
     procedure PageControlEditorMouseDown(Sender: TObject;
       Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
@@ -612,6 +617,10 @@ type
     procedure CodeCompletionGetWordEndChars(Sender: TObject;
       var WordEndChars: String; Index: Integer; var Handled: Boolean);
     procedure PopEditorCompClassClick(Sender: TObject);
+    procedure PopTabsCopyFullFileNameClick(Sender: TObject);
+    procedure PopTabsCopyDirClick(Sender: TObject);
+    procedure PopTabsCopyFileNameClick(Sender: TObject);
+    procedure PopTabsReadOnlyClick(Sender: TObject);
     //**********************************************/
   private
     { Private declarations }
@@ -1846,6 +1855,8 @@ begin
     PopTabsTabsAtTop.Enabled := Flag;
     Flag := (PageControlEditor.TabPosition <> mtpBottom);
     PopTabsTabsAtBottom.Enabled := Flag;
+    PopTabsReadOnly.Checked := Assigned(CurrentSheet) and
+      CurrentSheet.SourceFile.ReadOnly;
     // others
     Flag := (PageControlEditor.PageCount > 1);
     BtnPrevPage.Enabled := Flag;
@@ -4846,15 +4857,11 @@ begin
     end;
     if FileExists(FileName) then
     begin
-      with OpenFile(FileName).Edit do
-      begin
-        if sheet.Memo.ReadOnly then
-        begin
-          Memo.ReadOnly := True;
-          SourceFile.ReadOnly := True;
-          Font.Color := clGrayText;
-        end;
-      end;
+      Prop := OpenFile(FileName);
+      Prop.ReadOnly := True;
+      sheet := Prop.Edit;
+      sheet.Memo.ReadOnly := True;
+      sheet.Font.Color := clGrayText;
       Exit;
     end;
     //search in compiler folder
@@ -4863,9 +4870,10 @@ begin
       FileName := ExpandFileName(FilesParsed.PathList.Strings[I] + S);
       if FileExists(FileName) then
       begin
-        sheet := OpenFile(FileName).Edit;
+        Prop := OpenFile(FileName);
+        Prop.ReadOnly := True;
+        sheet := Prop.Edit;
         sheet.Memo.ReadOnly := True;
-        sheet.SourceFile.ReadOnly := True;
         sheet.Font.Color := clGrayText;
         Exit;
       end;
@@ -4877,9 +4885,10 @@ begin
       FileName := ExpandFileName(IncludeList.Strings[I] + S);
       if FileExists(FileName) then
       begin
-        sheet := OpenFile(FileName).Edit;
+        Prop := OpenFile(FileName);
+        Prop.ReadOnly := True;
+        sheet := Prop.Edit;
         sheet.Memo.ReadOnly := True;
-        sheet.SourceFile.ReadOnly := True;
         sheet.Font.Color := clGrayText;
         IncludeList.Free;
         Exit;
@@ -4911,13 +4920,11 @@ begin
       Prop.Edit
     else //non opened. open
     begin
-      sheet := TSourceFile(OpenFile(TokenFileItem.FileName)).Edit;
-      //if TokenFileItem.StaticFile then
-      //begin
+      Prop := TSourceFile(OpenFile(TokenFileItem.FileName));
+      Prop.ReadOnly := True;
+      sheet := Prop.Edit;
       sheet.Memo.ReadOnly := True;
-      sheet.SourceFile.ReadOnly := True;
       sheet.Font.Color := clGrayText;
-     //end;
     end;
     SelectToken(Token);
   end;
@@ -5676,7 +5683,7 @@ function TFrmFalconMain.ImportCodeBlocksProject(const FileName: string;
     FileProp, TopFile: TSourceFile;
     CaretXY: TBufferCoord;
     sheet: TSourceFileSheet;
-    TopLine, SelStart, I: Integer;
+    TopLine, SelStart, I, CompilerType: Integer;
     List: TStringList;
     FromStart: Boolean;
   begin
@@ -5696,6 +5703,7 @@ function TFrmFalconMain.ImportCodeBlocksProject(const FileName: string;
     end;
     Temp := XMLNode.ChildNodes.First;
     List := TStringList.Create;
+    CompilerType := -1;
     while Temp <> nil do
     begin
       if Temp.NodeName <> 'Unit' then
@@ -5705,8 +5713,12 @@ function TFrmFalconMain.ImportCodeBlocksProject(const FileName: string;
       end;
       STemp := GetAttribute(Temp, 'filename');
       List.Add(STemp);
+      if (CompilerType = -1) and (GetFileType(STemp) = FILE_TYPE_CPP) then
+        CompilerType := COMPILER_CPP;
       Temp := Temp.NextSibling;
     end;
+    if CompilerType <> -1 then
+      Parent.Project.CompilerType := CompilerType;
     AddFilesToProject(List, Parent, True, True);
     if not Assigned(LytRoot) then
     begin
@@ -8262,6 +8274,47 @@ begin
   UpdateMenuItems([rmPageCtrlPopup]);
 end;
 
+procedure TFrmFalconMain.PopTabsCopyFullFileNameClick(Sender: TObject);
+var
+  sheet: TSourceFileSheet;
+begin
+  if not GetActiveSheet(sheet) then
+    Exit;
+  Clipboard.AsText := sheet.SourceFile.FileName;
+end;
+
+procedure TFrmFalconMain.PopTabsCopyFileNameClick(Sender: TObject);
+var
+  sheet: TSourceFileSheet;
+begin
+  if not GetActiveSheet(sheet) then
+    Exit;
+  Clipboard.AsText := sheet.SourceFile.Name;
+end;
+
+procedure TFrmFalconMain.PopTabsCopyDirClick(Sender: TObject);
+var
+  sheet: TSourceFileSheet;
+begin
+  if not GetActiveSheet(sheet) then
+    Exit;
+  Clipboard.AsText := ExtractFilePath(ExcludeTrailingPathDelimiter(sheet.SourceFile.FileName));
+end;
+
+procedure TFrmFalconMain.PopTabsReadOnlyClick(Sender: TObject);
+var
+  sheet: TSourceFileSheet;
+begin
+  if not GetActiveSheet(sheet) then
+    Exit;
+  sheet.SourceFile.ReadOnly := PopTabsReadOnly.Checked;
+  sheet.Memo.ReadOnly := PopTabsReadOnly.Checked;
+  if sheet.SourceFile.ReadOnly then
+    sheet.Font.Color := clGrayText
+  else
+    sheet.Font.Color := clWindowText;
+end;
+
 procedure TFrmFalconMain.SwapHeaderSource(FromSrc, ToSrc: TSourceFile);
 var
   FromTokenFile, ToTokenFile, TempTokenFile: TTokenFile;
@@ -8477,11 +8530,6 @@ begin
       OtherSourceFile := OpenFile(OtherFileName);
     SwapHeaderSource(CurrentSourceFile, OtherSourceFile);
   end;
-end;
-
-procedure TFrmFalconMain.PopupTabsPopup(Sender: TObject);
-begin
-  //
 end;
 
 procedure TFrmFalconMain.PageControlEditorTabClick(Sender: TObject);
@@ -10077,7 +10125,6 @@ begin
   if not DebugReader.Running then
     SelectToken(Token);
 end;
-
 
 end.
 

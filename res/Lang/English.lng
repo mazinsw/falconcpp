@@ -239,12 +239,18 @@ Version=your translate version
 1355=Save
 1356=Save all
 #------------
-1358=Swap header/source
+1358=Copy full filename
+1359=Copy filename
+1360=Copy directory path
 #------------
-1360=Tabs at top
-1361=Tabs at bottom
+1362=Swap header/source
 #------------
-1363=Properties...
+1364=Read only
+#------------
+1366=Tabs at top
+1367=Tabs at bottom
+#------------
+1369=Properties...
 
 #PopupMenu from Messages
 1375=Copy
@@ -361,6 +367,8 @@ Version=your translate version
 #3.2.0.0
 1582=Select folder to include
 1583=Edit selected
+1584=Select library folder
+
 #Btns
 1541=&Ok
 1542=&Cancel

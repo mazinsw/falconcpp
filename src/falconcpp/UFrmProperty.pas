@@ -580,6 +580,7 @@ end;
 
 procedure TFrmProperty.SBtnAddClick(Sender: TObject);
 var
+  Direct, ProjDir: string;
   I: Integer;
   LibDir, LibName: string;
   List: TStrings;
@@ -632,6 +633,21 @@ begin
       ReloadLibs;
       ProjectChange(Sender);
       Exit;
+    end;
+    if Trim(CBLibs.Text) = '-L' then
+    begin
+      ProjDir := ExtractFilePath(Project.FileName);
+      Direct := ProjDir;
+      if BrowseDialog(Handle, STR_FRM_PROP[57], Direct) then
+      begin
+        Direct := ExtractRelativePath(ProjDir, Direct);
+        if (Pos('\', Direct) > 0) then
+          CBLibs.Text := '-L"' + Direct + '"'
+        else
+          CBLibs.Text := '-L' + Direct;
+      end
+      else
+        Exit;
     end;
     I := ListLibs.Items.IndexOf(CBLibs.Text);
     if (I < 0) then
@@ -734,7 +750,7 @@ var
   Direct, ProjDir: string;
   I: Integer;
 begin
-  if (Length(Trim(CBIncs.Text)) = 0) then
+  if (Length(Trim(CBIncs.Text)) = 0) or (Trim(CBIncs.Text) = '-I') then
   begin
     ProjDir := ExtractFilePath(Project.FileName);
     Direct := ProjDir;

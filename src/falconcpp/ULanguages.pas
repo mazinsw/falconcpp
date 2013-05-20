@@ -301,7 +301,7 @@ const
     'Properties...'
     );
 
-  MAX_POPUP_TABS = 13;
+  MAX_POPUP_TABS = 19;
   CONST_STR_POPUP_TABS: array[1..MAX_POPUP_TABS] of string = (
   //PopupMenu from PageControl
     '&Close',
@@ -311,7 +311,13 @@ const
     'Save',
     'Save all',
     '',
+    'Copy full filename',
+    'Copy filename',
+    'Copy directory path',
+    '',
     'Swap header/source',
+    '',
+    'Read only',
     '',
     'Tabs at top',
     'Tabs at bottom',
@@ -396,7 +402,7 @@ const
     'Do you want to override it?'
     );
 
-  MAX_FRM_PROP = 56;
+  MAX_FRM_PROP = 57;
   CONST_STR_FRM_PROP: array[1..MAX_FRM_PROP] of string = (
     //Properties Form
     'Application',
@@ -460,7 +466,8 @@ const
     'Requires admin level',
     'Create linked library',
     'Select folder to include',
-    'Edit selected'
+    'Edit selected',
+    'Select library folder'
     );
 
   MAX_FRM_NEW_PROJ = 12;

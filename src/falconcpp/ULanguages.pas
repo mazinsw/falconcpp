@@ -765,7 +765,7 @@ const
     'View',
     'Select',
     'Select directory',
-    'Restart application to apply changes',
+    'Restart application to apply changes',  { TODO -oMazin -c : Re-use unused 19/05/2013 20:28:10 }
     'Configuration files'
     );
 

@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <FalconCPP>
 	<Core Version="3.2.0.86">
 		<File Name="Falcon.exe" URL="https://downloads.sourceforge.net/project/falconcpp/Binaries/3.2.0.86/Falcon C++-3.2.0.86.zip">
-			Date: 2013/05/09
+			Date: 2013/05/20
 			Fix: Compiling new files disable save button
 			Fix: Makefile rules fail when include headers files from directories using -I flag
 			Fix: Add new file don't changing project properties
@@ -39,6 +39,7 @@
 			Minor changes for indentation enhancement
 			Override virtual functions in class with code completion
 			Disabling menu items from new file menu when a file is selected in project list
+			Reload header files when compiler path has changed on compiler options
 		</File>
 	</Core>
 </FalconCPP>

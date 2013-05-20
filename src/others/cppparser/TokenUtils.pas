@@ -1124,7 +1124,8 @@ begin
           repeat
             Inc(ptr);
             Inc(Current);
-          until (ptr^ = #0) or (Current >= Init) or (ptr^ = '"');
+          until (ptr^ = #0) or (Current >= Init) or
+            ((ptr^ = '"') and ((ptr - 1)^ <> '\'));
           if ptr^ = #0 then
             Break;
         end;
@@ -1133,7 +1134,8 @@ begin
           repeat
             Inc(ptr);
             Inc(Current);
-          until (ptr^ = #0) or (Current >= Init) or (ptr^ = '''');
+          until (ptr^ = #0) or (Current >= Init) or
+            ((ptr^ = '''') and ((ptr - 1)^ <> '\'));
           if ptr^ = #0 then
             Break;
         end;
@@ -1515,13 +1517,13 @@ begin
       '''': // skip single quote '?'
       begin
         Inc(cmmptr);
-        while (cmmptr < ptr) and ((cmmptr^ <> '''') or (cmmptr^ = '\')) do
+        while (cmmptr < ptr) and ((cmmptr^ <> '''') or ((cmmptr - 1)^ = '\')) do
           Inc(cmmptr);
       end;
       '"': // skip string
       begin
         Inc(cmmptr);
-        while (cmmptr < ptr) and ((cmmptr^ <> '"') or (cmmptr^ = '\')) do
+        while (cmmptr < ptr) and ((cmmptr^ <> '"') or ((cmmptr - 1)^ = '\')) do
           Inc(cmmptr);
       end;
     end;
@@ -1536,8 +1538,7 @@ function SkipStringInv(const init: PChar; var ptr: PChar): Boolean;
 begin
   if ptr^ = '"' then
     Dec(ptr);
-  while (ptr >= init) and (ptr^ <> #10) and ((ptr^ <> '"') or
-    (((ptr - 1)^ = '\') and (ptr^ = '"'))) do
+  while (ptr >= init) and (ptr^ <> #10) and ((ptr^ <> '"') or ((ptr - 1)^ = '\')) do
   begin
     // jump sigle line comment
     if ptr^ in LineChars then
@@ -1555,8 +1556,7 @@ function SkipSingleQuotesInv(const init: PChar; var ptr: PChar): Boolean;
 begin
   if ptr^ = '''' then
     Dec(ptr);
-  while (ptr >= init) and ((ptr^ <> '''') or (((ptr - 1)^ = '\') and
-    (ptr^ = ''''))) do
+  while (ptr >= init) and ((ptr^ <> '''') or ((ptr - 1)^ = '\')) do
   begin
     // jump sigle line comment
     if ptr^ in LineChars then

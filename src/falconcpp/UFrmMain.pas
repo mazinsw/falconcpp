@@ -781,6 +781,7 @@ type
     procedure ToolbarCheck(const Index: Integer; const Value: Boolean);
     procedure UpdateOpenedSheets;
     procedure ParseProjectFiles(Proj: TProjectFile);
+    procedure SetActiveCompilerPath(CompilerPath: string; NewInstalled: Integer);
     procedure SelectTheme(Theme: string);
     function GetActiveFile(var ActiveFile: TSourceFile;
       OnNoneGetFirst: Boolean = True): Boolean;
@@ -874,7 +875,7 @@ begin
 end;
 
 procedure SetActiveCompiler(OldPath, Actpath: string;
-  SplashScreen: TSplashScreen = nil);
+  SplashScreen: TSplashScreen);
 
   function RemoveFromPath(const path, dir: string): string;
   begin
@@ -915,7 +916,7 @@ begin
   begin
     path := RemoveFromPath(path, Actpath + '\bin');
     path := Actpath + '\bin;' + path;
-    if Assigned(SplashScreen) then
+    if SplashScreen.Showing then
       SplashScreen.TextOut(55, 300, STR_FRM_MAIN[29]);
     UpdatePath := True;
   end;
@@ -1152,7 +1153,7 @@ var
   Temp, path: string;
   ini: TIniFile;
   Rs: TResourceStream;
-  HistList, SourceFileList, AutoCompleteList: TStrings;
+  HistList, AutoCompleteList: TStrings;
   FileProp: TSourceFile;
   Proj: TProjectFile;
 begin
@@ -1411,79 +1412,32 @@ begin
 
   //detect compiler
   List := TStringList.Create;
-  SearchCompilers(List, temp);
+  SearchCompilers(List, Path);
   if (Config.Compiler.Path = '') or
     not FileExists(Config.Compiler.Path + '\bin\gcc.exe') then
   begin
-    path := '';
+    Path := '';
     Config.Compiler.Version := '';
   end
   else
   begin
-    path := Temp;
-    Temp := Config.Compiler.Path;
+    Temp := Path;
+    Path := Config.Compiler.Path;
+    Config.Compiler.Path := Temp;
   end;
-  if not DirectoryExists(temp) then
+  if not DirectoryExists(Path) and (List.Count = 0) then
   begin
-    if List.Count = 0 then
-    begin
-      MessageBox(0, PChar(STR_FRM_MAIN[46]), 'Falcon C++',
-        MB_ICONEXCLAMATION);
-    end
-    else
-    begin
-      Config.Compiler.Path := List.Strings[0];
-      SetActiveCompiler(path, Config.Compiler.Path, SplashScreen);
-      if (Config.Compiler.Version = '') and
-        (ExecutorGetStdOut.ExecWait(Config.Compiler.Path +
-        '\bin\gcc.exe', '--version', Config.Compiler.Path + '\bin\',
-        temp) = 0) then
-      begin
-        GetNameAndVersion(temp, temp, Config.Compiler.Version);
-      end;
-    end;
+    MessageBox(0, PChar(STR_FRM_MAIN[46]), 'Falcon C++',
+      MB_ICONEXCLAMATION);
   end
   else
   begin
-    Config.Compiler.Path := temp;
-    SetActiveCompiler(path, Config.Compiler.Path, SplashScreen);
-    if (Config.Compiler.Version = '') and
-      (ExecutorGetStdOut.ExecWait(Config.Compiler.Path +
-      '\bin\gcc.exe', '--version', Config.Compiler.Path + '\bin\',
-      temp) = 0) then
-    begin
-      GetNameAndVersion(temp, temp, Config.Compiler.Version);
-    end;
+    if not DirectoryExists(Config.Compiler.Path) then
+      Path := List.Strings[0];
+    SetActiveCompilerPath(Path, NewInstalled);
   end;
   List.Free;
-
-  FilesParsed.PathList.Add(Config.Compiler.Path + '\include\');
-  FilesParsed.PathList.Add(Config.Compiler.Path + '\lib\gcc\mingw32\' +
-    Config.Compiler.Version + '\include\c++\');
   SplashScreen.TextOut(55, 300, STR_FRM_MAIN[30]);
-  IsLoadingSrcFiles := False;
-  FIncludeFileListFlag := 2;
-  if (NewInstalled <> 0) then
-  begin
-    SourceFileList := TStringList.Create;
-    if NewInstalled < 0 then
-      SplashScreen.TextOut(55, 300, Format(STR_FRM_MAIN[36], [0]))
-    else
-      SplashScreen.TextOut(55, 300, Format(STR_FRM_MAIN[37], [0]));
-    if FindFiles(Config.Compiler.Path + '\include\', '*.h', SourceFileList) then
-    begin
-      IsLoadingSrcFiles := True;
-      ThreadTokenFiles.Start(SourceFileList,
-        Config.Compiler.Path + '\include\', ConfigRoot + 'include\', '.h.prs');
-      if Config.Environment.ShowSplashScreen then
-        Sleep(3000);
-    end;
-    FIncludeFileList.Assign(SourceFileList);
-    SourceFileList.Free;
-    for I := 0 to FIncludeFileList.Count - 1 do
-      FIncludeFileList.Strings[I] := ConvertToUnixSlashes(ExtractRelativePath(Config.Compiler.Path + '\include\', FIncludeFileList.Strings[I]));
-    FIncludeFileListFlag := 1;
-  end;
   List := TStringList.Create;
   GetSourcesFiles(List);
   ParseFiles(List);
@@ -1626,6 +1580,61 @@ begin
     FrmPos.Save;
   finally
     List.Free;
+  end;
+end;
+
+procedure TFrmFalconMain.SetActiveCompilerPath(CompilerPath: string;
+  NewInstalled: Integer);
+var
+  S, OldPath, CompilerName: string;
+  SourceFileList: TStrings;
+  I: Integer;
+begin
+  OldPath := Config.Compiler.Path;
+  Config.Compiler.Path := CompilerPath;
+  SetActiveCompiler(OldPath, Config.Compiler.Path, SplashScreen);
+  if ((Config.Compiler.Version = '') or (NewInstalled <> 0))
+    and (ExecutorGetStdOut.ExecWait(Config.Compiler.Path +
+    '\bin\gcc.exe', '--version', Config.Compiler.Path + '\bin\', S) = 0) then
+  begin
+    GetNameAndVersion(S, CompilerName, Config.Compiler.Version);
+  end
+  else
+    Config.Compiler.Version := '';
+  FilesParsed.PathList.Add(Config.Compiler.Path + '\include\');
+  if Config.Compiler.Version <> '' then
+    FilesParsed.PathList.Add(Config.Compiler.Path + '\lib\gcc\mingw32\' +
+      Config.Compiler.Version + '\include\c++\');
+  IsLoadingSrcFiles := False;
+  FIncludeFileListFlag := 2;
+  if (NewInstalled <> 0) then
+  begin
+    if SplashScreen.Showing then
+    begin
+      if NewInstalled < 0 then
+        SplashScreen.TextOut(55, 300, Format(STR_FRM_MAIN[36], [0]))
+      else
+        SplashScreen.TextOut(55, 300, Format(STR_FRM_MAIN[37], [0]));
+    end;
+    SourceFileList := TStringList.Create;
+    if FindFiles(Config.Compiler.Path + '\include\', '*.h', SourceFileList) then
+    begin
+      IsLoadingSrcFiles := True;
+      ThreadTokenFiles.Clear;
+      ThreadTokenFiles.Start(SourceFileList,
+        Config.Compiler.Path + '\include\', ConfigRoot + 'include\', '.h.prs');
+      if SplashScreen.Showing then
+        Sleep(3000);
+    end;
+    FIncludeFileList.Clear;
+    for I := 0 to SourceFileList.Count - 1 do
+    begin
+      FIncludeFileList.AddObject(ConvertToUnixSlashes(ExtractRelativePath(
+        Config.Compiler.Path + '\include\', SourceFileList.Strings[I])),
+        SourceFileList.Objects[I]);
+    end;
+    SourceFileList.Free;
+    FIncludeFileListFlag := 1;
   end;
 end;
 

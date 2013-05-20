@@ -68,7 +68,19 @@ begin
       Add('new', '', '', '');
       Add('delete', '', '', '');
       Add('namespace', '', '', '');
+      Add('namespace', 'namespace statement',
+        'namespace name'#13 +
+        '{'#13 +
+        '    '#13+
+        '}',
+        'namespace |'#13 +
+        '{'#13 +
+        '    '#13+
+        '}');
       Add('using', '', '', '');
+      Add('using', 'using namespace statement',
+        'using namespace name;',
+        'using namespace |;');
       Add('virtual', '', '', '');
       Add('const_cast', '', '', '');
       Add('const_cast', 'const_cast conversion', 'const_cast<new_type>(expression)', 'const_cast<|>();');
@@ -320,6 +332,27 @@ begin
     Add('endf', 'close ifdef or ifndef',
       Temp + 'endif', '#endif');
     Add('endif', '', '', '');
+  end;
+  if (Filter = []) and (Scope = tkUnknow) then
+  begin
+    Add('main', 'main function',
+      'int main(int argc, char** argv)'#13 +
+      '{'#13 +
+      '    '#13 +
+      '}',
+      'int main(int argc, char** argv)'#13 +
+      '{'#13 +
+      '    |'#13 +
+      '}');
+    Add('main', 'main function without parameters',
+      'int main()'#13 +
+      '{'#13 +
+      '    '#13 +
+      '}',
+      'int main()'#13 +
+      '{'#13 +
+      '    |'#13 +
+      '}');
   end;
 end;
 

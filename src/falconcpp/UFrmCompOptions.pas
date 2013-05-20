@@ -172,18 +172,10 @@ begin
     begin
       newPath := ComboBoxCompilerPath.Items.Strings[Index];
       newPath := ExcludeTrailingPathDelimiter(newPath);
-      if (CompareText(newPath, Path) <> 0) and
-        FileExists(newPath + '\bin\gcc.exe') then
-      begin
-        Path := newPath;
-        if (ExecutorGetStdOut.ExecWait(Path +
-          '\bin\gcc.exe', '--version', Path + '\bin\',
-          newPath) = 0) then
-        begin
-          GetNameAndVersion(newPath, newPath, Version);
-          WriteIniFile('Packages', 'NewInstalled', '-1');
-        end;
-        NeedRestartApp := True;
+      if (CompareText(newPath, Path) <> 0) and FileExists(newPath + '\bin\gcc.exe') then
+      begin                                            
+        WriteIniFile('Packages', 'NewInstalled', '-1');
+        FrmFalconMain.SetActiveCompilerPath(newPath, -1);
       end;
     end;
     if NeedRestartApp then

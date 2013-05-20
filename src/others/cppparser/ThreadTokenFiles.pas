@@ -81,6 +81,7 @@ type
     procedure ParseRecursive(FileList: TStrings);
     procedure LoadRecursive(FileList: TStrings; const BaseDir, FromBaseDir,
       Extension: string);
+    procedure Clear;
     procedure Cancel;
     property Busy: Boolean read FBusy;
     property OnStart: TNotifyEvent read fOnStart write fOnStart;
@@ -386,12 +387,6 @@ begin
   fBusy := False;
 end;
 
-procedure TThreadTokenFiles.Cancel;
-begin
-  fCancel := True;
-  fParser.Cancel;
-end;
-
 procedure TThreadTokenFiles.CppParserProgress(Sender: TObject; Current, Total: Integer);
 begin
   if fCancel then
@@ -437,12 +432,10 @@ begin
     if Terminated then
       Break;
     if fCancel then
-    begin
-      while fFileQueue.Count > 0 do
-        TMethodInfo(fFileQueue.Pop).Free;
-    end;
+      Clear;
     Synchronize(DoAllFinish);
     fBusy := False;
+    fCancel := False;
   end;
 end;
 
@@ -465,8 +458,7 @@ begin
   Shutdown;
   if (fRunEvent <> 0) and (fRunEvent <> INVALID_HANDLE_VALUE) then
     CloseHandle(fRunEvent);
-  while fFileQueue.Count > 0 do
-    TMethodInfo(fFileQueue.Pop).Free;
+  Clear;
   fFileQueue.Free;
   DeleteCriticalSection(flock);
   fParser.Free;
@@ -480,6 +472,25 @@ begin
   if (fRunEvent <> 0) and (fRunEvent <> INVALID_HANDLE_VALUE) then
     SetEvent(fRunEvent);
   WaitFor;
+end;
+
+procedure TThreadTokenFiles.Cancel;
+begin
+  if FBusy and not fCancel then
+  begin
+    fCancel := True;
+    fParser.Cancel;
+  end;
+end;
+
+procedure TThreadTokenFiles.Clear;
+begin
+  EnterCriticalSection(flock);
+  while fFileQueue.Count > 0 do
+    TMethodInfo(fFileQueue.Pop).Free;
+  fTotal := 0;
+  fCurrent := 0;
+  LeaveCriticalSection(flock);
 end;
 
 procedure TThreadTokenFiles.Start(FileList: TStrings; const BaseDir,

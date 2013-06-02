@@ -1,7 +1,7 @@
 @echo OFF 
 For /f "tokens=2-4 delims=/ " %%a in ('date /t') do (set mydate=%%c-%%a-%%b)
 For /f "tokens=1-2 delims=/:" %%a in ('time /t') do (set mytime=%%a-%%b)
-SET version="3.2.0.86"
+SET version="3.3.0.0"
 SET filename="%~d0%~p0Falcon C++-%version%-Source.tar"
 SET gzfilename="%~d0%~p0Falcon C++-%version%-Source.tar.gz"
 del %filename%

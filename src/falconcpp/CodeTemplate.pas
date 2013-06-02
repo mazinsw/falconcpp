@@ -338,20 +338,22 @@ begin
     Add('main', 'main function',
       'int main(int argc, char** argv)'#13 +
       '{'#13 +
-      '    '#13 +
+      '    return 0;'#13 +
       '}',
       'int main(int argc, char** argv)'#13 +
       '{'#13 +
       '    |'#13 +
+      '    return 0;'#13 +
       '}');
     Add('main', 'main function without parameters',
       'int main()'#13 +
       '{'#13 +
-      '    '#13 +
+      '    return 0;'#13 +
       '}',
       'int main()'#13 +
       '{'#13 +
       '    |'#13 +
+      '    return 0;'#13 +
       '}');
   end;
 end;

@@ -273,6 +273,12 @@ object FrmCompOptions: TFrmCompOptions
               Width = 3
               Height = 13
               Caption = '-'
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clBlue
+              Font.Height = -11
+              Font.Name = 'MS Sans Serif'
+              Font.Style = []
+              ParentFont = False
             end
             object LabelCompilerName: TLabel
               Left = 46
@@ -280,6 +286,12 @@ object FrmCompOptions: TFrmCompOptions
               Width = 3
               Height = 13
               Caption = '-'
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clBlue
+              Font.Height = -11
+              Font.Name = 'MS Sans Serif'
+              Font.Style = []
+              ParentFont = False
             end
             object LabelMakeVersion: TLabel
               Left = 80
@@ -287,6 +299,12 @@ object FrmCompOptions: TFrmCompOptions
               Width = 3
               Height = 13
               Caption = '-'
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clBlue
+              Font.Height = -11
+              Font.Name = 'MS Sans Serif'
+              Font.Style = []
+              ParentFont = False
             end
             object LabelCompilerStatus: TLabel
               Left = 280
@@ -315,6 +333,12 @@ object FrmCompOptions: TFrmCompOptions
               Width = 3
               Height = 13
               Caption = '-'
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clBlue
+              Font.Height = -11
+              Font.Name = 'MS Sans Serif'
+              Font.Style = []
+              ParentFont = False
             end
             object Label1: TLabel
               Left = 240
@@ -533,7 +557,7 @@ object FrmCompOptions: TFrmCompOptions
         Left = 5
         Top = 10
         Width = 476
-        Height = 74
+        Height = 95
         Caption = 'Informations'
         TabOrder = 0
         object LabelDebugName: TLabel
@@ -542,6 +566,12 @@ object FrmCompOptions: TFrmCompOptions
           Width = 3
           Height = 13
           Caption = '-'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlue
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = []
+          ParentFont = False
         end
         object LabelDebugVersion: TLabel
           Left = 53
@@ -549,6 +579,12 @@ object FrmCompOptions: TFrmCompOptions
           Width = 3
           Height = 13
           Caption = '-'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlue
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = []
+          ParentFont = False
         end
         object LabelDebugStatus: TLabel
           Left = 280
@@ -578,6 +614,35 @@ object FrmCompOptions: TFrmCompOptions
           Height = 13
           Caption = 'Status:'
         end
+        object Label14: TLabel
+          Left = 8
+          Top = 69
+          Width = 96
+          Height = 13
+          Caption = 'Reverse debugging:'
+        end
+        object LabelDebugRev: TLabel
+          Left = 109
+          Top = 69
+          Width = 3
+          Height = 13
+          Caption = '-'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlue
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = []
+          ParentFont = False
+        end
+      end
+      object ChbRevDebug: TCheckBox
+        Left = 8
+        Top = 112
+        Width = 185
+        Height = 17
+        Caption = 'Enable reverse debugging'
+        TabOrder = 1
+        OnClick = OptionChangeClick
       end
     end
     object TSDirectories: TTabSheet

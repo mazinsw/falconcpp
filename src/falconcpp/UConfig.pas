@@ -144,6 +144,7 @@ type
     Path: string; //path of compiler
     Version: string; //version of used compiler
     ActiveConfiguration: string;
+    ReverseDebugging: Boolean;
   end;
 
   TConfig = class
@@ -408,6 +409,7 @@ begin
   begin
     Path := ini.ReadString('CompilerOptions', 'Path', '');
     Version := ini.ReadString('CompilerOptions', 'Version', '');
+    ReverseDebugging := ini.ReadBool('CompilerOptions', 'ReverseDebugging', False);
   end;
 
   with TFrmFalconMain(Form) do
@@ -747,6 +749,7 @@ begin
   begin
     ini.WriteString('CompilerOptions', 'Path', Path);
     ini.WriteString('CompilerOptions', 'Version', Version);
+    ini.WriteBool('CompilerOptions', 'ReverseDebugging', ReverseDebugging);
   end;
   ini.Free;
 end;

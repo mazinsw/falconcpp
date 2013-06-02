@@ -7,6 +7,7 @@ const
   GDB_RUN = 'run';
   GDB_EXECFILE = 'exec-file';
   GDB_FILE = 'file';
+  GDB_RECORD = 'record';
   GDB_PRINT = 'print';
   GDB_DELETE = 'delete';
   GDB_NEXT = 'next';
@@ -14,6 +15,7 @@ const
   GDB_BREAK = 'break';
   GDB_FINISH = 'finish';
   GDB_CONTINUE = 'continue';
+  GDB_REVERSE = 'reverse';
   GDB_QUIT = 'quit';
   GDB_DISPLAY = 'display';
   GDB_SETARGS = 'set args';
@@ -56,13 +58,17 @@ const
   //Breakpoint 1 at 0x40133d: file main.cpp, line 27
   REGEXP_BREAKPOINT = 'Breakpoint ([0-9]+) at [xA-Fa-f0-9]+: file (.*), line ([0-9]+).';
   //[New thread 3588.0xdf4]
-  REGEXP_NEWTHREAD = '[[]New thread ([xA-Fa-f0-9]+).([xA-Fa-f0-9]+)[]]';
+  REGEXP_NEWTHREAD = '[[]New [tT]hread ([xA-Fa-f0-9]+).([xA-Fa-f0-9]+)[]]';
   //No symbol "novaidade" in current context.
   REGEXP_NOSYMBOL = 'No symbol ["](.*)["] in current context.';
   //Program exited normally.
   REGEXP_TERMINATE = 'Program exited normally.';
+  //[Inferior 1 (process 5220) exited normally]
+  REGEXP_TERMINATENORM = '[[]Inferior [0-9]+ [(]process [0-9]+[)] exited normally[]]';
   //Program exited with code 1156545.
   REGEXP_TERMINATECODE = 'Program exited with code ([xA-Fa-f0-9]+).';
+  //[Inferior 1 (process 5220) exited with code 01]
+  REGEXP_PROCESSEXITED = '[[]Inferior [0-9]+ [(]process [0-9]+[)] exited with code ([0-9]+)[]]';
   //Current language:  auto; currently c++
   REGEXP_LANGUAGE = 'Current language:  (.*); currently (.*)';
   //0x77d28709 in USER32!GetDC () from C:\WINDOWS\system32\user32.dll

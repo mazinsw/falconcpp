@@ -621,6 +621,13 @@ type
     procedure PopTabsCopyDirClick(Sender: TObject);
     procedure PopTabsCopyFileNameClick(Sender: TObject);
     procedure PopTabsReadOnlyClick(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure RunContinue(Sender: TObject);
+    procedure RunRevContinue(Sender: TObject);
+    procedure RunRevStepIntoClick(Sender: TObject);
+    procedure RunRevStepOverClick(Sender: TObject);
+    procedure RunRevStepReturnClick(Sender: TObject);
     //**********************************************/
   private
     { Private declarations }
@@ -1606,14 +1613,14 @@ begin
   OldPath := Config.Compiler.Path;
   Config.Compiler.Path := CompilerPath;
   SetActiveCompiler(OldPath, Config.Compiler.Path, SplashScreen);
-  if ((Config.Compiler.Version = '') or (NewInstalled <> 0))
-    and (ExecutorGetStdOut.ExecWait(Config.Compiler.Path +
-    '\bin\gcc.exe', '--version', Config.Compiler.Path + '\bin\', S) = 0) then
+  if ((Config.Compiler.Version = '') or (NewInstalled <> 0)) then
   begin
-    GetNameAndVersion(S, CompilerName, Config.Compiler.Version);
-  end
-  else
-    Config.Compiler.Version := '';
+    if ExecutorGetStdOut.ExecWait(Config.Compiler.Path + '\bin\gcc.exe',
+      '--version', Config.Compiler.Path + '\bin\', S) = 0 then
+      GetNameAndVersion(S, CompilerName, Config.Compiler.Version)
+    else
+      Config.Compiler.Version := '';
+  end;
   FilesParsed.PathList.Add(Config.Compiler.Path + '\include\');
   if Config.Compiler.Version <> '' then
     FilesParsed.PathList.Add(Config.Compiler.Path + '\lib\gcc\mingw32\' +
@@ -2797,6 +2804,8 @@ begin
             end;
             List.Free;
             DebugReader.SendCommand(GDB_RUN);
+            if Config.Compiler.ReverseDebugging then
+              DebugReader.SendCommand(GDB_RECORD);
           end
           else
           begin
@@ -2915,7 +2924,7 @@ begin
   if DebugReader.Running then
   begin
     InvalidateDebugLine;
-    DebugReader.SendCommand(GDB_CONTINUE);
+    RunContinue(Self);
     Exit;
   end;
   CompilerActiveMsg := STR_FRM_MAIN[18];
@@ -6075,12 +6084,6 @@ begin
   end;
   ProjectType := GetAttribute(ProjNode, 'ProjectType');
   ProjectVersion := GetAttribute(ProjNode, 'Version');
-  ProjectVersion := StringReplace(ProjectVersion, ',', '.', [rfReplaceAll]);
-  case CountChar(ProjectVersion, '.') of
-    0: ProjectVersion := ProjectVersion + '.0.0.0';
-    1: ProjectVersion := ProjectVersion + '.0.0';
-    2: ProjectVersion := ProjectVersion + '.0';
-  end;
   Version := ParseVersion(ProjectVersion);
   if (ProjectType <> 'Visual C++') or not
     ((CompareVersion(Version, ParseVersion('7.10.0.0')) >= 0) and
@@ -9846,11 +9849,32 @@ begin
   //TreeViewOutline.Indent := ImageListDebug.Width + 3;
 end;
 
+procedure TFrmFalconMain.RunContinue(Sender: TObject);
+begin
+  if not DebugReader.Running then
+    Exit;
+  DebugReader.SendCommand(GDB_CONTINUE);
+end;
+
+procedure TFrmFalconMain.RunRevContinue(Sender: TObject);
+begin
+  if not DebugReader.Running then
+    Exit;
+  DebugReader.SendCommand(GDB_REVERSE+'-'+GDB_CONTINUE);
+end;
+
 procedure TFrmFalconMain.RunStepIntoClick(Sender: TObject);
 begin
   if not DebugReader.Running then
     Exit;
   DebugReader.SendCommand(GDB_STEP);
+end;
+
+procedure TFrmFalconMain.RunRevStepIntoClick(Sender: TObject);
+begin
+  if not DebugReader.Running then
+    Exit;
+  DebugReader.SendCommand(GDB_REVERSE+'-'+GDB_STEP);
 end;
 
 procedure TFrmFalconMain.RunStepOverClick(Sender: TObject);
@@ -9860,11 +9884,25 @@ begin
   DebugReader.SendCommand(GDB_NEXT);
 end;
 
+procedure TFrmFalconMain.RunRevStepOverClick(Sender: TObject);
+begin
+  if not DebugReader.Running then
+    Exit;
+  DebugReader.SendCommand(GDB_REVERSE+'-'+GDB_NEXT);
+end;
+
 procedure TFrmFalconMain.RunStepReturnClick(Sender: TObject);
 begin
   if not DebugReader.Running then
     Exit;
   DebugReader.SendCommand(GDB_FINISH);
+end;
+
+procedure TFrmFalconMain.RunRevStepReturnClick(Sender: TObject);
+begin
+  if not DebugReader.Running then
+    Exit;
+  DebugReader.SendCommand(GDB_REVERSE+'-'+GDB_FINISH);
 end;
 
 procedure TFrmFalconMain.SelectTheme(Theme: string);
@@ -10124,6 +10162,22 @@ begin
     Exit;
   if not DebugReader.Running then
     SelectToken(Token);
+end;
+
+procedure TFrmFalconMain.FormKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if [ssShift] = Shift then
+  begin
+    if Key = VK_F9 then
+      RunRevContinue(Sender)
+    else if Key = VK_F8 then
+      RunRevStepIntoClick(Sender)
+    else if Key = VK_F7 then
+      RunRevStepOverClick(Sender)
+    else if Key = VK_F6 then
+      RunRevStepReturnClick(Sender);
+  end;
 end;
 
 end.

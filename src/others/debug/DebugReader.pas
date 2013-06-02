@@ -519,10 +519,26 @@ begin
     FOnCommandEvent(Self, dcTerminate, '', '0', 0);
 end;
 
+function OctStrToInt(const Value: string): Integer;
+var
+  i: Integer;
+begin
+  if (Length(Value) > 0) and (Value[1] <> '0') then
+  begin
+    Result := StrToInt(Value);
+    Exit;
+  end;
+  Result := 0;
+  for i := 1 to Length(Value) do
+  begin
+    Result := Result * 8 + StrToInt(Copy(Value, i, 1));
+  end;
+end;
+
 procedure TDebugReader.ProcessTerminateCode;
 begin
   if Assigned(FOnCommandEvent) then
-    FOnCommandEvent(Self, dcTerminate, '', regexp.Match[1], 0);
+    FOnCommandEvent(Self, dcTerminate, '', IntToStr(OctStrToInt(regexp.Match[1])), 0);
 end;
 
 {procedure TDebugReader.ProcessSegmentationFault;
@@ -635,7 +651,11 @@ begin
       ProcessNewThread
     else if regexp.Exec(REGEXP_TERMINATE, S) then
       ProcessTerminate
+    else if regexp.Exec(REGEXP_TERMINATENORM, S) then
+      ProcessTerminate
     else if regexp.Exec(REGEXP_TERMINATECODE, S) then
+      ProcessTerminateCode
+    else if regexp.Exec(REGEXP_PROCESSEXITED, S) then
       ProcessTerminateCode
     else if regexp.Exec(REGEXP_EXITING, S) then
       ProcessOnExiting

@@ -64,6 +64,9 @@ type
     Button3: TButton;
     Button4: TButton;
     Button6: TButton;
+    Label14: TLabel;
+    LabelDebugRev: TLabel;
+    ChbRevDebug: TCheckBox;
     procedure FormKeyPress(Sender: TObject; var Key: Char);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
@@ -74,6 +77,7 @@ type
     procedure ComboBoxCompilerPathSelect(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
+    procedure OptionChangeClick(Sender: TObject);
   private
     { Private declarations }
     Loading: Boolean;
@@ -126,7 +130,11 @@ end;
 
 procedure TFrmCompOptions.Load;
 begin
-//
+  Loading := True;
+  FillCompilerList;
+  CheckCompiler;
+  ChbRevDebug.Checked := FrmFalconMain.Config.Compiler.ReverseDebugging;
+  Loading := False;
 end;
 
 procedure TFrmCompOptions.UpdateLangNow;
@@ -166,6 +174,7 @@ begin
   BtnApply.Enabled := False;
   with FrmFalconMain.Config.Compiler do
   begin
+    ReverseDebugging := ChbRevDebug.Checked;
     NeedRestartApp := False;
     Index := ComboBoxCompilerPath.ItemIndex;
     if Index >= 0 then
@@ -219,11 +228,40 @@ begin
     LabelDebugVersion.Caption := aVersion;
     LabelDebugStatus.Caption := 'Working';
     LabelDebugStatus.Font.Color := clGreen;
+    if CompareVersion(ParseVersion(aVersion), ParseVersion('7.0')) >= 0 then
+    begin
+      ExecutorGetStdOut.ExecWait(path + '\bin\gdb.exe', '--quiet -ex="show exec-direction" -ex="quit"',
+        path + '\bin\', stdout);
+      if Pos('Reverse', stdout) = 0 then
+      begin
+        LabelDebugRev.Caption := 'Not supported';
+        LabelDebugRev.Font.Color := clRed;
+        ChbRevDebug.Enabled := False;
+        ChbRevDebug.Checked := False;
+        FrmFalconMain.Config.Compiler.ReverseDebugging := False;
+      end
+      else
+      begin
+        LabelDebugRev.Caption := 'Supported';
+        LabelDebugRev.Font.Color := clBlue;
+        ChbRevDebug.Enabled := True;
+      end;
+    end
+    else
+    begin
+      LabelDebugRev.Caption := 'Not supported';
+      LabelDebugRev.Font.Color := clRed;
+      ChbRevDebug.Enabled := False;
+      ChbRevDebug.Checked := False;
+      FrmFalconMain.Config.Compiler.ReverseDebugging := False;
+    end;
   end
   else
   begin
     LabelDebugName.Caption := '-';
     LabelDebugVersion.Caption := '-';
+    LabelDebugRev.Caption := '-';
+    LabelDebugRev.Font.Color := clBlue;
     LabelDebugStatus.Caption := 'Error';
     LabelDebugStatus.Font.Color := clRed;
   end;
@@ -259,8 +297,7 @@ end;
 
 procedure TFrmCompOptions.FormCreate(Sender: TObject);
 begin
-  FillCompilerList;
-  CheckCompiler;
+  Load;
 end;
 
 procedure TFrmCompOptions.ComboBoxCompilerPathSelect(Sender: TObject);
@@ -276,6 +313,11 @@ begin
     Close
   else if (Key = VK_RETURN) and (Shift = [ssCtrl]) then
     BtnOk.Click;
+end;
+
+procedure TFrmCompOptions.OptionChangeClick(Sender: TObject);
+begin
+  OptionsChange;
 end;
 
 end.

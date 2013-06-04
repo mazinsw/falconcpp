@@ -10,6 +10,17 @@ const
   CSIDL_PROGRAM_FILES = $0026;
   CSIDL_COMMON_APPDATA = $0023;
 
+{$IFDEF UNICODE}
+function ILCreateFromPath(pszPath: PChar): PItemIDList stdcall; external shell32
+  name 'ILCreateFromPathW';
+{$ELSE}
+function ILCreateFromPath(pszPath: PChar): PItemIDList stdcall; external shell32
+  name 'ILCreateFromPathA';
+{$ENDIF}
+procedure ILFree(pidl: PItemIDList) stdcall; external shell32;
+function SHOpenFolderAndSelectItems(pidlFolder: PItemIDList; cidl: Cardinal;
+  apidl: pointer; dwFlags: DWORD): HRESULT; stdcall; external shell32;
+
 function FindFiles(Search: String; Finded:TStrings): Boolean;
 function GetSpecialFolderPath(nFolder: Integer = CSIDL_PERSONAL): String;
 function GetUserTemp: String;
@@ -20,8 +31,7 @@ function EmptyDirectory(Dir: string): Boolean;
 function ConvertSlashes(Path: String): String;
 procedure ConvertTo32BitImageList(const ImageList: TImageList);
 procedure Execute(S: String);
-
-
+function OpenFolderAndSelectFile(const FileName: string): boolean;
 
 implementation
 
@@ -150,6 +160,20 @@ begin
     ShellInfo.nShow := SW_SHOWNORMAL;
     ShellExecuteEx(@ShellInfo);
   end;
+end;
+
+function OpenFolderAndSelectFile(const FileName: string): boolean;
+var
+  IIDL: PItemIDList;
+begin
+  result := false;
+  IIDL := ILCreateFromPath(PChar(FileName));
+  if IIDL <> nil then
+    try
+      result := SHOpenFolderAndSelectItems(IIDL, 0, nil, 0) = S_OK;
+    finally
+      ILFree(IIDL);
+    end;
 end;
 
 end.

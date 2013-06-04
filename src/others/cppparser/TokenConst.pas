@@ -10,6 +10,7 @@ const
     'class',
     'func',
     'func',
+    'operator',
     'constructor',
     'destructor',
     'inc',
@@ -34,6 +35,7 @@ const
     '',
     '',
     // root
+    '',
     '',
     '',
     '',
@@ -69,6 +71,7 @@ const
     'tkClass',
     'tkFunction',
     'tkPrototype',
+    'tkOperator',
     'tkConstructor',
     'tkDestructor',
     'tkInclude',
@@ -99,6 +102,7 @@ const
     'tkScopeClass',
     'tkUsing',
     'tkValue',
+    'tkTemplate',
     'tkCodeTemplate'
     );
 

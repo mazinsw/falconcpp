@@ -68,6 +68,8 @@ begin
       Add('new', '', '', '');
       Add('delete', '', '', '');
       Add('namespace', '', '', '');
+      Add('typename', '', '', '');
+      Add('template', '', '', '');
       Add('namespace', 'namespace statement',
         'namespace name'#13 +
         '{'#13 +
@@ -140,11 +142,11 @@ begin
           '    '#13+
           '}');
         Add('for', 'iterate using iterator',
-          'for(it = it.begin(); it != it.end(); it++)'#13 +
+          'for(it = list.begin(); it != list.end(); it++)'#13 +
           '{'#13 +
           '    '#13+
           '}',
-          'for(it = it.begin(); it != it.end(); it++)'#13 +
+          'for(it = list.begin(); it != list.end(); it++)'#13 +
           '{'#13 +
           '    |'#13+
           '}');

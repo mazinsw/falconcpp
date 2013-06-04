@@ -42,6 +42,7 @@ function GetAfterWord(const S: string): string;
 procedure GetDescendants(const S: string; List: TStrings; scope: TScopeClass);
 function GetLastWord(const S: string; AllowScope: Boolean = False): string;
 function GetPriorWord(const S: string): string;
+function SkipTemplateParams(const ret: string): string;
 function GetVarType(const S: string): string;
 function Trim(Left: Char; const S: string; Rigth: Char): string; overload;
 function StringToScopeClass(const S: string): TScopeClass;
@@ -1352,6 +1353,45 @@ begin
   Result := Trim(Copy(S, 1, Len));
 end;
 
+function SkipTemplateParams(const ret: string): string;
+var
+  ptr, init: PChar;
+  pairCount: Integer;
+begin
+  init := PChar(ret);
+  ptr := init + Length(ret) - 1;
+  while(ptr >= init) do
+  begin
+    if ptr^ in LetterChars+DigitChars then
+      Break;
+    // skip params
+    if ptr^ = '>' then
+    begin
+      pairCount := 1;
+      Dec(ptr);
+      while (ptr >= init) and (pairCount <> 0) do
+      begin
+        if ptr^ = '>' then
+          Inc(pairCount)
+        else if ptr^ = '<' then
+          Dec(pairCount);
+        Dec(ptr);
+      end;
+      if (ptr < init) then
+        Break;
+      Continue;
+    end;
+    Dec(ptr);
+  end;
+  if (ptr < init) then
+  begin
+    Result := '';
+    Exit;
+  end;
+  SetLength(Result, ptr - init + 1);
+  StrMove(PChar(Result), init, ptr - init + 1);
+end;
+
 function GetVarType(const S: string): string;
 var
   I: Integer;
@@ -1365,6 +1405,7 @@ begin
   Result := '';
   while Temp <> '' do
   begin
+    Temp := SkipTemplateParams(Temp);
     Result := GetLastWord(Temp, True);
     Temp := GetPriorWord(Temp);
     lower := LowerCase(Result);

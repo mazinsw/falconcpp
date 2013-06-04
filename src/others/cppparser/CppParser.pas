@@ -60,9 +60,6 @@ type
     function GetWordPair(cStart, cEnd: Char): string;
     function GetWord(SpaceSepOnly: Boolean = False): string;
     function GetEOL: string;
-    {function GetFirstWord(const S: String): String;
-    function GetLastWord(const S: String): String;
-    function GetPriorWord(const S: String): String;}
     function GetArguments: string;
     //process
     procedure ProcessPreprocessor;
@@ -618,7 +615,6 @@ begin
       ProcessEnum(True, StartPos, StartLine, TempWord)
     else if RetType = 'class' then
       ProcessClass(True, StartPos, StartLine, TempWord);
-    Exit;
   end;
   CanGetName := True;
   ChangedCurrPos := False;
@@ -1873,12 +1869,18 @@ begin
   TokenType := tkFunction;
   FuncName := GetLastWord(S);
   RetType := GetPriorWord(S);
-  ScopeName := GetLastWord(RetType);
   I := Pos('::', RetType);
   if I > 0 then
   begin
     if '::' = Copy(RetType, Length(RetType) - 1, 2) then
-      RetType := GetPriorWord(RetType)
+    begin
+      ScopeName := RetType;
+      RetType := GetPriorWord(SkipTemplateParams(RetType));
+      I := 1;
+      if RetType <> '' then
+        Inc(I);
+      ScopeName := Copy(ScopeName, Length(RetType) + I, Length(ScopeName) - Length(RetType) - 1 - I);
+    end
     else
       ScopeName := '';
   end
@@ -1918,9 +1920,7 @@ begin
     Len := Length(FuncName);
     if RetType = '' then
     begin
-      RetType := GetPriorWord(ScopeName);
-      ScopeName := GetLastWord(ScopeName);
-      if FuncName = ScopeName then
+      if FuncName = GetFirstWord(ScopeName) then
       begin
         if IsDestructor then
           TokenType := tkDestructor
@@ -2402,7 +2402,7 @@ begin
             ProcessUnion(False, StartPos, StartLine, CurrStr);
             CurrStr := '';
           end
-          else if TempWord = 'typedef' then
+          else if (TempWord = 'typedef') and (((fptr + 1)^ <> ':') and ((fptr - 1)^ <> ':')) then
           begin
             ProcessTypedef(StartPos, StartLine, CurrStr);
             CurrStr := '';

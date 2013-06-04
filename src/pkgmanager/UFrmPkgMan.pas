@@ -551,16 +551,15 @@ var
   FileName: string;
 begin
   FileName := GetPathFromNode(FileList.Selected);
-  if not FileExists(FileName) and DirectoryExists(FileName) then
+  if FileExists(FileName) then
+  begin
+    if FileExists(FileName) then
+      OpenFolderAndSelectFile(FileName);
+  end
+  else if DirectoryExists(FileName) then
   begin
     if DirectoryExists(FileName) then
       ShellExecute(0, 'open', PChar(FileName), nil, nil, SW_SHOW);
-  end
-  else if FileExists(FileName) then
-  begin
-    if FileExists(FileName) then
-      ShellExecute(0, 'open', 'explorer.exe',
-        PChar('/select, "' + FileName + '"'), nil, SW_SHOW);
   end;
 end;
 

@@ -6,13 +6,14 @@ uses
   Classes, Dialogs;
 
 const
-  Sign = 'FCP 3.3';
+  Sign = 'FCP 3.4';
 
 type
   TTkType = (
     tkClass,
     tkFunction,
     tkPrototype,
+    tkOperator,
     tkConstructor,
     tkDestructor,
     tkInclude,
@@ -43,6 +44,7 @@ type
     tkScopeClass,
     tkUsing,
     tkValue,
+    tkTemplate,
     tkCodeTemplate
     );
 

@@ -24,8 +24,8 @@ type
     fLength: Integer;
     fLevel: Integer;
     fVarFunc: Boolean;
-    fCommentLine: Integer;
     fComment: string;
+    fRightComment: string;
     fOpenCommentCount: Integer;
     //parsed items
     fTokenFile: Pointer;
@@ -35,6 +35,7 @@ type
     //stack manipulation
     fStack: TList;
     fLast: TTokenClass;
+    fPrev: TTokenClass;
     function Pop: TTokenClass;
     function Top: TTokenClass;
     function Empty: Boolean;
@@ -192,14 +193,13 @@ end;
 
 procedure TCppParser.SkipMultLineComment;
 var
-  DocComment: Boolean;
+  DocComment, RightComment: Boolean;
   fstart, fend, fastrk: Pchar;
   s, LF_str, Comment: string;
-  CommentLine: Integer;
 begin
-  CommentLine := fCurrLine;
   Comment := '';
   LF_str := '';
+  RightComment := False;
   DocComment := (fptr + 1)^ = '*';
   if ((fptr + 1)^ = '@') and ((fptr + 2)^ = '{') then
     Inc(fOpenCommentCount)
@@ -207,7 +207,9 @@ begin
   begin
     Dec(fOpenCommentCount);
     fComment := '';
-  end;
+  end
+  else if DocComment and ((fptr + 2)^ = '<') then
+    RightComment := True;
   fstart := nil;
   fastrk := fptr + 2;
   fend := fptr;
@@ -236,27 +238,36 @@ begin
         if (fstart = nil) then
           fastrk := fptr + 1;
       end;
+      '<':
+      begin
+        if (fstart = nil) then
+          fastrk := fptr + 1;
+      end;
     else
-      if not (fptr^ in SpaceChars+LineChars+['*']) then
+      if not (fptr^ in SpaceChars+LineChars) then
       begin
         if fstart = nil then
           fstart := fastrk;
         fend := fptr;
-      end;
+      end
+      else if (Comment = '') and (fstart = nil) then
+        fastrk := fptr + 1;
     end;
     if fCancel then
       Exit;
   until (fptr^ = #0) or ((fptr^ = '*') and ((fptr + 1)^ = '/'));
-  if DocComment and (fOpenCommentCount = 0) then
+  if DocComment then
   begin
-    if DocComment and (fstart <> nil) then
+    if (fstart <> nil) then
     begin
       SetLength(s, fend - fstart + 1);
       StrLCopy(PChar(s), fstart, fend - fstart + 1);
       Comment := Comment + LF_str + s;
     end;
-    fComment := Comment;
-    fCommentLine := CommentLine;
+    if not RightComment and (fOpenCommentCount = 0) then
+      fComment := Comment
+    else if RightComment then
+      fRightComment := Comment;
   end;
   if fptr^ <> #0 then
   begin
@@ -608,13 +619,25 @@ begin
   if fptr^ in ['{', ':'] then
   begin
     if RetType = 'struct' then
-      ProcessStruct(True, StartPos, StartLine, TempWord)
+    begin
+      ProcessStruct(True, StartPos, StartLine, TempWord);
+      Exit;
+    end
     else if RetType = 'union' then
-      ProcessUnion(True, StartPos, StartLine, TempWord)
+    begin
+      ProcessUnion(True, StartPos, StartLine, TempWord);
+      Exit;
+    end
     else if RetType = 'enum' then
-      ProcessEnum(True, StartPos, StartLine, TempWord)
+    begin
+      ProcessEnum(True, StartPos, StartLine, TempWord);
+      Exit;
+    end
     else if RetType = 'class' then
+    begin
       ProcessClass(True, StartPos, StartLine, TempWord);
+      Exit;
+    end;
   end;
   CanGetName := True;
   ChangedCurrPos := False;
@@ -2495,6 +2518,15 @@ begin
     TokenClass := Top;
     Result := TTokenClass.Create(TokenClass);
     Result.Fill(Line, Len, Start, Level, TkType, S, Flag, FComment);
+    if (fRightComment <> '') and Assigned(fPrev) then
+    begin
+      if fPrev.Comment = '' then
+        fPrev.Comment := fRightComment
+      else if (fOpenCommentCount > 0) then
+        fPrev.Comment := fPrev.Comment + #13 + fRightComment;
+      fRightComment := '';
+    end;
+    fPrev := Result;
     if fOpenCommentCount = 0 then
       FComment := '';
     if TokenClass <> nil then
@@ -2523,6 +2555,17 @@ begin
     end;
     Result := TTokenClass.Create(TokenClass);
     Result.Fill(Line, Len, Start, Level, TkType, S, Flag, FComment);
+    if TkType = tkDefine then
+      fPrev := Result;
+    if (fRightComment <> '') and Assigned(fPrev) then
+    begin
+      if fPrev.Comment = '' then
+        fPrev.Comment := fRightComment
+      else if (fOpenCommentCount > 0) then
+        fPrev.Comment := fPrev.Comment + #13 + fRightComment;
+      fRightComment := '';
+    end;
+    fPrev := Result;
     if fOpenCommentCount = 0 then
       FComment := '';
     if TokenClass <> nil then
@@ -2565,6 +2608,7 @@ begin
   TTokenFile(fTokenFile).Includes.Clear;
   fStack.Clear;
   fLast := nil;
+  fPrev := nil;
   fCurrLine := 0;
   fCurrPos := 0;
   fLength := 0;

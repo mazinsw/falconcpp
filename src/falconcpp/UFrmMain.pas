@@ -3106,6 +3106,7 @@ begin
   if GetActiveProject(ProjProp) then
   begin
     RunNow := False;
+    ProjProp.ForceClean := True;
     ProjProp.Build;
   end;
 end;
@@ -5061,6 +5062,9 @@ begin
     begin
       if sheet.Memo.Lines.Count >= sheet.Memo.CaretY then
       begin
+        I := sheet.Memo.GetBalancingBracketEx(sheet.Memo.CaretXY, '(');
+        if I < 0 then
+          Exit;
         LineStr := sheet.Memo.Lines.Strings[sheet.Memo.CaretY - 1];
         LineStr := Copy(LineStr, sheet.Memo.CaretX, Length(LineStr));
         if (LineStr <> '') and (LineStr[1] = ')') then
@@ -5074,6 +5078,9 @@ begin
     begin
       if sheet.Memo.Lines.Count >= sheet.Memo.CaretY then
       begin
+        I := sheet.Memo.GetBalancingBracketEx(sheet.Memo.CaretXY, '[');
+        if I < 0 then
+          Exit;
         LineStr := sheet.Memo.Lines.Strings[sheet.Memo.CaretY - 1];
         LineStr := Copy(LineStr, sheet.Memo.CaretX, Length(LineStr));
         if (LineStr <> '') and (LineStr[1] = ']') then
@@ -7741,7 +7748,7 @@ procedure TFrmFalconMain.CodeCompletionCodeCompletion(Sender: TObject;
 var
   Token, ClassToken: TTokenClass;
   NextChar: Char;
-  LineStr: string;
+  LineStr, S: string;
   sheet: TSourceFileSheet;
   BalancingBracket, SelStart, Len, AfterLen, I: Integer;
   p: TBufferCoord;
@@ -7770,11 +7777,19 @@ begin
         else
           Break;
       end;
+      S := GeneratePrototype(Token, Config.Editor.TabWidth,
+        Config.Editor.UseTabChar, Config.Editor.StyleIndex = 4, 0);
+      if CountWords(LineStr) <> 1 then
+      begin
+        if ((AfterLen > 0) and (Trim(Copy(LineStr, AfterLen, MaxInt)) = '')) or (p.Char > Length(LineStr)) then
+          S := Token.Name + Copy(S, Pos('(', S), MaxInt)
+        else
+          S := Token.Name;
+      end;
       sheet.Memo.BeginUpdate;
       sheet.Memo.BlockBegin := BufferCoord(p.Char - Len, p.Line);
       sheet.Memo.BlockEnd := BufferCoord(p.Char + AfterLen, p.Line);
-      sheet.Memo.SelText := GeneratePrototype(Token, Config.Editor.TabWidth,
-        Config.Editor.UseTabChar, Config.Editor.StyleIndex = 4, 0);
+      sheet.Memo.SelText := S;
       sheet.Memo.EndUpdate;
       Value := '';
       Exit;

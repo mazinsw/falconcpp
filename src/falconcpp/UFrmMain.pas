@@ -5007,7 +5007,7 @@ procedure TFrmFalconMain.TextEditorKeyPress(Sender: TObject;
 var
   sheet: TSourceFileSheet;
   emptyLine, replaceLine: Boolean;
-  str, LineStr, S, token: string;
+  str, LineStr, S, token, prev_word: string;
   p: PChar;
   i, j, SpaceCount1, BracketBalacing: Integer;
   bStart, bEnd: TBufferCoord;
@@ -5021,6 +5021,11 @@ begin
     LineStr := '';
     if bCoord.Line > 0 then
       LineStr := sheet.Memo.Lines.Strings[bCoord.Line - 1];
+    if (bCoord.Char > 1) and (Length(LineStr) >= bCoord.Char - 1) and
+      (LineStr[bCoord.Char - 1] in ['a'..'z', 'A'..'Z']) then
+      prev_word := GetLastWord(Copy(LineStr, 1, bCoord.Char))
+    else
+      prev_word := '';
     if (bCoord.Line > 0) and (bCoord.Char > Length(LineStr)) then
       bCoord.Char := Length(sheet.Memo.Lines.Strings[bCoord.Line - 1]);
     if sheet.Memo.GetHighlighterAttriAtRowCol(bCoord, token, attri) then
@@ -5037,7 +5042,15 @@ begin
         Exit;
       end;
     end;
-    if Key = '(' then
+    // auto code completion
+    if (Key in ['a'..'z', 'A'..'Z']) and (Length(prev_word) >= 3) then
+    begin
+      sheet.Memo.SelText := Key;
+      Key := #0;
+      CodeCompletion.ActivateCompletion;
+      Exit;
+    end
+    else if Key = '(' then
     begin
       if Config.Editor.AutoCloseBrackets and
         (sheet.Memo.GetBalancingBracketEx(sheet.Memo.CaretXY, '(') <= 0) then

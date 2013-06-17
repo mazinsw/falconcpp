@@ -628,7 +628,7 @@ type
     procedure RunRevStepIntoClick(Sender: TObject);
     procedure RunRevStepOverClick(Sender: TObject);
     procedure RunRevStepReturnClick(Sender: TObject);
-    //**********************************************/
+    procedure SysCommandProc(var Msg: TWMSysCommand); message WM_SYSCOMMAND;
   private
     { Private declarations }
     fWorkerThread: TThread;
@@ -658,7 +658,6 @@ type
     ActDropDownBtn: Boolean; //?
     XMLOpened: Boolean;
     FCompilationStopped: Boolean;
-    FullScreenMode: Boolean;
     CanShowHintTip: Boolean;
     UsingCtrlSpace: Boolean;
     FHandlingTabs: Boolean;
@@ -1271,7 +1270,6 @@ begin
   FalconVersion := GetFileVersionA(Application.ExeName);
   ActDropDownBtn := True;
   XMLOpened := False;
-  FullScreenMode := False;
   FSintaxList := TSintaxList.Create;
   SintaxList.Highlight := CppHighligher;
   //create projects directory
@@ -1609,6 +1607,7 @@ var
   S, OldPath, CompilerName: string;
   SourceFileList: TStrings;
   I: Integer;
+  SleepAtEnd: Boolean;
 begin
   OldPath := Config.Compiler.Path;
   Config.Compiler.Path := CompilerPath;
@@ -1627,6 +1626,7 @@ begin
       Config.Compiler.Version + '\include\c++\');
   IsLoadingSrcFiles := False;
   FIncludeFileListFlag := 2;
+  SleepAtEnd := False;
   if (NewInstalled <> 0) then
   begin
     if SplashScreen.Showing then
@@ -1637,14 +1637,14 @@ begin
         SplashScreen.TextOut(55, 300, Format(STR_FRM_MAIN[37], [0]));
     end;
     SourceFileList := TStringList.Create;
+    // parse and load C header files
     if FindFiles(Config.Compiler.Path + '\include\', '*.h', SourceFileList) then
     begin
       IsLoadingSrcFiles := True;
       ThreadTokenFiles.Clear;
       ThreadTokenFiles.Start(SourceFileList,
-        Config.Compiler.Path + '\include\', ConfigRoot + 'include\', '.h.prs');
-      if SplashScreen.Showing then
-        Sleep(3000);
+        Config.Compiler.Path + '\include\', ConfigRoot + 'include\', '.prs');
+      SleepAtEnd := SplashScreen.Showing;
     end;
     FIncludeFileList.Clear;
     for I := 0 to SourceFileList.Count - 1 do
@@ -1653,9 +1653,27 @@ begin
         Config.Compiler.Path + '\include\', SourceFileList.Strings[I])),
         SourceFileList.Objects[I]);
     end;
+    SourceFileList.Clear;
+    // parse and load C++ header files
+    if FindFiles(Config.Compiler.Path + '\lib\gcc\mingw32\' +
+      Config.Compiler.Version + '\include\c++\', '*.*', SourceFileList) then
+    begin
+      IsLoadingSrcFiles := True;
+      ThreadTokenFiles.Start(SourceFileList,
+        Config.Compiler.Path + '\include\', ConfigRoot + 'include\', '.prs');
+      SleepAtEnd := SplashScreen.Showing;
+    end;
+    for I := 0 to SourceFileList.Count - 1 do
+    begin
+      FIncludeFileList.AddObject(ConvertToUnixSlashes(ExtractRelativePath(
+        Config.Compiler.Path + '\lib\gcc\mingw32\' + Config.Compiler.Version +
+        '\include\c++\', SourceFileList.Strings[I])), SourceFileList.Objects[I]);
+    end;
     SourceFileList.Free;
-    FIncludeFileListFlag := 1;
+    FIncludeFileListFlag := 0;
   end;
+  if SleepAtEnd then
+    Sleep(3000);
 end;
 
 procedure TFrmFalconMain.UpdateMenuItems(Regions: TRegionMenuState);
@@ -1926,7 +1944,15 @@ begin
   begin
     IsLoadingSrcFiles := True;
     ThreadTokenFiles.Start(SourceFileList,
-      Config.Compiler.Path + '\include\', ConfigRoot + 'include\', '.h.prs');
+      Config.Compiler.Path + '\include\', ConfigRoot + 'include\', '.prs');
+  end;
+  SourceFileList.Clear;
+  if FindFiles(Config.Compiler.Path + '\lib\gcc\mingw32\' +
+    Config.Compiler.Version + '\include\c++\', '*.*', SourceFileList) then
+  begin
+    IsLoadingSrcFiles := True;
+    ThreadTokenFiles.Start(SourceFileList,
+      Config.Compiler.Path + '\include\', ConfigRoot + 'include\', '.prs');
   end;
   SourceFileList.Free;
 end;
@@ -4622,7 +4648,7 @@ begin
     FileList.Add(IncludeFileName);
   end;
   ThreadLoadTkFiles.LoadRecursive(FileList, Config.Compiler.Path +
-    '\include\', ConfigRoot + 'include\', '.h.prs');
+    '\include\', ConfigRoot + 'include\', '.prs');
   ParseFiles(ParseList);
   IncludeList.Free;
   ParseList.Free;
@@ -10207,6 +10233,22 @@ begin
     else if Key = VK_F6 then
       RunRevStepReturnClick(Sender);
   end;
+end;
+
+procedure TFrmFalconMain.SysCommandProc(var Msg: TWMSysCommand);
+begin
+  case Msg.CmdType of
+    SC_SCREENSAVE, 					// Screensaver Trying To Start?
+    SC_MONITORPOWER:				// Monitor Trying To Enter Powersave?
+    begin
+      if FrmPos.FullScreen then
+      begin
+        Msg.Result := 0;  	// Prevent From Happening
+        Exit;
+      end;
+    end;
+  end;
+  inherited;
 end;
 
 end.

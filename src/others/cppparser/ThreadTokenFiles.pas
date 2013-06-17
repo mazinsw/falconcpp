@@ -265,7 +265,7 @@ begin
   DirFrom := DirFrom + ExtractRelativePath(fBaseDir, ExtractFilePath(FileName));
   DirFrom := IncludeTrailingPathDelimiter(DirFrom);
   FromName := DirFrom + ExtractFileName(FileName);
-  FromName := ChangeFileExt(FromName, fExtension);
+  FromName := FromName + fExtension;
   if not FileExists(FromName) or not FileExists(FileName) then
     Exit;
   TokenFile := TTokenFile.Create(fTokenFiles);
@@ -353,7 +353,7 @@ begin
       DirDest := DirDest + ExtractRelativePath(fBaseDir, ExtractFilePath(FileName));
       DirDest := IncludeTrailingPathDelimiter(DirDest);
       DestName := DirDest + ExtractFileName(FileName);
-      DestName := ChangeFileExt(DestName, fExtension);
+      DestName := DestName + fExtension;
       CanParse := True;
       TokenFile := TTokenFile.Create(fTokenFiles);
       TokenFile.FileDate := FileDateTime(FileName);

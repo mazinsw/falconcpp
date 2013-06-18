@@ -629,6 +629,7 @@ type
     procedure RunRevStepOverClick(Sender: TObject);
     procedure RunRevStepReturnClick(Sender: TObject);
     procedure SysCommandProc(var Msg: TWMSysCommand); message WM_SYSCOMMAND;
+    procedure CodeCompletionClose(Sender: TObject);
   private
     { Private declarations }
     fWorkerThread: TThread;
@@ -665,6 +666,8 @@ type
     CurrentFileIsParsed: Boolean;
     LastMousePos: TPoint;
     LastWordHintStart: Integer;
+    FEmptyLineResult: Integer;
+    FEmptyCharResult: Integer;
     ActiveErrorLine: Integer;
 
     // include list
@@ -679,7 +682,10 @@ type
     IsLoadingSrcFiles: Boolean;
     FLastProjectBuild: TProjectFile; //last builded project
     FLastSelectedProject: TProjectFile;
+    FLastProjectInclude: TProjectFile;
     startBuildTicks: Cardinal;
+    ReloadAfterCodeCompletion: Boolean;
+    fShowCodeCompletion: Integer;
     BuildTime: Cardinal;
     ZoomEditor: Integer; //edit zoom
     ActiveEditingFile: TTokenFile; //last parsed tokens
@@ -688,6 +694,7 @@ type
     //for Project
     ThreadFilesParsed: TThreadTokenFiles;
     AllParsedList: TStrings;
+    ProjectIncludeList: TStrings;
 
     //for Cache
     ParseAllFiles: TTokenFiles; //parse unparsed static files
@@ -843,6 +850,7 @@ type
     fParseTime: Cardinal;
     fTokenFile: TTokenFile;
     fHasParsed: Boolean;
+    fBusy: Boolean;
     fCppParser: TCppParser;
     fMsg: string;
     fCurrLine: Integer;
@@ -861,6 +869,7 @@ type
     procedure Shutdown;
     property CppParser: TCppParser read fCppParser write fCppParser;
     property TokenFile: TTokenFile read fTokenFile write fTokenFile;
+    property Busy: Boolean read fBusy;
   end;
 
 var
@@ -1060,20 +1069,21 @@ procedure TParserThread.Execute;
 begin
   while not Terminated do
   begin
+    fBusy := False;
     WaitForSingleObject(fScanEventHandle, INFINITE);
     fHasParsed := False;
+    fBusy := True;
     repeat
       if Terminated then
-        break;
+        Break;
       // make sure the event is reset when we are still in the repeat loop
       ResetEvent(fScanEventHandle);
       // get the modified source and set fSourceChanged to 0
       Synchronize(GetSource);
       if Terminated then
-        break;
+        Break;
       // clear keyword list
       fLastPercent := 0;
-
       fStartTime := GetTickCount;
       fHasParsed := fCppParser.Parse(fSource, TokenFile);
       if fSourceChanged then
@@ -1081,7 +1091,7 @@ begin
     until not fSourceChanged;
 
     if Terminated then
-      break;
+      Break;
     // source was changed while scanning
     if fSourceChanged then
     begin
@@ -1091,10 +1101,12 @@ begin
 
     //fKeywords.Sort;
     fParseTime := GetTickCount - fStartTime;
+    fBusy := False;
     if fHasParsed then
       Synchronize(SetResults);
     // and go to sleep again
   end;
+  fBusy := False;
 end;
 
 procedure TParserThread.GetSource;
@@ -1149,6 +1161,8 @@ begin
     TextEditorFileParsed(FileProp, ActiveEditingFile);
     if HintParams.Activated then
       ShowHintParams(sheet.Memo);
+    if fShowCodeCompletion > 0 then
+      CodeCompletion.ActivateCompletion;
   end;
 end;
 
@@ -1180,6 +1194,7 @@ begin
   FSearchList := TStringList.Create;
   FIncludeFileList := TStringList.Create;
   FReplaceList := TStringList.Create;
+  ProjectIncludeList := TStringList.Create;
   FConfig := TConfig.Create;
   FAppRoot := ExtractFilePath(Application.ExeName);
   FConfigRoot := GetUserFolderPath(CSIDL_APPDATA) + 'Falcon\';
@@ -3280,6 +3295,8 @@ begin
     ProjProp.CloseAll;
     if ProjProp = LastSelectedProject then
       LastSelectedProject := nil;
+    if ProjProp = FLastProjectInclude then
+      FLastProjectInclude := nil;
     if LastProjectBuild = ProjProp then
     begin
       if CompilerCmd.Executing then
@@ -4693,8 +4710,13 @@ begin
       begin
         if Sheet.Selected then
         begin
-          TimerChangeDelay.Enabled := False;
-          TimerChangeDelay.Enabled := True;
+          if not CodeCompletion.Form.Showing then
+          begin
+            TimerChangeDelay.Enabled := False;
+            TimerChangeDelay.Enabled := True;
+          end
+          else
+            ReloadAfterCodeCompletion := True;
         end
         else
         begin
@@ -5069,14 +5091,31 @@ begin
       end;
     end;
     // auto code completion
-    if (Key in ['a'..'z', 'A'..'Z']) and (Length(prev_word) >= 3) then
+    if (Key in ['a'..'z', 'A'..'Z']) and (Length(prev_word) >= 3) and
+      not CodeCompletion.Form.Showing and ((FEmptyLineResult <> bCoord.Line)
+      or (FEmptyCharResult > bCoord.Char)) then
     begin
       sheet.Memo.SelText := Key;
       Key := #0;
       CodeCompletion.ActivateCompletion;
+      if not CodeCompletion.Form.Showing then
+      begin
+        FEmptyLineResult := bCoord.Line;
+        FEmptyCharResult := bCoord.Char;
+      end
+      else
+      begin
+        FEmptyLineResult := 0;
+        FEmptyCharResult := 0;
+      end;
       Exit;
     end
-    else if Key = '(' then
+    else if not (Key in ['a'..'z', 'A'..'Z']) or not (Length(prev_word) > 3) then
+    begin
+      FEmptyLineResult := 0;
+      FEmptyCharResult := 0;
+    end;
+    if Key = '(' then
     begin
       if Config.Editor.AutoCloseBrackets and
         (sheet.Memo.GetBalancingBracketEx(sheet.Memo.CaretXY, '(') <= 0) then
@@ -7384,10 +7423,15 @@ begin
     end;
     for I := 0 to FIncludeFileList.Count - 1 do
     begin
-      NewToken := TTokenClass.Create;
-      NewToken.Name := FIncludeFileList.Strings[I];
-      NewToken.Flag := 'S';
-      NewToken.Token := tkInclude;
+      if FIncludeFileList.Objects[I] = nil then
+      begin
+        NewToken := TTokenClass.Create;
+        NewToken.Name := FIncludeFileList.Strings[I];
+        NewToken.Flag := 'S';
+        NewToken.Token := tkInclude;
+      end
+      else
+        NewToken := TTokenClass(FIncludeFileList.Objects[I]);
       CodeCompletion.InsertList.AddObject(CompletionInsertItem(NewToken), NewToken);
       CodeCompletion.ItemList.AddObject(CompletionShowItem(NewToken, CompletionColors, OutlineImages), NewToken);
     end;
@@ -7395,22 +7439,43 @@ begin
   end;
   if not GetActiveSheet(sheet) then
     Exit;
-  List := TStringList.Create;
   proj := sheet.SourceFile.Project;
-  S := ExtractFilePath(sheet.SourceFile.FileName);
-  proj.GetFiles(List);
-  for I := 0 to List.Count - 1 do
+  if (ProjectIncludeList.Count = 0) or (FLastProjectInclude <> proj) then
   begin
-    if (List.Objects[I] = sheet.SourceFile) or (TSourceFile(List.Objects[I]).FileType <> FILE_TYPE_H) then
-      Continue;
-    NewToken := TTokenClass.Create;
-    NewToken.Name := ConvertToUnixSlashes(ExtractRelativePath(S, List.Strings[I]));
-    NewToken.Flag := 'L';
-    NewToken.Token := tkInclude;
-    CodeCompletion.InsertList.AddObject(CompletionInsertItem(NewToken), NewToken);
-    CodeCompletion.ItemList.AddObject(CompletionShowItem(NewToken, CompletionColors, OutlineImages), NewToken);
+    FLastProjectInclude := proj;
+    for I := 0 to ProjectIncludeList.Count - 1 do
+      TTokenClass(ProjectIncludeList.Objects[I]).Free;
+    ProjectIncludeList.Clear;
+    S := ExtractFilePath(sheet.SourceFile.FileName);
+    List := TStringList.Create;
+    proj.GetFiles(List);
+    for I := 0 to List.Count - 1 do
+    begin
+      if (TSourceFile(List.Objects[I]).FileType <> FILE_TYPE_H) then
+        Continue;
+      NewToken := TTokenClass.Create;
+      NewToken.Name := ConvertToUnixSlashes(ExtractRelativePath(S, List.Strings[I]));
+      NewToken.Flag := 'L';
+      NewToken.Token := tkInclude;
+      ProjectIncludeList.AddObject(NewToken.Name, NewToken);
+      if (List.Objects[I] = sheet.SourceFile) then
+        Continue;
+      CodeCompletion.InsertList.AddObject(CompletionInsertItem(NewToken), NewToken);
+      CodeCompletion.ItemList.AddObject(CompletionShowItem(NewToken, CompletionColors, OutlineImages), NewToken);
+    end;
+    List.Free;
+  end
+  else
+  begin
+    for I := 0 to ProjectIncludeList.Count - 1 do
+    begin
+      NewToken := TTokenClass(ProjectIncludeList.Objects[I]);
+      if (NewToken.Data = sheet.SourceFile) then
+        Continue;
+      CodeCompletion.InsertList.AddObject(CompletionInsertItem(NewToken), NewToken);
+      CodeCompletion.ItemList.AddObject(CompletionShowItem(NewToken, CompletionColors, OutlineImages), NewToken);
+    end;
   end;
-  List.Free;
 end;
 
 procedure TFrmFalconMain.CodeCompletionExecute(Kind: TSynCompletionType;
@@ -7420,15 +7485,15 @@ var
   S, Fields, Input, SaveInput, LineStr: string;
   sheet: TSourceFileSheet;
   TokenItem: TTokenFile;
-  SelStart, I, LineLen: integer;
+  SelStart, LineLen: integer;
   Token, Scope, SaveScope: TTokenClass;
   AllScope: Boolean;
   AllowScope: TScopeClassState;
   Buffer: TBufferCoord;
   Attri: TSynHighlighterAttributes;
   InputError, SkipFirst: Boolean;
-  //StartTicks: Cardinal;
 begin
+  fShowCodeCompletion := 0;
   Input := '';
   CanExecute := False;
   if not Config.Editor.CodeCompletion then
@@ -7442,9 +7507,6 @@ begin
   if not UsingCtrlSpace and (LastKeyPressed = '>') and ((Length(Fields) < 2) or
     ((Length(Fields) > 1) and (Fields[Length(Fields) - 1] <> '-'))) then
     Exit;
-
-  for I := 0 to CodeCompletion.InsertList.Count - 1 do
-    TTokenClass(CodeCompletion.InsertList.Objects[I]).Free;
   CodeCompletion.ItemList.Clear;
   CodeCompletion.InsertList.Clear;
   //get valid SelStart
@@ -7480,7 +7542,6 @@ begin
           begin
             if not FillIncludeList(Pos('<', LineStr) > 0) then
               Exit;
-            //HintParams.Cancel;
             DebugHint.Cancel;
             HintTip.Cancel;
             CanExecute := True;
@@ -7497,7 +7558,6 @@ begin
         begin
           if not FillIncludeList(Pos('<', LineStr) > 0) then
             Exit;
-          //HintParams.Cancel;
           DebugHint.Cancel;
           HintTip.Cancel;
           CanExecute := True;
@@ -7527,7 +7587,6 @@ begin
             begin
               if not FillIncludeList(Pos('<', LineStr) > 0) then
                 Exit;
-              //HintParams.Cancel;
               DebugHint.Cancel;
               HintTip.Cancel;
               CanExecute := True;
@@ -7544,7 +7603,6 @@ begin
           begin
             if not FillIncludeList(Pos('<', LineStr) > 0) then
               Exit;
-            //HintParams.Cancel;
             DebugHint.Cancel;
             HintTip.Cancel;
             CanExecute := True;
@@ -7583,6 +7641,19 @@ begin
     end;
   end;
   //End temp
+  if TimerChangeDelay.Enabled then
+  begin
+    Inc(fShowCodeCompletion);
+    TimerChangeDelay.Enabled := False;
+    TimerChangeDelayTimer(TimerChangeDelay);
+  end
+  else if TParserThread(fWorkerThread).Busy then
+    Inc(fShowCodeCompletion);
+  if fShowCodeCompletion > 0 then
+  begin
+    CanExecute := False;
+    Exit;
+  end;
   if Input <> '' then
   begin
     if ActiveEditingFile.GetScopeAt(Token, SelStart) then
@@ -7605,7 +7676,7 @@ begin
         DebugHint.Cancel;
         HintTip.Cancel;
         CanExecute := True;
-        Exit; //?
+        Exit;
       end;
     end;
     //search base type and list fields and functions of struct, union or class
@@ -7634,14 +7705,10 @@ begin
         AllowScope := AllowScope + [scPublic];
       FilesParsed.FillCompletionClass(CodeCompletion.InsertList,
         CodeCompletion.ItemList, CompletionColors, OutlineImages, TokenItem, Token, AllowScope);
-      //HintParams.Cancel;
       DebugHint.Cancel;
       HintTip.Cancel;
       CanExecute := True;
-      //StartTicks := GetTickCount - StartTicks;
-      //AddMessage(ActiveEditingFile.FileName, 'Fill list',
-      //  FormatFloat('" Items on " 0.000"s"', StartTicks / 1000), 0, 0, 0, mitCompiler);
-      Exit; //?
+      Exit;
     end;
     Exit; //WARNNING cin. if cin not found then does not show code completion
   end;
@@ -7724,13 +7791,9 @@ begin
   FilesParsed.FillCompletionList(CodeCompletion.InsertList,
     CodeCompletion.ItemList, ActiveEditingFile, SelStart,
     CompletionColors, OutlineImages);
-  //HintParams.Cancel;
   DebugHint.Cancel;
   HintTip.Cancel;
   CanExecute := True;
-  //StartTicks := GetTickCount - StartTicks;
-  //AddMessage(ActiveEditingFile.FileName, 'Fill list',
-  //  FormatFloat('" Items on " 0.000"s"', StartTicks / 1000), 0, 0, 0, mitCompiler);
 end;
 
 procedure TFrmFalconMain.CodeCompletionGetWordBreakChars(Sender: TObject;
@@ -7818,7 +7881,7 @@ begin
       end;
       S := GeneratePrototype(Token, Config.Editor.TabWidth,
         Config.Editor.UseTabChar, Config.Editor.StyleIndex = 4, 0);
-      if CountWords(LineStr) <> 1 then
+      if CountWords(LineStr) > 1 then
       begin
         if ((AfterLen > 0) and (Trim(Copy(LineStr, AfterLen, MaxInt)) = '')) or (p.Char > Length(LineStr)) then
           S := Token.Name + Copy(S, Pos('(', S), MaxInt)
@@ -7887,8 +7950,8 @@ var
 begin
   if not GetActiveSheet(sheet) then
   begin
-    for I := 0 to CodeCompletion.InsertList.Count - 1 do
-      TTokenClass(CodeCompletion.InsertList.Objects[I]).Free;
+    //for I := 0 to CodeCompletion.InsertList.Count - 1 do
+    //  TTokenClass(CodeCompletion.InsertList.Objects[I]).Free;
     CodeCompletion.ItemList.Clear;
     CodeCompletion.InsertList.Clear;
     Exit;
@@ -7934,10 +7997,20 @@ begin
   begin
     sheet.Memo.CaretX := sheet.Memo.CaretX - I;
   end;
-  for I := 0 to CodeCompletion.InsertList.Count - 1 do
-    TTokenClass(CodeCompletion.InsertList.Objects[I]).Free;
+  //for I := 0 to CodeCompletion.InsertList.Count - 1 do
+  //  TTokenClass(CodeCompletion.InsertList.Objects[I]).Free;
   CodeCompletion.ItemList.Clear;
   CodeCompletion.InsertList.Clear;
+end;
+
+procedure TFrmFalconMain.CodeCompletionClose(Sender: TObject);
+begin
+  if ReloadAfterCodeCompletion then
+  begin
+    TimerChangeDelay.Enabled := False;
+    TimerChangeDelay.Enabled := True;
+    ReloadAfterCodeCompletion := False;
+  end;
 end;
 
 procedure TFrmFalconMain.AddMessage(const FileName, Title, Msg: string; Line,

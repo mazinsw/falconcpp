@@ -67,9 +67,9 @@ begin
       Add('false', '', '', '');
       Add('new', '', '', '');
       Add('delete', '', '', '');
-      Add('namespace', '', '', '');
       Add('typename', '', '', '');
       Add('template', '', '', '');
+      Add('namespace', '', '', '');
       Add('namespace', 'namespace statement',
         'namespace name'#13 +
         '{'#13 +

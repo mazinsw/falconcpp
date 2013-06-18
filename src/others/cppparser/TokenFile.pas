@@ -240,9 +240,12 @@ function TTokenFile.LoadFromFileRecurse(Handle: Integer;
 var
   I: Integer;
   TokenRec: TTokenRec;
-  Buffer: array[0..4095] of Char;
+  Buffer: PChar;
+  BufferLen: Integer;
   Item: TTokenClass;
 begin
+  BufferLen := 4096;
+  Buffer := GetMemory(BufferLen);
   for I := 0 to Count - 1 do
   begin
     Item := TTokenClass.Create(ParentList);
@@ -260,19 +263,32 @@ begin
     FileRead(Handle, TokenRec.Token, SizeOf(TTkType));
     Item.Token := TokenRec.Token;
     FileRead(Handle, TokenRec.Len1, SizeOf(Word));
-    FileRead(Handle, Buffer, TokenRec.Len1);
+    FileRead(Handle, Buffer^, TokenRec.Len1);
     Buffer[TokenRec.Len1] := #0;
     Item.Name := StrPas(Buffer);
     FileRead(Handle, TokenRec.Len2, SizeOf(Word));
-    FileRead(Handle, Buffer, TokenRec.Len2);
+    if TokenRec.Len2 >= BufferLen then
+    begin
+      FreeMemory(Buffer);
+      BufferLen := TokenRec.Len2 + TokenRec.Len2 div 2;
+      Buffer := GetMemory(BufferLen);
+    end;
+    FileRead(Handle, Buffer^, TokenRec.Len2);
     Buffer[TokenRec.Len2] := #0;
     Item.Flag := StrPas(Buffer);
     FileRead(Handle, TokenRec.Len3, SizeOf(Word));
-    FileRead(Handle, Buffer, TokenRec.Len3);
+    if TokenRec.Len3 >= BufferLen then
+    begin
+      FreeMemory(Buffer);
+      BufferLen := TokenRec.Len3 + TokenRec.Len3 div 2;
+      Buffer := GetMemory(BufferLen);
+    end;
+    FileRead(Handle, Buffer^, TokenRec.Len3);
     Buffer[TokenRec.Len3] := #0;
     Item.Comment := StrPas(Buffer);
     LoadFromFileRecurse(Handle, Item, TokenRec.Count);
   end;
+  FreeMemory(Buffer);
   Result := True;
 end;
 
@@ -1838,8 +1854,8 @@ begin
       ShowClassFunction := True;
     if not (Token.Items[I].Token in [tkParams]) and ShowClassFunction then
     begin
-      NewToken := TTokenClass.Create;
-      NewToken.Assign(Token.Items[I]); //copy
+      NewToken := Token.Items[I];//TTokenClass.Create;
+      //NewToken.Assign(Token.Items[I]); //copy
       if Assigned(InsertList) then
         InsertList.AddObject(CompletionInsertItem(NewToken), NewToken);
       if Assigned(ShowList) then

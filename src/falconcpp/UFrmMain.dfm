@@ -1467,6 +1467,7 @@ object FrmFalconMain: TFrmFalconMain
     Columns = <>
     ItemHeight = 19
     Images = ImgListOutLine
+    OnClose = CodeCompletionClose
     OnExecute = CodeCompletionExecute
     ShortCut = 0
     TimerInterval = 300

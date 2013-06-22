@@ -10,3 +10,174 @@ math.h:58:1: warning: this is the location of the previous definition
 glh_linear.h:180: warning: friend declaration 'bool glh::operator==(const glh::vec<N, T>&, const glh::vec<N, T>&)' declares a non-template function
 glh_linear.h:180: note: (if this is not what you intended, make sure the function template has already been declared and add <> after the function name here) 
 InvMatrix.hpp:28: error: 'boost' has not been declared
+
+already in use:
+%s: In function '%s':
+%s:%d: warning: implicit declaration of function '%s'
+%s:%d: warning: assignment makes pointer from integer without a cast
+%s:%d:%d: error: invalid suffix "%s" on integer constant
+%s:%d: warning: unused variable '%s'
+%s:%d: error: '%s' was not declared in this scope
+%s:%d: error: expected '%s' before '%s'
+%s:%d:%d: error: macro "%s" passed %d arguments, but takes just %d
+%s:%d:%d: error: macro "%s" requires %d arguments, but only %d given
+%s:%d: error: at this point in file
+%s:%d: error: too many arguments to function '%s'
+%s:%d: error: '%s' undeclared (first use in this function)
+%s:%d: error: expected '%s' before numeric constant
+%s:%d: error: (Each undeclared identifier is reported only once for each function it appears in.)
+%s:%d: warning: statement has no effect
+%s:%d: warning: passing argument %d of '%s' makes integer from pointer without a cast
+%s:%d: note: expected '%s' but argument is of type '%s'
+%s:%d: error: invalid conversion from '%s' to '%s'
+%s:%d: error:   initializing argument %d of '%s'
+%s:%d: error: too few arguments to function '%s'
+%s:%s:%s: undefined reference to `%s'
+%s:%d: error: cannot convert '%s' to '%s' for argument '%s' to '%s'
+%s:%d: warning: value computed is not used
+%s:%d: warning: '%s' is used uninitialized in this function
+%s:%d: error: base operand of '%s' has non-pointer type '%s'
+%s:%d:%d: error: %s: No such file or directory
+%s:%d: error: '%s' does not name a type
+%s:%d: error: expected initializer before '%s'
+%s:%d: error: a function-definition is not allowed here before '%s' token expected '%s' at end of input
+%s:%d: warning: return makes integer from pointer without a cast
+%s:%d: warning: overflow in implicit constant conversion
+%s:%d: warning: integer constant is too large for '%s' type
+%s:%d:%d: warning: integer constant is too large for its type
+%s:%d: warning: this decimal constant is unsigned only in ISO C90
+%s:%d: error: expected '%s' before '%s' token
+%s:%d: error: expected expression before '%s' token
+%s:%d: note: '%s' was declared here
+%s:%d: warning: statement with no effect
+%s:%d: error: lvalue required as left operand of assignment
+%s:%d: warning: type defaults to '%s' in declaration of '%s'
+%s:%d: warning: initialization makes integer from pointer without a cast
+%s:%d:%d: warning: character constant too long for its type
+%s:%d: error: expected identifier or '%s' before numeric constant
+%s:%d: error: expected '=', ',', ';', 'asm' or '__attribute__' before '%s'
+%s:%d: warning: label '%s' defined but not used
+%s:%d: error: '%s' has no member named '%s'
+%s:%d: error: array subscript is not an integer
+%s:%d: warning: too few arguments for format
+%s:%d: warning: format '%s' expects type '%s', but argument %d has type '%s'
+%s:%d: error: switch quantity not an integer
+%s:%d: error: incompatible type for argument %d of '%s'
+%s:%d: error: expected statement before '%s' token
+%s:%d: warning: control reaches end of non-void function
+%s:%d: warning: '%s' may be used uninitialized in this function
+%s:%d: warning: missing braces around initializer
+%s:%d: warning: (near initialization for '%s')
+%s:%d: warning: statement is a reference, not call, to function '%s'
+%s:%d: error: case label '%s' not within a switch statement
+%s:%d: error: expected primary-expression before '%s' token
+%s:%d: warning: no return statement in function returning non-void
+%s:%d: error: expected unqualified-id before '%s'
+%s:%d: warning: array subscript is above array bounds
+%s:%d: warning: suggest parentheses around assignment used as truth value
+%s:%d: error: storage size of '%s' isn't known
+%s:%d: error: invalid application of '%s' to incomplete type '%s' 
+%s:%d: warning: incompatible implicit declaration of built-in function '%s'
+%s:%d: warning: comparison between signed and unsigned integer expressions
+%s:%d: warning: deprecated conversion from string constant to '%s'
+%s:%d: error: expected class-name before '%s' token
+%s:%d: error: ISO C++ forbids declaration of '%s' with no type
+%s:%s: error: typedef '%s' is initialized (use decltype instead)
+%s:%d: error: expected constructor, destructor, or type conversion before '%s' token
+%s:%d: error: expected initializer before '%s' token
+%s:%d: error: expected constructor, destructor, or type conversion before '%s'
+In file included from %s:%d:
+%s:%s:(%s): first defined here
+%s:%d: warning: enumeration value '%s' not handled in switch
+%s: In member function '%s':
+%s:%d: error: stray '%s' in program
+%s:%d: error: expected '%s' at end of input
+%s:%d: warning: field width should have type '%s', but argument %d has type '%s'
+%s:%d: error: subscripted value is neither array nor pointer
+%s:%d: error: array type has incomplete element type
+%s:%d: warning: too many arguments for format
+%s:%d: warning: operation on '%s' may be undefined
+%s:%d:%d: error: unterminated comment
+%s:%d:%d: warning: "%s" within comment
+%s:%d:%d: warning: missing terminating %s character
+%s: cannot open output file %s: No such file or directory
+%s: %s: No such file or directory
+%s:%d: error: missing terminating %s character
+%s:%d: error: array size missing in '%s'
+%s:%d: warning: passing argument %d of '%s' from incompatible pointer type
+%s:%d: warning: return type defaults to '%s'
+%s:%d: error: expected identifier or '%s' before '%s' token
+%s:%d: error: expected identifier or '%s' at end of input
+%s:%d: error: expected specifier-qualifier-list before '%s'
+%s:%d: warning: declaration does not declare anything
+%s:%d: error: bit-field '%s' width not an integer constant
+%s:%d: error: '%s' undeclared here (not in a function)
+%s: warning: '%s' after last input file has no effect
+%s: no input files
+%s: preprocessing failed.
+%s:%d: error: zero width for bit-field '%s'
+%s:%d: error: width of '%s' exceeds its type
+%s:%d: warning: braces around scalar initializer
+%s:%d: warning: initialization from incompatible pointer type
+%s:%d: warning: excess elements in scalar initializer
+%s:%d: warning: left-hand operand of comma expression has no effect
+%s:%d: warning: assignment from incompatible pointer type
+%s:%d: warning: initializer-string for array of chars is too long
+%s: no resources
+%s:%d: error: invalid application of '%s' to incomplete type '%s'
+%s:%d: error: void value not ignored as it ought to be
+Creating library file: %s
+%s:%d: warning: useless type name in empty declaration
+%s:%d: warning: unknown conversion type character '%s' in format
+%s:%d: error: parameter name omitted
+%s:%d: error: expected declaration specifiers before '%s'
+%s:%d: error: old-style parameter declarations in prototyped function definition
+%s:%d: warning: empty declaration
+%s:%d: error: expected declaration specifiers before '%s' token
+%s:%d: error: expected declaration specifiers or '%s' before '%s'
+%s:%d: error: storage class specified for parameter '%s'
+%s:%d: error: duplicate member '%s'
+%s:%d: error: expected '%s' before string constant
+%s:%d: error: called object '%s' is not a function
+%s:%d: Error: too many memory references for `%s'
+%s:%d: warning: excess elements in array initializer
+%s:%d: error: size of array '%s' is too large
+%s:%d: error: incompatible types when assigning to type '%s' from type '%s'
+%s:%d: error: invalid operands to binary %s (have '%s' and '%s')
+%s:%d: warning: assuming signed overflow does not occur when assuming that %s is always %s
+%s:%s:(%s): more undefined references to `%s' follow
+%s:%d: warning: extended initializer lists only available with %s or %s
+%s:%d: error: type of formal parameter %d is incomplete
+%s:%d: warning: dereferencing '%s' pointer
+%s:%d: error: request for member '%s' in something not a structure or union
+%s:%d: error: conflicting types for '%s'
+%s:%d: note: previous definition of '%s' was here
+%s:%d: warning: useless storage class specifier in empty declaration
+%s:%d: warning: '%s' was ignored in this declaration
+%s:%d: error: overflow in array dimension
+%s:%d: error: dereferencing pointer to incomplete type
+%s:%d: error: no matching function for call to '%s'
+%s:%d: note: candidates are: %s
+%s:%d: error: declaration of '%s' shadows a parameter
+%s:%d: error: within this context
+%s:%d: note: previous declaration of '%s' was here
+%s:%d: error: return-statement with a value, in function returning '%s'
+%s:%d: error: passing '%s' as '%s' argument of '%s' discards qualifiers
+%s:%d: error: template argument %d is invalid
+%s:%d: error: expected unqualified-id before '%s' token
+%s:%d: warning: return type of '%s' is not '%s'
+%s:%d: warning: '%s' with a value, in function returning void
+%s:%d: warning: '%s' with no value, in function returning non-void
+%s:%d: error: redefinition of '%s'
+%s:%d:%d: warning: integer constant is so large that it is unsigned
+%s:%d: error: '%s' or '%s' invalid for '%s'
+%s:%d: error: variable or field '%s' declared void
+%s:%d: error: expected primary-expression before '%s'
+%s:%d: error: redeclaration of '%s' with no linkage
+%s:(.text+%x): undefined reference to `%s'
+%s: cannot open output file %s: Permission denied
+%s:%d:%d: error: too many decimal points in number
+%s:%d:%d: warning: assignment makes integer from pointer without a cast [enabled by default]
+%s:%d:%d: error: lvalue required as unary '%s' operand
+%s:%d: error: '%s' loop initial declarations are only allowed in %s mode
+%s:%d: note: use option %s or %s to compile your code

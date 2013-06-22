@@ -4004,8 +4004,6 @@ begin
     begin
       Sheet.Memo.GotoLineAndCenter(Line);
       SLine := Sheet.Memo.Lines.Strings[Line - 1];
-      SLine := StringReplace(SLine, #9, GetIdent(Sheet.Memo.TabWidth),
-        [rfReplaceAll]);
       Temp := StringBetween(MMsg, #39, #39, False);
       if (Length(Temp) > 0) then
       begin
@@ -5082,7 +5080,7 @@ begin
         (attri.Name = SYNS_AttrString) or (attri.Name = SYNS_AttrCharacter) then
         Exit;
       if (Key in ['"', '<']) and (attri.Name = SYNS_AttrPreprocessor) and (Pos('include', LineStr) > 0) and
-        (Pos('"', LineStr) = 0) and (Pos('<', LineStr) = 0) and (Pos('>', LineStr) = 0) then
+        ((Pos('"', LineStr) = 0) or (Pos('"', LineStr) >= bCoord.Char)) then
       begin
         sheet.Memo.SelText := Key;
         Key := #0;
@@ -7929,7 +7927,8 @@ begin
       NextChar := LineStr[Length(LineStr)];
     if (Pos('<', LineStr) > 0) and (EndToken <> '>') and (NextChar <> '>') then
       Value := Value + '>'
-    else if (Pos('"', LineStr) > 0) and (EndToken <> '"') and (NextChar <> '"') then
+    else if (Pos('"', LineStr) > 0) and (EndToken <> '"') and
+      ((NextChar <> '"') or (CountChar(LineStr, '"') = 1)) then
       Value := Value + '"';
   end
   else if (Token.Token = tkCodeTemplate) and (Token.Flag <> '') then

@@ -1901,11 +1901,22 @@ begin
     field := '';
     repeat
       case ptr^ of
-        ')': SkipInvPairGetCast(init, ptr, '(', ')', cast);
-        ']': SkipInvPair(init, ptr, '[', ']');
+        ')':
+        begin
+          SkipInvPairGetCast(init, ptr, '(', ')', cast);
+          skipSpace := True;
+        end;
+        ']':
+        begin
+          SkipInvPair(init, ptr, '[', ']');
+          skipSpace := True;
+        end;
         '/':
           if (ptr = init) or ((ptr - 1)^ <> '*') then
-            SkipMultlineCommentInv(init, ptr)
+          begin
+            SkipMultlineCommentInv(init, ptr);
+            skipSpace := True;
+          end
           else
           begin
             if sep <> '::' then
@@ -1924,6 +1935,22 @@ begin
           field := ptr^ + field;
       end;
       Dec(ptr);
+      if skipSpace then
+      begin
+        skipSpace := False;
+        //skipspace
+        while (ptr >= init) and (ptr^ in LineChars + SpaceChars) do
+        begin
+          // jump sigle line comment
+          if ptr^ in LineChars then
+          begin
+            if (ptr > init) and ((ptr - 1)^ in LineChars) then
+              Dec(ptr);
+            ptr := StartOfCommentInv(init, ptr);
+          end;
+          Dec(ptr);
+        end;
+      end;
     until (ptr < init) or not (ptr^ in LetterChars + DigitChars + [')', ']', '/']);
     if field <> '' then
       _fields := field + sep + _fields;

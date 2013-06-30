@@ -390,6 +390,8 @@ type
     PopTabsCopyFileName: TTBXItem;
     TBXSeparatorItem17: TTBXSeparatorItem;
     PopTabsReadOnly: TTBXItem;
+    EditLineComment: TTBXItem;
+    TBXSeparatorItem30: TTBXSeparatorItem;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure About1Click(Sender: TObject);
@@ -630,6 +632,7 @@ type
     procedure RunRevStepReturnClick(Sender: TObject);
     procedure SysCommandProc(var Msg: TWMSysCommand); message WM_SYSCOMMAND;
     procedure CodeCompletionClose(Sender: TObject);
+    procedure EditLineCommentClick(Sender: TObject);
   private
     { Private declarations }
     fWorkerThread: TThread;
@@ -1800,6 +1803,9 @@ begin
     Flag := Assigned(CurrentSheet) and CurrentSheet.Memo.SelAvail and CurrentSheet.Memo.Focused;
     EditIndent.Enabled := Flag;
     EditUnindent.Enabled := Flag;
+    Flag := Assigned(CurrentSheet) and  (CurrentSheet.Memo.Lines.Count > 0)
+      and CurrentSheet.Memo.Focused;
+    EditLineComment.Enabled := Flag;
     Flag := Assigned(CurrentSheet) and AStyleLoaded;
     EditFormat.Enabled := Flag;
   end;
@@ -5004,6 +5010,8 @@ var
   I: Integer;
 begin
   Sheet := TSourceFileSheet(TComponent(Sender).Owner);
+  if (ssCtrl in Shift) and (Key = VK_DIVIDE) then
+    EditLineCommentClick(EditLineComment);
   if (ssCtrl in Shift) and (Key = VK_OEM_PLUS) then
     ViewZoomIncClick(ViewZoomInc);
   if (ssCtrl in Shift) and (Key = VK_OEM_MINUS) then
@@ -8837,6 +8845,15 @@ begin
   if not GetActiveSheet(sheet) then
     Exit;
   sheet.Memo.CommandProcessor(ecBlockUnindent, #0, nil);
+end;
+
+procedure TFrmFalconMain.EditLineCommentClick(Sender: TObject);
+var
+  sheet: TSourceFileSheet;
+begin
+  if not GetActiveSheet(sheet) then
+    Exit;
+  sheet.Memo.ToggleLineComment;
 end;
 
 procedure TFrmFalconMain.CheckIfFilesHasChanged;

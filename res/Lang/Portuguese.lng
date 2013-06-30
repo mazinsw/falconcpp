@@ -60,7 +60,9 @@ Version=2.0
 236=Identar
 237=Unidentar
 #-----------
-239=Formatar
+239=Adicionar/Remover comentário de linha
+#-----------
+241=Formatar
 
 #Menu Search
 334=Procurar...

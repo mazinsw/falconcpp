@@ -339,7 +339,7 @@ procedure TFrmFind.FormCreate(Sender: TObject);
 var
   bmp: TBitmap;
 begin
-  Height := 210;
+  ClientHeight := 179;
   TabCtrl.Height := 166;
   DoubleBuffered := True;
   TabCtrl.DoubleBuffered := True;
@@ -402,7 +402,7 @@ begin
   bmp := TBitmap.Create;
   if BtnMore.Tag = 1 then
   begin
-    Height := 210;
+    ClientHeight := 179;
     TabCtrl.Height := 166;
     BtnMore.Tag := 0;
     bmp.LoadFromResourceName(HInstance, 'moredown');
@@ -424,7 +424,7 @@ begin
     GBoxDirection.Visible := TabCtrl.TabIndex <> 2;
     RdbtUp.Enabled := TabCtrl.TabIndex < 1;
     GBoxTransp.Visible := True;
-    Height := 394;
+    ClientHeight := 362;
     TabCtrl.Height := 349;
     BtnMore.Tag := 1;
     bmp.LoadFromResourceName(HInstance, 'moreup');

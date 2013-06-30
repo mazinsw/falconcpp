@@ -103,6 +103,7 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+    procedure ToggleLineComment;
     function GetBalancingBracketEx(const APoint: TBufferCoord;
       Bracket: Char): Integer;
     property LinkEnable: Boolean read fLinkEnable write fLinkEnable;
@@ -1099,7 +1100,7 @@ var
   attri: TSynHighlighterAttributes;
   Unindent, caretChanged, IsCommentLine: Boolean;
 begin
-  if not (eoAutoIndent in Options) then
+  if not (eoAutoIndent in Options) or ReadOnly then
     Exit;
   caretChanged:= False;
   c := CaretXY;
@@ -1203,6 +1204,8 @@ var
   LineStr, StrPrevBracket, StrBracket, Temp: string;
   SpaceCount: Integer;
 begin
+  if ReadOnly then
+    Exit;
   c := CaretXY;
   LineStr := LineText;
   StrPrevBracket := Copy(LineStr, 1, c.Char - 2);
@@ -1392,6 +1395,134 @@ begin
       Break;
     end;
   Result := CloseCount - OpenCount;
+end;
+
+procedure TSynEditEx.ToggleLineComment;
+var
+  I, J, MinStart, cmmLines: Integer;
+  s: string;
+  ptr: PChar;
+  BS, BE, BC, p, p2: TBufferCoord;
+begin
+  cmmLines := 0;
+  if SelAvail then
+  begin
+    BS := BlockBegin;
+    BE := BlockEnd;
+    BC := CaretXY;
+  end
+  else
+  begin
+    BS := CaretXY;
+    BE := CaretXY;
+    BC := CaretXY;
+  end;
+  MinStart := -1;
+  // detect if is commented
+  for I := BS.Line to BE.Line do
+  begin
+    s := Lines[I - 1];
+    J := 0;
+    // get start of comment
+    ptr := PChar(s);
+    if ptr^ <> #0 then
+      repeat
+        if not (ptr^ in [#9, #32]) then
+          Break;
+        Inc(J);
+        Inc(ptr);
+      until ptr^ = #0;
+    if (ptr^ = '/') and ((ptr + 1)^ = '/') then
+    begin
+      Inc(cmmLines);
+    end
+    else if (ptr^ <> #0) and ((MinStart < 0) or (J < MinStart)) then
+      MinStart := J;
+  end;
+  Inc(MinStart);
+  if MinStart = 0 then
+    Inc(MinStart);
+  // little lines commented. comment!
+  if cmmLines <= (BE.Line - BS.Line + 1) div 2 then
+  begin
+    for I := BS.Line to BE.Line do
+    begin
+      // skip already commented lines
+      if cmmLines > 0 then
+      begin
+        s := Lines[I - 1];
+        Dec(cmmLines);
+        // get start of comment
+        ptr := PChar(s);
+        if ptr^ <> #0 then
+          repeat
+            if not (ptr^ in [#9, #32]) then
+              Break;
+            Inc(ptr);
+          until ptr^ = #0;
+        if (ptr^ = '/') and ((ptr + 1)^ = '/') then
+          Continue;
+      end;
+      p.Line := I;
+      p.Char := MinStart;
+      CaretXY := p;
+      SelText := '// ';
+      if (p.Line = BS.Line) and (p.Char < BS.Char) then
+        Inc(BS.Char, 3);
+      if (p.Line = BE.Line) and (p.Char < BE.Char)  then
+        Inc(BE.Char, 3);
+    end;
+  end
+  else // uncomment
+  begin
+    for I := BS.Line to BE.Line do
+    begin
+      // skip uncommented lines
+      s := Lines[I - 1];
+      J := 0;
+      // get start of comment
+      ptr := PChar(s);
+      if ptr^ <> #0 then
+        repeat
+          if not (ptr^ in [#9, #32]) then
+            Break;
+          Inc(J);
+          Inc(ptr);
+        until ptr^ = #0;
+      if (ptr^ = '/') and ((ptr + 1)^ = '/') then
+      begin
+        Dec(cmmLines);
+        Inc(J);
+        p.Line := I;
+        p.Char := J;
+        p2.Line := I;
+        p2.Char := J + 2;
+        if (ptr + 2)^ = ' ' then
+          Inc(p2.Char);
+        SetCaretAndSelection(p2, p, p2);
+        SelText := '';
+        if (p.Line = BS.Line) and (p.Char <= BS.Char) then
+        begin
+          Dec(BS.Char, p2.Char - p.Char);
+          if BS.Char <= 0 then
+            BS.Char := 1;
+        end;
+        if (p.Line = BE.Line) and (p.Char <= BE.Char)  then
+        begin
+          Dec(BE.Char, p2.Char - p.Char);
+          if BE.Char <= 0 then
+            BE.Char := 1;
+        end;
+        if cmmLines = 0 then
+          Break;
+      end;
+    end;
+  end;
+  if BC.Line = BS.Line then
+    BC.Char := BS.Char
+  else
+    BC.Char := BE.Char;
+  SetCaretAndSelection(BC, BS, BE);
 end;
 
 end.

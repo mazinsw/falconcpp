@@ -60,7 +60,9 @@ Version=your translate version
 236=Indent
 237=Unindent
 #-----------
-239=Format
+239=Toggle Line Comment
+#-----------
+241=Format
 
 #Search Menu
 334=Find...

@@ -699,6 +699,14 @@ object FrmFalconMain: TFrmFalconMain
           ShortCut = 24661
           OnClick = EditUnindentClick
         end
+        object TBXSeparatorItem30: TTBXSeparatorItem
+        end
+        object EditLineComment: TTBXItem
+          Caption = 'Toggle Line Comment'
+          Enabled = False
+          ShortCut = 16577
+          OnClick = EditLineCommentClick
+        end
         object TBXSeparatorItem43: TTBXSeparatorItem
         end
         object EditFormat: TTBXItem

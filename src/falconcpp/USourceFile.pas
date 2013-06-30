@@ -1971,7 +1971,7 @@ procedure TProjectFile.Build;
 
 var
   Makefile, FileContSpc, Temp, IncludeFileName, IncludeName: string;
-  ExecFileName, ExecDirectory, ExecParams: string;
+  ExecFileName, ExecDirectory, ExecParams, ProjectDir: string;
   Files: TStrings;
   Res, MkWar, Includes, IncludeList: TStrings;
   MkRes, I, J, K: Integer;
@@ -2015,6 +2015,7 @@ begin
     Res.Free;
     if HasResource or (FileType = FILE_TYPE_PROJECT) then
     begin
+      ProjectDir := ExtractFilePath(FileName);
       IncludeList := TStringList.Create;
       GetIncludeDirs(ExtractFilePath(FileName), FFlags, IncludeList);
       for I := 0 to Files.Count - 1 do
@@ -2037,7 +2038,8 @@ begin
               for K := 0 to IncludeList.Count - 1 do
               begin
                 IncludeFileName := ExpandFileName(IncludeList.Strings[K] + IncludeName);
-                if FileExists(IncludeFileName) then
+                if FileExists(IncludeFileName) and
+                  (Pos(':', ExtractRelativePath(ProjectDir, IncludeFileName)) = 0) then
                 begin
                   Temp := IncludeFileName;
                   SkipIncludeFile := False;
@@ -2051,7 +2053,8 @@ begin
                 begin
                   IncludeFileName := ExpandFileName(FrmFalconMain.FilesParsed.PathList.Strings[K] +
                     IncludeName);
-                  if FileExists(IncludeFileName) then
+                  if FileExists(IncludeFileName) or
+                    (Pos(':', ExtractRelativePath(ProjectDir, IncludeFileName)) > 0) then
                   begin
                     SkipIncludeFile := True;
                     Break;

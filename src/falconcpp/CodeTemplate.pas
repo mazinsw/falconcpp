@@ -15,6 +15,18 @@ implementation
 
 uses SysUtils;
 
+var
+  FList: TList;
+
+procedure clearTemplateList;
+var
+  I: Integer;
+begin
+  for I := 0 to FList.Count - 1 do
+    TTokenClass(FList.Items[I]).Free;
+  FList.Clear;
+end;
+
 procedure AddTemplates(Trigger: string; Scope: TTkType; ItemList,
   ShowList: TStrings; CompletionColors: TCompletionColors;
   Images: array of Integer; CompilerType: Integer; Filter: TTokenSearchMode);
@@ -32,14 +44,17 @@ procedure AddTemplates(Trigger: string; Scope: TTkType; ItemList,
     NewToken.Token := tkCodeTemplate;
     ItemList.AddObject(CompletionInsertItem(NewToken), NewToken);
     ShowList.AddObject(CompletionShowItem(NewToken, CompletionColors, Images), NewToken);
+    FList.Add(NewToken);
   end;
 
 var
   Temp: string;
 begin
+  clearTemplateList;
   Trigger := LowerCase(Trigger);
   if (Filter = []) or (tkVariable in Filter) then
   begin
+    Add('void', '', '', '');
     Add('char', '', '', '');
     Add('short', '', '', '');
     Add('int', '', '', '');
@@ -485,5 +500,25 @@ begin
     AEditor.EndUpdate;
   end;
 end;
+
+procedure createTemplateList;
+begin
+  FList := TList.Create;
+end;
+
+procedure freeTemplateList;
+begin
+  clearTemplateList;
+  FList.Free;
+end;
+
+
+initialization
+
+createTemplateList;
+
+finalization
+
+freeTemplateList;
 
 end.

@@ -790,6 +790,7 @@ type
       SourceFile: TSourceFile; var TODOSourceFile: TSourceFile): Boolean;
     function SearchHeaderFile(SourceFile: TSourceFile;
       var HdrFile: TSourceFile; var HdrFileName: string): Boolean;
+    procedure UpdateEditorZoom;
   public
     { Public declarations }
     LastSearch: TSearchItem;
@@ -1121,7 +1122,7 @@ begin
     if FrmFalconMain.GetActiveSheet(sheet) then
     begin
       fTokenFile.Data := sheet.SourceFile;
-      fSource := sheet.Memo.Text;
+      fSource := sheet.Memo.UnCollapsedLines.Text;
     end
     else
     begin
@@ -1992,18 +1993,20 @@ begin
     Node := Parent;
     if not (Token.Items[I].Token in [tkParams, tkScope, tkScopeClass, tkUsing]) then
     begin
-      if Token.Items[I].Token in [tkFunction, tkProtoType, tkConstructor, tkDestructor] then
+      if Token.Items[I].Token in [tkFunction, tkProtoType, tkConstructor,
+        tkDestructor, tkOperator] then
       begin
         if Token.Items[I].Token in [tkConstructor, tkDestructor] then
         begin
           S := GetFuncScope(Token.Items[I]) +
             Token.Items[I].Name + GetFuncProtoTypes(Token.Items[I]);
-
         end
         else
         begin
           S := Token.Items[I].Name +
             GetFuncProtoTypes(Token.Items[I]) + ' : ' + Token.Items[I].Flag;
+          if Token.Items[I].Token = tkOperator then
+            S := 'operator' + S;
         end;
       end
       else
@@ -2061,7 +2064,7 @@ begin
   if (FileName = '-') and (SourceFile <> nil) and SourceFile.GetSheet(sheet) then
   begin
     FileObj.FileName := SourceFile.FileName;
-    FileObj.Text := sheet.Memo.Text;
+    FileObj.Text := sheet.Memo.UnCollapsedLines.Text;
   end
   else
     FileObj.FileName := FileName;
@@ -2092,7 +2095,7 @@ begin
     if (prop <> nil) and prop.GetSheet(sheet) then
     begin
       FileObj.FileName := prop.FileName;
-      FileObj.Text := sheet.Memo.Text;
+      FileObj.Text := sheet.Memo.UnCollapsedLines.Text;
       ObjList.AddObject('-', FileObj);
     end
     else if (prop = nil) or (prop.Saved) then
@@ -2190,6 +2193,24 @@ begin
   begin
     SynMemo := TSourceFileSheet(PageControlEditor.Pages[I]).Memo;
     TSourceFileSheet.UpdateEditor(SynMemo);
+  end;
+end;
+
+//update editor zoom
+
+procedure TFrmFalconMain.UpdateEditorZoom;
+var
+  I: Integer;
+  SynMemo: TSynEditEx;
+begin
+  for I := 0 to PageControlEditor.PageCount - 1 do
+  begin
+    if SHEET_TYPE_FILE = TPropertySheet(PageControlEditor.Pages[I]).SheetType then
+    begin
+      SynMemo := TSourceFileSheet(PageControlEditor.Pages[I]).Memo;
+      SynMemo.Font.Size := ZoomEditor;
+      SynMemo.Gutter.Font.Size := ZoomEditor;
+    end;
   end;
 end;
 
@@ -4120,7 +4141,11 @@ begin
       NewFile.Project.CompilePropertyChanged := True;
     end;
     if not References then
-      NewFile.Edit.Memo.Lines.LoadFromFile(Files.Strings[I])
+    begin
+      NewFile.Edit.Memo.LockFoldUpdate;
+      NewFile.Edit.Memo.Lines.LoadFromFile(Files.Strings[I]);
+      NewFile.Edit.Memo.UnlockFoldUpdate;
+    end
     else
     begin
       NewFile.DateOfFile := FileDateTime(NewFile.FileName);
@@ -4519,20 +4544,20 @@ var
   Token: TTokenClass;
   Node, Parent: PNativeNode;
   SelLine, SelStart: Integer;
-  BufferCoord: TBufferCoord;
+  BC: TBufferCoord;
 begin
   Result := nil;
-  BufferCoord := Memo.CaretXY;
-  SelLine := BufferCoord.Line;
-  if BufferCoord.Line > 0 then
+  BC := Memo.CaretXY;
+  SelLine := BC.Line;
+  if BC.Line > 0 then
   begin
-    if BufferCoord.Char > (Length(Memo.Lines[SelLine - 1]) + 1) then
-      BufferCoord.Char := Length(Memo.Lines[SelLine - 1]) + 1;
+    if BC.Char > (Length(Memo.Lines[SelLine - 1]) + 1) then
+      BC.Char := Length(Memo.Lines[SelLine - 1]) + 1;
   end;
   if ShowInTreeview and DebugReader.Running then
     Exit;
-  SelStart := Memo.RowColToCharIndex(BufferCoord);
-  if TokenFile.GetTokenAt(Token, SelStart, SelLine) then
+  SelStart := Memo.RowColToCharIndex(Memo.RealBufferCoord(BC));
+  if TokenFile.GetTokenAt(Token, SelStart, Memo.GetRealLineNumber(SelLine)) then
   begin
     if Assigned(Token.Parent) and
       (Token.Parent.Token in [tkParams, tkFunction, tkPrototype,
@@ -4877,6 +4902,7 @@ var
   Token: TTokenClass;
   SelStart: Integer;
   InputError: Boolean;
+  WS: TBufferCoord;
 begin
   //#include <stdio.h>
   if (AttriName = SYNS_AttrPreprocessor) and (FirstWord = 'include') then
@@ -4965,12 +4991,13 @@ begin
   begin
     if not GetActiveSheet(sheet) then
       Exit;
-    SelStart := sheet.Memo.RowColToCharIndex(sheet.Memo.WordStart);
-    if not ParseFields(sheet.Memo.Text, SelStart, Input, Fields, InputError) then
+    WS := sheet.Memo.RealBufferCoord(sheet.Memo.WordStart);
+    SelStart := sheet.Memo.RowColToCharIndex(WS);
+    if not ParseFields(sheet.Memo.UnCollapsedLines.Text, SelStart, Input, Fields, InputError) then
       Exit;
     // find declaration
     if not FilesParsed.FindDeclaration(Input, Fields, ActiveEditingFile, TokenFileItem,
-      Token, SelStart, sheet.Memo.WordStart.Line) then
+      Token, SelStart, WS.Line) then
       Exit;
     if TokenFileItem = ActiveEditingFile then //current file
     begin
@@ -5007,7 +5034,6 @@ procedure TFrmFalconMain.TextEditorKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 var
   Sheet: TSourceFileSheet;
-  I: Integer;
 begin
   Sheet := TSourceFileSheet(TComponent(Sender).Owner);
   if (ssCtrl in Shift) and (Key = VK_DIVIDE) then
@@ -5019,11 +5045,7 @@ begin
   if (ssCtrl in Shift) and ((Key = VK_NUMPAD0) or (Key = Ord('0'))) then
   begin
     ZoomEditor := Config.Editor.FontSize;
-    for I := 0 to PageControlEditor.PageCount - 1 do
-    begin
-      if SHEET_TYPE_FILE = TPropertySheet(PageControlEditor.Pages[I]).SheetType then
-        TSourceFileSheet(PageControlEditor.Pages[I]).Memo.Font.Size := ZoomEditor;
-    end;
+    UpdateEditorZoom;
   end;
   CanShowHintTip := False;
   TimerHintTipEvent.Enabled := False;
@@ -5069,219 +5091,218 @@ var
   bCoord: TBufferCoord;
 begin
   LastKeyPressed := Key;
-  if GetActiveSheet(sheet) then
+  if not GetActiveSheet(sheet) then
+    Exit;
+  bCoord := sheet.Memo.CaretXY;
+  LineStr := '';
+  if bCoord.Line > 0 then
+    LineStr := sheet.Memo.Lines.Strings[bCoord.Line - 1];
+  if (bCoord.Char > 1) and (Length(LineStr) >= bCoord.Char - 1) and
+    (LineStr[bCoord.Char - 1] in ['a'..'z', 'A'..'Z']) then
+    prev_word := GetLastWord(Copy(LineStr, 1, bCoord.Char))
+  else
+    prev_word := '';
+  if (bCoord.Line > 0) and (bCoord.Char > Length(LineStr)) then
+    bCoord.Char := Length(sheet.Memo.Lines.Strings[bCoord.Line - 1]);
+  if sheet.Memo.GetHighlighterAttriAtRowCol(bCoord, token, attri) then
   begin
-    bCoord := sheet.Memo.CaretXY;
-    LineStr := '';
-    if bCoord.Line > 0 then
-      LineStr := sheet.Memo.Lines.Strings[bCoord.Line - 1];
-    if (bCoord.Char > 1) and (Length(LineStr) >= bCoord.Char - 1) and
-      (LineStr[bCoord.Char - 1] in ['a'..'z', 'A'..'Z']) then
-      prev_word := GetLastWord(Copy(LineStr, 1, bCoord.Char))
-    else
-      prev_word := '';
-    if (bCoord.Line > 0) and (bCoord.Char > Length(LineStr)) then
-      bCoord.Char := Length(sheet.Memo.Lines.Strings[bCoord.Line - 1]);
-    if sheet.Memo.GetHighlighterAttriAtRowCol(bCoord, token, attri) then
-    begin
-      if (attri.Name = SYNS_AttrComment) or (attri.Name = SYNS_AttrDocComment) or
-        (attri.Name = SYNS_AttrString) or (attri.Name = SYNS_AttrCharacter) then
-        Exit;
-      if (Key in ['"', '<']) and (attri.Name = SYNS_AttrPreprocessor) and (Pos('include', LineStr) > 0) and
-        ((Pos('"', LineStr) = 0) or (Pos('"', LineStr) >= bCoord.Char)) then
-      begin
-        sheet.Memo.SelText := Key;
-        Key := #0;
-        CodeCompletion.ActivateCompletion;
-        Exit;
-      end;
-    end;
-    // auto code completion
-    if (Key in ['a'..'z', 'A'..'Z']) and (Length(prev_word) >= 3) and
-      not CodeCompletion.Form.Showing and ((FEmptyLineResult <> bCoord.Line)
-      or (FEmptyCharResult > bCoord.Char)) then
+    if (attri.Name = SYNS_AttrComment) or (attri.Name = SYNS_AttrDocComment) or
+      (attri.Name = SYNS_AttrString) or (attri.Name = SYNS_AttrCharacter) then
+      Exit;
+    if (Key in ['"', '<']) and (attri.Name = SYNS_AttrPreprocessor) and (Pos('include', LineStr) > 0) and
+      ((Pos('"', LineStr) = 0) or (Pos('"', LineStr) >= bCoord.Char)) then
     begin
       sheet.Memo.SelText := Key;
       Key := #0;
       CodeCompletion.ActivateCompletion;
-      if not CodeCompletion.Form.Showing then
-      begin
-        FEmptyLineResult := bCoord.Line;
-        FEmptyCharResult := bCoord.Char;
-      end
-      else
-      begin
-        FEmptyLineResult := 0;
-        FEmptyCharResult := 0;
-      end;
       Exit;
+    end;
+  end;
+  // auto code completion
+  if (Key in ['a'..'z', 'A'..'Z']) and (Length(prev_word) >= 3) and
+    not CodeCompletion.Form.Showing and ((FEmptyLineResult <> bCoord.Line)
+    or (FEmptyCharResult > bCoord.Char)) then
+  begin
+    sheet.Memo.SelText := Key;
+    Key := #0;
+    CodeCompletion.ActivateCompletion;
+    if not CodeCompletion.Form.Showing then
+    begin
+      FEmptyLineResult := bCoord.Line;
+      FEmptyCharResult := bCoord.Char;
     end
-    else if not (Key in ['a'..'z', 'A'..'Z']) or not (Length(prev_word) > 3) then
+    else
     begin
       FEmptyLineResult := 0;
       FEmptyCharResult := 0;
     end;
-    if Key = '(' then
+    Exit;
+  end
+  else if not (Key in ['a'..'z', 'A'..'Z']) or not (Length(prev_word) > 3) then
+  begin
+    FEmptyLineResult := 0;
+    FEmptyCharResult := 0;
+  end;
+  if Key = '(' then
+  begin
+    if Config.Editor.AutoCloseBrackets and
+      (sheet.Memo.GetBalancingBracketEx(sheet.Memo.CaretXY, '(') <= 0) then
     begin
-      if Config.Editor.AutoCloseBrackets and
-        (sheet.Memo.GetBalancingBracketEx(sheet.Memo.CaretXY, '(') <= 0) then
+      Key := #0;
+      sheet.Memo.SelText := '()';
+      sheet.Memo.CaretX := sheet.Memo.CaretX - 1;
+    end;
+    TimerHintParams.Enabled := False;
+    TimerHintParams.Enabled := True;
+  end
+  else if Key = '[' then
+  begin
+    if not Config.Editor.AutoCloseBrackets then
+      Exit;
+    if sheet.Memo.GetBalancingBracketEx(sheet.Memo.CaretXY, '[') > 0 then
+      Exit;
+    sheet.Memo.SelText := ']';
+    sheet.Memo.CaretX := sheet.Memo.CaretX - 1;
+  end
+  else if (Key = ')') then {and (sheet.Memo.LastKeyPressed = '(') and Config.Editor.AutoCloseBrackets}
+  begin
+    if sheet.Memo.Lines.Count >= sheet.Memo.CaretY then
+    begin
+      I := sheet.Memo.GetBalancingBracketEx(sheet.Memo.CaretXY, '(');
+      if I < 0 then
+        Exit;
+      LineStr := sheet.Memo.Lines.Strings[sheet.Memo.CaretY - 1];
+      LineStr := Copy(LineStr, sheet.Memo.CaretX, Length(LineStr));
+      if (LineStr <> '') and (LineStr[1] = ')') then
       begin
         Key := #0;
-        sheet.Memo.SelText := '()';
-        sheet.Memo.CaretX := sheet.Memo.CaretX - 1;
+        sheet.Memo.CaretX := sheet.Memo.CaretX + 1;
       end;
-      TimerHintParams.Enabled := False;
-      TimerHintParams.Enabled := True;
-    end
-    else if Key = '[' then
+    end;
+  end
+  else if Key = ']' then
+  begin
+    if sheet.Memo.Lines.Count >= sheet.Memo.CaretY then
     begin
-      if not Config.Editor.AutoCloseBrackets then
+      I := sheet.Memo.GetBalancingBracketEx(sheet.Memo.CaretXY, '[');
+      if I < 0 then
         Exit;
-      if sheet.Memo.GetBalancingBracketEx(sheet.Memo.CaretXY, '[') > 0 then
-        Exit;
-      sheet.Memo.SelText := ']';
-      sheet.Memo.CaretX := sheet.Memo.CaretX - 1;
-    end
-    else if (Key = ')') then {and (sheet.Memo.LastKeyPressed = '(') and Config.Editor.AutoCloseBrackets}
-    begin
-      if sheet.Memo.Lines.Count >= sheet.Memo.CaretY then
+      LineStr := sheet.Memo.Lines.Strings[sheet.Memo.CaretY - 1];
+      LineStr := Copy(LineStr, sheet.Memo.CaretX, Length(LineStr));
+      if (LineStr <> '') and (LineStr[1] = ']') then
       begin
-        I := sheet.Memo.GetBalancingBracketEx(sheet.Memo.CaretXY, '(');
-        if I < 0 then
-          Exit;
-        LineStr := sheet.Memo.Lines.Strings[sheet.Memo.CaretY - 1];
-        LineStr := Copy(LineStr, sheet.Memo.CaretX, Length(LineStr));
-        if (LineStr <> '') and (LineStr[1] = ')') then
-        begin
-          Key := #0;
-          sheet.Memo.CaretX := sheet.Memo.CaretX + 1;
-        end;
+        Key := #0;
+        sheet.Memo.CaretX := sheet.Memo.CaretX + 1;
       end;
-    end
-    else if Key = ']' then
+    end;
+  end
+  else if Key = '{' then
+  begin
+    emptyLine := False;
+    LineStr := '';
+    j := 0;
+    if sheet.Memo.SelAvail then
     begin
-      if sheet.Memo.Lines.Count >= sheet.Memo.CaretY then
-      begin
-        I := sheet.Memo.GetBalancingBracketEx(sheet.Memo.CaretXY, '[');
-        if I < 0 then
-          Exit;
-        LineStr := sheet.Memo.Lines.Strings[sheet.Memo.CaretY - 1];
-        LineStr := Copy(LineStr, sheet.Memo.CaretX, Length(LineStr));
-        if (LineStr <> '') and (LineStr[1] = ']') then
-        begin
-          Key := #0;
-          sheet.Memo.CaretX := sheet.Memo.CaretX + 1;
-        end;
-      end;
+      bStart.Line := sheet.Memo.BlockBegin.Line;
+      bStart.Char := sheet.Memo.BlockBegin.Char;
+      bEnd.Line := sheet.Memo.BlockEnd.Line;
+      bEnd.Char := sheet.Memo.BlockEnd.Char;
     end
-    else if Key = '{' then
+    else
     begin
-      emptyLine := False;
-      LineStr := '';
-      j := 0;
-      if sheet.Memo.SelAvail then
+      bStart.Line := sheet.Memo.CaretY;
+      bStart.Char := sheet.Memo.CaretX;
+      bEnd.Line := bStart.Line;
+      bEnd.Char := bStart.Char;
+    end;
+    if sheet.Memo.Lines.Count >= bStart.Line then
+    begin
+      LineStr := sheet.Memo.Lines.Strings[bStart.Line - 1];
+      if not sheet.Memo.SelAvail then
+        bEnd.Char := Length(LineStr) + 1;
+      LineStr := Copy(LineStr, 1, bStart.Char - 1);
+      p := PChar(LineStr);
+      if p^ <> #0 then
+        repeat
+          if not (p^ in [#9, #32]) then Break;
+          if p^ = #9 then
+            Inc(j, sheet.Memo.TabWidth)
+          else
+            Inc(j);
+          Inc(p);
+        until p^ = #0;
+      emptyLine := p^ = #0;
+    end;
+    if emptyLine then
+    begin
+      replaceLine := False;
+      SpaceCount1 := j;
+      if sheet.Memo.Lines.Count >= bStart.Line - 1 then
       begin
-        bStart.Line := sheet.Memo.BlockBegin.Line;
-        bStart.Char := sheet.Memo.BlockBegin.Char;
-        bEnd.Line := sheet.Memo.BlockEnd.Line;
-        bEnd.Char := sheet.Memo.BlockEnd.Char;
-      end
-      else
-      begin
-        bStart.Line := sheet.Memo.CaretY;
-        bStart.Char := sheet.Memo.CaretX;
-        bEnd.Line := bStart.Line;
-        bEnd.Char := bStart.Char;
-      end;
-      if sheet.Memo.Lines.Count >= bStart.Line then
-      begin
-        LineStr := sheet.Memo.Lines.Strings[bStart.Line - 1];
-        if not sheet.Memo.SelAvail then
-          bEnd.Char := Length(LineStr) + 1;
-        LineStr := Copy(LineStr, 1, bStart.Char - 1);
+        LineStr := sheet.Memo.Lines.Strings[bStart.Line - 2];
         p := PChar(LineStr);
+        i := 0;
         if p^ <> #0 then
           repeat
             if not (p^ in [#9, #32]) then Break;
             if p^ = #9 then
-              Inc(j, sheet.Memo.TabWidth)
+              Inc(i, sheet.Memo.TabWidth)
             else
-              Inc(j);
+              Inc(i);
             Inc(p);
           until p^ = #0;
-        emptyLine := p^ = #0;
+        replaceLine := j <> i;
+        SpaceCount1 := i;
       end;
-      if emptyLine then
+      Key := #0;
+      S := GetLeftSpacing(SpaceCount1, sheet.Memo.TabWidth, sheet.Memo.WantTabs and not (eoTabsToSpaces in sheet.Memo.Options));
+      bStart.Char := 1;
+      if Config.Editor.AutoCloseBrackets then
       begin
-        replaceLine := False;
-        SpaceCount1 := j;
-        if sheet.Memo.Lines.Count >= bStart.Line - 1 then
-        begin
-          LineStr := sheet.Memo.Lines.Strings[bStart.Line - 2];
-          p := PChar(LineStr);
-          i := 0;
-          if p^ <> #0 then
-            repeat
-              if not (p^ in [#9, #32]) then Break;
-              if p^ = #9 then
-                Inc(i, sheet.Memo.TabWidth)
-              else
-                Inc(i);
-              Inc(p);
-            until p^ = #0;
-          replaceLine := j <> i;
-          SpaceCount1 := i;
-        end;
-        Key := #0;
-        S := GetLeftSpacing(SpaceCount1, sheet.Memo.TabWidth, sheet.Memo.WantTabs and not (eoTabsToSpaces in sheet.Memo.Options));
-        bStart.Char := 1;
-        if Config.Editor.AutoCloseBrackets then
-        begin
-          str := '';
-          if replaceLine then
-            str := S;
-          str := str + '{' + #13 + S + GetLeftSpacing(sheet.Memo.TabWidth,
-            sheet.Memo.TabWidth, sheet.Memo.WantTabs and not (eoTabsToSpaces in sheet.Memo.Options)) + #13 + S + '}';
-          sheet.Memo.BeginUpdate;
-          if replaceLine then
-            sheet.Memo.SetCaretAndSelection(bStart, bStart, bEnd);
-          BracketBalacing := sheet.Memo.GetBalancingBracketEx(sheet.Memo.CaretXY, '{');
-          if BracketBalacing <= 0 then
-            sheet.Memo.SelText := str
-          else
-          begin
-            I := Pos('{', str);
-            sheet.Memo.SelText := Copy(str, 1, I);
-          end;
-          sheet.Memo.EndUpdate;
-          Inc(bStart.Line);
-          bStart.Char := Length(GetLeftSpacing(SpaceCount1 + sheet.Memo.TabWidth,
-            sheet.Memo.TabWidth, sheet.Memo.WantTabs and not (eoTabsToSpaces in sheet.Memo.Options))) + 1;
-          sheet.Memo.CaretXY := bStart;
-        end
-        else
-        begin
-          sheet.Memo.BeginUpdate;
-          if replaceLine then
-            sheet.Memo.SetCaretAndSelection(bStart, bStart, bEnd)
-          else
-            S := '';
-          sheet.Memo.SelText := S + '{';
-          sheet.Memo.EndUpdate;
-        end;
-      end
-      else if Config.Editor.AutoCloseBrackets then
-      begin
+        str := '';
+        if replaceLine then
+          str := S;
+        str := str + '{' + #13 + S + GetLeftSpacing(sheet.Memo.TabWidth,
+          sheet.Memo.TabWidth, sheet.Memo.WantTabs and not (eoTabsToSpaces in sheet.Memo.Options)) + #13 + S + '}';
+        sheet.Memo.BeginUpdate;
+        if replaceLine then
+          sheet.Memo.SetCaretAndSelection(bStart, bStart, bEnd);
         BracketBalacing := sheet.Memo.GetBalancingBracketEx(sheet.Memo.CaretXY, '{');
         if BracketBalacing <= 0 then
+          sheet.Memo.SelText := str
+        else
         begin
-          sheet.Memo.SelText := '}';
-          sheet.Memo.CaretX := sheet.Memo.CaretX - 1;
+          I := Pos('{', str);
+          sheet.Memo.SelText := Copy(str, 1, I);
         end;
+        sheet.Memo.EndUpdate;
+        Inc(bStart.Line);
+        bStart.Char := Length(GetLeftSpacing(SpaceCount1 + sheet.Memo.TabWidth,
+          sheet.Memo.TabWidth, sheet.Memo.WantTabs and not (eoTabsToSpaces in sheet.Memo.Options))) + 1;
+        sheet.Memo.CaretXY := bStart;
+      end
+      else
+      begin
+        sheet.Memo.BeginUpdate;
+        if replaceLine then
+          sheet.Memo.SetCaretAndSelection(bStart, bStart, bEnd)
+        else
+          S := '';
+        sheet.Memo.SelText := S + '{';
+        sheet.Memo.EndUpdate;
       end;
-      TimerHintParams.Enabled := False;
-      TimerHintParams.Enabled := True;
+    end
+    else if Config.Editor.AutoCloseBrackets then
+    begin
+      BracketBalacing := sheet.Memo.GetBalancingBracketEx(sheet.Memo.CaretXY, '{');
+      if BracketBalacing <= 0 then
+      begin
+        sheet.Memo.CommandProcessor(ecChar, '}', nil);
+        sheet.Memo.CaretX := sheet.Memo.CaretX - 1;
+      end;
     end;
+    TimerHintParams.Enabled := False;
+    TimerHintParams.Enabled := True;
   end;
 end;
 
@@ -5435,8 +5456,6 @@ begin
 end;
 
 procedure TFrmFalconMain.ViewRestoreDefClick(Sender: TObject);
-var
-  I: Integer;
 begin
   ProjectPanel.Width := 230;
   PanelOutline.Width := 160;
@@ -5492,11 +5511,7 @@ begin
 
   SelectTheme('OfficeXP');
   ZoomEditor := Config.Editor.FontSize;
-  for I := 0 to PageControlEditor.PageCount - 1 do
-  begin
-    if SHEET_TYPE_FILE = TPropertySheet(PageControlEditor.Pages[I]).SheetType then
-      TSourceFileSheet(PageControlEditor.Pages[I]).Memo.Font.Size := ZoomEditor;
-  end;
+  UpdateEditorZoom;
 end;
 
 procedure TFrmFalconMain.ToolsEnvOptionsClick(Sender: TObject);
@@ -6473,31 +6488,19 @@ begin
 end;
 
 procedure TFrmFalconMain.ViewZoomIncClick(Sender: TObject);
-var
-  I: Integer;
 begin
   if ZoomEditor >= 48 then
     Exit;
   Inc(ZoomEditor);
-  for I := 0 to PageControlEditor.PageCount - 1 do
-  begin
-    if SHEET_TYPE_FILE = TPropertySheet(PageControlEditor.Pages[I]).SheetType then
-      TSourceFileSheet(PageControlEditor.Pages[I]).Memo.Font.Size := ZoomEditor;
-  end;
+  UpdateEditorZoom;
 end;
 
 procedure TFrmFalconMain.ViewZoomDecClick(Sender: TObject);
-var
-  I: Integer;
 begin
   if ZoomEditor <= 8 then
     Exit;
   Dec(ZoomEditor);
-  for I := 0 to PageControlEditor.PageCount - 1 do
-  begin
-    if SHEET_TYPE_FILE = TPropertySheet(PageControlEditor.Pages[I]).SheetType then
-      TSourceFileSheet(PageControlEditor.Pages[I]).Memo.Font.Size := ZoomEditor;
-  end;
+  UpdateEditorZoom;
 end;
 
 procedure TFrmFalconMain.ToggleBookmarksClick(Sender: TObject);
@@ -6784,6 +6787,10 @@ begin
   bC := sheet.Memo.CharIndexToRowCol(Token.SelStart);
   bSs := bC;
   bSe := sheet.Memo.CharIndexToRowCol(Token.SelStart + Token.SelLength);
+  sheet.Memo.UncollapseRange(bC.Line, bSe.Line);
+  bC.Line := sheet.Memo.GetCollapsedLineNumber(bC.Line);
+  bSs.Line := bC.Line;
+  bSe.Line := sheet.Memo.GetCollapsedLineNumber(bSe.Line);
   sheet.Memo.SetCaretAndSelection(bC, bSs, bSe);
   sheet.Memo.SetFocus;
 
@@ -6905,7 +6912,7 @@ var
   InputError, InQuote: Boolean;
   QuoteChar: Char;
   Attri: TSynHighlighterAttributes;
-  BufferCoord, BufferCoordStart, BufferCoordEnd: TBufferCoord;
+  BC, BufferCoordStart, BufferCoordEnd: TBufferCoord;
   I, J, SelStart, BracketEnd, ParamIndex, LineLen, BracketStart: Integer;
   P: TPoint;
   ParamsList: TStringList;
@@ -6915,16 +6922,16 @@ var
 begin
   if not Config.Editor.CodeParameters then
     Exit;
-  BufferCoord := Memo.CaretXY;
-  if BufferCoord.Line > 0 then
+  BC := Memo.RealBufferCoord(Memo.CaretXY);
+  if BC.Line > 0 then
   begin
-    LineLen := Length(Memo.Lines.Strings[BufferCoord.Line - 1]);
-    if LineLen < BufferCoord.Char - 1 then
-      BufferCoord.Char := LineLen + 1;
+    LineLen := Length(Memo.UnCollapsedLines.Strings[BC.Line - 1]);
+    if LineLen < BC.Char - 1 then
+      BC.Char := LineLen + 1;
   end;
-  SelStart := Memo.RowColToCharIndex(BufferCoord);
+  SelStart := Memo.RowColToCharIndex(BC);
   QuoteChar := #0;
-  if Memo.GetHighlighterAttriAtRowCol(BufferCoord, S, Attri) then
+  if Memo.GetHighlighterAttriAtRowCol(BufferCoord(BC.Char, Memo.CaretY), S, Attri) then
   begin
     if StringIn(Attri.Name, [SYNS_AttrPreprocessor]) then
     begin
@@ -6937,9 +6944,9 @@ begin
       QuoteChar := '''';
     if QuoteChar <> #0 then
     begin
-      Dec(BufferCoord.Char);
+      Dec(BC.Char);
       InQuote := True;
-      if Memo.GetHighlighterAttriAtRowCol(BufferCoord, S, Attri) then
+      if Memo.GetHighlighterAttriAtRowCol(BufferCoord(BC.Char, Memo.CaretY), S, Attri) then
       begin
         if (Attri.Name = SYNS_AttrString) then
           QuoteChar := '"'
@@ -6950,14 +6957,14 @@ begin
       end;
       if not InQuote then
       begin
-        Inc(BufferCoord.Char, 2);
-        SelStart := Memo.RowColToCharIndex(BufferCoord);
+        Inc(BC.Char, 2);
+        SelStart := Memo.RowColToCharIndex(Memo.RealBufferCoord(BC));
       end;
     end;
   end;
   BracketStart := SelStart;
   { TODO -oMazin -c : Remove use of memo.Text 04/05/2013 22:11:00 }
-  TempText := memo.Text;
+  TempText := memo.UnCollapsedLines.Text;
   ShowStructParams := False;
   if not GetFirstOpenParentheses(TempText, QuoteChar, BracketStart) then
   begin
@@ -7278,7 +7285,7 @@ procedure TFrmFalconMain.ProcessHintView(FileProp: TSourceFile;
 var
   S, Fields, Input: string;
   DisplayCoord: TDisplayCoord;
-  BufferCoord, WordStart: TBufferCoord;
+  BC, WordStart: TBufferCoord;
   Token: TTokenClass;
   TokenFileItem: TTokenFile;
   P: TPoint;
@@ -7289,11 +7296,11 @@ begin
   if not Config.Editor.TooltipSymbol then
     Exit;
   DisplayCoord := Memo.PixelsToRowColumn(X, Y);
-  BufferCoord := Memo.DisplayToBufferPos(DisplayCoord);
-  if BufferCoord.Line > 0 then
+  BC := Memo.DisplayToBufferPos(DisplayCoord);
+  if BC.Line > 0 then
   begin
     //after end line
-    if BufferCoord.Char > Length(Memo.Lines.Strings[BufferCoord.Line - 1]) then
+    if BC.Char > Length(Memo.Lines.Strings[BC.Line - 1]) then
     begin
       HintTip.Cancel;
       DebugHint.Cancel;
@@ -7301,8 +7308,8 @@ begin
       Exit;
     end;
   end;
-  I := Memo.RowColToCharIndex(BufferCoord);
-  WordStart := Memo.WordStartEx(BufferCoord);
+  I := Memo.RowColToCharIndex(Memo.RealBufferCoord(BC));
+  WordStart := Memo.WordStartEx(BC);
   WordStartPos := Memo.RowColToCharIndex(WordStart);
   //running application
   if Executor.Running then
@@ -7317,7 +7324,7 @@ begin
     (HintTip.Activated or DebugHint.Activated) then
     Exit;
   LastWordHintStart := WordStartPos;
-  if Memo.GetHighlighterAttriAtRowColEx(BufferCoord, Input, TokenType, Start,
+  if Memo.GetHighlighterAttriAtRowColEx(BC, Input, TokenType, Start,
     attri) then
   begin
     //invalid attribute
@@ -7334,26 +7341,26 @@ begin
   end;
   //evaluate/modify with selection
   if DebugReader.Running and Memo.SelAvail and
-    BufferIn(Memo.BlockBegin, BufferCoord, Memo.BlockEnd) then
+    BufferIn(Memo.BlockBegin, BC, Memo.BlockEnd) then
   begin
     DisplayCoord := Memo.BufferToDisplayPos(Memo.BlockBegin);
     P := Memo.RowColumnToPixels(DisplayCoord);
     P := Memo.ClientToScreen(P);
-    ProcessDebugHint(Memo.SelText, BufferCoord.Line, I, P);
+    ProcessDebugHint(Memo.SelText, BC.Line, I, P);
     Exit;
   end;
-  Input := Memo.GetWordAtRowCol(BufferCoord);
+  Input := Memo.GetWordAtRowCol(BC);
   DisplayCoord := Memo.BufferToDisplayPos(WordStart);
   P := Memo.RowColumnToPixels(DisplayCoord);
   P := Memo.ClientToScreen(P);
-  if ParseFields(Memo.Text, I, Input, Fields, InputError) then
+  if ParseFields(Memo.UnCollapsedLines.Text, I, Input, Fields, InputError) then
   begin
     // show Debug hint
     if DebugReader.Running then
     begin
       if Input <> '' then
       begin
-        ProcessDebugHint(Fields + Input, BufferCoord.Line, I, P);
+        ProcessDebugHint(Fields + Input, BC.Line, I, P);
       end
       else
       begin
@@ -7366,7 +7373,7 @@ begin
     end;
     // show hint
     if FilesParsed.FindDeclaration(Input, Fields, ActiveEditingFile, TokenFileItem,
-      Token, I, BufferCoord.Line) then
+      Token, I, BC.Line) then
     begin
       S := MakeTokenHint(Token, TokenFileItem.FileName);
       HintTip.UpdateHint(S, Token.Comment, P.X, P.Y + Memo.Canvas.TextHeight(S) + 4,
@@ -7506,7 +7513,7 @@ begin
     Exit;
   if not GetActiveSheet(sheet) then
     Exit;
-  if ParseFields(sheet.Memo.Text, sheet.Memo.SelStart, SaveInput, Fields, InputError) then
+  if ParseFields(sheet.Memo.UnCollapsedLines.Text, sheet.Memo.SelStart, SaveInput, Fields, InputError) then
     Input := GetFirstWord(Fields);
   if InputError then
     Exit;
@@ -7626,7 +7633,7 @@ begin
     end;
     Inc(Buffer.Char);
   end;
-  SelStart := sheet.Memo.RowColToCharIndex(Buffer);
+  SelStart := sheet.Memo.RowColToCharIndex(sheet.Memo.RealBufferCoord(Buffer));
   //Temp skip Scope:
   if (Buffer.Line > 0) then
   begin
@@ -7902,7 +7909,7 @@ begin
       Value := '';
       Exit;
     end;
-    NextChar := GetNextValidChar(sheet.Memo.Text, sheet.Memo.SelStart);
+    NextChar := GetNextValidChar(sheet.Memo.Lines.Text, sheet.Memo.SelStart);
     if EndToken <> '(' then
     begin
       BalancingBracket := sheet.Memo.GetBalancingBracketEx(sheet.Memo.CaretXY, '(');
@@ -7964,7 +7971,7 @@ begin
     Exit;
   end;
   Token := TTokenClass(CodeCompletion.ItemList.Objects[Index]);
-  NextChar := GetNextValidChar(sheet.Memo.Text, sheet.Memo.SelStart);
+  NextChar := GetNextValidChar(sheet.Memo.Lines.Text, sheet.Memo.SelStart);
   I := 0;
   BalancingBracket := sheet.Memo.GetBalancingBracketEx(sheet.Memo.CaretXY, '(');
   if EndToken = ')' then
@@ -8063,9 +8070,12 @@ begin
     Exit;
   end;
   ChangeTextColor := not Selected;
-  if Token.Token in [tkFunction, tkProtoType, tkConstructor, tkDestructor] then
+  if Token.Token in [tkFunction, tkProtoType, tkConstructor, tkDestructor, tkOperator] then
   begin
-    Params := GetFuncScope(Token) + Token.Name + GetFuncProtoTypes(Token);
+    if Token.Token = tkOperator then
+      Params := GetFuncScope(Token) + 'operator ' + Token.Name + GetFuncProtoTypes(Token)
+    else
+      Params := GetFuncScope(Token) + Token.Name + GetFuncProtoTypes(Token);
     Flag := Token.Flag;
     if Flag = '' then
       DisplayRect.Right := DisplayRect.Left + 5 +
@@ -8310,7 +8320,7 @@ begin
   ExporterHTML.Highlighter := sheet.Memo.Highlighter;
   ExporterHTML.Title := Sheet.SourceFile.Name;
   ExporterHTML.ExportAsText := True;
-  ExporterHTML.ExportAll(sheet.Memo.Lines);
+  ExporterHTML.ExportAll(sheet.Memo.UnCollapsedLines);
 
   with TSaveDialog.Create(Self) do
   begin
@@ -8334,7 +8344,7 @@ begin
     Exit;
   ExporterRTF.Highlighter := sheet.Memo.Highlighter;
   ExporterRTF.Title := Sheet.SourceFile.Name;
-  ExporterRTF.ExportAll(sheet.Memo.Lines);
+  ExporterRTF.ExportAll(sheet.Memo.UnCollapsedLines);
 
   with TSaveDialog.Create(Self) do
   begin
@@ -8359,7 +8369,7 @@ begin
   ExporterTeX.Highlighter := sheet.Memo.Highlighter;
   ExporterTeX.Title := Sheet.SourceFile.Name;
   ExporterTeX.TabWidth := sheet.Memo.TabWidth;
-  ExporterTeX.ExportAll(sheet.Memo.Lines);
+  ExporterTeX.ExportAll(sheet.Memo.UnCollapsedLines);
 
   with TSaveDialog.Create(Self) do
   begin
@@ -8820,8 +8830,11 @@ begin
     sheet.Memo.BeginUpdate;
     caret := sheet.Memo.CaretXY;
     topLine := sheet.Memo.TopLine;
+    sheet.Memo.UncollapseAll;
     sheet.Memo.SelectAll;
-    sheet.Memo.SelText := Format(sheet.Memo.Lines.Text);
+    sheet.Memo.LockFoldUpdate;
+    sheet.Memo.SelText := Format(sheet.Memo.UnCollapsedLines.Text);
+    sheet.Memo.UnlockFoldUpdate;
     sheet.Memo.CaretXY := caret;
     sheet.Memo.TopLine := topLine;
     sheet.Memo.EndUpdate;
@@ -9115,7 +9128,7 @@ var
   SrcFileName: string;
   CurrentSrcFile, SrcFile: TSourceFile;
   SelStart, SelLine: Integer;
-  BufferCoord: TBufferCoord;
+  BC: TBufferCoord;
   Input, Fields, ScopeFlag: string;
   InputError: Boolean;
 begin
@@ -9125,20 +9138,20 @@ begin
   CurrentTokenFile := FilesParsed.ItemOfByFileName(CurrentSrcFile.FileName);
   if (CurrentTokenFile = nil) then
     Exit;
-  BufferCoord := sheet.Memo.CaretXY;
-  SelLine := BufferCoord.Line;
-  if BufferCoord.Line > 0 then
+  BC := sheet.Memo.CaretXY;
+  SelLine := BC.Line;
+  if BC.Line > 0 then
   begin
-    if BufferCoord.Char > (Length(sheet.Memo.Lines[SelLine - 1]) + 1) then
-      BufferCoord.Char := Length(sheet.Memo.Lines[SelLine - 1]) + 1;
+    if BC.Char > (Length(sheet.Memo.Lines[SelLine - 1]) + 1) then
+      BC.Char := Length(sheet.Memo.Lines[SelLine - 1]) + 1;
   end;
-  SelStart := sheet.Memo.RowColToCharIndex(BufferCoord);
+  SelStart := sheet.Memo.RowColToCharIndex(BC);
   SrcFile := CurrentSrcFile;
   SrcFileName := CurrentSrcFile.FileName;
   // get prototype
   if not CurrentTokenFile.GetTokenAt(ScopeToken, SelStart) then
   begin
-    if not ParseFields(sheet.Memo.Text, SelStart, Input, Fields, InputError) then
+    if not ParseFields(sheet.Memo.Lines.Text, SelStart, Input, Fields, InputError) then
       Exit;
     if not FilesParsed.FindDeclaration(Input, Fields, CurrentTokenFile, CurrentTokenFile,
       ScopeToken, SelStart, SelLine) then
@@ -9637,16 +9650,16 @@ var
   sheet: TSourceFileSheet;
   scopeToken, thisToken: TTokenClass;
   SelStart: Integer;
-  BufferCoord: TBufferCoord;
+  BC: TBufferCoord;
   LastID, I, VarAdded: Integer;
   List: TStrings;
 begin
   if not GetActiveSheet(sheet) then
     Exit;
-  BufferCoord.Line := Line;
-  BufferCoord.Char := 1;
+  BC.Line := Line;
+  BC.Char := 1;
   VarAdded := 0;
-  SelStart := sheet.Memo.RowColToCharIndex(BufferCoord);
+  SelStart := sheet.Memo.RowColToCharIndex(BC);
   List := TStringList.Create;
   thisToken := nil;
   if not FilesParsed.GetAllTokensOfScope(SelStart, ActiveEditingFile, List,

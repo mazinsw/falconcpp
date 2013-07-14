@@ -525,7 +525,7 @@ begin
       Continue;
     end;
     if (S = Items[I].Name) and (not (Items[I].Token in
-      [tkConstructor, tkDestructor]) or (Assigned(Items[I].Parent) and
+      [tkConstructor, tkDestructor, tkForward]) or (Assigned(Items[I].Parent) and
       (Items[I].Parent.Token = tkScopeClass))) then
     begin
       Item := Items[I];

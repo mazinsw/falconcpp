@@ -42,6 +42,8 @@ function GetAfterWord(const S: string): string;
 procedure GetDescendants(const S: string; List: TStrings; scope: TScopeClass);
 function GetLastWord(const S: string; AllowScope: Boolean = False): string;
 function GetPriorWord(const S: string): string;
+function GetLastChar(const S: string): Char;
+function GetOperator(const S: string): string;
 function SkipTemplateParams(const ret: string): string;
 function GetVarType(const S: string): string;
 function Trim(Left: Char; const S: string; Rigth: Char): string; overload;
@@ -109,7 +111,7 @@ var
   Level: Integer;
 begin
   if not (func.Token in [tkFunction, tkPrototype, tkConstructor,
-    tkDestructor]) then
+    tkDestructor, tkOperator]) then
     Exit;
   Scope := '';
   S := func.Name + '(' + GetFuncProto(func, True) + ')';
@@ -134,6 +136,8 @@ begin
   end
   else
     FuncRet := func.Flag;
+  if func.Token = tkOperator then
+    Scope := Scope + 'operator ';
   FuncImp := IndentStr + Trim(FuncRet + ' ' + Scope + S);
   if Prototype then
   begin
@@ -298,11 +302,13 @@ begin
   HasClass := False;
   for I := 0 to Item.Count - 1 do
   begin
-    if (Item.Items[I].Token in [tkPrototype]) or
+    if (Item.Items[I].Token in [tkPrototype, tkOperator]) or
       ((Item.Items[I].Token in [tkFunction]) and
       (Pos('static', Item.Items[I].Flag) > 0)) then
     begin
       S := Item.Items[I].Name + GetFuncProtoTypes(Item.Items[I]);
+      if Item.Items[I].Token = tkOperator then
+        S := 'operator ' + S;
       PrototypeList.AddObject(S, Item.Items[I]);
       Continue;
     end;
@@ -413,6 +419,13 @@ begin
         else
           Result := 12;
       end;
+    tkOperator:
+      begin
+        if GetTokenByName(Token, 'Scope', tkScope) <> nil then
+          Result := 9
+        else
+          Result := 12;
+      end;
     tkInclude:
       begin
         Result := 1;
@@ -503,7 +516,8 @@ var
   Scope: TTokenClass;
 begin
   Result := '';
-  if not (Token.Token in [tkFunction, tkPrototype, tkConstructor, tkDestructor])
+  if not (Token.Token in [tkFunction, tkPrototype, tkConstructor, tkDestructor,
+    tkOperator])
     or (Assigned(Token.Parent) and (Token.Token in [tkFuncProList])) then
     Exit;
   Scope := GetTokenByName(Token, 'Scope', tkScope);
@@ -525,7 +539,7 @@ begin
   Sep := '';
   VarNum := 1;
   if not (Token.Token in [tkTypedefProto, tkFunction, tkPrototype,
-    tkConstructor, tkDestructor]) then
+    tkConstructor, tkDestructor, tkOperator]) then
     Exit;
   Params := GetTokenByName(Token, 'Params', tkParams);
   if not Assigned(Params) then
@@ -638,7 +652,7 @@ var
 begin
   Result := '';
   Sep := '';
-  if not (Token.Token in [tkFunction, tkPrototype, tkConstructor,
+  if not (Token.Token in [tkFunction, tkPrototype, tkOperator, tkConstructor,
     tkDestructor]) then
     Exit;
   Params := GetTokenByName(Token, 'Params', tkParams);
@@ -722,7 +736,7 @@ begin
         Continue;
     end;
     case Token.Items[I].Token of
-      tkClass, tkFunction, tkConstructor, tkDestructor, tkStruct, tkUnion,
+      tkClass, tkFunction, tkOperator, tkConstructor, tkDestructor, tkStruct, tkUnion,
         tkEnum, tkTypeStruct, tkTypeUnion, tkTypeEnum, tkParams,
         tkScopeClass, tkNamespace:
         FillCompletionTreeNoRepeat(InsertList, ShowList,
@@ -749,7 +763,7 @@ begin
           Result := CompletionColors[Token.Token] + Token.Name +
             '\style{-B} : class';
       end;
-    tkFunction, tkPrototype:
+    tkFunction, tkPrototype, tkOperator:
       begin
         S := GetFuncProto(Token);
         Result := CompletionColors[Token.Token] + Token.Name + '\style{-B}' +
@@ -879,7 +893,7 @@ begin
     tkFunction, tkConstructor, tkDestructor, tkPrototype, tkVariable, tkClass,
       tkDefine, tkTypedefProto, tkTypedef,
       tkTypeStruct, tkTypeUnion, tkStruct, tkEnum, tkNamespace,
-      tkUnion, tkUnknow: Result := Token.Name;
+      tkUnion, tkUnknow, tkOperator: Result := Token.Name;
   end;
 end;
 
@@ -898,7 +912,7 @@ begin
   {while}if Assigned(Next.Parent) and not (Next.Parent.Token in [tkIncludeList,
     tkDefineList, tkTreeObjList,
       tkVarConsList, tkFuncProList,
-      tkFunction, tkConstructor, tkDestructor,
+      tkFunction, tkConstructor, tkDestructor, tkOperator,
       tkRoot, tkParams, tkScope {?}]) {do} then
   begin
     Next := Next.Parent;
@@ -979,7 +993,7 @@ begin
         else
           Result := TokenHintPrev[Token.Token] + ' ' + Token.Name; //get ancestor
       end;
-    tkFunction, tkPrototype, tkConstructor, tkDestructor:
+    tkFunction, tkPrototype, tkConstructor, tkDestructor, tkOperator:
       begin
         S := GetFuncProto(Token);
         Hierarchy := GetTreeHierarchy(Token);
@@ -1052,7 +1066,7 @@ var
 begin
   Result := '';
   case Token.Token of
-    tkFunction, tkPrototype, tkConstructor, tkTypedefProto:
+    tkFunction, tkPrototype, tkConstructor, tkTypedefProto, tkOperator:
       begin
         Result := GetFuncProto(Token);
       end;
@@ -1351,6 +1365,39 @@ begin
     Dec(Len);
   end;
   Result := Trim(Copy(S, 1, Len));
+end;
+
+function GetLastChar(const S: string): Char;
+var
+  Len: Integer;
+begin
+  Result := #0;
+  Len := Length(S);
+  while (Len > 0) do
+  begin
+    if not (S[Len] in SpaceChars + LineChars) then
+    begin
+      Result := S[Len];
+      Break;
+    end;
+    Dec(Len);
+  end;
+end;
+
+function GetOperator(const S: string): string;
+var
+  Len: Integer;
+begin
+  Result := '';
+  Len := Length(S);
+  while (Len > 0) do
+  begin
+    if (Result <> '') and (S[Len] = 'r') then
+      Break
+    else if not (S[Len] in SpaceChars + LineChars) then
+      Result := S[Len] + Result;
+    Dec(Len);
+  end;
 end;
 
 function SkipTemplateParams(const ret: string): string;

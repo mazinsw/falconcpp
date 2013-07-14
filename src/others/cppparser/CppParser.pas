@@ -1703,6 +1703,16 @@ begin
         begin
           Vector := Vector + '[' + GetWordPair('[', ']') + ']';
         end;
+      '(': // int a = alloc()
+        begin
+          EqualValue := EqualValue + '(' + GetWordPair('(', ')') + ')';
+          if fptr^ = ')' then
+          begin
+            Inc(fptr);
+            Inc(fCurrPos);
+            Continue;
+          end;
+        end;
       '=': HasEqual := True; //int a = 3;
       '{': // struct point pt[?] = {{1, 2}, {3, 4}}; ? is 2
         begin
@@ -1882,7 +1892,7 @@ end;
 procedure TCppParser.ProcessFunction(StartPos, StartLine: Integer;
   const S: string; IsDestructor: Boolean);
 var
-  RetType, FuncName, TreeName, ScopeName: string;
+  RetType, FuncName, TreeName, ScopeName, Opr: string;
   Len, I: Integer;
   FuncToken, Params: TTokenClass;
   TokenType: TTkType;
@@ -1891,7 +1901,20 @@ begin
   //DoTokenLog('ProcessFunction - ' + S);
   TokenType := tkFunction;
   FuncName := GetLastWord(S);
-  RetType := GetPriorWord(S);
+  if (FuncName = 'delete') or (FuncName = 'new') then
+  begin
+    Opr := FuncName;
+    RetType := GetPriorWord(S);
+    FuncName := GetLastWord(RetType);
+    RetType := GetPriorWord(RetType);
+  end
+  else if (FuncName = 'operator') then
+  begin
+    Opr := GetOperator(S);
+    RetType := GetPriorWord(S);
+  end
+  else
+    RetType := GetPriorWord(S);
   I := Pos('::', RetType);
   if I > 0 then
   begin
@@ -1941,7 +1964,7 @@ begin
     not StringIn(RetType, ['return', 'else']) then
   begin
     Len := Length(FuncName);
-    if RetType = '' then
+    if (RetType = '') or (RetType = 'inline') then
     begin
       if FuncName = GetFirstWord(ScopeName) then
       begin
@@ -1950,6 +1973,11 @@ begin
         else
           TokenType := tkConstructor;
       end;
+    end
+    else if FuncName = 'operator' then
+    begin
+      FuncName := Opr;
+      TokenType := tkOperator;
     end;
     FuncToken := AddToken(FuncName, RetType, TokenType, StartLine, StartPos,
       Len, fLevel);
@@ -2202,9 +2230,9 @@ end;
 
 function TCppParser.Parse(const Src: string; TokenFile: Pointer): Boolean;
 var
-  CurrStr, TempWord, Scope: string;
+  CurrStr, TempWord, Scope, LastWord: string;
   ChangedCurrPos, IsDestructor, Assigning: Boolean;
-  PairCount, StartPos, StartLine: Integer;
+  PairCount, StartPos, StartLine, PrevStartPos, PrevStartLine: Integer;
   lastFunc, scopeClass: TTokenClass;
 begin
   fBusy := True;
@@ -2222,6 +2250,8 @@ begin
   PairCount := 0;
   StartPos := 0;
   StartLine := fCurrLine;
+  PrevStartPos := 0;
+  PrevStartLine := fCurrLine;
   ChangedCurrPos := True;
   IsDestructor := False;
   Assigning := False;
@@ -2250,18 +2280,37 @@ begin
             Inc(fptr);
             Inc(fCurrPos);
             SkipMultLineComment;
+          end
+          else if (GetLastWord(CurrStr) = 'operator') then
+          begin
+            CurrStr := CurrStr + fptr^;
+            Inc(fptr);
+            Inc(fCurrPos);
+            Continue;
           end;
           ChangedCurrPos := True;
         end;
       '(': //int main( ..., typedef int (...
         begin
           TempWord := GetFirstWord(CurrStr);
-          if TempWord = 'typedef' then
+          LastWord := GetLastWord(CurrStr);
+          if (LastWord = 'delete') or (LastWord = 'new') then
+          begin
+            StartPos := PrevStartPos;
+            StartLine := PrevStartLine;
+          end;
+          if (LastWord = 'operator') and (GetLastChar(CurrStr) in LetterChars) then
+          begin
+            CurrStr := CurrStr + fptr^;
+            Inc(fptr);
+            Inc(fCurrPos);
+            Continue;
+          end
+          else if TempWord = 'typedef' then
             ProcessTypedef(StartPos, StartLine, CurrStr)
           else if TempWord = 'extern' then
           begin
-            TempWord := GetLastWord(CurrStr);
-            if not StringIn(TempWord, ReservedTypes) and
+            if not StringIn(LastWord, ReservedTypes) and
               (TempWord <> 'extern') then
             begin
               ProcessFunction(StartPos, StartLine, GetAfterWord(CurrStr),
@@ -2304,11 +2353,29 @@ begin
         end;
       ')':
         begin
+          LastWord := GetLastWord(CurrStr);
+          if LastWord = 'operator' then
+          begin
+            CurrStr := CurrStr + fptr^;
+            Inc(fptr);
+            Inc(fCurrPos);
+            Continue;
+          end;
           CurrStr := '';
           ChangedCurrPos := True;
           IsDestructor := False;
         end;
-      '~': IsDestructor := True;
+      '~':
+        begin
+          if (GetLastWord(CurrStr) = 'operator') then
+          begin
+            CurrStr := CurrStr + fptr^;
+            Inc(fptr);
+            Inc(fCurrPos);
+            Continue;
+          end;
+          IsDestructor := True;
+        end;
       '.':
         begin
           CurrStr := '';
@@ -2316,6 +2383,13 @@ begin
         end;
       '=':
         begin
+          if (GetLastWord(CurrStr) = 'operator') then
+          begin
+            CurrStr := CurrStr + fptr^;
+            Inc(fptr);
+            Inc(fCurrPos);
+            Continue;
+          end;
           ProcessVariable(StartPos, StartLine, CurrStr);
           CurrStr := '';
           IsDestructor := False;
@@ -2404,6 +2478,13 @@ begin
           TempWord := GetFirstWord(CurrStr);
           if TempWord = 'typedef' then
             ProcessTypedef(StartPos, StartLine, CurrStr)
+          else if (fptr^ = '[') and (GetLastWord(CurrStr) = 'operator') then
+          begin
+            CurrStr := CurrStr + fptr^;
+            Inc(fptr);
+            Inc(fCurrPos);
+            Continue;
+          end
           else
           begin
             ProcessVariable(StartPos, StartLine, CurrStr);
@@ -2461,21 +2542,24 @@ begin
         end;
       #0: Break;
     else
-      if (fptr^ = '<') and (GetFirstWord(CurrStr) = 'template') then
+      if fptr^ in SpaceChars + LineChars then
+      begin
+        CurrStr := Trim(CurrStr) + ' ';
+        ChangedCurrPos := True;
+      end
+      else if (fptr^ = '<') and (GetFirstWord(CurrStr) = 'template') then
       begin
         SkipPair('<', '>');
         CurrStr := '';
         ChangedCurrPos := True;
       end
-      else if fptr^ in SpaceChars + LineChars then
-      begin
-        CurrStr := Trim(CurrStr) + ' ';
-        ChangedCurrPos := True;
-      end
       else if (fptr^ in LetterChars + DigitChars + ['*', '&', '<'])
         and not Assigning then
       begin
-        if (fptr^ in ['<']) then
+        LastWord := '';
+        if (fptr^ in ['*', '&', '<']) then
+         LastWord := GetLastWord(CurrStr);
+        if (fptr^ in ['<']) and (LastWord <> 'operator') then
         begin
           TempWord := GetWordPair('<', '>');
           if fptr^ = '>' then
@@ -2485,15 +2569,21 @@ begin
         end
         else
           CurrStr := CurrStr + fptr^;
-        if ChangedCurrPos then
+        if ChangedCurrPos and (LastWord <> 'operator') then
         begin
+          PrevStartPos := StartPos;
+          PrevStartLine := StartLine;
           StartPos := fCurrPos;
           StartLine := fCurrLine;
           ChangedCurrPos := False;
         end;
-        if fptr^ in ['*', '&', '>'] then
+        if (fptr^ in ['*', '&', '>']) and (LastWord <> 'operator') then
           ChangedCurrPos := True;
       end
+      else if (fptr^ in ['>', '^', '|', '!', '+', '-', ']']) and (GetLastWord(CurrStr) = 'operator') then
+      begin
+        CurrStr := CurrStr + fptr^;
+      end;
     end;
     Inc(fptr);
     Inc(fCurrPos);
@@ -2534,7 +2624,7 @@ begin
       TokenClass.Add(Result);
     end;
     if TkType in [tkStruct, tkUnion, tkEnum, tkFunction, tkConstructor, tkParams,
-      tkDestructor, tkNamespace, tkClass] then
+      tkDestructor, tkNamespace, tkClass, tkOperator] then
     begin
       Push(Result);
     end;
@@ -2550,7 +2640,7 @@ begin
         TokenClass := TTokenFile(fTokenFile).TreeObjs;
       tkVariable, tkUnknow, tkForward, tkUsing, tkEnumItem:
         TokenClass := TTokenFile(fTokenFile).VarConsts;
-      tkPrototype, tkFunction, tkConstructor, tkDestructor:
+      tkPrototype, tkFunction, tkConstructor, tkDestructor, tkOperator:
         TokenClass := TTokenFile(fTokenFile).FuncObjs;
     end;
     Result := TTokenClass.Create(TokenClass);
@@ -2573,7 +2663,7 @@ begin
       TokenClass.Add(Result);
     end;
     if TkType in [tkStruct, tkUnion, tkEnum, tkFunction, tkConstructor,
-      tkDestructor, tkParams, tkClass, tkNamespace] then
+      tkDestructor, tkOperator, tkParams, tkClass, tkNamespace] then
     begin
       Push(Result);
     end;

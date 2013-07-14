@@ -152,7 +152,7 @@ begin
   memo.SearchEngine.Pattern := LastSearch.Search;
   memo.SearchEngine.Options := sopt;
   { TODO -oMazin -c : Change to Lines 04/05/2013 22:14:59 }
-  memo.SearchEngine.FindAll(memo.Text);
+  memo.SearchEngine.FindAll(memo.UnCollapsedLines.Text);
   Start := 0;
   Count := 0;
   for I := 0 to memo.SearchEngine.ResultCount - 1 do
@@ -216,7 +216,7 @@ begin
   memo.SearchEngine.Pattern := LastSearch.Search;
   memo.SearchEngine.Options := sopt;
   { TODO -oMazin -c : Change to Lines 04/05/2013 22:14:59 }
-  memo.SearchEngine.FindAll(memo.Text);
+  memo.SearchEngine.FindAll(memo.UnCollapsedLines.Text);
   Start := 0;
   Count := 0;
   for I := 0 to memo.SearchEngine.ResultCount - 1 do
@@ -638,7 +638,7 @@ begin
     LblRep.Caption := LastFindFilesDescription;
 
     if FileProp.GetSheet(sheet) then
-      Lines.Assign(sheet.Memo.Lines)
+      Lines.Assign(sheet.Memo.UnCollapsedLines)
     else
       FileProp.LoadFile(Lines);
     Results := Results + Search.FindAll(Lines.Text);
@@ -782,7 +782,7 @@ begin
   memo.SearchEngine.Pattern := search;
   memo.SearchEngine.Options := sopt;
   { TODO -oMazin -c : Change to Lines 04/05/2013 22:14:59 }
-  memo.SearchEngine.FindAll(memo.Text);
+  memo.SearchEngine.FindAll(memo.UnCollapsedLines.Text);
   Count := memo.SearchEngine.ResultCount;
   Start := 0;
   selstart := memo.SelStart;

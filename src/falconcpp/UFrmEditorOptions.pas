@@ -535,6 +535,8 @@ begin
       case I of
         13:
           begin
+            Editor.CodeFolding.FolderBarColor := st.Background;
+            Editor.CodeFolding.FolderBarDivLineColor := st.Background;
             Editor.Gutter.Color := st.Background;
             Editor.Gutter.GradientEndColor := st.Background;
             Editor.Gutter.Font.Color := st.Foreground;
@@ -552,6 +554,8 @@ begin
 
   if GetType('Gutter', st) then
   begin
+    Editor.CodeFolding.FolderBarColor := st.Background;
+    Editor.CodeFolding.FolderBarDivLineColor := st.Background;
     Editor.Gutter.Color := st.Background;
     Editor.Gutter.GradientEndColor := st.Background;
     Editor.Gutter.Font.Color := st.Foreground;
@@ -764,7 +768,7 @@ begin
   Stx.AddSintaxType('Space', clNone);
   Stx.AddSintaxType('String', clBlue);
   Stx.AddSintaxType('Symbol', clNavy, clNone, [fsBold]);
-  Stx.AddSintaxType('Gutter', clGray, $00E4E4E4);
+  Stx.AddSintaxType('Gutter', clWindowText, clBtnFace);
   Stx.AddSintaxType('Selection', clWindowText, clSilver);
   FItemIndex := Add(Stx);
 end;

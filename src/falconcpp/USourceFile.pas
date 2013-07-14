@@ -6,7 +6,8 @@ uses
   Windows, SysUtils, Forms, Graphics, Classes, Dialogs,
   Menus, ComCtrls, Controls, ShellApi,
   SynEdit, SynEditEx, XMLDoc, XMLIntf, SynEditHighlighter, SynEditKeyCmds,
-  Makefile, Breakpoint, UTemplates, ModernTabs;
+  Makefile, Breakpoint, UTemplates, ModernTabs, SynEditMiscClasses,
+  SynEditCodeFolding;
 
 const
   FILE_TYPE_PROJECT = 1;
@@ -688,7 +689,11 @@ end;
 
 procedure TSourceFile.LoadFile(Text: TStrings);
 begin
+  if (FSheet <> nil) and (FSheet.Memo.Lines = Text) then
+    FSheet.Memo.LockFoldUpdate;
   Text.LoadFromFile(FileName);
+  if (FSheet <> nil) and (FSheet.Memo.Lines = Text) then
+    FSheet.Memo.UnlockFoldUpdate;
 end;
 
 procedure TSourceFile.GetSubFiles(List: TStrings);
@@ -830,7 +835,7 @@ begin
     Project.Compiled := False;
     if GetSheet(Sheet) then
     begin
-      Sheet.Memo.Lines.SaveToFile(FileName);
+      Sheet.Memo.UnCollapsedLines.SaveToFile(FileName);
       if sheet.Memo.Modified and not Project.Saved and IsNew then
         Project.SomeFileChanged := True;
       sheet.Memo.Modified := False;
@@ -924,7 +929,7 @@ begin
   begin
     if GetSheet(Sheet) then
     begin
-      Sheet.Memo.Lines.SaveToFile(ToFileName);
+      Sheet.Memo.UnCollapsedLines.SaveToFile(ToFileName);
       if sheet.Memo.Modified and not Project.Saved and IsNew then
         Project.SomeFileChanged := True;
       sheet.Memo.Modified := False;
@@ -2379,6 +2384,7 @@ begin
     SynMemo.Font.Name := FontName;
     SynMemo.Font.Size := FontSize;
     SynMemo.Gutter.Width := GutterWidth;
+    SynMemo.Gutter.Font.Size := FontSize;
     if ShowRightMargin then
       SynMemo.RightEdge := RightMargin
     else
@@ -2403,7 +2409,6 @@ begin
   FSourceFile.FSheet := Self;
   FSheetType := SHEET_TYPE_FILE;
   FSynMemo := TSynEditEx.Create(Self);
-  //FSynMemo.BorderStyle := bsNone;
   UpdateEditor(FSynMemo);
   FSynMemo.ReadOnly := SourceFile.ReadOnly;
   if SourceFile.ReadOnly then
@@ -2432,6 +2437,23 @@ begin
   FSynMemo.OnGutterClick := FrmFalconMain.TextEditorGutterClick;
   FSynMemo.OnGutterPaint := FrmFalconMain.TextEditorGutterPaint;
   FSynMemo.OnSpecialLineColors := FrmFalconMain.TextEditorSpecialLineColors;
+  // Initialise code folding
+  with FSynMemo.CodeFolding do
+  begin
+    CaseSensitive := True;
+    FolderBarLinesColor := clGray;
+    CollapsingMarkStyle := msSquare;
+    with FoldRegions do
+    begin
+      Add(rtChar, False, False, False, '{', '}', nil);
+      SkipRegions.Add('/*', '*/', '\', itMultiLineComment);
+      SkipRegions.Add('//', '', '\', itSingleLineComment);
+      SkipRegions.Add('"', '"', '\', itString);
+      SkipRegions.Add('''', '''', '\', itString);
+      //Add(rtKeyword, False, False, True, 'BEGIN', 'END', nil); //for resources
+    end;
+    Enabled := True;
+  end;
   if SelectTab then
     PageCtrl.ActivePageIndex := PageIndex;
 end;

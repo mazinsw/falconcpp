@@ -106,6 +106,7 @@ type
     procedure ToggleLineComment;
     function GetBalancingBracketEx(const APoint: TBufferCoord;
       Bracket: Char): Integer;
+    function RealBufferCoord(const Value: TBufferCoord): TBufferCoord;
     property LinkEnable: Boolean read fLinkEnable write fLinkEnable;
     property LinkOptions: TSynLinkOptions
       read fLinkOptions write fLinkOptions;
@@ -342,10 +343,11 @@ begin
   LeftOffset := 0;
   i := 0;
   k := 0;
+  aLine := GetRealLineNumber(aLine);
   SkipComment := False;
-  while aLine >= 0 do
+  while aLine > 0 do
   begin
-    PrevLine := Lines[aLine];
+    PrevLine := UnCollapsedLines[aLine - 1];
     i := 0;
     k := 0;
     p := PChar(PrevLine);
@@ -392,9 +394,9 @@ begin
     end;
     Dec(aLine);
   end;
-  if aLine < 0 then
+  if aLine = 0 then
     Exit;
-  PrevLine := Lines[aLine];
+  PrevLine := UnCollapsedLines[aLine - 1];
   p := PChar(PrevLine);
   pend := p + Length(PrevLine);
   if pend > p then
@@ -412,7 +414,7 @@ begin
   end;
   CheckPrevLines := False;
   HasBreak := False;
-  wStart := BufferCoord(i + 1, aLine + 1);
+  wStart := BufferCoord(i + 1, aLine);
   if GetHighlighterAttriAtRowCol(wStart, token, attri) then
   begin
     if ((attri.name = SYNS_AttrInstructionWord) and
@@ -435,9 +437,9 @@ begin
   end;
   // dont indent when single line statement block
   aLine := aLine - 1;
-  while CheckPrevLines and (aLine >= 0) do
+  while CheckPrevLines and (aLine > 0) do
   begin
-    PrevLine := Lines[aLine];
+    PrevLine := UnCollapsedLines[aLine - 1];
     if (Length(PrevLine) >= 1) then
     begin
       p := @PrevLine[1];
@@ -459,7 +461,7 @@ begin
         until p < sp;
         if (p >= sp) and (p^ = '{') then
           Break;
-        wStart := BufferCoord(j + 1, aLine + 1);
+        wStart := BufferCoord(j + 1, aLine); // TODO use collapsed line
         if GetHighlighterAttriAtRowColEx(wStart, token, tokentype, tokenstart,
             attri) then
         begin
@@ -1095,7 +1097,7 @@ var
   c, bCaret: TBufferCoord;
   LineStr, PrevLineStr, StrPrevCaret, StrPosCaret, TmpStr,
     CommentStr, NextLineStr, token: string;
-  LeftOffset, SpaceCount, I: Integer;
+  LeftOffset, SpaceCount, I, RL: Integer;
   lstch, fstch: Char;
   attri: TSynHighlighterAttributes;
   Unindent, caretChanged, IsCommentLine: Boolean;
@@ -1104,13 +1106,14 @@ begin
     Exit;
   caretChanged:= False;
   c := CaretXY;
-  PrevLineStr := Lines[c.Line - 2];
+  RL := GetRealLineNumber(c.Line);
+  PrevLineStr := UnCollapsedLines[RL - 2];
   LineStr := LineText;
   StrPrevCaret := Copy(LineStr, 1, c.Char - 1);
   StrPosCaret := Copy(LineStr, c.Char, Length(LineStr) - c.Char + 1);
   lstch := GetLastNonSpaceChar(PrevLineStr);
   fstch := GetFirstNonSpaceChar(StrPosCaret);
-  AdvanceSpaceBreakLine(c.Line - 2, LeftOffset, Unindent);
+  AdvanceSpaceBreakLine(c.Line - 1, LeftOffset, Unindent);
   if (lstch = '{') and (fstch = '}') then
   begin
     caretChanged := True;
@@ -1147,8 +1150,8 @@ begin
     and (Copy(TmpStr, Length(TmpStr) - 1, 2) <> '*/') then
   begin
     // get next line after /**
-    if c.Line < Lines.Count then
-      NextLineStr := Trim(Lines[c.Line]);
+    if RL < UnCollapsedLines.Count then
+      NextLineStr := Trim(UnCollapsedLines[RL]);
     // check next line if is */ or * insert * else insert */
     if (Copy(NextLineStr, 1, 2) = '*/') or (Copy(NextLineStr, 1, 1) = '*') then
       NextLineStr := '* '
@@ -1232,7 +1235,7 @@ begin
   SpaceCount := 0;
   if SpaceLen > 0 then
   begin
-    AdvanceSpaceBreakLine(CaretY - 1, SpaceCount, Unindent);
+    AdvanceSpaceBreakLine(CaretY, SpaceCount, Unindent);
     if (SpaceCount = SpaceLen) and not Unindent then
       SpaceCount := 0
     else
@@ -1256,7 +1259,7 @@ var
 begin
   inherited;
   iLine := CaretY - 1;
-  AdvanceSpaceBreakLine(iLine, I, Unindent);
+  AdvanceSpaceBreakLine(iLine + 1, I, Unindent);
   J := LeftSpacesEx(Copy(Lines[iLine], 1, MinLen - 1), True);
   if I > J then
     Dec(I, J)
@@ -1270,7 +1273,7 @@ const
   Brackets: array[0..7] of char = ('(', ')', '[', ']', '{', '}', '<', '>');    
 var
   Line: string;
-  i, PosX, PosY, Len: integer;
+  i, PosX, PosY, Len, RealY: integer;
   Test, BracketInc, BracketDec: char;
   vDummy: string;
   OpenCount, CloseCount: Integer;
@@ -1299,8 +1302,11 @@ begin
       end;
       // position of balancing
       PosX := APoint.Char;
-      PosY := APoint.Line;
-      Line := Lines[PosY - 1];
+      RealY := GetRealLineNumber(APoint.Line);
+      PosY := RealY;
+      if PosY >= UnCollapsedLines.Count then
+        Break;
+      Line := UnCollapsedLines[PosY - 1];
       // count the matching bracket
       Stack := TStack.Create;
       repeat
@@ -1339,15 +1345,15 @@ begin
         // get previous line if possible
         Dec(PosY);
         if PosY = 0 then Break;
-        Line := Lines[PosY - 1];
+        Line := UnCollapsedLines[PosY - 1];
         PosX := Length(Line) + 1;
       until False;
       Stack.Free;
 
       // position of balancing
       PosX := APoint.Char - 1;
-      PosY := APoint.Line;
-      Line := Lines[PosY - 1];
+      PosY := RealY;
+      Line := UnCollapsedLines[PosY - 1];
       Stack := TStack.Create;
       repeat
         // search until end of line
@@ -1384,10 +1390,10 @@ begin
           end;
         end;
         // get next line if possible
-        if PosY = Lines.Count then
+        if PosY >= UnCollapsedLines.Count then
           Break;
         Inc(PosY);
-        Line := Lines[PosY - 1];
+        Line := UnCollapsedLines[PosY - 1];
         PosX := 0;
       until False;
       Stack.Free;
@@ -1523,6 +1529,12 @@ begin
   else
     BC.Char := BE.Char;
   SetCaretAndSelection(BC, BS, BE);
+end;
+
+function TSynEditEx.RealBufferCoord(
+  const Value: TBufferCoord): TBufferCoord;
+begin
+  Result:= BufferCoord(Value.Char, GetRealLineNumber(Value.Line));
 end;
 
 end.

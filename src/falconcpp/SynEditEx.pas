@@ -862,7 +862,7 @@ begin
   if not Assigned(Highlighter) or not Assigned(Attri) then Exit;
   if (Highlighter.SymbolAttribute = Attri) then
   begin
-    for i := Low(OpenChars) to High(OpenChars) do
+    for i := Low(OpenChars) to High(OpenChars) - 1 do
     begin
       if (S = OpenChars[i]) or (S = CloseChars[i]) then
       begin

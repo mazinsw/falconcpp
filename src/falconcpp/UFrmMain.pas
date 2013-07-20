@@ -488,6 +488,9 @@ type
       Shift: TShiftState);
     procedure TextEditorMouseDown(Sender: TObject;
       Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure TextEditorCommandProcessed(Sender: TObject;
+      var Command: TSynEditorCommand; var AChar: char; Data: pointer);
+
     procedure TimerStartUpdateTimer(Sender: TObject);
     procedure UpdateDownloadFinish(Sender: TObject;  State: TDownloadState;
       Canceled: Boolean);
@@ -551,7 +554,7 @@ type
       var CanExecute: Boolean);
     procedure CodeCompletionCodeCompletion(Sender: TObject;
       var Value: string; Shift: TShiftState; Index: Integer;
-      EndToken: Char);
+      var EndToken: Char);
     procedure TimerHintParamsTimer(Sender: TObject);
     procedure ViewCompOutClick(Sender: TObject);
     procedure FilePrintClick(Sender: TObject);
@@ -599,7 +602,7 @@ type
     procedure ApplicationEventsDeactivate(Sender: TObject);
     procedure CodeCompletionAfterCodeCompletion(Sender: TObject;
       const Value: string; Shift: TShiftState; Index: Integer;
-      EndToken: Char);
+      var EndToken: Char);
     procedure PopupProjectPopup(Sender: TObject);
     procedure TreeViewOutlineGetImageIndex(Sender: TBaseNativeTreeView;
       Node: PNativeNode; Kind: TVTImageKind; Column: TColumnIndex;
@@ -796,6 +799,8 @@ type
     LastSearch: TSearchItem;
     FalconVersion: TVersion; //this file version
 
+    procedure SelectFromSelStart(SelStart, SelCount: Integer;
+      Memo: TSynEditEx);
     function CreateProject(NodeText: string; FileType: Integer): TProjectFile;
     function CreateSource(ParentNode: TTreeNode;
       NodeText: string): TSourceFile;
@@ -5320,6 +5325,23 @@ begin
   DebugHint.Cancel;
 end;
 
+procedure TFrmFalconMain.TextEditorCommandProcessed(Sender: TObject;
+  var Command: TSynEditorCommand; var AChar: char; Data: pointer);
+var
+  sheet: TSourceFileSheet;
+  fprop: TSourceFile;
+  RealLine: Integer;
+begin
+  if not GetActiveSheet(sheet) then
+    Exit;
+  fprop := sheet.SourceFile;
+  if Command = ecLineBreak then
+  begin
+    RealLine := Sheet.Memo.GetRealLineNumber(sheet.Memo.CaretY);
+    fprop.Breakpoint.MoveBy(RealLine, 1);
+  end;
+end;
+
 procedure TFrmFalconMain.TextEditorGutterClick(Sender: TObject;
   Button: TMouseButton; X, Y, Line: Integer; Mark: TSynEditMark);
 var
@@ -5342,13 +5364,15 @@ var
   sheet: TSourceFileSheet;
   fprop: TSourceFile;
   S: string;
+  RealLine: Integer;
 begin
   if not GetActiveSheet(sheet) then
     Exit;
   fprop := Sheet.SourceFile;
-  if fprop.Breakpoint.HasBreakpoint(aLine) then
+  RealLine := Sheet.Memo.GetRealLineNumber(aLine);
+  if fprop.Breakpoint.HasBreakpoint(RealLine) then
   begin
-    fprop.Breakpoint.DrawBreakpoint(sheet.Memo, aLine, X, Y);
+    fprop.Breakpoint.DrawBreakpoint(sheet.Memo, RealLine, X, Y);
   end
   else if (sheet.Memo.Lines.Count >= aLine) and (aLine > 0) then
   begin
@@ -5360,7 +5384,7 @@ begin
   end;
   if DebugReader.Running and Assigned(DebugActiveFile) and
     (DebugActiveFile = fprop) and (DebugActiveLine > 0) and
-    (DebugActiveLine = aLine) then
+    (DebugActiveLine = RealLine) then
   begin
     ImageListGutter.Draw(sheet.Memo.Canvas, X + 12, Y, 4);
   end;
@@ -5371,18 +5395,20 @@ procedure TFrmFalconMain.TextEditorSpecialLineColors(Sender: TObject;
 var
   sheet: TSourceFileSheet;
   fprop: TSourceFile;
+  RealLine: Integer;
 begin
   if not GetActiveSheet(sheet) then
     Exit;
-  fprop := Sheet.SourceFile;
-  if ActiveErrorLine = Line then
+  fprop := Sheet.SourceFile;      
+  RealLine := Sheet.Memo.GetRealLineNumber(Line);
+  if ActiveErrorLine = RealLine then
   begin
     fg := clWindow;
     bg := clRed;
     Special := True;
     Exit;
   end;
-  if fprop.Breakpoint.HasBreakpoint(Line) then
+  if fprop.Breakpoint.HasBreakpoint(RealLine) then
   begin
     fg := clWindow;
     bg := clRed;
@@ -5391,7 +5417,7 @@ begin
   end;
   if DebugReader.Running and Assigned(DebugActiveFile) and
     (DebugActiveFile = fprop) and (DebugActiveLine > 0) and
-    (DebugActiveLine = Line) then
+    (DebugActiveLine = RealLine) then
   begin
     fg := clWindow;
     bg := clNavy;
@@ -7859,7 +7885,7 @@ begin
 end;
 
 procedure TFrmFalconMain.CodeCompletionCodeCompletion(Sender: TObject;
-  var Value: string; Shift: TShiftState; Index: Integer; EndToken: Char);
+  var Value: string; Shift: TShiftState; Index: Integer; var EndToken: Char);
 var
   Token, ClassToken: TTokenClass;
   NextChar: Char;
@@ -7954,7 +7980,7 @@ begin
 end;
 
 procedure TFrmFalconMain.CodeCompletionAfterCodeCompletion(Sender: TObject;
-  const Value: string; Shift: TShiftState; Index: Integer; EndToken: Char);
+  const Value: string; Shift: TShiftState; Index: Integer; var EndToken: Char);
 var
   Token, ClassToken: TTokenClass;
   I: Integer;
@@ -7978,7 +8004,7 @@ begin
   begin
     //nothing
   end
-  else if EndToken = '(' then
+  else if (EndToken = '(') and ((Token.Token <> tkCodeTemplate) or (Token.Flag = '')) then
   begin
     if BalancingBracket <= 0 then
     begin
@@ -8007,7 +8033,9 @@ begin
       end;
     end;
   end;
-  if EndToken <> ';' then
+  if (EndToken = '(') and (Token.Token = tkCodeTemplate) and (Token.Flag <> '') then
+    EndToken := #0
+  else if EndToken <> ';' then
   begin
     sheet.Memo.CaretX := sheet.Memo.CaretX - I;
   end;
@@ -9559,15 +9587,17 @@ var
   fprop: TSourceFile;
   SourcePath, Source: string;
   Breakpoint: TBreakpoint;
+  RealLine: Integer;
 begin
   if not GetActiveSheet(sheet) then
     Exit;
   fprop := Sheet.SourceFile;
+  RealLine := sheet.Memo.GetRealLineNumber(aLine);
   if DebugReader.Running then
   begin
-    if fprop.Breakpoint.HasBreakpoint(aLine) then
+    if fprop.Breakpoint.HasBreakpoint(RealLine) then
     begin
-      Breakpoint := fprop.Breakpoint.GetBreakpoint(aLine);
+      Breakpoint := fprop.Breakpoint.GetBreakpoint(RealLine);
       DebugReader.SendCommand(GDB_DELETE, IntToStr(Breakpoint.Index));
     end
     else
@@ -9575,10 +9605,10 @@ begin
       SourcePath := ExtractFilePath(fprop.Project.FileName);
       Source := ExtractRelativePath(SourcePath, fprop.FileName);
       Source := StringReplace(Source, '\', '/', [rfReplaceAll]);
-      DebugReader.SendCommand(GDB_BREAK, DoubleQuotedStr(Source) + ':' + IntToStr(aLine));
+      DebugReader.SendCommand(GDB_BREAK, DoubleQuotedStr(Source) + ':' + IntToStr(RealLine));
     end;
   end;
-  fprop.Breakpoint.ToogleBreakpoint(aLine);
+  fprop.Breakpoint.ToogleBreakpoint(RealLine);
   fprop.Project.BreakpointChanged := True;
   sheet.Memo.InvalidateGutterLine(aLine);
   sheet.Memo.InvalidateLine(aLine);
@@ -10351,6 +10381,19 @@ begin
     end;
   end;
   inherited;
+end;
+
+procedure TFrmFalconMain.SelectFromSelStart(SelStart, SelCount: Integer;
+  Memo: TSynEditEx);
+var
+  BS, BE: TBufferCoord;
+begin
+  GetRowColFromCharIndex(SelStart, Memo.UnCollapsedLines, BS.Line, BS.Char);
+  GetRowColFromCharIndex(SelStart + SelCount, Memo.UnCollapsedLines, BE.Line, BE.Char);
+  Memo.UncollapseRange(BS.Line, BE.Line);
+  BS.Line := Memo.GetCollapsedLineNumber(BS.Line);
+  BE.Line := Memo.GetCollapsedLineNumber(BE.Line);
+  Memo.SetCaretAndSelection(BE, BS, BE);
 end;
 
 end.

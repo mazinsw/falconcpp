@@ -524,34 +524,32 @@ end;
 
 procedure TSintax.UpdateEditor(Editor: TSynEditEx; AttributeName: string = '');
 var
-  I: Integer;
   st: TSintaxType;
 begin
   if Length(AttributeName) > 0 then
   begin
     if GetType(AttributeName, st) then
     begin
-      I := IndexOf(st);
-      case I of
-        13:
-          begin
-            Editor.CodeFolding.FolderBarColor := st.Background;
-            Editor.CodeFolding.FolderBarDivLineColor := st.Background;
-            Editor.Gutter.Color := st.Background;
-            Editor.Gutter.GradientEndColor := st.Background;
-            Editor.Gutter.Font.Color := st.Foreground;
-            Editor.Gutter.Font.Style := st.Style;
-          end;
-        14:
-          begin
-            Editor.SelectedColor.Background := st.Background;
-            Editor.SelectedColor.Foreground := st.Background;
-          end;
+      Editor.BeginUpdate;
+      if st.Name = 'Gutter' then
+      begin
+        Editor.CodeFolding.FolderBarColor := st.Background;
+        Editor.CodeFolding.FolderBarDivLineColor := st.Background;
+        Editor.Gutter.Color := st.Background;
+        Editor.Gutter.GradientEndColor := st.Background;
+        Editor.Gutter.Font.Color := st.Foreground;
+        Editor.Gutter.Font.Style := st.Style;
       end;
+      if st.Name = 'Selection' then
+      begin
+        Editor.SelectedColor.Background := st.Background;
+        Editor.SelectedColor.Foreground := st.Background;
+      end;
+      Editor.EndUpdate;
     end;
     Exit;
   end;
-
+  Editor.BeginUpdate;
   if GetType('Gutter', st) then
   begin
     Editor.CodeFolding.FolderBarColor := st.Background;
@@ -566,6 +564,7 @@ begin
     Editor.SelectedColor.Background := st.Background;
     Editor.SelectedColor.Foreground := st.Foreground;
   end;
+  Editor.EndUpdate;
 end;
 
 function TSintax.Add(Item: TSintaxType): Integer;
@@ -873,7 +872,7 @@ begin
 
   with FrmFalconMain.Config.Editor do
   begin
-    //--------------Gemneral---------------------//
+    //--------------General---------------------//
     ChbAutoIndt.Checked := AutoIndent;
     ChbInsMode.Checked := InsertMode;
     ChbGrpUnd.Checked := GroupUndo;
@@ -1030,7 +1029,7 @@ begin
     ShowLineNumber := ChbShowLnNumb.Checked;
     GradientGutter := ChbGrdGutt.Checked;
     //---------------- Colors ------------------//
-    if CbDefSin.Items.IndexOf(CbDefSin.Text) < 0 then
+    if (CbDefSin.Items.IndexOf(CbDefSin.Text) < 0) or Self.ActiveSintax.Changed then
       BtnSave.Click;
     FrmFalconMain.SintaxList.ItemIndex := CbDefSin.ItemIndex;
     ActiveSintax := CbDefSin.Text;

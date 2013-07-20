@@ -2307,6 +2307,7 @@ class procedure TSourceFileSheet.UpdateEditor(SynMemo: TSynEditEx);
 var
   Options: TSynEditorOptions;
 begin
+  SynMemo.BeginUpdate;
   //FSynMemo.BorderStyle := bsNone;
   with FrmFalconMain.Config.Editor do
   begin
@@ -2398,6 +2399,7 @@ begin
     //-------------- Code Resources -----------------//
     SynMemo.Options := Options;
   end;
+  SynMemo.EndUpdate;
 end;
 
 constructor TSourceFileSheet.CreateEditor(SourceFile: TSourceFile;
@@ -2437,9 +2439,11 @@ begin
   FSynMemo.OnGutterClick := FrmFalconMain.TextEditorGutterClick;
   FSynMemo.OnGutterPaint := FrmFalconMain.TextEditorGutterPaint;
   FSynMemo.OnSpecialLineColors := FrmFalconMain.TextEditorSpecialLineColors;
+  FSynMemo.OnCommandProcessed := FrmFalconMain.TextEditorCommandProcessed;
   // Initialise code folding
   with FSynMemo.CodeFolding do
   begin
+    FSynMemo.BeginUpdate;
     CaseSensitive := True;
     FolderBarLinesColor := clGray;
     CollapsingMarkStyle := msSquare;
@@ -2453,6 +2457,7 @@ begin
       //Add(rtKeyword, False, False, True, 'BEGIN', 'END', nil); //for resources
     end;
     Enabled := True;
+    FSynMemo.EndUpdate;
   end;
   if SelectTab then
     PageCtrl.ActivePageIndex := PageIndex;

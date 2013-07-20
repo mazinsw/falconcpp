@@ -1281,7 +1281,12 @@ var
 begin
   List.Clear;
   Temp := S;
-  sc := GetFirstWord(S);
+  sc := GetFirstWord(Temp);
+  if sc = 'virtual' then
+  begin
+    Temp := GetAfterWord(Temp);
+    sc := GetFirstWord(Temp);
+  end;
   if not StringIn(sc, ScopeNames) then
   begin
     if scope <> scPrivate then
@@ -1921,17 +1926,28 @@ begin
         _fields := cast + _sep + _fields;
       Break;
     end;
-    //skipspace
-    while (ptr >= init) and (ptr^ in LineChars + SpaceChars) do
+    while True do
     begin
-      // jump sigle line comment
-      if ptr^ in LineChars then
+      //skipspace
+      while (ptr >= init) and (ptr^ in LineChars + SpaceChars) do
       begin
-        if (ptr > init) and ((ptr - 1)^ in LineChars) then
-          Dec(ptr);
-        ptr := StartOfCommentInv(init, ptr);
+        // jump sigle line comment
+        if ptr^ in LineChars then
+        begin
+          if (ptr > init) and ((ptr - 1)^ in LineChars) then
+            Dec(ptr);
+          ptr := StartOfCommentInv(init, ptr);
+        end;
+        Dec(ptr);
       end;
-      Dec(ptr);
+      if ptr^ = '>' then
+      begin
+        SkipInvPair(init, ptr, '<', '>');
+        if (ptr >= init) and (ptr^ = '<') then
+          Dec(ptr);
+      end
+      else
+        Break;
     end;
     if not (ptr^ in LetterChars + DigitChars + [')', ']', '/']) then
     begin

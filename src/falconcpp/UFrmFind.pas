@@ -89,7 +89,7 @@ function EncodeStr(const S: string): string;
 implementation
 
 uses USourceFile, SynEditEx, SynEditMiscClasses, ULanguages,
-  UUtils, UParseMsgs;
+  UUtils, UParseMsgs, SynEdit;
 
 {$R *.dfm}
 
@@ -124,8 +124,9 @@ var
   prop: TSourceFile;
   sheet: TSourceFileSheet;
   memo: TSynEditEx;
+  BE: TBufferCoord;
   sopt: TSynSearchOptions;
-  I, Start, Index, Count: Integer;
+  I, Start, Index, Count, SelEnd: Integer;
 begin
   if not frm.GetActiveFile(prop) then
     Exit;
@@ -155,8 +156,14 @@ begin
   memo.SearchEngine.FindAll(memo.UnCollapsedLines.Text);
   Start := 0;
   Count := 0;
+  if memo.SelAvail then
+    BE := memo.BlockEnd
+  else
+    BE := memo.CaretXY;
+  BE.Line := memo.GetRealLineNumber(BE.Line);
+  SelEnd := memo.RowColToCharIndex(BE);
   for I := 0 to memo.SearchEngine.ResultCount - 1 do
-    if memo.SearchEngine.Results[I] > memo.SelEnd then
+    if memo.SearchEngine.Results[I] > SelEnd then
     begin
       Count := memo.SearchEngine.ResultCount - I;
       Start := I;
@@ -170,7 +177,7 @@ begin
   end;
   Index := -1;
   for I := Start to memo.SearchEngine.ResultCount - 1 do
-    if memo.SearchEngine.Results[I] > memo.SelEnd then
+    if memo.SearchEngine.Results[I] > SelEnd then
     begin
       Index := I;
       Break;
@@ -179,8 +186,7 @@ begin
     Index := Start;
   I := memo.SearchEngine.Results[Index];
   Count := memo.SearchEngine.Lengths[Index];
-  memo.SelStart := I - 1;
-  memo.SelLength := Count;
+  frm.SelectFromSelStart(I - 1, Count, memo);
 end;
 
 procedure StartFindPrevText(frm: TFrmFalconMain; LastSearch: TSearchItem);
@@ -189,7 +195,8 @@ var
   sheet: TSourceFileSheet;
   memo: TSynEditEx;
   sopt: TSynSearchOptions;
-  I, Start, Index, Count: Integer;
+  BS: TBufferCoord;
+  I, Start, Index, Count, SelStart: Integer;
 begin
   if not frm.GetActiveFile(prop) then
     Exit;
@@ -219,8 +226,14 @@ begin
   memo.SearchEngine.FindAll(memo.UnCollapsedLines.Text);
   Start := 0;
   Count := 0;
+  if memo.SelAvail then
+    BS := memo.BlockBegin
+  else
+    BS := memo.CaretXY;
+  BS.Line := memo.GetRealLineNumber(BS.Line);
+  selstart := memo.RowColToCharIndex(BS);
   for I := 0 to memo.SearchEngine.ResultCount - 1 do
-    if memo.SearchEngine.Results[I] > memo.SelStart then
+    if memo.SearchEngine.Results[I] > SelStart then
     begin
       Count := I;
       Start := I - 1;
@@ -240,9 +253,7 @@ begin
   Index := Start;
   I := memo.SearchEngine.Results[Index];
   Count := memo.SearchEngine.Lengths[Index];
-  memo.SelStart := I - 1;
-  memo.SelLength := Count;
-
+  frm.SelectFromSelStart(I - 1, Count, memo);
 end;
 
 procedure StartFindFilesText(frm: TFrmFalconMain);
@@ -755,6 +766,7 @@ var
   pt: TPoint;
   rect: TRect;
   sopt: TSynSearchOptions;
+  BS, BE: TBufferCoord;
 begin
   UpdateSearchHistoryList(CboFind.Text);
   if TabCtrl.TabIndex = 2 then
@@ -785,8 +797,18 @@ begin
   memo.SearchEngine.FindAll(memo.UnCollapsedLines.Text);
   Count := memo.SearchEngine.ResultCount;
   Start := 0;
-  selstart := memo.SelStart;
-  selend := memo.SelEnd;
+  if memo.SelAvail then
+    BS := memo.BlockBegin
+  else
+    BS := memo.CaretXY;
+  BS.Line := memo.GetRealLineNumber(BS.Line);
+  selstart := memo.RowColToCharIndex(BS);
+  if memo.SelAvail then
+    BE := memo.BlockEnd
+  else
+    BE := memo.CaretXY;
+  BE.Line := memo.GetRealLineNumber(BE.Line);
+  selend := memo.RowColToCharIndex(BE);
   if not ChbCircSearch.Checked then
   begin
     Count := 0;
@@ -851,8 +873,7 @@ begin
     Index := Start;
   I := memo.SearchEngine.Results[Index];
   lastlength := memo.SearchEngine.Lengths[Index];
-  memo.SelStart := I - 1;
-  memo.SelLength := lastlength;
+  FrmFalconMain.SelectFromSelStart(I - 1, lastlength, memo);
   frm.LastSearch.Search := search;
   frm.LastSearch.DiffCase := ChbDiffCase.Checked;
   frm.LastSearch.FullWord := ChbFullWord.Checked;

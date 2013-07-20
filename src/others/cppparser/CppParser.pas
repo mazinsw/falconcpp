@@ -57,7 +57,7 @@ type
     function CountCharacters: Integer;
     function CountElements(cStart, cEnd: Char): Integer;
     //get
-    function GetWordUntilFind(Chars: TSetOfChars): string;
+    function GetWordUntilFind(Chars: TSetOfChars; SkipTemplate: Boolean = False): string;
     function GetWordPair(cStart, cEnd: Char): string;
     function GetWord(SpaceSepOnly: Boolean = False): string;
     function GetEOL: string;
@@ -467,6 +467,12 @@ begin
         begin
           Result := '';
           Exit;
+        end
+        else
+        begin
+          Inc(fptr);
+          Inc(fCurrPos);
+          DoProgress;
         end;
       end
       else if fptr^ in SpaceChars + LineChars then
@@ -921,7 +927,7 @@ begin
   begin
     Inc(fptr);
     Inc(fCurrPos);
-    Ancestor := GetWordUntilFind(['{', ';', '}', '(', ')', '[', ']']);
+    Ancestor := GetWordUntilFind(['{', ';', '}', '(', ')', '[', ']'], True);
     if fptr^ in ['}', '(', ')', '[', ']'] then
       Exit;
   end;
@@ -955,6 +961,17 @@ begin
             SkipPair('<', '>');
             CurrStr := '';
             ChangedCurrPos := True;
+          end
+          else
+          begin
+            TempWord := GetFirstWord(RetType);
+            if TempWord = 'typedef' then
+            begin
+              TempWord := GetWordPair('<', '>');
+              if fptr^ = '>' then
+                CurrStr := CurrStr + '<' + TempWord + '>';
+              ChangedCurrPos := True;
+            end;
           end;
         end;
       '/':
@@ -1079,8 +1096,20 @@ begin
           RetType := '';
           AccessChars := '';
         end;
-      '(': ProcessFunction(StartPos, StartLine, RetType + AccessChars + ' ' +
-          CurrStr);
+      '(':
+        begin
+          TempWord := GetFirstWord(RetType);
+          if TempWord = 'typedef' then
+            ProcessTypedef(StartPos, StartLine, RetType + AccessChars + ' ' +
+              CurrStr)
+          else
+            ProcessFunction(StartPos, StartLine, RetType + AccessChars + ' ' +
+              CurrStr);
+          CurrStr := '';
+          RetType := '';
+          AccessChars := '';
+          ChangedCurrPos := True;
+        end;
       ';':
         begin
           ChangedCurrPos := True;
@@ -1120,8 +1149,13 @@ begin
           end
           else
           begin
-            ProcessVariable(StartPos, StartLine, RetType + AccessChars + ' ' +
-              CurrStr);
+            TempWord := GetFirstWord(RetType);
+            if TempWord = 'typedef' then
+              ProcessTypedef(StartPos, StartLine, RetType + AccessChars + ' ' +
+                CurrStr)
+            else
+              ProcessVariable(StartPos, StartLine, RetType + AccessChars + ' ' +
+                CurrStr);
           end;
           CurrStr := '';
           RetType := '';
@@ -1181,7 +1215,7 @@ begin
   begin
     Inc(fptr);
     Inc(fCurrPos);
-    Ancestor := GetWordUntilFind(['{', ';', '}', '(', ')', '[', ']']);
+    Ancestor := GetWordUntilFind(['{', ';', '}', '(', ')', '[', ']'], True);
     if fptr^ in ['}', '(', ')', '[', ']'] then
       Exit;
   end;
@@ -1642,7 +1676,7 @@ begin
   begin
     Inc(fptr);
     Inc(fCurrPos);
-    Ancestor := GetWordUntilFind(['{', ';', '}', '(', ')', '[', ']']);
+    Ancestor := GetWordUntilFind(['{', ';', '}', '(', ')', '[', ']'], True);
     if fptr^ in ['}', '(', ')', '[', ']'] then
       Exit;
   end;
@@ -1826,7 +1860,7 @@ begin
   end;
 end;
 
-function TCppParser.GetWordUntilFind(Chars: TSetOfChars): string;
+function TCppParser.GetWordUntilFind(Chars: TSetOfChars; SkipTemplate: Boolean): string;
 begin
   Result := '';
   repeat
@@ -1851,10 +1885,12 @@ begin
       '{': SkipPair('{', '}');
       '[': SkipPair('[', ']');
     else
-      if fptr^ in LetterChars + DigitChars + ['*', '&', ',', '.', '-', ':', '\'] then
+      if (fptr^ = '<') and SkipTemplate then
+        SkipPair('<', '>')
+      else if fptr^ in LetterChars + DigitChars + ['*', '&', ',', '.', '-', ':', '\'] then
         Result := Result + fptr^
       else if fptr^ in LineChars + SpaceChars then
-        Result := Result + ' ';
+        Result := Trim(Result) + ' ';
     end;
     DoProgress;
     Inc(fptr);
@@ -2580,9 +2616,15 @@ begin
         if (fptr^ in ['*', '&', '>']) and (LastWord <> 'operator') then
           ChangedCurrPos := True;
       end
-      else if (fptr^ in ['>', '^', '|', '!', '+', '-', ']']) and (GetLastWord(CurrStr) = 'operator') then
+      else if (fptr^ in ['>', '^', '|', '!', '+', '-', ']']) then
       begin
-        CurrStr := CurrStr + fptr^;
+        if (GetLastWord(CurrStr) = 'operator') then
+          CurrStr := CurrStr + fptr^
+        else
+        begin
+          CurrStr := '';
+          ChangedCurrPos := True;
+        end;
       end;
     end;
     Inc(fptr);

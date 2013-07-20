@@ -33,16 +33,19 @@ type
     procedure SetImageList(Value: TImageList);
     procedure SetImageIndex(Value: Integer);
     function Get(Index: Integer): TBreakpoint;
+    function GetCount: Integer;
+    function GetInsertIndex(Line: Integer): Integer;
   public
     constructor Create;
     destructor Destroy; override;
     procedure Clear;
     procedure Assign(Value: TBreakpointList);
-    function Count: Integer;
+    function MoveBy(LineFrom, aCount: Integer): Integer;
     function HasBreakpoint(Line: Integer): Boolean;
     procedure DrawBreakpoint(Editor: TSynEditEx; Line, X, Y: Integer);
     function ToogleBreakpoint(Line: Integer): Boolean;
     function GetBreakpoint(Line: Integer): TBreakpoint;
+    property Count: Integer read GetCount;
     property Items[Index: integer]: TBreakpoint read Get;
     property ImageList: TImageList read FImageList write SetImageList;
     property ImageIndex: Integer read FImageIndex write SetImageIndex;
@@ -72,7 +75,7 @@ end;
 
 {TBreakpointList}
 
-function TBreakpointList.Count: Integer;
+function TBreakpointList.GetCount: Integer;
 begin
   Result := FList.Count;
 end;
@@ -82,23 +85,49 @@ begin
   Result := TBreakpoint(FList.Items[Index]);
 end;
 
+function TBreakpointList.GetInsertIndex(Line: Integer): Integer;
+var
+  I, J: Integer;
+  Breakpoint: TBreakpoint;
+begin
+  I := 0;
+  Result := 0;
+  J := FList.Count - 1;
+  // binary search
+  while I <= J do
+  begin
+    Result := (I + J) div 2;
+    Breakpoint := TBreakpoint(FList.Items[Result]);
+    if Line > Breakpoint.Line then
+    begin
+      I := Result + 1;
+      Inc(Result);
+    end
+    else if Line < Breakpoint.Line then
+    begin
+      J := Result - 1;
+      if I <= J then
+        Dec(Result);
+    end
+    else
+      Exit;
+  end;
+  if Result < 0 then
+    Result := 0;
+end;
+
 function TBreakpointList.GetBreakpointIndex(Line: Integer): Integer;
 var
   I: Integer;
   Breakpoint: TBreakpoint;
 begin
   Result := -1;
-  for I := 0 to FList.Count - 1 do
-  begin
-    Breakpoint := TBreakpoint(FList.Items[I]);
-    if Breakpoint.Line > Line then
-      Exit;
-    if Breakpoint.Line = Line then
-    begin
-      Result := I;
-      Exit;
-    end;
-  end;
+  I := GetInsertIndex(Line);
+  if I >= FList.Count then
+    Exit;
+  Breakpoint := TBreakpoint(FList.Items[I]);
+  if Breakpoint.Line = Line then
+    Result := I;
 end;
 
 procedure TBreakpointList.SetImageList(Value: TImageList);
@@ -167,32 +196,20 @@ end;
 
 function TBreakpointList.ToogleBreakpoint(Line: Integer): Boolean;
 var
-  I, PrevIndex: Integer;
+  I: Integer;
   Breakpoint: TBreakpoint;
 begin
-  PrevIndex := -1;
-  for I := 0 to FList.Count - 1 do
+  I := GetInsertIndex(Line);
+  if (I < FList.Count) and (Items[I].Line = Line) then
   begin
-    Breakpoint := TBreakpoint(FList.Items[I]);
-    if Breakpoint.Line > Line then
-      Break;
-    if Breakpoint.Line = Line then
-    begin
-      FList.Delete(I);
-      Breakpoint.Free;
-      Result := False;
-      Exit;
-    end;
-    PrevIndex := I;
-    if I = FList.Count - 1 then
-      Inc(PrevIndex);
+    Items[I].Free;
+    FList.Delete(I);
+    Result := False;
+    Exit;
   end;
   Breakpoint := TBreakpoint.Create;
   Breakpoint.Line := Line;
-  if PrevIndex < 0 then
-    FList.Insert(0, Breakpoint)
-  else
-    FList.Insert(PrevIndex, Breakpoint);
+  FList.Insert(I, Breakpoint);
   Result := True;
 end;
 
@@ -223,6 +240,22 @@ begin
     bp := TBreakpoint.Create;
     bp.Assign(Value.Items[I]);
     FList.Add(bp);
+  end;
+end;
+
+function TBreakpointList.MoveBy(LineFrom, aCount: Integer): Integer;
+var
+  I: Integer;
+  Breakpoint: TBreakpoint;
+begin
+  Result := 0;
+  for I := 0 to FList.Count - 1 do
+  begin
+    Breakpoint := TBreakpoint(FList.Items[I]);
+    if Breakpoint.Line < LineFrom then
+      Continue;
+    Breakpoint.Line := Breakpoint.Line + aCount;
+    Inc(Result);
   end;
 end;
 

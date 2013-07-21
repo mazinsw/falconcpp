@@ -2346,8 +2346,8 @@ begin
             ProcessTypedef(StartPos, StartLine, CurrStr)
           else if TempWord = 'extern' then
           begin
-            if not StringIn(LastWord, ReservedTypes) and
-              (TempWord <> 'extern') then
+            TempWord := GetLastWord(GetPriorWord(CurrStr));
+            if not StringIn(LastWord, ReservedTypes) and (TempWord <> 'extern') then
             begin
               ProcessFunction(StartPos, StartLine, GetAfterWord(CurrStr),
                 IsDestructor);

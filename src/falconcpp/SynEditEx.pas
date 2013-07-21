@@ -106,7 +106,6 @@ type
     procedure ToggleLineComment;
     function GetBalancingBracketEx(const APoint: TBufferCoord;
       Bracket: Char): Integer;
-    function RealBufferCoord(const Value: TBufferCoord): TBufferCoord;
     property LinkEnable: Boolean read fLinkEnable write fLinkEnable;
     property LinkOptions: TSynLinkOptions
       read fLinkOptions write fLinkOptions;
@@ -514,7 +513,7 @@ begin
     Exit;
   end;
 
-  if not GetHighlighterAttriAtRowCol(P, S, Attri) then Exit;
+  if not GetHighlighterAttriAtRowCol(RealBufferCoord(P), S, Attri) then Exit;
   if fLinkOptions.AttributeList.IndexOf(Attri.Name) < 0 then Exit;
   Word := GetWordAtRowCol(P);
   if Length(Word) = 0 then Exit;
@@ -564,7 +563,7 @@ begin
     LWE.Line := 0;
     Exit;
   end;
-  if not GetHighlighterAttriAtRowCol(P, S, Attri) then Exit;
+  if not GetHighlighterAttriAtRowCol(RealBufferCoord(P), S, Attri) then Exit;
   if fLinkOptions.AttributeList.IndexOf(Attri.Name) < 0 then Exit;
   Word := GetWordAtRowCol(P);
   if Length(Word) = 0 then Exit;
@@ -666,7 +665,7 @@ procedure TSynEditEx.ProcessHighlighterLink;
       LWE.Line := 0;
       Exit;
     end;
-    GetHighlighterAttriAtRowCol(P, S, Attri);
+    GetHighlighterAttriAtRowCol(RealBufferCoord(P), S, Attri);
     if not Assigned(Attri) then Exit;
     if fLinkOptions.AttributeList.IndexOf(Attri.Name) < 0 then Exit;
     Word := GetWordAtRowCol(P);
@@ -816,11 +815,11 @@ var P, Pa: TBufferCoord;
     Pix, PixB: TPoint;
     Alone: Boolean;
     D     : TDisplayCoord;
-    SkipClear: Boolean;
+    SkipClear, Collapsed: Boolean;
     S, LineStr: string;
     I, FontSize: Integer;
     Attri: TSynHighlighterAttributes;
-    start, LineLen: Integer;
+    start, LineLen, FromLine, ToLine: Integer;
     TmpCharA, TmpCharB: Char;
     ftStyle: TFontStyles;
 begin
@@ -858,7 +857,7 @@ begin
     S := TmpCharB
   else
     P.Char := P.Char - 1;
-  GetHighlighterAttriAtRowCol(P, S, Attri);
+  GetHighlighterAttriAtRowCol(RealBufferCoord(P), S, Attri);
   if not Assigned(Highlighter) or not Assigned(Attri) then Exit;
   if (Highlighter.SymbolAttribute = Attri) then
   begin
@@ -866,9 +865,11 @@ begin
     begin
       if (S = OpenChars[i]) or (S = CloseChars[i]) then
       begin
+        if not GetFoldInfoFromLine(P.Line, FromLine, ToLine, Collapsed) or Collapsed then
+          Exit;
         Pix := CharToPixels(P);
         Pa := P;
-        P := GetMatchingBracketEx(P);
+        P := CollapsedBufferCoord(GetMatchingBracketEx(RealBufferCoord(P)));
         Alone := False;
         if (P.Char > 0) and (P.Line > 0) then
           PixB := CharToPixels(P)
@@ -1213,7 +1214,7 @@ begin
   LineStr := LineText;
   StrPrevBracket := Copy(LineStr, 1, c.Char - 2);
   StrBracket := Copy(LineStr, c.Char - 1, Length(LineStr) - c.Char + 2);
-  CaretNew := GetMatchingBracketEx(BufferCoord(C.Char - 1, C.Line));
+  CaretNew := CollapsedBufferCoord(GetMatchingBracketEx(RealBufferCoord(BufferCoord(C.Char - 1, C.Line))));
   if (CaretNew.Char > 0) and (CaretNew.Line > 0) and
      (Length(Trim(StrPrevBracket)) = 0) then
   begin
@@ -1529,12 +1530,6 @@ begin
   else
     BC.Char := BE.Char;
   SetCaretAndSelection(BC, BS, BE);
-end;
-
-function TSynEditEx.RealBufferCoord(
-  const Value: TBufferCoord): TBufferCoord;
-begin
-  Result:= BufferCoord(Value.Char, GetRealLineNumber(Value.Line));
 end;
 
 end.

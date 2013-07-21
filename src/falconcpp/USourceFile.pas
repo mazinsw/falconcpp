@@ -2440,6 +2440,7 @@ begin
   FSynMemo.OnGutterPaint := FrmFalconMain.TextEditorGutterPaint;
   FSynMemo.OnSpecialLineColors := FrmFalconMain.TextEditorSpecialLineColors;
   FSynMemo.OnCommandProcessed := FrmFalconMain.TextEditorCommandProcessed;
+  FSynMemo.OnScroll := FrmFalconMain.TextEditorScroll;
   // Initialise code folding
   with FSynMemo.CodeFolding do
   begin

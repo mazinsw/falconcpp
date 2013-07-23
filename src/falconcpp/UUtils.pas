@@ -995,7 +995,7 @@ begin
           Result := TRUE;
       end;
     finally
-      FreeAndNil(Reg);
+      Reg.Free;
     end;
   end;
 end;
@@ -1342,21 +1342,25 @@ var
 begin
   NormalDir := IncludeTrailingPathDelimiter(Dir);
   if FindFirst(NormalDir + Regex, faAnyFile, F) = 0 then
-  repeat
-    if (F.Attr and faDirectory) = 0 then
-      List.Add(NormalDir + F.Name);
-  until FindNext(F) <> 0;
-  FindClose(F);
+  begin
+    repeat
+      if (F.Attr and faDirectory) = 0 then
+        List.Add(NormalDir + F.Name);
+    until FindNext(F) <> 0;
+    FindClose(F);
+  end;
   if not IncludeSubDir then
     Exit;
   if FindFirst(NormalDir + '*.*', faAnyFile, F) = 0 then
-  repeat
-    if ((F.Attr and faDirectory) <> 0) and (F.Name <> '.') and (F.Name <> '..') then
-    begin
-      ListDir(NormalDir + F.Name + '\', Regex, List, IncludeSubDir);
-    end;
-  until FindNext(F) <> 0;
-  FindClose(F);
+  begin
+    repeat
+      if ((F.Attr and faDirectory) <> 0) and (F.Name <> '.') and (F.Name <> '..') then
+      begin
+        ListDir(NormalDir + F.Name + '\', Regex, List, IncludeSubDir);
+      end;
+    until FindNext(F) <> 0;
+    FindClose(F);
+  end;
 end;
 
 function NewSourceFile(FileType, Compiler: Integer; FirstName, BaseName,

@@ -23,7 +23,8 @@ uses
   SynEditExport, SynExportHTML, SynExportTeX, DebugConsts,
   XMLDoc, XMLIntf, BreakPoint, HintTree, DebugWatch, 
   UParseMsgs, SynEditMiscClasses, TBXStatusBars, XPPanels, ModernTabs,
-  VistaAltFixUnit, TB2Toolbar, ThreadFileDownload, NativeTreeView, SynEditEx;
+  VistaAltFixUnit, TB2Toolbar, ThreadFileDownload, NativeTreeView, SynEditEx,
+  PluginManager;
 
 const
   MAX_OUTLINE_TREE_IMAGES = 29;
@@ -60,6 +61,7 @@ const
     );
   WM_RELOADFTM = WM_USER + $1008;
   WM_REPARSEFILES = WM_RELOADFTM + 1;
+  WM_FALCONCPP_PLUGIN = WM_USER + $1221;
   MINLINE_TOENABLE_GOTOLINE = 3;
   {$EXTERNALSYM PBS_MARQUEE}
   PBS_MARQUEE = $0008;
@@ -442,6 +444,7 @@ type
     procedure SendDataCopyData(var Msg: TWMCopyData); message WM_COPYDATA;
     procedure ReloadTemplates(var message: TMessage); message WM_RELOADFTM;
     procedure ReparseFiles(var message: TMessage); message WM_REPARSEFILES;
+    procedure PluginHandler(var message: TMessage); message WM_FALCONCPP_PLUGIN;
     procedure TreeViewProjectsProc(var Msg: TMessage);
     procedure TreeViewOutlineProc(var Msg: TMessage);
     procedure PanelEditorMessagesProc(var Msg: TMessage);
@@ -651,6 +654,7 @@ type
     FSintaxList: TSintaxList; //highlighter list
     FConfig: TConfig; //window objects positions, zoom, etc.
     FTemplates: TTemplates; //all falcon c++ templates
+    FPluginManager: TPluginManager;
 
     //paths
     FAppRoot: string; //path of executable
@@ -1201,6 +1205,7 @@ var
   Proj: TProjectFile;
 begin
   IsLoading := True;
+  FPluginManager := TPluginManager.Create(Handle);
   FSearchList := TStringList.Create;
   FIncludeFileList := TStringList.Create;
   FReplaceList := TStringList.Create;
@@ -1480,6 +1485,8 @@ begin
     SetActiveCompilerPath(Path, NewInstalled);
   end;
   List.Free;
+  FPluginManager.LoadFromDir(FAppRoot + 'Plugins\');
+  FPluginManager.LoadFromDir(FConfigRoot + 'Plugins\');
   SplashScreen.TextOut(55, 300, STR_FRM_MAIN[30]);
   List := TStringList.Create;
   GetSourcesFiles(List);
@@ -1670,6 +1677,11 @@ begin
       ThreadTokenFiles.Start(SourceFileList,
         Config.Compiler.Path + '\include\', ConfigRoot + 'include\', '.prs');
       SleepAtEnd := SplashScreen.Showing;
+    end;
+    for I := 0 to FIncludeFileList.Count - 1 do
+    begin
+      if FIncludeFileList.Objects[I] <> nil then
+        FIncludeFileList.Objects[I].Free;
     end;
     FIncludeFileList.Clear;
     for I := 0 to SourceFileList.Count - 1 do
@@ -4735,7 +4747,7 @@ begin
     DebugHint.Cancel;
     ActiveEditingFile.FileName := FilePrp.FileName;
     ActiveEditingFile.Data := FilePrp;
-    Memo.InvalidateGutterLines(Memo.CaretY - 1, Memo.CaretY + 1);
+//    Memo.InvalidateGutterLines(Memo.CaretY - 1, Memo.CaretY + 1);
     if CurrentFileIsParsed then
       CurrentFileIsParsed := False
     else
@@ -5597,15 +5609,32 @@ begin
 end;
 
 procedure TFrmFalconMain.FormDestroy(Sender: TObject);
+var
+  I: Integer;
 begin
+  for I := TreeViewProjects.Items.Count - 1 downto 0 do
+    TSourceBase(TreeViewProjects.Items.Item[I].Data).Free;
+  FPluginManager.Free;
   FSearchList.Free;
+  for I := 0 to FIncludeFileList.Count - 1 do
+  begin
+    if FIncludeFileList.Objects[I] <> nil then
+      FIncludeFileList.Objects[I].Free;
+  end;
   FIncludeFileList.Free;
   FReplaceList.Free;
+  for I := 0 to ProjectIncludeList.Count - 1 do
+  begin
+    if ProjectIncludeList.Objects[I] <> nil then
+      ProjectIncludeList.Objects[I].Free;
+  end;
+  ProjectIncludeList.Free;
   DebugParser.Free;
   DebugReader.Free;
   CommandQueue.Free;
   WatchList.Free;
   AllParsedList.Free;
+  ActiveEditingFile.Free;
   ThreadFilesParsed.Free;
   ThreadTokenFiles.Free;
   ThreadLoadTkFiles.Free;
@@ -5615,6 +5644,7 @@ begin
   Templates.Free;
   Config.Free;
   SintaxList.Free;
+  FreeExecResources;
 end;
 
 procedure TFrmFalconMain.ViewItemClick(Sender: TObject);
@@ -7475,6 +7505,7 @@ begin
       if FIncludeFileList.Objects[I] = nil then
       begin
         NewToken := TTokenClass.Create;
+        FIncludeFileList.Objects[I] := NewToken;
         NewToken.Name := FIncludeFileList.Strings[I];
         NewToken.Flag := 'S';
         NewToken.Token := tkInclude;
@@ -10409,6 +10440,15 @@ begin
   BS.Line := Memo.GetCollapsedLineNumber(BS.Line);
   BE.Line := Memo.GetCollapsedLineNumber(BE.Line);
   Memo.SetCaretAndSelection(BE, BS, BE);
+end;
+
+procedure TFrmFalconMain.PluginHandler(var message: TMessage);
+var
+  PlgMsg: PPluginMsg;
+begin
+  PlgMsg := PPluginMsg(message.LParam);
+  message.Result := FPluginManager.ReceiveCommand(message.WParam,
+    PlgMsg^.Command, PlgMsg^.Widget, PlgMsg^.Param, PlgMsg^.Data);
 end;
 
 end.

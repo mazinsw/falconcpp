@@ -1874,10 +1874,8 @@ begin
   try
     XMLDoc.SaveToFile(FileName);
   except
-    //XMLDoc.Free;
     Exit;
   end;
-  //XMLDoc.Free;
   IsNew := False;
 end;
 
@@ -1966,10 +1964,12 @@ procedure TProjectFile.Build;
   procedure SaveManifest(AFileName, ResName: string);
   var
     EnbTheme: TStrings;
+    Rs: TResourceStream;
   begin
     EnbTheme := TStringList.Create;
-    EnbTheme.LoadFromStream(
-      TResourceStream.Create(HInstance, ResName, RT_RCDATA));
+    Rs := TResourceStream.Create(HInstance, ResName, RT_RCDATA);
+    EnbTheme.LoadFromStream(Rs);
+    Rs.Free;
     EnbTheme.SaveToFile(AFileName);
     EnbTheme.Free;
   end;
@@ -2297,7 +2297,6 @@ end;
 
 destructor TProjectsSheet.Destroy;
 begin
-  FListView.Free;
   inherited Destroy;
 end;
 
@@ -2484,7 +2483,6 @@ end;
 destructor TSourceFileSheet.Destroy;
 begin
   FSourceFile.FSheet := nil;
-  FSynMemo.Free;
   inherited Destroy;
 end;
 

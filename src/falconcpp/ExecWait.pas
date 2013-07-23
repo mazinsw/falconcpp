@@ -87,6 +87,7 @@ type
 
 function Executor: TExecWait;
 function ExecutorGetStdOut: TExecWaitGetStdOut;
+procedure FreeExecResources;
 
 implementation
 
@@ -131,7 +132,7 @@ begin
 end;
 
 var
-  fExecWait: TExecWait;
+  fExecWait: TExecWait = nil;
 
 function Executor: TExecWait;
 begin
@@ -229,7 +230,7 @@ end;
 {TExecWaitGetStdOut}
 
 var
-  fExecWaitGetStdOut: TExecWaitGetStdOut;
+  fExecWaitGetStdOut: TExecWaitGetStdOut = nil;
 
 function ExecutorGetStdOut: TExecWaitGetStdOut;
 begin
@@ -361,6 +362,16 @@ begin
     Buffer[nRead] := #0;
     FOutput := FOutput + StrPas(Buffer);
   until False;
+end;
+
+procedure FreeExecResources;
+begin
+  if fExecWait <> nil then
+    fExecWait.Free;
+  fExecWait := nil;
+  if fExecWaitGetStdOut <> nil then
+    fExecWaitGetStdOut.Free;
+  fExecWaitGetStdOut := nil;
 end;
 
 end.

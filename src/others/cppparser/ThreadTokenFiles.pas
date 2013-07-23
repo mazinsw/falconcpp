@@ -137,6 +137,7 @@ begin
         TokenFile := TTokenFile.Create(fTokenFiles);
         TokenFile.FileName := S;
         TokenFile.Data := FileObj.ID;
+        FileObj.Free;
         Text.LoadFromFile(S);
         fParser.Parse(Text.Text, TokenFile);
         if fCancel then
@@ -146,7 +147,9 @@ begin
         end;
         fTokenFiles.Add(TokenFile);
         ParserOk := True;
-      end;
+      end
+      else
+        FileObj.Free;
     end
     else
     begin
@@ -157,10 +160,10 @@ begin
         TokenFile.FileName := S;
         TokenFile.Data := FileObj.ID;
         fParser.Parse(FileObj.Text, TokenFile);
+        FileObj.Free;
         if fCancel then
         begin
           TokenFile.Free;
-          FileObj.Free;
           Break;
         end;
         fTokenFiles.Add(TokenFile);
@@ -484,10 +487,17 @@ begin
 end;
 
 procedure TThreadTokenFiles.Clear;
+var
+  Item: TMethodInfo;
 begin
   EnterCriticalSection(flock);
   while fFileQueue.Count > 0 do
-    TMethodInfo(fFileQueue.Pop).Free;
+  begin
+    Item := TMethodInfo(fFileQueue.Pop);
+    if Item.Data <> nil then
+      TFileObject(Item.Data).Free;
+    Item.Free;
+  end;
   fTotal := 0;
   fCurrent := 0;
   LeaveCriticalSection(flock);

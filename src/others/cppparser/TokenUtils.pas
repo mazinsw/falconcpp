@@ -718,8 +718,7 @@ begin
         if TokenList.Exist(Token.Items[I]) then
           Continue;
       end;
-      NewToken := TTokenClass.Create;
-      NewToken.Assign(Token.Items[I]); //copy
+      NewToken := Token.Items[I];
       if UseList and Assigned(TokenList) then
         TokenList.Add(NewToken);
       if Assigned(InsertList) then

@@ -260,6 +260,8 @@ begin
   Result := FList.Add(Name);
 end;
 
+{ TTemplate }
+
 constructor TTemplate.Create;
 begin
   inherited Create;
@@ -276,6 +278,10 @@ begin
   FResources.Free;
   FSrcFiles.Free;
   FCppSrcFiles.Free;
+  if FIcon <> nil then
+    FIcon.Free;
+  if FBitmap <> nil then
+    FBitmap.Free;
   inherited Destroy;
 end;
 

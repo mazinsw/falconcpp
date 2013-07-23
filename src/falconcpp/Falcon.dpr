@@ -1,6 +1,8 @@
 program Falcon;
 
 uses
+  FastMM4 in '..\others\fastmm\FastMM4.pas',
+  FastMM4Messages in '..\others\fastmm\FastMM4Messages.pas',
   Windows,
   Forms,
   Classes,
@@ -55,7 +57,12 @@ uses
   rbtree in 'rbtree.pas',
   SynEditEx in 'SynEditEx.pas',
   CodeTemplate in 'CodeTemplate.pas',
-  UFrmVisualCppOptions in 'UFrmVisualCppOptions.pas' {FrmVisualCppOptions};
+  UFrmVisualCppOptions in 'UFrmVisualCppOptions.pas' {FrmVisualCppOptions},
+  PluginManager in '..\others\plugins\PluginManager.pas',
+  PluginConst in '..\others\plugins\PluginConst.pas',
+  PluginUtils in '..\others\plugins\PluginUtils.pas',
+  Plugin in '..\others\plugins\Plugin.pas',
+  PluginServiceManager in '..\others\plugins\PluginServiceManager.pas';
 
 function OpenWithOther: Boolean;
 var

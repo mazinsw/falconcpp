@@ -5,14 +5,17 @@ interface
 const
   {* Commands *}
   Cmd_Create           = $0001;
-  Cmd_Get              = $0002;
-  Cmd_SetProperty      = $0003;
-  Cmd_SetEvent         = $0004;
-  Cmd_Call             = $0005;
+  Cmd_Free             = $0002;
+  Cmd_Destroy          = $0003;
+  Cmd_Get              = $0004;
+  Cmd_SetProperty      = $0005;
+  Cmd_SetEvent         = $0006;
+  Cmd_Call             = $0007;
 
   {* Properties *}
   Prop_Text            = $0001;
   Prop_Size            = $0002;
+  Prop_Info            = $0003; // Plugin info
 
   {* Widgets *}
   Wdg_Menu             = $0001;
@@ -29,6 +32,7 @@ const
   Wdg_TreeView         = $000C;
   Wdg_ModerPageControl = $000D;
   Wdg_ModerSheet       = $000E;
+  Wdg_Plugin           = $FFFF;
 
 
   cannotLoadPlugin = 'Can''t load plugin %s.';
@@ -36,6 +40,15 @@ const
   invalidPlugin = 'Invalid plugin.';
   failedToInitializePlugin = 'Failed to initialize plugin: error code %d.';
   pluginNotInitialized = 'Plugin not initialized.';
+
+type
+  TDispatchCommand = record
+    Command: Integer;
+    Widget: Integer;
+    Param: Integer;
+    Data: Pointer;
+  end;
+  PDispatchCommand = ^TDispatchCommand;
 
 implementation
 

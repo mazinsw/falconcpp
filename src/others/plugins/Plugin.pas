@@ -3,49 +3,43 @@ unit Plugin;
 interface
 
 uses
-  Windows;
+  Windows, PluginConst;
 
 const
-  PluginInitializeStr = 'Plugin_initialize';
-  PluginExecuteStr = 'Plugin_execute';
-  PluginExecuteEventStr = 'Plugin_executeEvent';
-  PluginFinalizeStr = 'Plugin_finalize';
+  PluginInitializeStr      = 'Plugin_initialize';
+  PluginDispatchCommandStr = 'Plugin_dispatchCommand';
+  PluginFinalizeStr        = 'Plugin_finalize';
 
 type
   TPluginInfo = record
-    ID: Integer;
     Version: array[0..30] of Char;
     Name: array[0..100] of Char;
     Author: array[0..100] of Char;
-    Description: array[0..255] of Char;
+    Description: array[0..254] of Char;
   end;
 
-  TPluginInitialize   = function(Handle: HWND; var PluginInfo: TPluginInfo): Integer; cdecl;
-  TPluginExecute      = function(Command, Widget, Param, Data: Integer): Integer; cdecl;
-  TPluginExecuteEvent = function(Widget, Event, Data: Integer): Integer; cdecl;
-  TPluginFinalize     = procedure; cdecl;
+  TPluginInitialize      = function(Handle: HWND; var Data: Pointer): Integer; cdecl;
+  TPluginDispatchCommand = function(var Cmd: TDispatchCommand; Data: Pointer): Integer; cdecl;
+  TPluginFinalize        = procedure(Data: Pointer); cdecl;
 
   TPlugin = class
   private
     FHandle: HMODULE;
+    FData: Pointer;
     FID: Integer;
     FVersion: string;
     FName: string;
     FAuthor: string;
     FDescription: string;
     FPluginInitialize: TPluginInitialize;
-    FPluginExecute: TPluginExecute;
-    FPluginExecuteEvent: TPluginExecuteEvent;
+    FPluginDispatchCommand: TPluginDispatchCommand;
     FPluginFinalize: TPluginFinalize;
-    procedure Loaded;
-    procedure ValidPlugin;
   protected
   public
-    constructor Create(FileName: string);
+    constructor Create(FileName: string; DispatchHandle: HWND);
     destructor Destroy; override;
-    function Execute(Command, Widget, Param, Data: Integer): Integer;
-    function ExecuteEvent(Widget, Event, Data: Integer): Integer;
-    procedure Initialize(OwnerHandle: HWND);
+    procedure UpdateInfo;
+    function DispatchCommand(Command, Widget, Param: Integer; Data: Pointer): Integer;
     property ID: Integer read FID;
     property Version: string read FVersion;
     property Name: string read FName;
@@ -56,11 +50,11 @@ type
 implementation
 
 uses
-  SysUtils, PluginConst;
+  SysUtils;
 
 { TPlugin }
 
-constructor TPlugin.Create(FileName: string);
+constructor TPlugin.Create(FileName: string; DispatchHandle: HWND);
 var
   FuncPtr: Pointer;
 begin
@@ -75,22 +69,14 @@ begin
     raise Exception.CreateFmt(functionNotFound, [PluginInitializeStr]);
   end;
   FPluginInitialize := FuncPtr;
-  FuncPtr := GetProcAddress(FHandle, PluginExecuteStr);
+  FuncPtr := GetProcAddress(FHandle, PluginDispatchCommandStr);
   if FuncPtr = nil then
   begin
     FreeLibrary(FHandle);
     FHandle := 0;
-    raise Exception.CreateFmt(functionNotFound, [PluginExecuteStr]);
+    raise Exception.CreateFmt(functionNotFound, [PluginDispatchCommandStr]);
   end;
-  FPluginExecute := FuncPtr;
-  FuncPtr := GetProcAddress(FHandle, PluginExecuteEventStr);
-  if FuncPtr = nil then
-  begin
-    FreeLibrary(FHandle);
-    FHandle := 0;
-    raise Exception.CreateFmt(functionNotFound, [PluginExecuteEventStr]);
-  end;
-  FPluginExecuteEvent := FuncPtr;
+  FPluginDispatchCommand := FuncPtr;
   FuncPtr := GetProcAddress(FHandle, PluginFinalizeStr);
   if FuncPtr = nil then
   begin
@@ -99,58 +85,49 @@ begin
     raise Exception.CreateFmt(functionNotFound, [PluginFinalizeStr]);
   end;
   FPluginFinalize := FuncPtr;
+  FID := FPluginInitialize(DispatchHandle, FData);
+  if FID <= 0 then
+  begin
+    FreeLibrary(FHandle);
+    FHandle := 0;
+    raise Exception.CreateFmt(failedToInitializePlugin, [FID]);
+  end;
 end;
 
 destructor TPlugin.Destroy;
 begin
   if FHandle <> 0 then
   begin
-    if FID <> 0 then
-      FPluginFinalize;
+    FPluginFinalize(FData);
     FreeLibrary(FHandle);
   end;
   inherited;
 end;
 
-function TPlugin.Execute(Command, Widget, Param, Data: Integer): Integer;
+function TPlugin.DispatchCommand(Command, Widget, Param: Integer;
+  Data: Pointer): Integer;
+var
+  Msg: TDispatchCommand;
 begin
-  ValidPlugin;
-  Result := FPluginExecute(Command, Widget, Param, Data);
+  Msg.Command := Command;
+  Msg.Widget := Widget;
+  Msg.Param := Param;
+  Msg.Data := Data;
+  Result := FPluginDispatchCommand(Msg, FData);
 end;
 
-function TPlugin.ExecuteEvent(Widget, Event, Data: Integer): Integer;
-begin
-  ValidPlugin;
-  Result := FPluginExecuteEvent(Widget, Event, Data);
-end;
-
-procedure TPlugin.Initialize(OwnerHandle: HWND);
+procedure TPlugin.UpdateInfo;
 var
   PluginInfo: TPluginInfo;
-  eCode: Integer;
+  I: Integer;
 begin
-  Loaded;
-  eCode := FPluginInitialize(OwnerHandle, PluginInfo);
-  if eCode <> 0 then
-    raise Exception.CreateFmt(failedToInitializePlugin, [eCode]);
-  FID := PluginInfo.ID;
+  I := DispatchCommand(Cmd_Get, Wdg_Plugin, Prop_Info, @PluginInfo);
+  if I <> 0 then
+    Exit;
   FVersion := PluginInfo.Version;
   FName := PluginInfo.Name;
   FAuthor := PluginInfo.Author;
   FDescription := PluginInfo.Description;
-end;
-
-procedure TPlugin.Loaded;
-begin
-  if FHandle = 0 then
-    raise Exception.Create(invalidPlugin);
-end;
-
-procedure TPlugin.ValidPlugin;
-begin
-  Loaded;
-  if FID = 0 then
-    raise Exception.Create(pluginNotInitialized);
 end;
 
 end.

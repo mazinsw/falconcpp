@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project>
+	<Libs Value="-shared -Wl,--kill-at -L&quot;..\lib&quot; -lfcplg"/>
+	<Flags Value="-I&quot;..\include&quot; -DBUILD_DLL"/>
+	<Target Value="..\bin\plugin.plg"/>
+	<CommandLine Value=""/>
+	<CompilerOptions Value="-Wall -s -O2"/>
+	<DeleteObjectsBefore Value="No"/>
+	<DeleteObjectsAfter Value="No"/>
+	<DeleteMakefileAfter Value="Yes"/>
+	<DeleteResourcesAfter Value="Yes"/>
+	<EnableTheme Value="No"/>
+	<RequiresAdmin Value="No"/>
+	<CompilerType Value="C"/>
+	<AppType Value="DLL"/>
+	<Files>
+		<File Name="main.c"/>
+	</Files>
+</Project>

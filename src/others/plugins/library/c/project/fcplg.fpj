@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project>
+	<Libs Value=""/>
+	<Flags Value="-I&quot;..\include\fcplg&quot;"/>
+	<Target Value="..\lib\libfcplg.a"/>
+	<CommandLine Value=""/>
+	<CompilerOptions Value="-Wall -s -O2"/>
+	<DeleteObjectsBefore Value="No"/>
+	<DeleteObjectsAfter Value="No"/>
+	<DeleteMakefileAfter Value="Yes"/>
+	<DeleteResourcesAfter Value="Yes"/>
+	<EnableTheme Value="No"/>
+	<RequiresAdmin Value="No"/>
+	<CompilerType Value="C"/>
+	<AppType Value="LIB"/>
+	<Files>
+		<Folder Name="..">
+			<Folder Name="include">
+				<Folder Name="fcplg">
+					<File Name="plugin.h"/>
+					<File Name="plugin_info.h"/>
+					<File Name="plugin_begin.h"/>
+					<File Name="plugin_end.h"/>
+					<File Name="plugin_main.h"/>
+					<File Name="plugin_cmd.h"/>
+					<File Name="plugin_private.h"/>
+				</Folder>
+			</Folder>
+			<Folder Name="src">
+				<File Name="plugin.c"/>
+				<File Name="plugin_info.c"/>
+			</Folder>
+		</Folder>
+	</Files>
+</Project>

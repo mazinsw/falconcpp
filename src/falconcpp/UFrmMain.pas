@@ -24,7 +24,7 @@ uses
   XMLDoc, XMLIntf, BreakPoint, HintTree, DebugWatch, 
   UParseMsgs, SynEditMiscClasses, TBXStatusBars, XPPanels, ModernTabs,
   VistaAltFixUnit, TB2Toolbar, ThreadFileDownload, NativeTreeView, SynEditEx,
-  PluginManager;
+  PluginManager, PluginServiceManager;
 
 const
   MAX_OUTLINE_TREE_IMAGES = 29;
@@ -654,6 +654,7 @@ type
     FSintaxList: TSintaxList; //highlighter list
     FConfig: TConfig; //window objects positions, zoom, etc.
     FTemplates: TTemplates; //all falcon c++ templates
+    FPluginServiceManager: TPluginServiceManager;
     FPluginManager: TPluginManager;
 
     //paths
@@ -850,6 +851,7 @@ type
     property SearchList: TStrings read FSearchList;
     property ReplaceList: TStrings read FReplaceList;
     property FilesParsed: TTokenFiles read FFilesParsed;
+    property PluginManager: TPluginManager read FPluginManager;
   end;
 
   { TParserThread }
@@ -896,7 +898,7 @@ uses
   UFrmUpdate, ULanguages, UFrmEnvOptions, UFrmCompOptions, UFrmFind, AStyle,
   UFrmGotoFunction, UFrmGotoLine, TBXThemes, Makefile, CodeTemplate,
   SynEditStrConst, StrUtils, UFrmVisualCppOptions,
-  SynEditPrintHeaderFooter;
+  SynEditPrintHeaderFooter, PluginConst;
 
 {$R *.dfm}
 {$R resources.res}
@@ -1205,7 +1207,8 @@ var
   Proj: TProjectFile;
 begin
   IsLoading := True;
-  FPluginManager := TPluginManager.Create(Handle);
+  FPluginServiceManager := TPluginServiceManager.Create(Self);
+  FPluginManager := TPluginManager.Create(FPluginServiceManager);
   FSearchList := TStringList.Create;
   FIncludeFileList := TStringList.Create;
   FReplaceList := TStringList.Create;
@@ -5615,6 +5618,7 @@ begin
   for I := TreeViewProjects.Items.Count - 1 downto 0 do
     TSourceBase(TreeViewProjects.Items.Item[I].Data).Free;
   FPluginManager.Free;
+  FPluginServiceManager.Free;
   FSearchList.Free;
   for I := 0 to FIncludeFileList.Count - 1 do
   begin
@@ -10444,9 +10448,9 @@ end;
 
 procedure TFrmFalconMain.PluginHandler(var message: TMessage);
 var
-  PlgMsg: PPluginMsg;
+  PlgMsg: PDispatchCommand;
 begin
-  PlgMsg := PPluginMsg(message.LParam);
+  PlgMsg := PDispatchCommand(message.LParam);
   message.Result := FPluginManager.ReceiveCommand(message.WParam,
     PlgMsg^.Command, PlgMsg^.Widget, PlgMsg^.Param, PlgMsg^.Data);
 end;

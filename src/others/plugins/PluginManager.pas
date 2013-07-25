@@ -39,6 +39,8 @@ uses
 function TPluginManager.Add(Item: TPlugin): Integer;
 begin
   Result := GetInsertIndex(Item.ID);
+  if (Result < FList.Count) and (Items[Result].ID = Item.ID) then
+    raise Exception.CreateFmt(pluginAlreadyExists, [Item.ID]);
   FList.Insert(Result, Item);
 end;
 
@@ -141,8 +143,12 @@ begin
   begin
     try
       Plugin := TPlugin.Create(List[I], FDispatchHandle);
-      Add(Plugin);
-      Plugin.DispatchCommand(Cmd_Create, Plugin.ID, 0, nil);
+      try
+        Add(Plugin);
+        Plugin.DispatchCommand(Cmd_Create, Plugin.ID, 0, nil);
+      except
+        Plugin.Free;
+      end;
     except
     end;
   end;

@@ -3,7 +3,7 @@ unit PluginWidget;
 interface
 
 uses
-  Windows, Plugin, Classes, Forms, Controls, TBX;
+  Windows, Plugin, Classes, Forms, Controls, TBX, StdCtrls;
 
 type
 
@@ -25,14 +25,105 @@ type
     FWidget: TWidget;
   protected
     procedure CreateParams(var Params: TCreateParams); override;
+    procedure Click; override;
+    procedure DblClick; override;
+    procedure MouseDown(Button: TMouseButton; Shift: TShiftState;
+      X: Integer; Y: Integer); override;
+    procedure MouseMove(Shift: TShiftState; X: Integer; Y: Integer);
+      override;
+    procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X: Integer;
+      Y: Integer); override;
+    procedure KeyDown(var Key: Word; Shift: TShiftState); override;
+    procedure KeyPress(var Key: Char); override;
+    procedure KeyUp(var Key: Word; Shift: TShiftState); override;
+    procedure Resize; override;
+    procedure DoClose(var Action: TCloseAction); override;
   public
     constructor CreateWidget(Widget: TWidget; ParentWindow: HWND);
+    destructor Destroy; override;
+  end;
+
+  TWidgetButton = class(TButton)
+  private
+    FWidget: TWidget;
+  protected
+    procedure MouseDown(Button: TMouseButton; Shift: TShiftState;
+      X: Integer; Y: Integer); override;
+    procedure MouseMove(Shift: TShiftState; X: Integer; Y: Integer);
+      override;
+    procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X: Integer;
+      Y: Integer); override;
+    procedure KeyDown(var Key: Word; Shift: TShiftState); override;
+    procedure KeyPress(var Key: Char); override;
+    procedure KeyUp(var Key: Word; Shift: TShiftState); override;
+  public
+    constructor CreateWidget(Widget: TWidget; AOwner: TComponent);
+    destructor Destroy; override;
+    procedure Click; override;
+  end;
+
+  TWidgetCheckBox = class(TCheckBox)
+  private
+    FWidget: TWidget;
+  protected
+    procedure MouseDown(Button: TMouseButton; Shift: TShiftState;
+      X: Integer; Y: Integer); override;
+    procedure MouseMove(Shift: TShiftState; X: Integer; Y: Integer);
+      override;
+    procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X: Integer;
+      Y: Integer); override;
+    procedure KeyDown(var Key: Word; Shift: TShiftState); override;
+    procedure KeyPress(var Key: Char); override;
+    procedure KeyUp(var Key: Word; Shift: TShiftState); override;
+  public
+    constructor CreateWidget(Widget: TWidget; AOwner: TComponent);
+    destructor Destroy; override;
+    procedure Click; override;
+  end;
+
+  TWidgetEdit = class(TEdit)
+  private
+    FWidget: TWidget;
+  protected
+    procedure Change; override;
+    procedure DblClick; override;
+    procedure DoEnter; override;
+    procedure DoExit; override;
+    procedure MouseDown(Button: TMouseButton; Shift: TShiftState;
+      X: Integer; Y: Integer); override;
+    procedure MouseMove(Shift: TShiftState; X: Integer; Y: Integer);
+      override;
+    procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X: Integer;
+      Y: Integer); override;
+    procedure KeyDown(var Key: Word; Shift: TShiftState); override;
+    procedure KeyPress(var Key: Char); override;
+    procedure KeyUp(var Key: Word; Shift: TShiftState); override;
+  public
+    procedure Click; override;
+    constructor CreateWidget(Widget: TWidget; AOwner: TComponent);
+    destructor Destroy; override;
+  end;
+
+  TWidgetLabel = class(TLabel)
+  private
+    FWidget: TWidget;
+  protected
+    procedure Click; override;
+    procedure MouseDown(Button: TMouseButton; Shift: TShiftState;
+      X: Integer; Y: Integer); override;
+    procedure MouseMove(Shift: TShiftState; X: Integer; Y: Integer);
+      override;
+    procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X: Integer;
+      Y: Integer); override;
+  public
+    constructor CreateWidget(Widget: TWidget; AOwner: TComponent);
     destructor Destroy; override;
   end;
 
   TWidgetSubmenu = class(TTBXSubmenuItem)
   private
     FWidget: TWidget;
+  protected
   public
     constructor CreateWidget(Widget: TWidget; AOwner: TComponent);
     destructor Destroy; override;
@@ -44,6 +135,7 @@ type
   public
     constructor CreateWidget(Widget: TWidget; AOwner: TComponent);
     destructor Destroy; override;
+    procedure Click; override;
   end;
 
   TWidgetMenuSeparator = class(TTBXSeparatorItem)
@@ -91,7 +183,6 @@ begin
   inherited;
 end;
 
-
 { TWidgetWindow }
 
 procedure TWidgetWindow.CreateParams(var Params: TCreateParams);
@@ -121,6 +212,330 @@ begin
   inherited;
 end;
 
+procedure TWidgetWindow.KeyDown(var Key: Word; Shift: TShiftState);
+begin
+  inherited;
+
+end;
+
+procedure TWidgetWindow.KeyPress(var Key: Char);
+begin
+  inherited;
+
+end;
+
+procedure TWidgetWindow.KeyUp(var Key: Word; Shift: TShiftState);
+begin
+  inherited;
+
+end;
+
+procedure TWidgetWindow.MouseDown(Button: TMouseButton; Shift: TShiftState;
+  X, Y: Integer);
+begin
+  inherited;
+
+end;
+
+procedure TWidgetWindow.MouseMove(Shift: TShiftState; X, Y: Integer);
+begin
+  inherited;
+
+end;
+
+procedure TWidgetWindow.MouseUp(Button: TMouseButton; Shift: TShiftState;
+  X, Y: Integer);
+begin
+  inherited;
+
+end;
+
+procedure TWidgetWindow.Resize;
+begin
+  inherited;
+  FWidget.FPlugin.DispatchCommand(Cmd_Resize, FWidget.ID, 0, nil);
+end;
+
+procedure TWidgetWindow.Click;
+begin
+  inherited;
+  FWidget.FPlugin.DispatchCommand(Cmd_Click, FWidget.ID, 0, nil);
+end;
+
+procedure TWidgetWindow.DblClick;
+begin
+  inherited;
+  FWidget.FPlugin.DispatchCommand(Cmd_DblClick, FWidget.ID, 0, nil);
+end;
+
+procedure TWidgetWindow.DoClose(var Action: TCloseAction);
+var
+  I: Integer;
+begin
+  I := 1;
+  FWidget.FPlugin.DispatchCommand(Cmd_Close, FWidget.ID, 0, @I);
+  case I of
+    Ca_None: Action := caNone;
+    Ca_Free: Action := caFree;
+    Ca_Minimize: Action := caMinimize;
+  else
+    Action := caHide;
+  end;
+  inherited;
+end;
+
+{ TWidgetButton }
+
+procedure TWidgetButton.Click;
+begin
+  inherited;
+  FWidget.FPlugin.DispatchCommand(Cmd_Click, FWidget.ID, 0, nil);
+end;
+
+constructor TWidgetButton.CreateWidget(Widget: TWidget;
+  AOwner: TComponent);
+begin
+  FWidget := Widget;
+  FWidget.FComponent := Self;
+  inherited Create(AOwner);
+  FWidget.FPlugin.DispatchCommand(Cmd_Create, FWidget.ID, 0, nil);
+end;
+
+destructor TWidgetButton.Destroy;
+begin
+  FWidget.FComponent := nil;
+  FWidget.FPlugin.DispatchCommand(Cmd_Destroy, FWidget.ID, 0, nil);
+  inherited;
+end;
+
+procedure TWidgetButton.KeyDown(var Key: Word; Shift: TShiftState);
+begin
+  inherited;
+
+end;
+
+procedure TWidgetButton.KeyPress(var Key: Char);
+begin
+  inherited;
+
+end;
+
+procedure TWidgetButton.KeyUp(var Key: Word; Shift: TShiftState);
+begin
+  inherited;
+
+end;
+
+procedure TWidgetButton.MouseDown(Button: TMouseButton; Shift: TShiftState;
+  X, Y: Integer);
+begin
+  inherited;
+
+end;
+
+procedure TWidgetButton.MouseMove(Shift: TShiftState; X, Y: Integer);
+begin
+  inherited;
+
+end;
+
+procedure TWidgetButton.MouseUp(Button: TMouseButton; Shift: TShiftState;
+  X, Y: Integer);
+begin
+  inherited;
+
+end;
+
+{ TWidgetCheckBox }
+
+procedure TWidgetCheckBox.Click;
+begin
+  inherited;
+  FWidget.FPlugin.DispatchCommand(Cmd_Click, FWidget.ID, 0, nil);
+end;
+
+constructor TWidgetCheckBox.CreateWidget(Widget: TWidget;
+  AOwner: TComponent);
+begin
+  FWidget := Widget;
+  FWidget.FComponent := Self;
+  inherited Create(AOwner);
+  FWidget.FPlugin.DispatchCommand(Cmd_Create, FWidget.ID, 0, nil);
+end;
+
+destructor TWidgetCheckBox.Destroy;
+begin
+  FWidget.FComponent := nil;
+  FWidget.FPlugin.DispatchCommand(Cmd_Destroy, FWidget.ID, 0, nil);
+  inherited;
+end;
+
+procedure TWidgetCheckBox.KeyDown(var Key: Word; Shift: TShiftState);
+begin
+  inherited;
+
+end;
+
+procedure TWidgetCheckBox.KeyPress(var Key: Char);
+begin
+  inherited;
+
+end;
+
+procedure TWidgetCheckBox.KeyUp(var Key: Word; Shift: TShiftState);
+begin
+  inherited;
+
+end;
+
+procedure TWidgetCheckBox.MouseDown(Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  inherited;
+
+end;
+
+procedure TWidgetCheckBox.MouseMove(Shift: TShiftState; X, Y: Integer);
+begin
+  inherited;
+
+end;
+
+procedure TWidgetCheckBox.MouseUp(Button: TMouseButton; Shift: TShiftState;
+  X, Y: Integer);
+begin
+  inherited;
+
+end;
+
+{ TWidgetEdit }
+
+procedure TWidgetEdit.Change;
+begin
+  inherited;
+  FWidget.FPlugin.DispatchCommand(Cmd_Change, FWidget.ID, 0, nil);
+end;
+
+procedure TWidgetEdit.Click;
+begin
+  inherited;
+  FWidget.FPlugin.DispatchCommand(Cmd_Click, FWidget.ID, 0, nil);
+end;
+
+constructor TWidgetEdit.CreateWidget(Widget: TWidget; AOwner: TComponent);
+begin
+  FWidget := Widget;
+  FWidget.FComponent := Self;
+  inherited Create(AOwner);
+  FWidget.FPlugin.DispatchCommand(Cmd_Create, FWidget.ID, 0, nil);
+end;
+
+destructor TWidgetEdit.Destroy;
+begin
+  FWidget.FComponent := nil;
+  FWidget.FPlugin.DispatchCommand(Cmd_Destroy, FWidget.ID, 0, nil);
+  inherited;
+end;
+
+procedure TWidgetEdit.DblClick;
+begin
+  inherited;
+  FWidget.FPlugin.DispatchCommand(Cmd_DblClick, FWidget.ID, 0, nil);
+end;
+
+procedure TWidgetEdit.DoEnter;
+begin
+  inherited;
+  FWidget.FPlugin.DispatchCommand(Cmd_Enter, FWidget.ID, 0, nil);
+end;
+
+procedure TWidgetEdit.DoExit;
+begin
+  inherited;
+  FWidget.FPlugin.DispatchCommand(Cmd_Exit, FWidget.ID, 0, nil);
+end;
+
+procedure TWidgetEdit.KeyDown(var Key: Word; Shift: TShiftState);
+begin
+  inherited;
+
+end;
+
+procedure TWidgetEdit.KeyPress(var Key: Char);
+begin
+  inherited;
+
+end;
+
+procedure TWidgetEdit.KeyUp(var Key: Word; Shift: TShiftState);
+begin
+  inherited;
+
+end;
+
+procedure TWidgetEdit.MouseDown(Button: TMouseButton; Shift: TShiftState;
+  X, Y: Integer);
+begin
+  inherited;
+
+end;
+
+procedure TWidgetEdit.MouseMove(Shift: TShiftState; X, Y: Integer);
+begin
+  inherited;
+
+end;
+
+procedure TWidgetEdit.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
+  Y: Integer);
+begin
+  inherited;
+
+end;
+
+{ TWidgetLabel }
+
+procedure TWidgetLabel.Click;
+begin
+  inherited;
+  FWidget.FPlugin.DispatchCommand(Cmd_Click, FWidget.ID, 0, nil);
+end;
+
+constructor TWidgetLabel.CreateWidget(Widget: TWidget; AOwner: TComponent);
+begin
+  FWidget := Widget;
+  FWidget.FComponent := Self;
+  inherited Create(AOwner);
+  FWidget.FPlugin.DispatchCommand(Cmd_Create, FWidget.ID, 0, nil);
+end;
+
+destructor TWidgetLabel.Destroy;
+begin
+  FWidget.FComponent := nil;
+  FWidget.FPlugin.DispatchCommand(Cmd_Destroy, FWidget.ID, 0, nil);
+  inherited;
+end;
+
+procedure TWidgetLabel.MouseDown(Button: TMouseButton; Shift: TShiftState;
+  X, Y: Integer);
+begin
+  inherited;
+
+end;
+
+procedure TWidgetLabel.MouseMove(Shift: TShiftState; X, Y: Integer);
+begin
+  inherited;
+
+end;
+
+procedure TWidgetLabel.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
+  Y: Integer);
+begin
+  inherited;
+
+end;
+
 { TWidgetSubmenu }
 
 constructor TWidgetSubmenu.CreateWidget(Widget: TWidget; AOwner: TComponent);
@@ -139,6 +554,12 @@ begin
 end;
 
 { TWidgetMenuItem }
+
+procedure TWidgetMenuItem.Click;
+begin
+  inherited;
+  FWidget.FPlugin.DispatchCommand(Cmd_Click, FWidget.ID, 0, nil);
+end;
 
 constructor TWidgetMenuItem.CreateWidget(Widget: TWidget;
   AOwner: TComponent);

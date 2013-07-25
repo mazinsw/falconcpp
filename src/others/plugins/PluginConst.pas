@@ -9,26 +9,30 @@ const
 	Cmd_Destroy            = $0003;
 	Cmd_Get                = $0004;
 	Cmd_Set                = $0005;
-	Cmd_CompilerChanged    = $0006;
-	Cmd_LangChanged        = $0007;
-	Cmd_TabClosing         = $0008;
-	Cmd_TabClosed          = $0009;
-	Cmd_Select             = $000A;
-	Cmd_Click              = $000B;
-	Cmd_MouseDown          = $000C;
-	Cmd_MouseUp            = $000D;
-	Cmd_MouseMove          = $000E;
-	Cmd_KeyDown            = $000C;
-	Cmd_KeyUp              = $000D;
-	Cmd_KeyPress           = $000E;
-	Cmd_FileSelected       = $000F;
-	Cmd_FileDeleted        = $0010;
-	Cmd_PosChanged         = $0011;
-	Cmd_SizeChanged        = $0012;
-	Cmd_ScreenModeChanged  = $0013;
-	Cmd_Show               = $0014;
-	Cmd_Hide               = $0015;
-  Cmd_ShowModal          = $0016;
+	Cmd_Select             = $0006;
+	Cmd_Click              = $0007;
+	Cmd_MouseDown          = $0008;
+	Cmd_MouseMove          = $0009;
+	Cmd_MouseUp            = $000A;
+	Cmd_KeyDown            = $000B;
+	Cmd_KeyUp              = $000C;
+	Cmd_KeyPress           = $000D;
+	Cmd_Resize             = $000E;
+	Cmd_Show               = $000F;
+	Cmd_Hide               = $0010;
+	Cmd_ShowModal          = $0011;
+	Cmd_DblClick           = $0012;
+	Cmd_Change             = $0013;
+	Cmd_Close              = $0014;
+	Cmd_PageChange         = $0015;
+	Cmd_Enter              = $0016;
+	Cmd_Exit               = $0017;
+	
+	Cmd_CompilerChanged    = $0100;
+	Cmd_LangChanged        = $0101;
+	Cmd_FileSelected       = $0102;
+	Cmd_FileDeleted        = $0103;
+	Cmd_ScreenModeChanged  = $0104;
 
   {* Properties *}
   Prop_Text            = $0001;
@@ -62,7 +66,7 @@ const
 	Wdg_CheckBox         = $0009;
 	Wdg_GroupBox         = $000A;
 	Wdg_RadioGroup       = $000B;
-	Wdg_List             = $000C;
+	Wdg_ListBox          = $000C;
 	Wdg_ListView         = $000D;
 	Wdg_TreeView         = $000E;
 	Wdg_ModerPageControl = $000F;
@@ -71,7 +75,10 @@ const
 	Wdg_Shape            = $0012;
 	Wdg_Window           = $0013;
 	Wdg_MsgBox           = $0014;
-	Wdg_Plugin           = $FFFF;
+	Wdg_RadioButton      = $0015;
+	Wdg_ComboBox         = $0016;
+	Wdg_Label            = $0017;
+	Wdg_Memo             = $0018;
 
   {* WindowBorder *}
   Wb_Sizeable    = $0000;
@@ -82,11 +89,19 @@ const
   Wb_None        = $0005;
 
 
+  {* CloseAction *}
+  Ca_None     = $00;
+	Ca_Hide     = $01;
+	Ca_Free     = $02;
+	Ca_Minimize = $03;
+
+
   cannotLoadPlugin = 'Can''t load plugin %s.';
   functionNotFound = 'Function %s not found.';
   invalidPlugin = 'Invalid plugin.';
   failedToInitializePlugin = 'Failed to initialize plugin: error code %d.';
   pluginNotInitialized = 'Plugin not initialized.';
+  pluginAlreadyExists  = 'Plugin with ID: %d already exists.';
 
 
 // REGEX C TO PASCAL
@@ -122,6 +137,35 @@ type
     Text: PChar;
   end;
   PButton = ^TButton;
+
+  TCheckBox = record
+    ParentID: Integer;
+    X: Integer;
+    Y: Integer;
+    Width: Integer;
+    Height: Integer;
+    Text: PChar;
+  end;
+  PCheckBox = ^TCheckBox;
+
+  TEdit = record
+    ParentID: Integer;
+    X: Integer;
+    Y: Integer;
+    Width: Integer;
+    Height: Integer;
+  end;
+  PEdit = ^TEdit;
+
+  TLabel = record
+    ParentID: Integer;
+    X: Integer;
+    Y: Integer;
+    Width: Integer;
+    Height: Integer;
+    Text: PChar;
+  end;
+  PLabel = ^TLabel;
 
   TMenu = record
     ParentID: Integer;

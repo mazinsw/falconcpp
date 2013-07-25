@@ -1,6 +1,21 @@
 #include "plugin_widgets.h"
 #include "plugin_cmd.h"
 
+int Plugin_Window_create(Plugin* plugin, const char* text, int x, int y, 
+	int width, int height, int border, int parent_id)
+{
+	Window wnd;
+	
+	wnd.parent_id = parent_id;
+	wnd.x = x;
+	wnd.y = y;
+	wnd.width = width;
+	wnd.height = height;
+	wnd.text = text;
+	wnd.border = border;
+	return Plugin_sendCommand(plugin, Cmd_Create, Wdg_Window, 0, &wnd);
+}
+
 int Plugin_Button_create(Plugin* plugin, const char* text, int x, int y, 
 	int width, int height, int parent_id)
 {
@@ -15,19 +30,45 @@ int Plugin_Button_create(Plugin* plugin, const char* text, int x, int y,
 	return Plugin_sendCommand(plugin, Cmd_Create, Wdg_Button, 0, &btn);
 }
 
-int Plugin_Window_create(Plugin* plugin, const char* text, int x, int y, 
-	int width, int height, int border, int parent_id)
+int Plugin_CheckBox_create(Plugin* plugin, const char* text, int x, int y, 
+	int width, int height, int parent_id)
 {
-	Window wnd;
+	CheckBox chb;
 	
-	wnd.parent_id = parent_id;
-	wnd.x = x;
-	wnd.y = y;
-	wnd.width = width;
-	wnd.height = height;
-	wnd.text = text;
-	wnd.border = border;
-	return Plugin_sendCommand(plugin, Cmd_Create, Wdg_Window, 0, &wnd);
+	chb.parent_id = parent_id;
+	chb.x = x;
+	chb.y = y;
+	chb.width = width;
+	chb.height = height;
+	chb.text = text;
+	return Plugin_sendCommand(plugin, Cmd_Create, Wdg_CheckBox, 0, &chb);
+}
+
+int Plugin_Edit_create(Plugin* plugin, int x, int y, 
+	int width, int height, int parent_id)
+{
+	Edit edit;
+	
+	edit.parent_id = parent_id;
+	edit.x = x;
+	edit.y = y;
+	edit.width = width;
+	edit.height = height;
+	return Plugin_sendCommand(plugin, Cmd_Create, Wdg_Edit, 0, &edit);
+}
+
+int Plugin_Label_create(Plugin* plugin, const char* text, int x, int y, 
+	int width, int height, int parent_id)
+{
+	Label lbl;
+	
+	lbl.parent_id = parent_id;
+	lbl.x = x;
+	lbl.y = y;
+	lbl.width = width;
+	lbl.height = height;
+	lbl.text = text;
+	return Plugin_sendCommand(plugin, Cmd_Create, Wdg_Label, 0, &lbl);
 }
 
 int Plugin_Menu_create(Plugin* plugin, int image_list, int parent_id)

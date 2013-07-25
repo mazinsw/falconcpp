@@ -154,6 +154,18 @@ const
   //MENUITEM_MAIN_HELP_MAX_ID                    0x0001D6
   //MENUITEM_MAIN_MAX_ID                         0x0001DB
 
+	WINDOW_COMPILER_OPTIONS     = $0004E7;
+	WINDOW_EDITOR_OPTIONS       = $0008CF;
+	WINDOW_ENVIRONMENT_OPTIONS  = $000CB7;
+	WINDOW_FIND                 = $00109F;
+	WINDOW_NEW_PROJECT          = $001487;
+	WINDOW_PROJECT_PROPERTY     = $00186F;
+	WINDOW_PROJECT_REMOVE       = $001C57;
+	WINDOW_UPDATE               = $00203F;
+	WINDOW_GOTO_LINE            = $002427;
+	WINDOW_GOTO_FUNCTION        = $00280F;
+	WINDOW_ABOUT                = $002BF7;
+
 implementation
 
 end.

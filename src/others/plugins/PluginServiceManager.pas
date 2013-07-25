@@ -3,7 +3,7 @@ unit PluginServiceManager;
 interface
 
 uses
-  Windows, Plugin, Forms, TBX, Classes, PluginWidget, Controls;
+  Windows, Plugin, Forms, TBX, Classes, Controls, PluginWidget;
 
 type
   TPluginServiceManager = class
@@ -12,16 +12,25 @@ type
     FDispatchHandle: HWND;
     FWidgets: TWidgetList;
     function GetHandleFromID(WidgetID: Integer): HWND;
+    function GetControlFromID(WidgetID: Integer): TWinControl;
 
     function CreateMsgBoxWidget(Param: Integer; Data: Pointer): Integer;
-    function CreateMenuItemWidget(Plugin: TPlugin; Param: Integer;
-      Data: Pointer): Integer;
+
     function CreateFormWidget(Plugin: TPlugin; Param: Integer;
       Data: Pointer): Integer;
+    function CreateButtonWidget(Plugin: TPlugin; Param: Integer;
+      Data: Pointer): Integer;
+    function CreateCheckBoxWidget(Plugin: TPlugin; Param: Integer;
+      Data: Pointer): Integer;
+    function CreateEditWidget(Plugin: TPlugin; Param: Integer;
+      Data: Pointer): Integer;
+    function CreateLabelWidget(Plugin: TPlugin; Param: Integer;
+      Data: Pointer): Integer;
 
+    function CreateMenuItemWidget(Plugin: TPlugin; Param: Integer;
+      Data: Pointer): Integer;
     function GetSubmenuFromID(WidgetID: Integer): TTBXSubmenuItem;
     function GetMenuItemFromID(WidgetID: Integer): TTBXItem;
-    procedure ClickEvent(Sender: TObject);
     function WidgetShowModal(Widget: TWidget): Integer;
   public
     constructor Create(MainForm: TForm);
@@ -35,7 +44,22 @@ type
 implementation
 
 uses
-  UFrmMain, PluginConst, PluginWidgetMap, TB2Item, UTemplates, SysUtils;
+  PluginConst, PluginWidgetMap, TB2Item, UTemplates, SysUtils,
+  UFrmMain,
+  UFrmAbout,
+  UFrmNew,
+  UFrmProperty,
+  UFrmCompOptions,
+  UFrmRemove,
+  UFrmUpdate,
+  UFrmEnvOptions,
+  UFrmEditorOptions,
+  UFrmFind,
+  UFrmGotoLine,
+  UFrmGotoFunction,
+  UFrmPromptCodeTemplate,
+  UFrmCodeTemplates,
+  UFrmVisualCppOptions;
 
 { TPluginServiceManager }
 
@@ -96,7 +120,6 @@ begin
   NewItem.Caption := StrPas(MenuItem^.Text);
   NewItem.ImageIndex := MenuItem^.ImageIndex;
   NewItem.ShortCut := MenuItem^.ShortCut;
-  NewItem.OnClick := ClickEvent;
   Submenu.Insert(I, NewItem);
   Result := Widget.ID;
 end;
@@ -128,8 +151,8 @@ begin
     Wb_None: NativeForm.BorderStyle := bsNone;
   end;
   NativeForm.Caption := Window^.Text;
-  NativeForm.Width := Window^.Width;
-  NativeForm.Height := Window^.Height;
+  NativeForm.ClientWidth := Window^.Width;
+  NativeForm.ClientHeight := Window^.Height;
   if (Window^.X = -1) and (Window^.Y = -1) then
     NativeForm.Position := poOwnerFormCenter
   else
@@ -137,6 +160,109 @@ begin
     NativeForm.Left := Window^.X;
     NativeForm.Top := Window^.Y;
   end;
+  Result := Widget.ID;
+end;
+
+function TPluginServiceManager.CreateButtonWidget(Plugin: TPlugin;
+  Param: Integer; Data: Pointer): Integer;
+var
+  Button: PButton;
+  WidgetButton: TWidgetButton;
+  Widget: TWidget;
+  Control: TWinControl;
+begin
+  Button := PButton(Data);
+  Control := GetControlFromID(Button^.ParentID);
+  if Control = nil then
+  begin
+    Result := 0;
+    Exit;
+  end;
+  Widget := Widgets.Add(Plugin);
+  WidgetButton := TWidgetButton.CreateWidget(Widget, Control);
+  WidgetButton.Parent := Control;
+  WidgetButton.Caption := Button^.Text;
+  WidgetButton.Width := Button^.Width;
+  WidgetButton.Height := Button^.Height;
+  WidgetButton.Left := Button^.X;
+  WidgetButton.Top := Button^.Y;
+  Result := Widget.ID;
+end;
+
+function TPluginServiceManager.CreateCheckBoxWidget(Plugin: TPlugin;
+  Param: Integer; Data: Pointer): Integer;
+var
+  CheckBox: PCheckBox;
+  WidgetCheckBox: TWidgetCheckBox;
+  Widget: TWidget;
+  Control: TWinControl;
+begin
+  CheckBox := PCheckBox(Data);
+  Control := GetControlFromID(CheckBox^.ParentID);
+  if Control = nil then
+  begin
+    Result := 0;
+    Exit;
+  end;
+  Widget := Widgets.Add(Plugin);
+  WidgetCheckBox := TWidgetCheckBox.CreateWidget(Widget, Control);
+  WidgetCheckBox.Parent := Control;
+  WidgetCheckBox.Caption := CheckBox^.Text;
+  WidgetCheckBox.Width := CheckBox^.Width;
+  WidgetCheckBox.Height := CheckBox^.Height;
+  WidgetCheckBox.Left := CheckBox^.X;
+  WidgetCheckBox.Top := CheckBox^.Y;
+  Result := Widget.ID;
+end;
+
+function TPluginServiceManager.CreateEditWidget(Plugin: TPlugin;
+  Param: Integer; Data: Pointer): Integer;
+var
+  Edit: PEdit;
+  WidgetEdit: TWidgetEdit;
+  Widget: TWidget;
+  Control: TWinControl;
+begin
+  Edit := PEdit(Data);
+  Control := GetControlFromID(Edit^.ParentID);
+  if Control = nil then
+  begin
+    Result := 0;
+    Exit;
+  end;
+  Widget := Widgets.Add(Plugin);
+  WidgetEdit := TWidgetEdit.CreateWidget(Widget, Control);
+  WidgetEdit.Parent := Control;
+  WidgetEdit.Width := Edit^.Width;
+  WidgetEdit.Height := Edit^.Height;
+  WidgetEdit.Left := Edit^.X;
+  WidgetEdit.Top := Edit^.Y;
+  Result := Widget.ID;
+end;
+
+function TPluginServiceManager.CreateLabelWidget(Plugin: TPlugin;
+  Param: Integer; Data: Pointer): Integer;
+var
+  aLabel: PLabel;
+  WidgetLabel: TWidgetLabel;
+  Widget: TWidget;
+  Control: TWinControl;
+begin
+  aLabel := PLabel(Data);
+  Control := GetControlFromID(aLabel^.ParentID);
+  if Control = nil then
+  begin
+    Result := 0;
+    Exit;
+  end;
+  Widget := Widgets.Add(Plugin);
+  WidgetLabel := TWidgetLabel.CreateWidget(Widget, Control);
+  WidgetLabel.Parent := Control;
+  WidgetLabel.Caption := aLabel^.Text;
+  WidgetLabel.Width := aLabel^.Width;
+  WidgetLabel.Height := aLabel^.Height;
+  WidgetLabel.Left := aLabel^.X;
+  WidgetLabel.Top := aLabel^.Y;
   Result := Widget.ID;
 end;
 
@@ -166,6 +292,14 @@ begin
           Result := CreateMenuItemWidget(Plugin, Param, Data);
         Wdg_Window:
           Result := CreateFormWidget(Plugin, Param, Data);
+        Wdg_Button:
+          Result := CreateButtonWidget(Plugin, Param, Data);
+        Wdg_CheckBox:
+          Result := CreateCheckBoxWidget(Plugin, Param, Data);
+        Wdg_Edit:
+          Result := CreateEditWidget(Plugin, Param, Data);
+        Wdg_Label:
+          Result := CreateLabelWidget(Plugin, Param, Data);
       else
         Result := 0;
       end;
@@ -183,14 +317,13 @@ end;
 
 function TPluginServiceManager.GetHandleFromID(WidgetID: Integer): HWND;
 var
-  MainForm: TFrmFalconMain;
+  Control: TWinControl;
 begin
-  MainForm := TFrmFalconMain(FForm);
-  case WidgetID of
-    WINDOW_MAIN: Result := MainForm.Handle;
+  Control := GetControlFromID(WidgetID);
+  if Control <> nil then
+    Result := Control.Handle
   else
     Result := 0;
-  end;
 end;
 
 function TPluginServiceManager.GetSubmenuFromID(WidgetID: Integer): TTBXSubmenuItem;
@@ -354,14 +487,34 @@ begin
   end;
 end;
 
-procedure TPluginServiceManager.ClickEvent(Sender: TObject);
+function TPluginServiceManager.GetControlFromID(WidgetID: Integer): TWinControl;
 var
+  MainForm: TFrmFalconMain;
   Widget: TWidget;
 begin
-  Widget := Widgets.Find(TComponent(Sender).Tag);
-  if Widget = nil then
+  MainForm := TFrmFalconMain(FForm);
+  Result := nil;
+  if WidgetID > $00FFFF then
+  begin
+    Widget := Widgets.Find(WidgetID);
+    if (Widget <> nil) and (Widget.Component is TWinControl) then
+      Result := TWinControl(Widget.Component);
     Exit;
-  Widget.Plugin.DispatchCommand(Cmd_Click, Widget.ID, 0, nil);
+  end;
+  case WidgetID of
+    WINDOW_MAIN: Result := MainForm;
+    WINDOW_COMPILER_OPTIONS: Result := FrmCompOptions;
+    WINDOW_EDITOR_OPTIONS: Result := FrmEditorOptions;
+    WINDOW_ENVIRONMENT_OPTIONS: Result := FrmEnvOptions;
+    WINDOW_FIND: Result := FrmFind;
+    WINDOW_NEW_PROJECT: Result := FrmNewProj;
+    WINDOW_PROJECT_PROPERTY: Result := FrmProperty;
+    WINDOW_PROJECT_REMOVE: Result := FrmRemove;
+    WINDOW_UPDATE: Result := FrmUpdate;
+    WINDOW_GOTO_LINE: Result := FormGotoLine;
+    WINDOW_GOTO_FUNCTION: Result := FormGotoFunction;
+    WINDOW_ABOUT: Result := FormAbout;
+  end;
 end;
 
 end.

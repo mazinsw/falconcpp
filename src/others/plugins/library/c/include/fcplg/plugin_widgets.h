@@ -14,6 +14,15 @@ int Plugin_Window_create(Plugin* plugin, const char* text, int x, int y,
 int Plugin_Button_create(Plugin* plugin, const char * text, int x, int y, 
 	int width, int height, int parent_id);
 
+int Plugin_CheckBox_create(Plugin* plugin, const char * text, int x, int y, 
+	int width, int height, int parent_id);
+
+int Plugin_Edit_create(Plugin* plugin, int x, int y, 
+	int width, int height, int parent_id);
+
+int Plugin_Label_create(Plugin* plugin, const char * text, int x, int y, 
+	int width, int height, int parent_id);
+
 int Plugin_Menu_create(Plugin* plugin, int image_list, int parent_id);
 
 int Plugin_MenuItem_create(Plugin* plugin, const char * text, int position, 

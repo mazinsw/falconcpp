@@ -18,7 +18,8 @@ type
     Description: array[0..254] of Char;
   end;
 
-  TPluginInitialize      = function(Handle: HWND; var Data: Pointer): Integer; cdecl;
+  TPluginInitialize      = function(Handle: HWND; var Info: TPluginInfo;
+    var Data: Pointer): Integer; cdecl;
   TPluginDispatchCommand = function(var Cmd: TDispatchCommand; Data: Pointer): Integer; cdecl;
   TPluginFinalize        = procedure(Data: Pointer); cdecl;
 
@@ -38,7 +39,6 @@ type
   public
     constructor Create(FileName: string; DispatchHandle: HWND);
     destructor Destroy; override;
-    procedure UpdateInfo;
     function DispatchCommand(Command, Widget, Param: Integer; Data: Pointer): Integer;
     property ID: Integer read FID;
     property Version: string read FVersion;
@@ -57,6 +57,7 @@ uses
 constructor TPlugin.Create(FileName: string; DispatchHandle: HWND);
 var
   FuncPtr: Pointer;
+  PluginInfo: TPluginInfo;
 begin
   FHandle := LoadLibrary(PChar(FileName));
   if FHandle = 0 then
@@ -85,13 +86,17 @@ begin
     raise Exception.CreateFmt(functionNotFound, [PluginFinalizeStr]);
   end;
   FPluginFinalize := FuncPtr;
-  FID := FPluginInitialize(DispatchHandle, FData);
+  FID := FPluginInitialize(DispatchHandle, PluginInfo, FData);
   if FID <= 0 then
   begin
     FreeLibrary(FHandle);
     FHandle := 0;
     raise Exception.CreateFmt(failedToInitializePlugin, [FID]);
   end;
+  FVersion := PluginInfo.Version;
+  FName := PluginInfo.Name;
+  FAuthor := PluginInfo.Author;
+  FDescription := PluginInfo.Description;
 end;
 
 destructor TPlugin.Destroy;
@@ -114,20 +119,6 @@ begin
   Msg.Param := Param;
   Msg.Data := Data;
   Result := FPluginDispatchCommand(Msg, FData);
-end;
-
-procedure TPlugin.UpdateInfo;
-var
-  PluginInfo: TPluginInfo;
-  I: Integer;
-begin
-  I := DispatchCommand(Cmd_Get, Wdg_Plugin, Prop_Info, @PluginInfo);
-  if I <> 0 then
-    Exit;
-  FVersion := PluginInfo.Version;
-  FName := PluginInfo.Name;
-  FAuthor := PluginInfo.Author;
-  FDescription := PluginInfo.Description;
 end;
 
 end.

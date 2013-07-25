@@ -202,13 +202,13 @@ type
     ViewCompOut: TTBXItem;
     ViewOutline: TTBXItem;
     ViewToolbar: TTBXSubmenuItem;
-    TBXItem52: TTBXItem;
-    TBXItem73: TTBXItem;
-    TBXItem55: TTBXItem;
-    TBXItem61: TTBXItem;
-    TBXItem8: TTBXItem;
-    TBXItem77: TTBXItem;
-    TBXItem79: TTBXItem;
+    ViewToolbarDefault: TTBXItem;
+    ViewToolbarEdit: TTBXItem;
+    ViewToolbarSearch: TTBXItem;
+    ViewToolbarCompiler: TTBXItem;
+    ViewToolbarNavigator: TTBXItem;
+    ViewToolbarProject: TTBXItem;
+    ViewToolbarHelp: TTBXItem;
     ViewThemes: TTBXSubmenuItem;
     ViewThemeDef: TTBXItem;
     ViewThemeOffice2003: TTBXItem;
@@ -264,7 +264,7 @@ type
     DockBottom: TTBXDock;
     DockLeft: TTBXDock;
     DockRight: TTBXDock;
-    TBXItem1: TTBXItem;
+    ViewToolbarDebug: TTBXItem;
     SearchBar: TTBXToolbar;
     BtnFind: TTBXItem;
     BtnReplace: TTBXItem;
@@ -392,7 +392,7 @@ type
     PopTabsCopyFileName: TTBXItem;
     TBXSeparatorItem17: TTBXSeparatorItem;
     PopTabsReadOnly: TTBXItem;
-    EditLineComment: TTBXItem;
+    EditToggleComment: TTBXItem;
     TBXSeparatorItem30: TTBXSeparatorItem;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -639,7 +639,7 @@ type
     procedure RunRevStepReturnClick(Sender: TObject);
     procedure SysCommandProc(var Msg: TWMSysCommand); message WM_SYSCOMMAND;
     procedure CodeCompletionClose(Sender: TObject);
-    procedure EditLineCommentClick(Sender: TObject);
+    procedure EditToggleCommentClick(Sender: TObject);
   private
     { Private declarations }
     fWorkerThread: TThread;
@@ -1827,7 +1827,7 @@ begin
     EditUnindent.Enabled := Flag;
     Flag := Assigned(CurrentSheet) and  (CurrentSheet.Memo.Lines.Count > 0)
       and CurrentSheet.Memo.Focused;
-    EditLineComment.Enabled := Flag;
+    EditToggleComment.Enabled := Flag;
     Flag := Assigned(CurrentSheet) and AStyleLoaded;
     EditFormat.Enabled := Flag;
   end;
@@ -5058,7 +5058,7 @@ var
 begin
   Sheet := TSourceFileSheet(TComponent(Sender).Owner);
   if (ssCtrl in Shift) and (Key = VK_DIVIDE) then
-    EditLineCommentClick(EditLineComment);
+    EditToggleCommentClick(EditToggleComment);
   if (ssCtrl in Shift) and (Key = VK_OEM_PLUS) then
     ViewZoomIncClick(ViewZoomInc);
   if (ssCtrl in Shift) and (Key = VK_OEM_MINUS) then
@@ -5615,10 +5615,10 @@ procedure TFrmFalconMain.FormDestroy(Sender: TObject);
 var
   I: Integer;
 begin
-  for I := TreeViewProjects.Items.Count - 1 downto 0 do
-    TSourceBase(TreeViewProjects.Items.Item[I].Data).Free;
   FPluginManager.Free;
   FPluginServiceManager.Free;
+  for I := TreeViewProjects.Items.Count - 1 downto 0 do
+    TSourceBase(TreeViewProjects.Items.Item[I].Data).Free;
   FSearchList.Free;
   for I := 0 to FIncludeFileList.Count - 1 do
   begin
@@ -8934,7 +8934,7 @@ begin
   sheet.Memo.CommandProcessor(ecBlockUnindent, #0, nil);
 end;
 
-procedure TFrmFalconMain.EditLineCommentClick(Sender: TObject);
+procedure TFrmFalconMain.EditToggleCommentClick(Sender: TObject);
 var
   sheet: TSourceFileSheet;
 begin

@@ -3,24 +3,39 @@ unit PluginServiceManager;
 interface
 
 uses
-  Windows, Plugin, Forms;
+  Windows, Plugin, Forms, TBX, Classes, PluginWidget, Controls;
 
 type
   TPluginServiceManager = class
   private
     FForm: TForm;
     FDispatchHandle: HWND;
+    FWidgets: TWidgetList;
+    function GetHandleFromID(WidgetID: Integer): HWND;
+
+    function CreateMsgBoxWidget(Param: Integer; Data: Pointer): Integer;
+    function CreateMenuItemWidget(Plugin: TPlugin; Param: Integer;
+      Data: Pointer): Integer;
+    function CreateFormWidget(Plugin: TPlugin; Param: Integer;
+      Data: Pointer): Integer;
+
+    function GetSubmenuFromID(WidgetID: Integer): TTBXSubmenuItem;
+    function GetMenuItemFromID(WidgetID: Integer): TTBXItem;
+    procedure ClickEvent(Sender: TObject);
+    function WidgetShowModal(Widget: TWidget): Integer;
   public
     constructor Create(MainForm: TForm);
+    destructor Destroy; override;
     function DispatcheCommand(Plugin: TPlugin; Command, Widget, Param: Integer;
       Data: Pointer): Integer;
     property DispatchHandle: HWND read FDispatchHandle;
+    property Widgets: TWidgetList read FWidgets;
   end;
 
 implementation
 
 uses
-  UFrmMain, PluginConst;
+  UFrmMain, PluginConst, PluginWidgetMap, TB2Item, UTemplates, SysUtils;
 
 { TPluginServiceManager }
 
@@ -28,6 +43,101 @@ constructor TPluginServiceManager.Create(MainForm: TForm);
 begin
   FForm := MainForm;
   FDispatchHandle := FForm.Handle;
+  FWidgets := TWidgetList.Create;
+end;
+
+destructor TPluginServiceManager.Destroy;
+begin
+  FWidgets.Clear;
+  FWidgets.Free;
+  inherited;
+end;
+
+function TPluginServiceManager.WidgetShowModal(Widget: TWidget): Integer;
+begin
+  if (Widget = nil) or (Widget.Component = nil) or not (Widget.Component is TWidgetWindow) then
+  begin
+    Result := -1;
+    Exit;
+  end;
+  Result := TWidgetWindow(Widget.Component).ShowModal;
+end;
+
+function TPluginServiceManager.CreateMenuItemWidget(Plugin: TPlugin;
+  Param: Integer; Data: Pointer): Integer;
+var
+  MenuItem: PMenuItem;
+  Submenu: TTBXSubmenuItem;
+  Item, NewItem: TTBCustomItem;
+  I: Integer;
+  Widget: TWidget;
+begin
+  MenuItem := PMenuItem(Data);
+  Submenu := GetSubmenuFromID(MenuItem^.SubmenuID);
+  if Submenu = nil then
+  begin
+    Result := 0;
+    Exit;
+  end;
+  if MenuItem^.Position = 0 then
+    Item := nil
+  else
+    Item := GetMenuItemFromID(MenuItem^.Position);
+  if Item <> nil then
+    I := Submenu.IndexOf(Item)
+  else
+    I := Submenu.Count;
+  Widget := Widgets.Add(Plugin);
+  if StrPas(MenuItem^.Text) = '-' then
+    NewItem := TWidgetMenuSeparator.CreateWidget(Widget, Submenu.Owner)
+  else
+    NewItem := TWidgetMenuItem.CreateWidget(Widget, Submenu.Owner);
+  NewItem.Tag := Widget.ID;
+  NewItem.Caption := StrPas(MenuItem^.Text);
+  NewItem.ImageIndex := MenuItem^.ImageIndex;
+  NewItem.ShortCut := MenuItem^.ShortCut;
+  NewItem.OnClick := ClickEvent;
+  Submenu.Insert(I, NewItem);
+  Result := Widget.ID;
+end;
+
+function TPluginServiceManager.CreateMsgBoxWidget(Param: Integer;
+  Data: Pointer): Integer;
+var
+  MsgBox: PMsgBox;
+begin
+  MsgBox := PMsgBox(Data);
+  Result := MessageBox(GetHandleFromID(MsgBox^.ParentID), MsgBox^.Text, MsgBox^.Title, MsgBox^.uType);
+end;
+
+function TPluginServiceManager.CreateFormWidget(Plugin: TPlugin;
+  Param: Integer; Data: Pointer): Integer;
+var
+  Window: PWindow;
+  NativeForm: TWidgetWindow;
+  Widget: TWidget;
+begin
+  Window := PWindow(Data);
+  Widget := Widgets.Add(Plugin);
+  NativeForm := TWidgetWindow.CreateWidget(Widget, GetHandleFromID(Window^.ParentID));
+  case Window^.Border of
+    Wb_Dialog: NativeForm.BorderStyle := bsDialog;
+    Wb_Single: NativeForm.BorderStyle := bsSingle;
+    Wb_ToolWindow: NativeForm.BorderStyle := bsToolWindow;
+    Wb_SizeToolWin: NativeForm.BorderStyle := bsSizeToolWin;
+    Wb_None: NativeForm.BorderStyle := bsNone;
+  end;
+  NativeForm.Caption := Window^.Text;
+  NativeForm.Width := Window^.Width;
+  NativeForm.Height := Window^.Height;
+  if (Window^.X = -1) and (Window^.Y = -1) then
+    NativeForm.Position := poOwnerFormCenter
+  else
+  begin
+    NativeForm.Left := Window^.X;
+    NativeForm.Top := Window^.Y;
+  end;
+  Result := Widget.ID;
 end;
 
 function TPluginServiceManager.DispatcheCommand(Plugin: TPlugin; Command,
@@ -36,12 +146,222 @@ begin
   case Command of
     Cmd_Free:
     begin
-      if Widget = Wdg_Plugin then
+      if Widget = Plugin.ID then
+      begin
+        Widgets.ClearForPluginID(Plugin.ID);
         TFrmFalconMain(FForm).PluginManager.Delete(Plugin.ID);
+      end
+      else
+      begin
+        Result := Widgets.Delete(Widget);
+        Exit;
+      end;
+    end;
+    Cmd_Create:
+    begin
+      case Widget of
+        Wdg_MsgBox:
+          Result := CreateMsgBoxWidget(Param, Data);
+        Wdg_MenuItem:
+          Result := CreateMenuItemWidget(Plugin, Param, Data);
+        Wdg_Window:
+          Result := CreateFormWidget(Plugin, Param, Data);
+      else
+        Result := 0;
+      end;
+      Exit;
+    end;
+    Cmd_ShowModal:
+    begin
+      Result := WidgetShowModal(Widgets.Find(Widget));
+      Exit;
     end;
   else
   end;
   Result := 0;
+end;
+
+function TPluginServiceManager.GetHandleFromID(WidgetID: Integer): HWND;
+var
+  MainForm: TFrmFalconMain;
+begin
+  MainForm := TFrmFalconMain(FForm);
+  case WidgetID of
+    WINDOW_MAIN: Result := MainForm.Handle;
+  else
+    Result := 0;
+  end;
+end;
+
+function TPluginServiceManager.GetSubmenuFromID(WidgetID: Integer): TTBXSubmenuItem;
+var
+  MainForm: TFrmFalconMain;
+  Widget: TWidget;
+begin
+  MainForm := TFrmFalconMain(FForm);
+  if WidgetID > $00FFFF then
+  begin
+    Widget := Widgets.Find(WidgetID);
+    if Widget <> nil then
+      Result := TTBXSubmenuItem(Widget.Component)
+    else
+      Result := nil;
+    Exit;
+  end;
+  case WidgetID of
+    SUBMENU_MAIN_FILE: Result := MainForm.MenuFile;
+    SUBMENU_MAIN_FILE_NEW: Result := MainForm.FileNew;
+    SUBMENU_MAIN_FILE_REOPEN: Result := MainForm.FileReopen;
+    SUBMENU_MAIN_FILE_IMPORT: Result := MainForm.FileImport;
+    SUBMENU_MAIN_FILE_EXPORT: Result := MainForm.FileExport;
+    SUBMENU_MAIN_EDIT: Result := MainForm.MenuEdit;
+    SUBMENU_MAIN_EDIT_TOGGLEBOOKMARKS: Result := MainForm.EditBookmarks;
+    SUBMENU_MAIN_EDIT_GOTOBOOKMARKS: Result := MainForm.EditGotoBookmarks;
+    SUBMENU_MAIN_SEARCH: Result := MainForm.MenuSearch;
+    SUBMENU_MAIN_VIEW: Result := MainForm.MenuView;
+    SUBMENU_MAIN_VIEW_TOOLBARS: Result := MainForm.ViewToolbar;
+    SUBMENU_MAIN_VIEW_THEMES: Result := MainForm.ViewThemes;
+    SUBMENU_MAIN_VIEW_ZOOM: Result := MainForm.ViewZoom;
+    SUBMENU_MAIN_PROJECT: Result := MainForm.MenuProject;
+    SUBMENU_MAIN_RUN: Result := MainForm.MenuRun;
+    SUBMENU_MAIN_TOOLS: Result := MainForm.MenuTools;
+    SUBMENU_MAIN_HELP: Result := MainForm.MenuHelp;
+    SUBMENU_MAIN_HELP_FALCONCPP: Result := MainForm.HelpFalcon;
+  else
+    Result := nil;
+  end;
+end;
+
+function TPluginServiceManager.GetMenuItemFromID(WidgetID: Integer): TTBXItem;
+var
+  MainForm: TFrmFalconMain;
+  Widget: TWidget;
+begin
+  MainForm := TFrmFalconMain(FForm);
+  if WidgetID > $00FFFF then
+  begin
+    Widget := Widgets.Find(WidgetID);
+    if Widget <> nil then
+      Result := TTBXItem(Widget.Component)
+    else
+      Result := nil;
+    Exit;
+  end;
+  case WidgetID of
+    MENUITEM_MAIN_FILE_NEW_PROJECT: Result := MainForm.FileNewProject;
+    MENUITEM_MAIN_FILE_NEW_CFILE: Result := MainForm.FileNewC;
+    MENUITEM_MAIN_FILE_NEW_CPPFILE: Result := MainForm.FileNewCpp;
+    MENUITEM_MAIN_FILE_NEW_HEADER: Result := MainForm.FileNewHeader;
+    MENUITEM_MAIN_FILE_NEW_RESOURCE: Result := MainForm.FileNewResource;
+    MENUITEM_MAIN_FILE_NEW_EMPTY: Result := MainForm.FileNewEmpty;
+    MENUITEM_MAIN_FILE_NEW_FOLDER: Result := MainForm.FileNewFolder;
+    MENUITEM_MAIN_FILE_OPEN: Result := MainForm.FileOpen;
+    MENUITEM_MAIN_FILE_REOPEN_CLEAR: Result := MainForm.FileReopenClear;
+    MENUITEM_MAIN_FILE_SAVE: Result := MainForm.FileSave;
+    MENUITEM_MAIN_FILE_SAVEAS: Result := MainForm.FileSaveAs;
+    MENUITEM_MAIN_FILE_SAVEALL: Result := MainForm.FileSaveAll;
+    MENUITEM_MAIN_FILE_IMPORT_DEVCPP: Result := MainForm.FileImpDevCpp;
+    MENUITEM_MAIN_FILE_IMPORT_CODEBLOCKS: Result := MainForm.FileImpCodeBlocks;
+    MENUITEM_MAIN_FILE_IMPORT_MSVISUALCPP: Result := MainForm.FileImpMSVC;
+    MENUITEM_MAIN_FILE_EXPORT_HTML: Result := MainForm.FileExportHTML;
+    MENUITEM_MAIN_FILE_EXPORT_RTF: Result := MainForm.FileExportRTF;
+    MENUITEM_MAIN_FILE_EXPORT_TEX: Result := MainForm.FileExportTeX;
+    MENUITEM_MAIN_FILE_CLOSE: Result := MainForm.FileClose;
+    MENUITEM_MAIN_FILE_CLOSEALL: Result := MainForm.FileCloseAll;
+    MENUITEM_MAIN_FILE_REMOVE: Result := MainForm.FileRemove;
+    MENUITEM_MAIN_FILE_PRINT: Result := MainForm.FilePrint;
+    MENUITEM_MAIN_FILE_EXIT: Result := MainForm.FileExit;
+    MENUITEM_MAIN_EDIT_UNDO: Result := MainForm.EditUndo;
+    MENUITEM_MAIN_EDIT_REDO: Result := MainForm.EditRedo;
+    MENUITEM_MAIN_EDIT_CUT: Result := MainForm.EditCut;
+    MENUITEM_MAIN_EDIT_COPY: Result := MainForm.EditCopy;
+    MENUITEM_MAIN_EDIT_PASTE: Result := MainForm.EditPaste;
+    MENUITEM_MAIN_EDIT_SWAPHS: Result := MainForm.EditSwap;
+    MENUITEM_MAIN_EDIT_DELETE: Result := MainForm.EditDelete;
+    MENUITEM_MAIN_EDIT_SELECTALL: Result := MainForm.EditSelectAll;
+    MENUITEM_MAIN_EDIT_INDENT: Result := MainForm.EditIndent;
+    MENUITEM_MAIN_EDIT_UNINDENT: Result := MainForm.EditUnindent;
+    MENUITEM_MAIN_EDIT_TOGGLECOMMENT: Result := MainForm.EditToggleComment;
+    MENUITEM_MAIN_SEARCH_FIND: Result := MainForm.SearchFind;
+    MENUITEM_MAIN_SEARCH_FINDNEXT: Result := MainForm.SearchFindNext;
+    MENUITEM_MAIN_SEARCH_FINDPREV: Result := MainForm.SearchFindPrev;
+    MENUITEM_MAIN_SEARCH_FINDFILES: Result := MainForm.SearchFindFiles;
+    MENUITEM_MAIN_SEARCH_REPLACE: Result := MainForm.SearchReplace;
+    MENUITEM_MAIN_SEARCH_INCSEARCH: Result := MainForm.SearchIncremental;
+    MENUITEM_MAIN_SEARCH_GOTOFUNC: Result := MainForm.SearchGotoFunction;
+    MENUITEM_MAIN_SEARCH_GOTOPREVFUNC: Result := MainForm.SearchGotoPrevFunc;
+    MENUITEM_MAIN_SEARCH_GOTONEXTFUNC: Result := MainForm.SearchGotoNextFunc;
+    MENUITEM_MAIN_SEARCH_GOTOLINE: Result := MainForm.SearchGotoLine;
+    MENUITEM_MAIN_VIEW_PROJECTMANAGER: Result := MainForm.ViewProjMan;
+    MENUITEM_MAIN_VIEW_STATUSBAR: Result := MainForm.ViewStatusBar;
+    MENUITEM_MAIN_VIEW_OUTLINE: Result := MainForm.ViewOutline;
+    MENUITEM_MAIN_VIEW_COMPILEROUTPUT: Result := MainForm.ViewCompOut;
+    MENUITEM_MAIN_VIEW_TOOLBARS_DEFAULT: Result := MainForm.ViewThemeDef;
+    MENUITEM_MAIN_VIEW_TOOLBARS_EDIT: Result := MainForm.ViewToolbarEdit;
+    MENUITEM_MAIN_VIEW_TOOLBARS_SEARCH: Result := MainForm.ViewToolbarSearch;
+    MENUITEM_MAIN_VIEW_TOOLBARS_COMPILER: Result := MainForm.ViewToolbarCompiler;
+    MENUITEM_MAIN_VIEW_TOOLBARS_NAVIGATOR: Result := MainForm.ViewToolbarNavigator;
+    MENUITEM_MAIN_VIEW_TOOLBARS_PROJECT: Result := MainForm.ViewToolbarProject;
+    MENUITEM_MAIN_VIEW_TOOLBARS_HELP: Result := MainForm.ViewToolbarHelp;
+    MENUITEM_MAIN_VIEW_TOOLBARS_DEBUG: Result := MainForm.ViewToolbarDebug;
+    MENUITEM_MAIN_VIEW_THEMES_DEFAULT: Result := MainForm.ViewThemeDef;
+    MENUITEM_MAIN_VIEW_THEMES_OFFICE2003: Result := MainForm.ViewThemeOffice2003;
+    MENUITEM_MAIN_VIEW_THEMES_OFFICEXP: Result := MainForm.ViewThemeOffXP;
+    MENUITEM_MAIN_VIEW_THEMES_STRIPES: Result := MainForm.ViewThemeStripes;
+    MENUITEM_MAIN_VIEW_THEMES_PROFESSIONAL: Result := MainForm.ViewThemeProfessional;
+    MENUITEM_MAIN_VIEW_THEMES_ALUMINUM: Result := MainForm.ViewThemeAluminum;
+    MENUITEM_MAIN_VIEW_ZOOM_INCREASE: Result := MainForm.ViewZoomInc;
+    MENUITEM_MAIN_VIEW_ZOOM_DECREASE: Result := MainForm.ViewZoomDec;
+    MENUITEM_MAIN_VIEW_FULLSCREEN: Result := MainForm.ViewFullScreen;
+    MENUITEM_MAIN_VIEW_RESTOREDEFAULT: Result := MainForm.ViewRestoreDefault;
+    MENUITEM_MAIN_PROJECT_ADD: Result := MainForm.ProjectAdd;
+    MENUITEM_MAIN_PROJECT_REMOVE: Result := MainForm.ProjectRemove;
+    MENUITEM_MAIN_PROJECT_BUILD: Result := MainForm.ProjectBuild;
+    MENUITEM_MAIN_PROJECT_PROPERTY: Result := MainForm.ProjectProperties;
+    MENUITEM_MAIN_RUN_RUN: Result := MainForm.RunRun;
+    MENUITEM_MAIN_RUN_COMPILE: Result := MainForm.RunCompile;
+    MENUITEM_MAIN_RUN_EXECUTE: Result := MainForm.RunExecute;
+    MENUITEM_MAIN_RUN_TOGGLEBREAKPOINT: Result := MainForm.RunToggleBreakpoint;
+    MENUITEM_MAIN_RUN_STEPINTO: Result := MainForm.RunStepInto;
+    MENUITEM_MAIN_RUN_STEPOVER: Result := MainForm.RunStepOver;
+    MENUITEM_MAIN_RUN_RUNTOCURSOR: Result := MainForm.RunRuntoCursor;
+    MENUITEM_MAIN_RUN_STOP: Result := MainForm.RunStop;
+    MENUITEM_MAIN_TOOLS_ENVIRONMENTOPTIONS: Result := MainForm.ToolsEnvOptions;
+    MENUITEM_MAIN_TOOLS_COMPILEROPTIONS: Result := MainForm.ToolsCompilerOptions;
+    MENUITEM_MAIN_TOOLS_EDITOROPTIONS: Result := MainForm.ToolsEditorOptions;
+    MENUITEM_MAIN_TOOLS_TEMPLATECREATOR: Result := MainForm.ToolsTemplate;
+    MENUITEM_MAIN_TOOLS_PACKAGECREATOR: Result := MainForm.ToolsPackageCreator;
+    MENUITEM_MAIN_TOOLS_PACKAGES: Result := MainForm.ToolsPackages;
+    MENUITEM_MAIN_HELP_FALCONCPP_FALCONCPP: Result := MainForm.HelpFalconFalcon;
+    MENUITEM_MAIN_HELP_TIPOFDAY: Result := MainForm.HelpTipOfDay;
+    MENUITEM_MAIN_HELP_UPDATE: Result := MainForm.HelpUpdate;
+    MENUITEM_MAIN_HELP_ABOUT: Result := MainForm.HelpAbout;
+  else
+    if (WidgetID >= MENUITEM_MAIN_EDIT_TOGGLEBOOKMARKS_1) and
+       (WidgetID <= MENUITEM_MAIN_EDIT_TOGGLEBOOKMARKS_9) and
+       (WidgetID - MENUITEM_MAIN_EDIT_TOGGLEBOOKMARKS_1 < MainForm.EditBookmarks.Count) then
+    begin
+      Result := TTBXItem(MainForm.EditBookmarks.Items[WidgetID - MENUITEM_MAIN_EDIT_TOGGLEBOOKMARKS_1])
+    end
+    else if (WidgetID >= MENUITEM_MAIN_EDIT_GOTOBOOKMARKS_1) and
+       (WidgetID <= MENUITEM_MAIN_EDIT_GOTOBOOKMARKS_9) and
+       (WidgetID - MENUITEM_MAIN_EDIT_GOTOBOOKMARKS_1 < MainForm.EditGotoBookmarks.Count) then
+    begin
+      Result := TTBXItem(MainForm.EditGotoBookmarks.Items[WidgetID - MENUITEM_MAIN_EDIT_GOTOBOOKMARKS_1])
+    end
+    else
+      Result := nil;
+  end;
+end;
+
+procedure TPluginServiceManager.ClickEvent(Sender: TObject);
+var
+  Widget: TWidget;
+begin
+  Widget := Widgets.Find(TComponent(Sender).Tag);
+  if Widget = nil then
+    Exit;
+  Widget.Plugin.DispatchCommand(Cmd_Click, Widget.ID, 0, nil);
 end;
 
 end.

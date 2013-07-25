@@ -701,11 +701,11 @@ object FrmFalconMain: TFrmFalconMain
         end
         object TBXSeparatorItem30: TTBXSeparatorItem
         end
-        object EditLineComment: TTBXItem
+        object EditToggleComment: TTBXItem
           Caption = 'Toggle Line Comment'
           Enabled = False
           ShortCut = 16577
-          OnClick = EditLineCommentClick
+          OnClick = EditToggleCommentClick
         end
         object TBXSeparatorItem43: TTBXSeparatorItem
         end
@@ -809,55 +809,55 @@ object FrmFalconMain: TFrmFalconMain
         end
         object ViewToolbar: TTBXSubmenuItem
           Caption = 'Toolbars'
-          object TBXItem52: TTBXItem
+          object ViewToolbarDefault: TTBXItem
             AutoCheck = True
             Caption = 'Default Bar'
             Checked = True
             OnClick = TViewToolbarClick
           end
-          object TBXItem73: TTBXItem
+          object ViewToolbarEdit: TTBXItem
             Tag = 1
             AutoCheck = True
             Caption = 'Edit Bar'
             Checked = True
             OnClick = TViewToolbarClick
           end
-          object TBXItem55: TTBXItem
+          object ViewToolbarSearch: TTBXItem
             Tag = 2
             AutoCheck = True
             Caption = 'Search Bar'
             Checked = True
             OnClick = TViewToolbarClick
           end
-          object TBXItem61: TTBXItem
+          object ViewToolbarCompiler: TTBXItem
             Tag = 3
             AutoCheck = True
             Caption = 'Compiler Bar'
             Checked = True
             OnClick = TViewToolbarClick
           end
-          object TBXItem8: TTBXItem
+          object ViewToolbarNavigator: TTBXItem
             Tag = 4
             AutoCheck = True
             Caption = 'Navigator Bar'
             Checked = True
             OnClick = TViewToolbarClick
           end
-          object TBXItem77: TTBXItem
+          object ViewToolbarProject: TTBXItem
             Tag = 5
             AutoCheck = True
             Caption = 'Project Bar'
             Checked = True
             OnClick = TViewToolbarClick
           end
-          object TBXItem79: TTBXItem
+          object ViewToolbarHelp: TTBXItem
             Tag = 6
             AutoCheck = True
             Caption = 'Help Bar'
             Checked = True
             OnClick = TViewToolbarClick
           end
-          object TBXItem1: TTBXItem
+          object ViewToolbarDebug: TTBXItem
             Tag = 7
             AutoCheck = True
             Caption = 'Debug Bar'

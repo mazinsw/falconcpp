@@ -46,9 +46,8 @@ procedure TPluginManager.Clear;
 var
   I: Integer;
 begin
-  for I := 0 to Count - 1 do
-    Items[I].Free;
-  FList.Clear;
+  for I := FList.Count - 1 downto 0 do
+    FServiceManager.DispatcheCommand(Items[I], Cmd_Free, Items[I].ID, 0, nil);
 end;
 
 constructor TPluginManager.Create(ServiceManager: TPluginServiceManager);
@@ -66,7 +65,7 @@ begin
   I := GetInsertIndex(PluginID);
   if (I >= FList.Count) or (Items[I].ID <> PluginID) then
     Exit; // raise ?
-  Items[I].DispatchCommand(Cmd_Destroy, Wdg_Plugin, 0, Pointer(PluginID));
+  Items[I].DispatchCommand(Cmd_Destroy, PluginID, 0, nil);
   Items[I].Free;
   FList.Delete(I);
 end;
@@ -133,7 +132,7 @@ end;
 procedure TPluginManager.LoadFromDir(DirName: string);
 var
   List: TStrings;
-  I, ID: Integer;
+  I: Integer;
   Plugin: TPlugin;
 begin
   List := TStringList.Create;
@@ -143,11 +142,7 @@ begin
     try
       Plugin := TPlugin.Create(List[I], FDispatchHandle);
       Add(Plugin);
-      ID := Plugin.ID;
-      Plugin.DispatchCommand(Cmd_Create, Wdg_Plugin, 0, Pointer(Plugin.ID));
-      // plugin can sent free command on create
-      if FindPlugin(ID) <> nil then
-        Plugin.UpdateInfo;
+      Plugin.DispatchCommand(Cmd_Create, Plugin.ID, 0, nil);
     except
     end;
   end;

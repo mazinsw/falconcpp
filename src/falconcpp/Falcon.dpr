@@ -62,7 +62,9 @@ uses
   PluginConst in '..\others\plugins\PluginConst.pas',
   PluginUtils in '..\others\plugins\PluginUtils.pas',
   Plugin in '..\others\plugins\Plugin.pas',
-  PluginServiceManager in '..\others\plugins\PluginServiceManager.pas';
+  PluginServiceManager in '..\others\plugins\PluginServiceManager.pas',
+  PluginWidgetMap in '..\others\plugins\PluginWidgetMap.pas',
+  PluginWidget in '..\others\plugins\PluginWidget.pas';
 
 function OpenWithOther: Boolean;
 var

@@ -24,11 +24,16 @@
 					<File Name="plugin_main.h"/>
 					<File Name="plugin_cmd.h"/>
 					<File Name="plugin_private.h"/>
+					<File Name="plugin_wdg_map.h"/>
+					<File Name="plugin_utils.h"/>
+					<File Name="plugin_widgets.h"/>
 				</Folder>
 			</Folder>
 			<Folder Name="src">
 				<File Name="plugin.c"/>
 				<File Name="plugin_info.c"/>
+				<File Name="plugin_utils.c"/>
+				<File Name="plugin_widgets.c"/>
 			</Folder>
 		</Folder>
 	</Files>

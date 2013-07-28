@@ -978,7 +978,8 @@ destructor TProjectBase.Destroy;
 begin
   if Assigned(FTemplateResources) then
     FTemplateResources.Free;
-  FTemplateResources := nil;
+  if Assigned(FIcon) then
+    FIcon.Free;
   FBreakpointCursor.Free;
   FVersion.Free;
   inherited Destroy;

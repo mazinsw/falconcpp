@@ -179,6 +179,8 @@ end;
 
 procedure THintTree.Cancel;
 begin
+  if not FActivated then
+    Exit;
   FActivated := False;
   if FWindowMode then
   begin

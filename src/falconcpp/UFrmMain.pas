@@ -4050,8 +4050,9 @@ begin
   begin
     if Line > 0 then
     begin
-      Sheet.Memo.GotoLineAndCenter(Line);
-      SLine := Sheet.Memo.Lines.Strings[Line - 1];
+      Sheet.Memo.UncollapseLine(Line);
+      Sheet.Memo.GotoLineAndCenter(Sheet.Memo.GetCollapsedLineNumber(Line));
+      SLine := Sheet.Memo.UnCollapsedLines.Strings[Line - 1];
       Temp := StringBetween(MMsg, #39, #39, False);
       if (Length(Temp) > 0) then
       begin
@@ -4564,21 +4565,21 @@ function TFrmFalconMain.DetectScope(Memo: TSynEditEx;
 var
   Token: TTokenClass;
   Node, Parent: PNativeNode;
-  SelLine, SelStart: Integer;
+  SelStart: Integer;
   BC: TBufferCoord;
 begin
   Result := nil;
   BC := Memo.CaretXY;
-  SelLine := BC.Line;
   if BC.Line > 0 then
   begin
-    if BC.Char > (Length(Memo.Lines[SelLine - 1]) + 1) then
-      BC.Char := Length(Memo.Lines[SelLine - 1]) + 1;
+    if BC.Char > (Length(Memo.Lines[BC.Line - 1]) + 1) then
+      BC.Char := Length(Memo.Lines[BC.Line - 1]) + 1;
   end;
   if ShowInTreeview and DebugReader.Running then
     Exit;
-  SelStart := Memo.RowColToCharIndex(Memo.RealBufferCoord(BC));
-  if TokenFile.GetTokenAt(Token, SelStart, Memo.GetRealLineNumber(SelLine)) then
+  BC := Memo.RealBufferCoord(BC);
+  SelStart := Memo.RowColToCharIndex(BC);
+  if TokenFile.GetTokenAt(Token, SelStart, BC.Line) then
   begin
     if Assigned(Token.Parent) and
       (Token.Parent.Token in [tkParams, tkFunction, tkPrototype,
@@ -4797,7 +4798,7 @@ begin
   if (Sender is TSynEditEx) then
   begin
     UpdateMenuItems([rmEdit]);
-    DetectScope(Sender as TSynEditEx, ActiveEditingFile, True);
+    //DetectScope(Sender as TSynEditEx, ActiveEditingFile, True);
     if ActiveErrorLine > 0 then
     begin
       LastActiveErrorLine := ActiveErrorLine;
@@ -4805,7 +4806,6 @@ begin
       (Sender as TSynEditEx).InvalidateLine(LastActiveErrorLine);
     end;
   end;
-
   if HintParams.Activated and ((scCaretX in Changes) or (scCaretY in Changes))
     and (Sender is TSynEditEx) then
   begin
@@ -4819,9 +4819,12 @@ procedure TFrmFalconMain.TextEditorUpdateStatusBar(Sender: TObject);
 begin
   if (Sender is TSynEditEx) then
   begin
-    StatusBar.Panels.Items[1].Caption := Format('Ln : %d  Col : %d   Sel : %d',
-      [(Sender as TSynEditEx).DisplayY, (Sender as TSynEditEx).DisplayX,
-      (Sender as TSynEditEx).SelLength]);
+    StatusBar.Panels.Items[1].Caption := Format('Ln : %d  Col : %d',
+      [(Sender as TSynEditEx).GetRealLineNumber((Sender as TSynEditEx).DisplayY),
+       (Sender as TSynEditEx).DisplayX]);
+    //StatusBar.Panels.Items[1].Caption := Format('Ln : %d  Col : %d   Sel : %d',
+    //  [(Sender as TSynEditEx).DisplayY, (Sender as TSynEditEx).DisplayX,
+    //  (Sender as TSynEditEx).SelLength]);
   end;
 end;
 
@@ -6824,6 +6827,8 @@ var
   TopLine: Integer;
 begin
   Memo.SetFocus;
+  Memo.UncollapseLine(Line);
+  Line := Memo.GetCollapsedLineNumber(Line);
   TopLine := Line - (Memo.LinesInWindow div 2);
   if TopLine <= 0 then
     TopLine := 1;
@@ -7272,7 +7277,8 @@ begin
   if ActiveEditingFile.Data = TokenFile.Data then
     UpdateActiveFileToken(TokenFile);
   AllParsedList.AddObject('', TokenFile);
-  ProgressBarParser.Position := (Current * 100) div Total;
+  if Total > 0 then
+    ProgressBarParser.Position := (Current * 100) div Total;
 end;
 
 procedure TFrmFalconMain.AllParserFinish(Sender: TObject; Canceled: Boolean);

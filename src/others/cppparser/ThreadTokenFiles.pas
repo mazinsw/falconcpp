@@ -57,7 +57,7 @@ type
 
     procedure CppParserProgress(Sender: TObject; Current, Total: Integer);
     procedure ParserProgress(TokenFile: TTokenFile;
-      const FileName: string; Current, Total: Integer; Parsed: Boolean);
+      const FileName: string; Current: Integer; Parsed: Boolean);
 
     procedure AddFiles(FileList: TStrings);
     procedure Shutdown;
@@ -172,7 +172,7 @@ begin
       else
         FileObj.Free;
     end;
-    ParserProgress(TokenFile, S, 1, 1, ParserOk);
+    ParserProgress(TokenFile, S, 1, ParserOk);
   end;
   Text.Free;
   fBusy := False;
@@ -207,7 +207,7 @@ begin
   end;
   fTokenFiles.Add(TokenFile);
   Inc(Result);
-  ParserProgress(TokenFile, FileName, Result, Result, True);
+  ParserProgress(TokenFile, FileName, Result, True);
   PathOnly := ExtractFilePath(FileName);
   for I := 0 to TokenFile.Includes.Count - 1 do
   begin
@@ -284,7 +284,9 @@ begin
   end;
   fTokenFiles.Add(TokenFile);
   Inc(Result);
-  ParserProgress(TokenFile, FileName, Result, Result, True);
+  if Result > 1 then
+    Inc(fTotal);
+  ParserProgress(TokenFile, FileName, Result, True);
   DirBase := ExtractFilePath(FileName);
   for I := 0 to TokenFile.Includes.Count - 1 do
   begin
@@ -383,7 +385,7 @@ begin
       TokenFile.Free;
       ParserOk := True;
     end;
-    ParserProgress(nil, FileName, 1, 1, ParserOk);
+    ParserProgress(nil, FileName, 1, ParserOk);
   end;
   Text.Free;
   Synchronize(DoFinish);
@@ -549,9 +551,9 @@ begin
   begin
     Pair := TMethodInfo.Create(FileList.Strings[I], FileList.Objects[I]);
     fFileQueue.Push(Pair);
-  end;
-  LeaveCriticalSection(flock);
+  end;                        
   Inc(fTotal, FileList.Count);
+  LeaveCriticalSection(flock);
 end;
 
 procedure TThreadTokenFiles.DoStart;
@@ -575,14 +577,17 @@ end;
 
 procedure TThreadTokenFiles.DoAllFinish;
 begin
-  fCurrent := 0;
-  fTotal := 0;
-  if Assigned(fOnAllFinish) and not Terminated then
-    fOnAllFinish(Self);
+  if fCurrent <= fTotal then
+  begin
+    fTotal := fTotal - fCurrent;
+    fCurrent := 0;
+    if Assigned(fOnAllFinish) and not Terminated then
+      fOnAllFinish(Self);
+  end;
 end;
 
 procedure TThreadTokenFiles.ParserProgress(TokenFile: TTokenFile;
-  const FileName: string; Current, Total: Integer; Parsed: Boolean);
+  const FileName: string; Current: Integer; Parsed: Boolean);
 begin
   fTokenFile := TokenFile;
   fFileName := FileName;

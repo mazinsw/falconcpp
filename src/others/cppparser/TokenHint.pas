@@ -227,6 +227,8 @@ end;
 
 procedure TTokenHintBase.Cancel;
 begin
+  if not FActivated then
+    Exit;
   FActivated := False;
   Hide;
 end;

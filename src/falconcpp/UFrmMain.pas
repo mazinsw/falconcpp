@@ -394,6 +394,9 @@ type
     PopTabsReadOnly: TTBXItem;
     EditToggleComment: TTBXItem;
     TBXSeparatorItem30: TTBXSeparatorItem;
+    TBXSeparatorItem45: TTBXSeparatorItem;
+    EditCollapseAll: TTBXItem;
+    EditUncollapseAll: TTBXItem;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure About1Click(Sender: TObject);
@@ -494,7 +497,7 @@ type
     procedure TextEditorCommandProcessed(Sender: TObject;
       var Command: TSynEditorCommand; var AChar: char; Data: pointer);
     procedure TextEditorScroll(Sender: TObject; ScrollBar: TScrollBarKind);
-
+    procedure TextEditorClick(Sender: TObject);
     procedure TimerStartUpdateTimer(Sender: TObject);
     procedure UpdateDownloadFinish(Sender: TObject;  State: TDownloadState;
       Canceled: Boolean);
@@ -640,6 +643,10 @@ type
     procedure SysCommandProc(var Msg: TWMSysCommand); message WM_SYSCOMMAND;
     procedure CodeCompletionClose(Sender: TObject);
     procedure EditToggleCommentClick(Sender: TObject);
+    procedure EditCollapseAllClick(Sender: TObject);
+    procedure EditUncollapseAllClick(Sender: TObject);
+    procedure MenuBarMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
   private
     { Private declarations }
     fWorkerThread: TThread;
@@ -699,7 +706,7 @@ type
     ReloadAfterCodeCompletion: Boolean;
     fShowCodeCompletion: Integer;
     BuildTime: Cardinal;
-    ZoomEditor: Integer; //edit zoom
+    FZoomEditor: Integer; //edit zoom
     ActiveEditingFile: TTokenFile; //last parsed tokens
     FFilesParsed: TTokenFiles; //all files parsed
 
@@ -852,6 +859,7 @@ type
     property ReplaceList: TStrings read FReplaceList;
     property FilesParsed: TTokenFiles read FFilesParsed;
     property PluginManager: TPluginManager read FPluginManager;
+    property ZoomEditor: Integer read FZoomEditor write FZoomEditor;
   end;
 
   { TParserThread }
@@ -898,7 +906,7 @@ uses
   UFrmUpdate, ULanguages, UFrmEnvOptions, UFrmCompOptions, UFrmFind, AStyle,
   UFrmGotoFunction, UFrmGotoLine, TBXThemes, Makefile, CodeTemplate,
   SynEditStrConst, StrUtils, UFrmVisualCppOptions,
-  SynEditPrintHeaderFooter, PluginConst;
+  SynEditPrintHeaderFooter, PluginConst, Math;
 
 {$R *.dfm}
 {$R resources.res}
@@ -1830,6 +1838,9 @@ begin
     EditToggleComment.Enabled := Flag;
     Flag := Assigned(CurrentSheet) and AStyleLoaded;
     EditFormat.Enabled := Flag;
+    Flag := Assigned(CurrentSheet) and (CurrentSheet.Memo.FoldCount > 0);
+    EditCollapseAll.Enabled := Flag;
+    EditUncollapseAll.Enabled := Flag;
   end;
   if rmSearch in Regions then
   begin
@@ -4798,7 +4809,7 @@ begin
   if (Sender is TSynEditEx) then
   begin
     UpdateMenuItems([rmEdit]);
-    //DetectScope(Sender as TSynEditEx, ActiveEditingFile, True);
+    DetectScope(Sender as TSynEditEx, ActiveEditingFile, True);
     if ActiveErrorLine > 0 then
     begin
       LastActiveErrorLine := ActiveErrorLine;
@@ -4816,15 +4827,16 @@ begin
 end;
 
 procedure TFrmFalconMain.TextEditorUpdateStatusBar(Sender: TObject);
+var
+  W: Integer;
 begin
   if (Sender is TSynEditEx) then
   begin
-    StatusBar.Panels.Items[1].Caption := Format('Ln : %d  Col : %d',
+    StatusBar.Panels.Items[1].Caption := Format('Ln : %d    Col : %d    Sel : %d',
       [(Sender as TSynEditEx).GetRealLineNumber((Sender as TSynEditEx).DisplayY),
-       (Sender as TSynEditEx).DisplayX]);
-    //StatusBar.Panels.Items[1].Caption := Format('Ln : %d  Col : %d   Sel : %d',
-    //  [(Sender as TSynEditEx).DisplayY, (Sender as TSynEditEx).DisplayX,
-    //  (Sender as TSynEditEx).SelLength]);
+       (Sender as TSynEditEx).DisplayX, (Sender as TSynEditEx).SelLength]);
+    W := Canvas.TextWidth(StatusBar.Panels.Items[1].Caption) + 20;
+    StatusBar.Panels.Items[1].Size := Max(W, 170);
   end;
 end;
 
@@ -5244,8 +5256,8 @@ begin
     if sheet.Memo.Lines.Count >= bStart.Line then
     begin
       LineStr := sheet.Memo.Lines.Strings[bStart.Line - 1];
-      if not sheet.Memo.SelAvail then
-        bEnd.Char := Length(LineStr) + 1;
+//      if not sheet.Memo.SelAvail then
+//        bEnd.Char := Length(LineStr) + 1;
       LineStr := Copy(LineStr, 1, bStart.Char - 1);
       p := PChar(LineStr);
       if p^ <> #0 then
@@ -5370,6 +5382,12 @@ begin
   HintParams.Cancel;
 end;
 
+
+procedure TFrmFalconMain.TextEditorClick(Sender: TObject);
+begin
+  CodeCompletion.CancelCompletion;
+end;
+
 procedure TFrmFalconMain.TextEditorGutterClick(Sender: TObject;
   Button: TMouseButton; X, Y, Line: Integer; Mark: TSynEditMark);
 var
@@ -5406,9 +5424,7 @@ begin
   begin
     S := sheet.Memo.Lines.Strings[aLine - 1];
     if HasTODO(S) then
-    begin
       ImageListGutter.Draw(sheet.Memo.Canvas, X, Y, 5);
-    end;
   end;
   if DebugReader.Running and Assigned(DebugActiveFile) and
     (DebugActiveFile = fprop) and (DebugActiveLine > 0) and
@@ -6564,7 +6580,7 @@ procedure TFrmFalconMain.ViewZoomIncClick(Sender: TObject);
 begin
   if ZoomEditor >= 48 then
     Exit;
-  Inc(ZoomEditor);
+  Inc(FZoomEditor);
   UpdateEditorZoom;
 end;
 
@@ -6572,7 +6588,7 @@ procedure TFrmFalconMain.ViewZoomDecClick(Sender: TObject);
 begin
   if ZoomEditor <= 8 then
     Exit;
-  Dec(ZoomEditor);
+  Dec(FZoomEditor);
   UpdateEditorZoom;
 end;
 
@@ -10459,6 +10475,30 @@ begin
   PlgMsg := PDispatchCommand(message.LParam);
   message.Result := FPluginManager.ReceiveCommand(message.WParam,
     PlgMsg^.Command, PlgMsg^.Widget, PlgMsg^.Param, PlgMsg^.Data);
+end;
+
+procedure TFrmFalconMain.EditCollapseAllClick(Sender: TObject);
+var
+  sheet: TSourceFileSheet;
+begin
+  if not GetActiveSheet(sheet) then
+    Exit;
+  sheet.Memo.CollapseAll;
+end;
+
+procedure TFrmFalconMain.EditUncollapseAllClick(Sender: TObject);
+var
+  sheet: TSourceFileSheet;
+begin
+  if not GetActiveSheet(sheet) then
+    Exit;
+  sheet.Memo.UncollapseAll;
+end;
+
+procedure TFrmFalconMain.MenuBarMouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  CodeCompletion.CancelCompletion;
 end;
 
 end.

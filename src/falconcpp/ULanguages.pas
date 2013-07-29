@@ -52,7 +52,7 @@ const
     '',
     '&Exit'
     );
-  MAX_MENU_EDIT = 21;
+  MAX_MENU_EDIT = 24;
   CONST_STR_MENU_EDIT: array[1..MAX_MENU_EDIT] of string = (
   //Edit Menu
     'Undo',
@@ -75,7 +75,10 @@ const
     '',
     'Toggle Line Comment',
     '',
-    'Format'
+    'Format',
+    '',
+    'Collapse All',
+    'Uncollapse All'
     );
 
   MAX_MENU_SERH = 11;

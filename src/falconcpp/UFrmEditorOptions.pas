@@ -767,7 +767,7 @@ begin
   Stx.AddSintaxType('Space', clNone);
   Stx.AddSintaxType('String', clBlue);
   Stx.AddSintaxType('Symbol', clNavy, clNone, [fsBold]);
-  Stx.AddSintaxType('Gutter', clWindowText, clBtnFace);
+  Stx.AddSintaxType('Gutter', clGrayText, clBtnFace);
   Stx.AddSintaxType('Selection', clWindowText, clSilver);
   FItemIndex := Add(Stx);
 end;

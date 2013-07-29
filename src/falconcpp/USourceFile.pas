@@ -2383,9 +2383,9 @@ begin
 
     //---------------- Display ---------------------//
     SynMemo.Font.Name := FontName;
-    SynMemo.Font.Size := FontSize;
+    SynMemo.Font.Size := FrmFalconMain.ZoomEditor;
     SynMemo.Gutter.Width := GutterWidth;
-    SynMemo.Gutter.Font.Size := FontSize;
+    SynMemo.Gutter.Font.Size := FrmFalconMain.ZoomEditor;
     if ShowRightMargin then
       SynMemo.RightEdge := RightMargin
     else
@@ -2393,6 +2393,7 @@ begin
     SynMemo.Gutter.Visible := ShowGutter;
     SynMemo.Gutter.ShowLineNumbers := ShowLineNumber;
     SynMemo.Gutter.Gradient := GradientGutter;
+    SynMemo.Gutter.AutoSize := True;
     //-------------- Colors -------------------------//
 
     FrmFalconMain.SintaxList.Selected.UpdateEditor(SynMemo);
@@ -2441,6 +2442,7 @@ begin
   FSynMemo.OnSpecialLineColors := FrmFalconMain.TextEditorSpecialLineColors;
   FSynMemo.OnCommandProcessed := FrmFalconMain.TextEditorCommandProcessed;
   FSynMemo.OnScroll := FrmFalconMain.TextEditorScroll;
+  FSynMemo.OnClick := FrmFalconMain.TextEditorClick;
   // Initialise code folding
   with FSynMemo.CodeFolding do
   begin

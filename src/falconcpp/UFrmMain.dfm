@@ -338,6 +338,7 @@ object FrmFalconMain: TFrmFalconMain
       ProcessShortCuts = True
       ShrinkMode = tbsmWrap
       TabOrder = 0
+      OnMouseDown = MenuBarMouseDown
       object MenuFile: TTBXSubmenuItem
         Caption = '&File'
         object FileNew: TTBXSubmenuItem
@@ -714,6 +715,18 @@ object FrmFalconMain: TFrmFalconMain
           Enabled = False
           ShortCut = 24646
           OnClick = EditFormatClick
+        end
+        object TBXSeparatorItem45: TTBXSeparatorItem
+        end
+        object EditCollapseAll: TTBXItem
+          Caption = 'Collapse All'
+          Enabled = False
+          OnClick = EditCollapseAllClick
+        end
+        object EditUncollapseAll: TTBXItem
+          Caption = 'Uncollapse All'
+          Enabled = False
+          OnClick = EditUncollapseAllClick
         end
       end
       object MenuSearch: TTBXSubmenuItem
@@ -1236,6 +1249,11 @@ object FrmFalconMain: TFrmFalconMain
     Left = 0
     Top = 595
     Width = 906
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -12
+    Font.Name = 'Segoe UI'
+    Font.Style = []
     Images = ImgListMenus
     Panels = <
       item
@@ -1256,6 +1274,7 @@ object FrmFalconMain: TFrmFalconMain
         Size = 150
         Tag = 0
       end>
+    ParentFont = False
     ParentShowHint = False
     ShowHint = True
     UseSystemFont = False

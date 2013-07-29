@@ -63,6 +63,9 @@ Version=2.0
 239=Adicionar/Remover comentário de linha
 #-----------
 241=Formatar
+#-----------
+243=Encolher Tudo
+244=Expandir Tudo
 
 #Menu Search
 334=Procurar...

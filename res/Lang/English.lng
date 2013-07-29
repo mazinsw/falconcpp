@@ -63,6 +63,9 @@ Version=your translate version
 239=Toggle Line Comment
 #-----------
 241=Format
+#-----------
+243=Collapse All
+244=Uncollapse All
 
 #Search Menu
 334=Find...

@@ -1957,11 +1957,16 @@ begin
     if '::' = Copy(RetType, Length(RetType) - 1, 2) then
     begin
       ScopeName := RetType;
-      RetType := GetPriorWord(SkipTemplateParams(RetType));
-      I := 1;
-      if RetType <> '' then
-        Inc(I);
-      ScopeName := Copy(ScopeName, Length(RetType) + I, Length(ScopeName) - Length(RetType) - 1 - I);
+      RetType := SkipTemplateParams(RetType);
+      I := Pos(' ', RetType);
+      if I > 0 then
+      begin
+        RetType := GetPriorWord(RetType);
+        I := Length(RetType) + 1;
+      end
+      else
+        RetType := '';
+      ScopeName := Copy(ScopeName, I + 1, Length(ScopeName) - I - 2);
     end
     else
       ScopeName := '';
@@ -1985,7 +1990,7 @@ begin
     else
       TokenType := tkConstructor;
   end
-  else if (RetType = '') and (ScopeName = '') then
+  else if (RetType = '') and ((ScopeName = '') or (GetLastWord(SkipTemplateParams(ScopeName)) <> FuncName)) then
   begin
     //DoTokenLog('skip ProcessFunction - function <' + ScopeName + '> ' +
     //  FuncName + ': ' + RetType);

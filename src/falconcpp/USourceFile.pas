@@ -987,8 +987,17 @@ end;
 
 procedure TProjectBase.SetIcon(Value: TIcon);
 begin
-  if (FIcon <> Value) then
-    FIcon := Value;
+  if FIcon = Value then
+    Exit;
+  if FIcon = nil then
+    FIcon := TIcon.Create
+  else if Value = nil then
+  begin
+    FIcon.Free;
+    FIcon := nil;
+    Exit;
+  end;
+  FIcon.Assign(Value);
 end;
 
 procedure TProjectBase.SaveAs(const FileName: string);

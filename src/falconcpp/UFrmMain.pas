@@ -701,7 +701,7 @@ type
     IsLoadingSrcFiles: Boolean;
     FLastProjectBuild: TProjectFile; //last builded project
     FLastSelectedProject: TProjectFile;
-    FLastProjectInclude: TProjectFile;
+    FLastPathInclude: string;
     startBuildTicks: Cardinal;
     ReloadAfterCodeCompletion: Boolean;
     fShowCodeCompletion: Integer;
@@ -3354,8 +3354,6 @@ begin
     ProjProp.CloseAll;
     if ProjProp = LastSelectedProject then
       LastSelectedProject := nil;
-    if ProjProp = FLastProjectInclude then
-      FLastProjectInclude := nil;
     if LastProjectBuild = ProjProp then
     begin
       if CompilerCmd.Executing then
@@ -3447,6 +3445,9 @@ begin
   Result.Project := Result;
   Result.FileType := FileType;
   Node.Data := Result;
+
+  if FileType <> FILE_TYPE_PROJECT then
+    FLastPathInclude := '';
 end;
 
 function TFrmFalconMain.CreateSource(ParentNode: TTreeNode;
@@ -3460,6 +3461,8 @@ begin
   Result.OnRename := DoRenameSource;
   Result.Project := TSourceFile(ParentNode.Data).Project;
   Node.Data := Result;
+
+  FLastPathInclude := '';
 end;
 
 procedure TFrmFalconMain.DoDeleteSource(Source: TSourceBase);
@@ -3483,6 +3486,7 @@ var
   ParseList, RemoveList: TStrings;
   I: Integer;
 begin
+  FLastPathInclude := '';
   FilePath := ExtractFilePath(ExcludeTrailingPathDelimiter(OldFileName));
   if Source is TProjectBase then
   begin
@@ -4188,6 +4192,8 @@ begin
     Files.Strings[I] := NewFile.FileName;
     Files.Objects[I] := NewFile;
   end;
+  if Files.Count > 0 then
+    FLastPathInclude := '';
 end;
 
 procedure TFrmFalconMain.ProjectAddClick(Sender: TObject);
@@ -6743,7 +6749,9 @@ begin
         fps.MoveFileTo(fpd.FileName);
       end;
     end;
+    { TODO -oMazin -c : Call OnRenameFile 30/07/2013 00:41:28 }
     Selitem.MoveTo(AnItem, AttachMode);
+    FLastPathInclude := '';
     //convert to TSourceFile
     if fps is TProjectFile then
       Selitem.Data := TProjectFile(fps).ConvertToSourceFile(fpd.Project);
@@ -7546,13 +7554,13 @@ begin
   if not GetActiveSheet(sheet) then
     Exit;
   proj := sheet.SourceFile.Project;
-  if (ProjectIncludeList.Count = 0) or (FLastProjectInclude <> proj) then
+  S := ExtractFilePath(sheet.SourceFile.FileName);
+  if CompareText(S, FLastPathInclude) <> 0 then
   begin
-    FLastProjectInclude := proj;
+    FLastPathInclude := S;
     for I := 0 to ProjectIncludeList.Count - 1 do
       TTokenClass(ProjectIncludeList.Objects[I]).Free;
     ProjectIncludeList.Clear;
-    S := ExtractFilePath(sheet.SourceFile.FileName);
     List := TStringList.Create;
     proj.GetFiles(List);
     for I := 0 to List.Count - 1 do
@@ -7595,7 +7603,7 @@ var
   Token, Scope, SaveScope: TTokenClass;
   AllScope: Boolean;
   AllowScope: TScopeClassState;
-  Buffer: TBufferCoord;
+  Buffer, SaveBuffer: TBufferCoord;
   Attri: TSynHighlighterAttributes;
   InputError, SkipFirst: Boolean;
 begin
@@ -7621,13 +7629,7 @@ begin
     else
       LineStr := Copy(LineStr, 1, Buffer.Char - 1);
   end;
-  if ParseFields(sheet.Memo.UnCollapsedLines.Text, sheet.Memo.RowColToCharIndex(Buffer), SaveInput, Fields, InputError) then
-    Input := GetFirstWord(Fields);
-  if InputError then
-    Exit;
-  if not UsingCtrlSpace and (LastKeyPressed = '>') and ((Length(Fields) < 2) or
-    ((Length(Fields) > 1) and (Fields[Length(Fields) - 1] <> '-'))) then
-    Exit;
+  SaveBuffer := Buffer;
   CodeCompletion.ItemList.Clear;
   CodeCompletion.InsertList.Clear;
   if sheet.Memo.GetHighlighterAttriAtRowCol(Buffer, S, Attri) then
@@ -7715,6 +7717,10 @@ begin
           end
           else if Pos(' ', LineStr) = 0 then
           begin
+            if ParseFields(sheet.Memo.UnCollapsedLines.Text, sheet.Memo.RowColToCharIndex(SaveBuffer), SaveInput, Fields, InputError) then
+              Input := GetFirstWord(Fields);
+            if InputError then
+              Exit;
             AddTemplates(Input, tkUnknow, CodeCompletion.InsertList,
               CodeCompletion.ItemList, CompletionColors, OutlineImages,
               sheet.SourceFile.Project.CompilerType, [tkInclude, tkDefine]);
@@ -7726,6 +7732,13 @@ begin
     end;
     Inc(Buffer.Char);
   end;
+  if ParseFields(sheet.Memo.UnCollapsedLines.Text, sheet.Memo.RowColToCharIndex(SaveBuffer), SaveInput, Fields, InputError) then
+    Input := GetFirstWord(Fields);
+  if InputError then
+    Exit;
+  if not UsingCtrlSpace and (LastKeyPressed = '>') and ((Length(Fields) < 2) or
+    ((Length(Fields) > 1) and (Fields[Length(Fields) - 1] <> '-'))) then
+    Exit;
   SelStart := sheet.Memo.RowColToCharIndex(Buffer);
   //Temp skip Scope:
   if (Buffer.Line > 0) then

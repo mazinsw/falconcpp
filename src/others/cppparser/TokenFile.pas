@@ -1511,13 +1511,21 @@ var
   I: Integer;
   Temp: string;
   ScopeClass: TScopeClassState;
+  S_nostd, F_nostd: string;
 begin
+  S_nostd := S;
+  F_nostd := Fields;
+  if (Pos('std::', F_nostd) = 1) and (Length(F_nostd) > 5) then
+  begin
+    F_nostd := Copy(F_nostd, 6, Length(F_nostd) - 5);
+    S_nostd := GetFirstWord(F_nostd);
+  end;
   //search var->
-  Result := SearchSource(S, TokenFile, TokenFileItem, Token, SelStart);
+  Result := SearchSource(S_nostd, TokenFile, TokenFileItem, Token, SelStart);
   if not Result then
     Exit;
   List := TStringList.Create;
-  GetStringsFields(Fields, List);
+  GetStringsFields(F_nostd, List);
   if (S <> 'this') then
   begin //'prototype var()->' or var.bla or func()->bla
     if (Token.Token in RetTypeTokens + [tkDefine]) then

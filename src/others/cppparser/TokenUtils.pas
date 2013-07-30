@@ -1457,6 +1457,8 @@ begin
   while Temp <> '' do
   begin
     Temp := SkipTemplateParams(Temp);
+    if Pos('std::', Temp) = 1 then
+      Temp := Copy(Temp, 6, Length(Temp) - 5);
     Result := GetLastWord(Temp, True);
     Temp := GetPriorWord(Temp);
     lower := LowerCase(Result);

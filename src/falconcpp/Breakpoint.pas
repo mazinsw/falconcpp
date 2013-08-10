@@ -43,6 +43,7 @@ type
     function MoveBy(LineFrom, aCount: Integer): Integer;
     function HasBreakpoint(Line: Integer): Boolean;
     procedure DrawBreakpoint(Editor: TSynEditEx; Line, X, Y: Integer);
+    function DeleteFrom(LineBegin, LineEnd: Integer): Integer;
     function ToogleBreakpoint(Line: Integer): Boolean;
     function GetBreakpoint(Line: Integer): TBreakpoint;
     property Count: Integer read GetCount;
@@ -245,17 +246,50 @@ end;
 
 function TBreakpointList.MoveBy(LineFrom, aCount: Integer): Integer;
 var
-  I: Integer;
+  I, L: Integer;
   Breakpoint: TBreakpoint;
 begin
   Result := 0;
-  for I := 0 to FList.Count - 1 do
+  L := GetInsertIndex(LineFrom);
+  if L < 0 then
+    L := 0;
+  for I := L to FList.Count - 1 do
   begin
     Breakpoint := TBreakpoint(FList.Items[I]);
     if Breakpoint.Line < LineFrom then
       Continue;
     Breakpoint.Line := Breakpoint.Line + aCount;
     Inc(Result);
+  end;
+end;
+
+function TBreakpointList.DeleteFrom(LineBegin, LineEnd: Integer): Integer;
+var
+  I: Integer;
+begin
+  Result := 0;
+  I := GetInsertIndex(LineBegin);
+  if I >= Count then
+    Exit;
+  if I < 0 then
+    I := 0;
+  while I < Count do
+  begin
+    if (Items[I].Line >= LineBegin) and (Items[I].Line <= LineEnd) then
+    begin
+      Items[I].Free;
+      FList.Delete(I);
+      Inc(Result);
+      Continue;
+    end
+    else
+      Break;
+    Inc(I);
+  end;
+  while I < Count do
+  begin
+    Dec(Items[I].FLine, LineEnd - LineBegin + 1);
+    Inc(I);
   end;
 end;
 

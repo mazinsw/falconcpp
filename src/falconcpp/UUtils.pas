@@ -212,20 +212,20 @@ end;
 
 function GetTickTime(ticks: Cardinal; fmt: string): string;
 var
-  milli, sec {, min, hou^}: Cardinal;
+  milli, sec , min: Cardinal;
   S: string;
 begin
   milli := ticks mod 1000;
   ticks := ticks div 1000;
-  sec := ticks mod 60;
-//  ticks := ticks div 60;
-//  min := ticks mod 60;
-//  ticks := ticks div 60;
-//  hour := ticks mod 60;
+  sec := ticks{ mod 60};
+  //ticks := ticks div 60;
+  min := 0{ticks};
   S := Format('%.3f', [milli / 1000]);
   S := Copy(S, Pos(',', S) + 1, MaxInt);
-  Result := Format('%d.%s', [sec, S]);
-  //Result := Format(fmt, [hour, min, sec, milli]);
+  if min > 0 then
+    Result := Format('%d:%.*d.%s', [min, 2, sec, S])
+  else
+    Result := Format('%d.%s', [sec, S]);
 end;
 
 procedure GetNameAndVersion(const S: string; var aName, aVersion: string);

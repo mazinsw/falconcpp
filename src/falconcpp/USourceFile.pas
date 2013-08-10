@@ -2452,6 +2452,8 @@ begin
   FSynMemo.OnCommandProcessed := FrmFalconMain.TextEditorCommandProcessed;
   FSynMemo.OnScroll := FrmFalconMain.TextEditorScroll;
   FSynMemo.OnClick := FrmFalconMain.TextEditorClick;
+  FSynMemo.OnLinesDeleted := FrmFalconMain.TextLinesDeleted;
+  FSynMemo.OnLinesInserted := FrmFalconMain.TextLinesInserted;
   // Initialise code folding
   with FSynMemo.CodeFolding do
   begin

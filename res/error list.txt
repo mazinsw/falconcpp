@@ -10,6 +10,7 @@ math.h:58:1: warning: this is the location of the previous definition
 glh_linear.h:180: warning: friend declaration 'bool glh::operator==(const glh::vec<N, T>&, const glh::vec<N, T>&)' declares a non-template function
 glh_linear.h:180: note: (if this is not what you intended, make sure the function template has already been declared and add <> after the function name here) 
 InvMatrix.hpp:28: error: 'boost' has not been declared
+..\problems\allocation\SA\main.cpp:38: error: 'AllocStateManager' is an inaccessible base of 'SA'
 
 already in use:
 %s: In function '%s':

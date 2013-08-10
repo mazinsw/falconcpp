@@ -1030,8 +1030,8 @@ begin
             Dec(PairCount);
           if not Empty then
           begin
-            if (Top.Token in [tkStruct, tkUnion, tkEnum, tkFunction, tkClass,
-              tkScopeClass]) then
+            if (Top.Token in [tkStruct, tkUnion, tkEnum, tkFunction, tkOperator, tkClass,
+              tkConstructor, tkDestructor, tkScopeClass]) then
             begin
               scope := GetTokenByName(Top, 'Scope', tkScope);
               if Assigned(scope) then
@@ -1288,7 +1288,7 @@ begin
           if not Empty then
           begin
             if (Top.Token in [tkStruct, tkUnion, tkEnum, tkFunction, tkClass,
-              tkScopeClass]) then
+              tkConstructor, tkDestructor, tkOperator, tkScopeClass]) then
             begin
               scope := GetTokenByName(Top, 'Scope', tkScope);
               if Assigned(scope) then
@@ -2051,7 +2051,7 @@ begin
           Exit;
       end;
       if Assigned(FuncToken.Parent) and (FuncToken.Parent.Token in
-        [tkFunction, tkConstructor, tkDestructor]) and (RetType <> '') then
+        [tkFunction, tkConstructor, tkDestructor, tkOperator]) and (RetType <> '') then
       begin
         FuncToken.Clear;
         FuncToken.Token := tkVariable;
@@ -2476,7 +2476,7 @@ begin
             if Assigned(lastFunc) then
             begin
               if (lastFunc.Token in [tkFunction, tkConstructor, tkNamespace,
-                tkDestructor]) and (lastFunc.Count > 1) then
+                tkDestructor, tkOperator]) and (lastFunc.Count > 1) then
               begin
                 scopeClass := GetTokenByName(lastFunc, 'Scope', tkScope);
                 if Assigned(scopeClass) then
@@ -2671,7 +2671,7 @@ begin
       TokenClass.Add(Result);
     end;
     if TkType in [tkStruct, tkUnion, tkEnum, tkFunction, tkConstructor, tkParams,
-      tkDestructor, tkNamespace, tkClass, tkOperator] then
+      tkDestructor, tkOperator, tkNamespace, tkClass, tkOperator] then
     begin
       Push(Result);
     end;

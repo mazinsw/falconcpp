@@ -312,7 +312,7 @@ begin
       PrototypeList.AddObject(S, Item.Items[I]);
       Continue;
     end;
-    if ((Item.Items[I].Token in [tkFunction, tkConstructor, tkDestructor]) and
+    if ((Item.Items[I].Token in [tkFunction, tkConstructor, tkDestructor, tkOperator]) and
       (Pos('static', Item.Items[I].Flag) = 0)) then
     begin
       S := GetFuncProtoTypes(Item.Items[I]);

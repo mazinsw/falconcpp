@@ -543,7 +543,7 @@ begin
     if FVarConstList.SearchToken(S, ScopeFlag, Item, SelStart,
       AdvanceAfterSelStart, Mode) then
       Exit;
-  if HasOneToken([tkPrototype, tkFunction, tkConstructor, tkDestructor], Mode) then
+  if HasOneToken([tkPrototype, tkFunction, tkConstructor, tkDestructor, tkOperator], Mode) then
     if FFuncObjList.SearchToken(S, ScopeFlag, Item, SelStart, AdvanceAfterSelStart,
       Mode) then
       Exit;
@@ -1281,7 +1281,7 @@ begin
           ScopeFlag := Copy(ScopeFlag, 1, Length(Fields) - 2);
       // input is an class function into namespace
       if SaveScope.SearchToken(Input, ScopeFlag, Scope, 0, True, [tkFunction,
-        tkConstructor, tkDestructor]) then
+        tkConstructor, tkDestructor, tkOperator]) then
         SaveScope := Scope;
     end;
     ScopeSelStart := Scope.SelStart;
@@ -1377,7 +1377,7 @@ begin
 
   //Skip token haven't a Ancestor type
   if not (Token.Token in [tkDefine, tkVariable, tkTypeStruct, tkTypeUnion,
-    tkTypedef, tkPrototype, tkFunction]) then
+    tkTypedef, tkPrototype, tkFunction, tkOperator]) then
     Exit;
 
   //searched filepath
@@ -1394,7 +1394,7 @@ begin
     begin
       Result := True;
       if not (Token.Token in [tkDefine, tkVariable, tkTypeStruct, tkTypeUnion,
-        tkTypedef, tkPrototype, tkFunction]) then
+        tkTypedef, tkPrototype, tkFunction, tkOperator]) then
         Break;
     end;
   end;
@@ -1725,7 +1725,7 @@ begin
       end;
     end
     //'type var->' or function()->
-    else if (Token.Token in [tkFunction, tkPrototype, tkVariable]) then
+    else if (Token.Token in [tkFunction, tkPrototype, tkOperator, tkVariable]) then
     begin
       //int a, char b, ...
       if StringIn(GetVarType(Token.Flag), ReservedTypes) then
@@ -1848,7 +1848,7 @@ begin
     ShowClassFunction := True;
     if not (Token.Items[I].Token in [tkEnumItem, tkEnum, tkTypeEnum]) then
     begin
-      if (Token.Items[I].Token in [tkScope, tkUsing]) or
+      if (Token.Items[I].Token in [tkScope, tkUsing, tkOperator]) or
         ((Token.Items[I].Level > 0) and not IncludeParams) then
         Continue;
       if Token.Items[I].Token in [tkFunction, tkConstructor, tkDestructor] then

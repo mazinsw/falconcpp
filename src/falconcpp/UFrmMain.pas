@@ -71,6 +71,10 @@ const
   VK_OEM_PLUS = 187;
   {$EXTERNALSYM VK_OEM_MINUS}
   VK_OEM_MINUS = 189;
+  {$EXTERNALSYM VK_OEM_5}
+  VK_OEM_5 = 220;
+  {$EXTERNALSYM VK_OEM_6}
+  VK_OEM_6 = 221;
 
 type
   TSearchItem = record
@@ -498,6 +502,11 @@ type
       var Command: TSynEditorCommand; var AChar: char; Data: pointer);
     procedure TextEditorScroll(Sender: TObject; ScrollBar: TScrollBarKind);
     procedure TextEditorClick(Sender: TObject);
+    procedure TextLinesDeleted(Sender: TObject; Index: Integer;
+      Count: integer);
+    procedure TextLinesInserted(Sender: TObject; Index: Integer;
+      Count: integer);
+
     procedure TimerStartUpdateTimer(Sender: TObject);
     procedure UpdateDownloadFinish(Sender: TObject;  State: TDownloadState;
       Canceled: Boolean);
@@ -807,6 +816,8 @@ type
     function SearchHeaderFile(SourceFile: TSourceFile;
       var HdrFile: TSourceFile; var HdrFileName: string): Boolean;
     procedure UpdateEditorZoom;
+    function InternalMessageBox(Text, Caption: string;
+      uType: UINT; Handle: HWND = 0): Integer;
   public
     { Public declarations }
     LastSearch: TSearchItem;
@@ -1486,7 +1497,7 @@ begin
   end;
   if not DirectoryExists(Path) and (List.Count = 0) then
   begin
-    MessageBox(0, PChar(STR_FRM_MAIN[46]), 'Falcon C++',
+    InternalMessageBox(PChar(STR_FRM_MAIN[46]), 'Falcon C++',
       MB_ICONEXCLAMATION);
   end
   else
@@ -1527,7 +1538,7 @@ begin
     if (ProjProp.Modified or (not ProjProp.Saved and not ProjProp.IsNew) or
       ProjProp.FilesChanged or ProjProp.SomeFileChanged) then
     begin
-      R := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[10],
+      R := InternalMessageBox(PChar(Format(STR_FRM_MAIN[10],
         [ExtractFileName(ProjProp.FileName)])), 'Falcon C++',
         MB_YESNOCANCEL + MB_ICONINFORMATION);
       case R of
@@ -2052,7 +2063,7 @@ begin
     end;
 
     if not (Token.Items[I].Token in [tkParams, tkScope, tkFunction,
-      tkConstructor, tkDestructor, tkPrototype]) then
+      tkConstructor, tkDestructor, tkPrototype, tkOperator]) then
     begin
       FillTreeView(Node, Token.Items[I], True);
     end;
@@ -2362,6 +2373,7 @@ end;
 
 procedure TFrmFalconMain.FileOpenClick(Sender: TObject);
 begin
+  PageControlEditor.CancelDragging;
   if OpenDlg.Execute then
   begin
     IsLoading := True;
@@ -2598,7 +2610,7 @@ begin
       FileName := FileProp.Name
     else
       FileName := FileProp.FileName;
-    I := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[10], [
+    I := InternalMessageBox(PChar(Format(STR_FRM_MAIN[10], [
       FileName])), 'Falcon C++',
         MB_YESNOCANCEL + MB_ICONINFORMATION);
     case I of
@@ -2706,6 +2718,7 @@ begin
         end;
     end;
     Options := Options + [ofOverwritePrompt];
+    PageControlEditor.CancelDragging;
     if not Execute then
       Exit;
     if (ProjProp.FileType = FILE_TYPE_UNKNOW) then
@@ -3309,9 +3322,9 @@ begin
       if ProjProp.Modified or (not ProjProp.Saved and not ProjProp.IsNew) or
         ProjProp.FilesChanged or ProjProp.SomeFileChanged then
       begin //modified
-        I := MessageBox(ParentHandle, PChar(Format(STR_FRM_MAIN[10],
+        I := InternalMessageBox(PChar(Format(STR_FRM_MAIN[10],
           [ExtractFileName(ProjProp.FileName)])), 'Falcon C++',
-          MB_YESNOCANCEL + MB_ICONINFORMATION);
+          MB_YESNOCANCEL + MB_ICONINFORMATION, ParentHandle);
         case I of
           mrYes:
             begin
@@ -3336,8 +3349,8 @@ begin
         Msg := STR_FRM_MAIN[53]
       else
         Msg := STR_FRM_MAIN[21];
-      I := MessageBox(ParentHandle, PChar(Format(Msg, [FileProp.Name])), 'Falcon C++',
-        MB_YESNOCANCEL + MB_ICONEXCLAMATION);
+      I := InternalMessageBox(PChar(Format(Msg, [FileProp.Name])), 'Falcon C++',
+        MB_YESNOCANCEL + MB_ICONEXCLAMATION, ParentHandle);
       if I <> mrYes then
         Exit;
     end;
@@ -3387,16 +3400,16 @@ begin
           Msg := STR_FRM_MAIN[52]
         else
           Msg := STR_FRM_MAIN[20];
-        I := MessageBox(ParentHandle, PChar(Format(Msg, [FileProp.Name])), 'Falcon C++',
-          MB_YESNO + MB_ICONQUESTION);
+        I := InternalMessageBox(PChar(Format(Msg, [FileProp.Name])), 'Falcon C++',
+          MB_YESNO + MB_ICONQUESTION, ParentHandle);
         if I <> mrYes then
           Exit;
       end;
       if FileProp.Modified and FileProp.Saved then
       begin //modified
-        I := MessageBox(ParentHandle, PChar(Format(STR_FRM_MAIN[10],
+        I := InternalMessageBox(PChar(Format(STR_FRM_MAIN[10],
           [ExtractFileName(FileProp.FileName)])), 'Falcon C++',
-          MB_YESNO + MB_ICONINFORMATION);
+          MB_YESNO + MB_ICONINFORMATION, ParentHandle);
         case I of
           mrYes: FileProp.Save;
         end; //case
@@ -3408,8 +3421,8 @@ begin
         Msg := STR_FRM_MAIN[53]
       else
         Msg := STR_FRM_MAIN[21];
-      I := MessageBox(ParentHandle, PChar(Format(Msg, [FileProp.Name])), 'Falcon C++',
-        MB_YESNOCANCEL + MB_ICONEXCLAMATION);
+      I := InternalMessageBox(PChar(Format(Msg, [FileProp.Name])), 'Falcon C++',
+        MB_YESNOCANCEL + MB_ICONEXCLAMATION, ParentHandle);
       if I <> mrYes then
         Exit;
     end;
@@ -3867,9 +3880,9 @@ procedure TFrmFalconMain.CompilerCmdFinish(Sender: TObject; const FileName,
   Params: string; ConsoleOut: TStrings; ExitCode: Integer);
 var
   Item: TListItem;
-  Temp, capt: string;
+  Temp, capt, TimeStr: string;
   RowSltd: Boolean;
-  I: Integer;
+  I, W: Integer;
   CompMessages: TStrings;
   Msg: TMessageItem;
 begin
@@ -3879,8 +3892,11 @@ begin
   CompMessages := ParseResult(ConsoleOut);
   if (ExitCode = 0) then
   begin
-    StatusBar.Panels.Items[2].Caption := Format(STR_FRM_MAIN[39],
+    TimeStr := Format(STR_FRM_MAIN[39],
       [GetTickTime(BuildTime, '%d:%2d:%2d:%d')]);
+    StatusBar.Panels.Items[2].Caption := TimeStr;
+    W := Canvas.TextWidth(TimeStr) + 20 + ImgListMenus.Width + 10;
+    StatusBar.Panels.Items[2].Size := Max(W, 200);
     StatusBar.Panels.Items[2].ImageIndex := 32;
     if (CompMessages.Count > 0) then
     begin
@@ -4225,7 +4241,7 @@ begin
       References := True;
       if Pos(LowerCase(InitialDir), LowerCase(Files.Strings[0])) <> 1 then
       begin
-        if MessageBox(Self.Handle, 'Copy files to project?', 'Falcon C++',
+        if InternalMessageBox('Copy files to project?', 'Falcon C++',
           MB_ICONQUESTION + MB_YESNO + MB_DEFBUTTON2) = IDYES then
         begin
           References := False;
@@ -4496,7 +4512,7 @@ begin
         S := S + #13#10 + tmp;
       Inc(C);
     end;
-    MessageBox(Handle, PChar(S), 'Falcon C++', MB_OK);
+    InternalMessageBox(PChar(S), 'Falcon C++', MB_OK);
   end;
 end;
 
@@ -4600,7 +4616,7 @@ begin
   begin
     if Assigned(Token.Parent) and
       (Token.Parent.Token in [tkParams, tkFunction, tkPrototype,
-      tkConstructor]) then
+      tkConstructor, tkOperator]) then
     begin
       Token := Token.Parent;
       if (Token.Token = tkParams) and Assigned(Token.Parent) then
@@ -5026,7 +5042,7 @@ begin
       end;
     end;
     IncludeList.Free;
-    MessageBox(Handle, PChar(Format(STR_FRM_MAIN[34], [S])), 'Falcon C++',
+    InternalMessageBox(PChar(Format(STR_FRM_MAIN[34], [S])), 'Falcon C++',
       MB_ICONEXCLAMATION);
   end
   else
@@ -5116,8 +5132,13 @@ begin
     Sheet.Memo.MoveSelectionUp
   // move code down
   else if ([ssCtrl, ssShift] = Shift) and (Key = VK_DOWN) then
-    Sheet.Memo.MoveSelectionDown;
-
+    Sheet.Memo.MoveSelectionDown
+  // fold current
+  else if ([ssCtrl, ssShift] = Shift) and (Key = VK_OEM_5) then
+    Sheet.Memo.CollapseCurrent
+  // unfold current
+  else if ([ssCtrl, ssShift] = Shift) and (Key = VK_OEM_6) then
+    Sheet.Memo.UncollapseLine(Sheet.Memo.GetRealLineNumber(Sheet.Memo.CaretY));
 end;
 
 procedure TFrmFalconMain.TextEditorKeyPress(Sender: TObject;
@@ -5366,19 +5387,8 @@ end;
 
 procedure TFrmFalconMain.TextEditorCommandProcessed(Sender: TObject;
   var Command: TSynEditorCommand; var AChar: char; Data: pointer);
-var
-  sheet: TSourceFileSheet;
-  fprop: TSourceFile;
-  RealLine: Integer;
 begin
-  if not GetActiveSheet(sheet) then
-    Exit;
-  fprop := sheet.SourceFile;
-  if Command = ecLineBreak then
-  begin
-    RealLine := Sheet.Memo.GetRealLineNumber(sheet.Memo.CaretY);
-    fprop.Breakpoint.MoveBy(RealLine, 1);
-  end;
+//
 end;
 
 procedure TFrmFalconMain.TextEditorScroll(Sender: TObject; ScrollBar: TScrollBarKind);
@@ -5392,6 +5402,31 @@ end;
 procedure TFrmFalconMain.TextEditorClick(Sender: TObject);
 begin
   CodeCompletion.CancelCompletion;
+end;
+
+procedure TFrmFalconMain.TextLinesDeleted(Sender: TObject; Index,
+  Count: integer);
+var
+  LineBegin, LineEnd: Integer;
+  sheet: TSourceFileSheet;
+begin
+  if not GetActiveSheet(sheet) or (sheet.SourceFile.Breakpoint.Count = 0) then
+    Exit;
+  LineBegin := TSynEditEx(Sender).GetRealLineNumber(Index + 1);
+  LineEnd := TSynEditEx(Sender).GetRealLineNumber(Index + Count);
+  sheet.SourceFile.Breakpoint.DeleteFrom(LineBegin, LineEnd);
+end;
+
+procedure TFrmFalconMain.TextLinesInserted(Sender: TObject; Index,
+  Count: integer);
+var
+  LineBegin: Integer;
+  sheet: TSourceFileSheet;
+begin
+  if not GetActiveSheet(sheet) or (sheet.SourceFile.Breakpoint.Count = 0) then
+    Exit;
+  LineBegin := TSynEditEx(Sender).GetRealLineNumber(Index + 1);
+  sheet.SourceFile.Breakpoint.MoveBy(LineBegin, Count);
 end;
 
 procedure TFrmFalconMain.TextEditorGutterClick(Sender: TObject;
@@ -6512,7 +6547,7 @@ begin
     if Execute then
     begin
       if not ImportDevCppProject(FileName, Proj) then
-        MessageBox(Self.Handle, PChar(Format(STR_FRM_MAIN[47], ['Dev-C++'])),
+        InternalMessageBox(PChar(Format(STR_FRM_MAIN[47], ['Dev-C++'])),
           'Falcon C++', MB_ICONEXCLAMATION)
       else
         ParseProjectFiles(Proj);
@@ -6532,7 +6567,7 @@ begin
     if Execute then
     begin
       if not ImportCodeBlocksProject(FileName, Proj) then
-        MessageBox(Self.Handle,
+        InternalMessageBox(
           PChar(Format(STR_FRM_MAIN[47], ['Code::Blocks'])), 'Falcon C++',
           MB_ICONEXCLAMATION)
       else
@@ -6553,7 +6588,7 @@ begin
     if Execute then
     begin
       if not ImportMSVCProject(FileName, Proj) then
-        MessageBox(Self.Handle,
+        InternalMessageBox(
           PChar(Format(STR_FRM_MAIN[47], ['MS Visual C++'])), 'Falcon C++',
           MB_ICONEXCLAMATION)
       else
@@ -7223,7 +7258,7 @@ begin
   begin
     Token := TTokenClass(ParamsList.Objects[I]);
     if not (Token.Token in [tkConstructor, tkFunction, tkPrototype,
-      tkTypedefProto]) then
+      tkTypedefProto, tkOperator]) then
     begin
       ParamsList.Delete(I);
       Continue;
@@ -7948,7 +7983,7 @@ end;
 
 function TFrmFalconMain.ShowPromptOverrideFile(const FileName: string): Boolean;
 begin
-  Result := MessageBox(FrmFalconMain.Handle, PChar(Format(STR_FRM_MAIN[54],
+  Result := InternalMessageBox(PChar(Format(STR_FRM_MAIN[54],
     [FileName])), 'Falcon C++', MB_ICONWARNING + MB_YESNOCANCEL) = IDYES;
 end;
 
@@ -8313,6 +8348,7 @@ var
 begin
   if not GetActiveSheet(sheet) then
     Exit;
+  PageControlEditor.CancelDragging;
   if PrintDialog.Execute then
   begin
     EditorPrint.Highlighter := sheet.Memo.Highlighter;
@@ -8616,12 +8652,12 @@ begin
       [tkNamespace], 0) then
     begin
       if not Token.SearchToken(ScopeToken.Name, FuncScope, Token, 0, True,
-        [tkFunction, tkConstructor, tkDestructor]) then
+        [tkFunction, tkConstructor, tkDestructor, tkOperator]) then
         Exit;
     end
     // search implementation function
     else if not ToTokenFile.SearchToken(ScopeToken.Name, ScopeFlag, Token, 0, True,
-      [tkFunction, tkConstructor, tkDestructor]) then
+      [tkFunction, tkConstructor, tkDestructor, tkOperator]) then
       Exit;
     Token := GetTokenByName(Token, 'Scope', tkScope);
     // only function implementation
@@ -8632,7 +8668,7 @@ begin
   begin
     // only function
     if (ScopeToken = nil) or not (ScopeToken.Token in [tkFunction,
-      tkConstructor, tkDestructor]) and
+      tkConstructor, tkDestructor, tkOperator]) and
       (GetTokenByName(ScopeToken, 'Scope', tkScope) <> nil) then
       Exit;
     // search scope
@@ -8666,7 +8702,7 @@ begin
   if (SourceFile.Project.FileType <> FILE_TYPE_PROJECT) or
     (SourceFile.Node.Parent = nil) then
     Exit;
-  I := MessageBox(Handle, PChar(Format(STR_FRM_MAIN[34] + #10 + STR_FRM_MAIN[43],
+  I := InternalMessageBox(PChar(Format(STR_FRM_MAIN[34] + #10 + STR_FRM_MAIN[43],
     [FileName])), 'Falcon C++', MB_ICONEXCLAMATION + MB_YESNOCANCEL);
   if I <> IDYES then
     Exit;
@@ -8743,7 +8779,7 @@ begin
       // header file not found and can't create a header file out of project
       if CurrentSourceFile is TProjectFile then
       begin
-        MessageBox(Handle, PChar(Format(STR_FRM_MAIN[34], [OtherFileName])),
+        InternalMessageBox(PChar(Format(STR_FRM_MAIN[34], [OtherFileName])),
           'Falcon C++', MB_ICONINFORMATION);
         Exit;
       end;
@@ -8769,7 +8805,7 @@ begin
       // source file not found and can't create a source file out of project
       if CurrentSourceFile is TProjectFile then
       begin
-        MessageBox(Handle, PChar(Format(STR_FRM_MAIN[34], [OtherFileName])),
+        InternalMessageBox(PChar(Format(STR_FRM_MAIN[34], [OtherFileName])),
           'Falcon C++', MB_ICONINFORMATION);
         Exit;
       end;
@@ -8978,6 +9014,22 @@ begin
   sheet.Memo.ToggleLineComment;
 end;
 
+function TFrmFalconMain.InternalMessageBox(Text, Caption: string;
+  uType: UINT; Handle: HWND): Integer;
+var
+  CurrentHandle: HWND;
+begin
+  CurrentHandle := Handle;
+  if CurrentHandle = 0 then
+  begin
+    CurrentHandle := Self.Handle;
+    if SplashScreen.Showing then
+      CurrentHandle := SplashScreen.Handle;
+  end;
+  PageControlEditor.CancelDragging;
+  Result := MessageBox(CurrentHandle, PChar(Text), PChar(Caption), uType);
+end;
+
 procedure TFrmFalconMain.CheckIfFilesHasChanged;
 var
   FileProp: TSourceFile;
@@ -8995,7 +9047,7 @@ begin
       if FileProp.FileChangedInDisk then
       begin
         FileName := FileProp.FileName;
-        if MessageBox(Handle, PChar(FileName +
+        if InternalMessageBox(PChar(FileName +
           #13#13 + STR_FRM_MAIN[49]), 'Falcon C++',
           MB_ICONQUESTION or MB_YESNO) = IDYES then
         begin
@@ -9293,7 +9345,7 @@ begin
   // implementation on same file
   { TODO -oMazin -c : Search with scope 04/05/2013 21:20:23 }
   if not CurrentTokenFile.SearchToken(ScopeToken.Name, ScopeFlag, Token, ScopeToken.SelStart,
-    True, [tkFunction, tkConstructor, tkDestructor]) then
+    True, [tkFunction, tkConstructor, tkDestructor, tkOperator]) then
   begin
     // search on source file
     SrcFile := nil;
@@ -9303,7 +9355,7 @@ begin
     if SrcTokenFile = nil then
       Exit;
     if not SrcTokenFile.SearchToken(ScopeToken.Name, ScopeFlag, Token, 0, True,
-      [tkFunction, tkConstructor, tkDestructor]) then
+      [tkFunction, tkConstructor, tkDestructor, tkOperator]) then
       Exit;
   end;
   // only function implementation
@@ -9359,7 +9411,7 @@ begin
     ScopeToken := ScopeToken.Parent;
   // only class, struct, union or class function
   if not (ScopeToken.Token in [TkFunction, tkPrototype, tkConstructor,
-    tkDestructor, tkClass, tkStruct, tkUnion]) then
+    tkDestructor, tkOperator, tkClass, tkStruct, tkUnion]) then
     Exit;
   { TODO -oMazin -c : get all parent scope 04/05/2013 21:17:55 }
   //get parent of Token
@@ -9395,7 +9447,7 @@ begin
         // source file not found and can't create a source file out of project
         if CurrentSrcFile is TProjectFile then
         begin
-          MessageBox(Handle, PChar(Format(STR_FRM_MAIN[34], [SrcFileName])),
+          InternalMessageBox(PChar(Format(STR_FRM_MAIN[34], [SrcFileName])),
             'Falcon C++', MB_ICONINFORMATION);
           Exit;
         end;
@@ -9448,7 +9500,7 @@ begin
         // header file not found and can't create a header file out of project
         if CurrentSrcFile is TProjectFile then
         begin
-          MessageBox(Handle, PChar(Format(STR_FRM_MAIN[34], [SrcFileName])),
+          InternalMessageBox(PChar(Format(STR_FRM_MAIN[34], [SrcFileName])),
             'Falcon C++', MB_ICONINFORMATION);
           Exit;
         end;
@@ -10097,7 +10149,6 @@ begin
   WatchList.Clear;
   TreeViewOutline.Images := ImgListOutLine;
   TSOutline.Caption := STR_FRM_MAIN[3];
-  //AddMessage('gdb', 'ExitCode', 'ExitCode: ' + IntToStr(ExitCode), 0, 0, 0, mitCompiler);
   if GetActiveSheet(sheet) then
   begin
     prop := Sheet.SourceFile;

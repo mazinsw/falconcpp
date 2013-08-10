@@ -340,7 +340,7 @@ begin
     if (Items[I].SelStart > SelStart) and not (Items[I].Token in [tkTypeStruct,
       tkTypeUnion, tkTypeEnum]) then
       Exit;
-    if (Items[I].Token in [tkClass, tkStruct, tkFunction, tkConstructor,
+    if (Items[I].Token in [tkClass, tkStruct, tkFunction, tkOperator, tkConstructor,
       tkDestructor, tkNamespace, tkUnion, tkEnum, tkTypeEnum, tkTypeStruct,
         tkTypeUnion]) then
     begin
@@ -389,7 +389,7 @@ begin
         Result := True;
       end;
     end;
-    if Items[I].Token in [tkFunction, tkPrototype, tkParams, tkScopeClass,
+    if Items[I].Token in [tkFunction, tkPrototype, tkOperator, tkParams, tkScopeClass,
       tkClass, tkStruct, tkUnion, tkEnum, tkConstructor, tkDestructor,
       tkNamespace, tkTypeStruct, tkTypeUnion, tkTypeEnum] then
     begin
@@ -415,7 +415,7 @@ var
   scope: TTokenClass;
   Mode: TTokenSearchMode;
 begin
-  Mode := [tkDestructor, tkConstructor];
+  Mode := [tkDestructor, tkConstructor, tkOperator];
   if OnlyPrototype then
     Mode := Mode + [tkPrototype]
   else
@@ -532,7 +532,7 @@ begin
       Result := True;
       if not AllFunctions then
         Exit
-      else if (Items[I].Token in [tkConstructor, tkFunction, tkPrototype,
+      else if (Items[I].Token in [tkConstructor, tkFunction, tkPrototype, tkOperator,
         tkTypedefProto]) then
         ListAll.AddObject('', Item);
     end;
@@ -559,7 +559,7 @@ begin
   PrevFunc := nil;
   for I := 0 to Count - 1 do
   begin
-    if (Items[I].Token in [tkDestructor, tkConstructor, tkFunction]) then
+    if (Items[I].Token in [tkDestructor, tkConstructor, tkFunction, tkOperator]) then
     begin
       scope := GetTokenByName(Items[I], 'Scope', tkScope);
       if Assigned(scope) then
@@ -598,7 +598,7 @@ begin
   Result := False;
   for I := 0 to Count - 1 do
   begin
-    if (Items[I].Token in [tkDestructor, tkConstructor, tkFunction]) then
+    if (Items[I].Token in [tkDestructor, tkConstructor, tkFunction, tkOperator]) then
     begin
       scope := GetTokenByName(Items[I], 'Scope', tkScope);
       if Assigned(scope) and (SelStart < scope.SelStart) then
@@ -633,14 +633,14 @@ var
   S1, S2: string;
 begin
   Result := True;
-  if Item.Token in [tkFunction, tkPrototype, tkConstructor, tkDestructor] then
+  if Item.Token in [tkFunction, tkPrototype, tkConstructor, tkDestructor, tkOperator] then
   begin
     S1 := GetFuncProtoTypes(Item);
     for I := 0 to FList.Count - 1 do
     begin
       Token := TTokenClass(FList.Items[I]);
       if not (Item.Token in [tkFunction, tkPrototype, tkConstructor,
-        tkDestructor]) then
+        tkDestructor, tkOperator]) then
         Continue;
       if (Token.Name <> Item.Name) or (Token.Flag <> Item.Flag) then
         Continue;

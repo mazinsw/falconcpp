@@ -136,7 +136,7 @@ type
 
 const
   TreeTokens = [tkClass, tkTypeStruct, tkStruct, tkUnion, tkTypeUnion];
-  RetTypeTokens = [tkVariable, tkFunction, tkPrototype];
+  RetTypeTokens = [tkVariable, tkFunction, tkPrototype, tkOperator];
 
 implementation
 

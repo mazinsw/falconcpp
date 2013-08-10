@@ -109,7 +109,7 @@ begin
       Add('static_cast', 'static_cast conversion', 'static_cast<new_type>(expression)', 'static_cast<|>();');
     end;
   end;
-  if Scope in [tkFunction, tkConstructor, tkDestructor] then
+  if Scope in [tkFunction, tkConstructor, tkDestructor, tkOperator] then
   begin
     if (Filter = []) then
     begin
@@ -244,7 +244,7 @@ begin
       Add('default', '', '', '');
     end;
   end;
-  if not (Scope in [tkFunction, tkConstructor, tkDestructor]) and
+  if not (Scope in [tkFunction, tkConstructor, tkDestructor, tkOperator]) and
    (CompilerType = COMPILER_CPP) then
   begin
     if (Filter = []) then

@@ -102,6 +102,7 @@ object FrmEditorOptions: TFrmEditorOptions
           Width = 81
           Height = 21
           ItemHeight = 13
+          MaxLength = 10
           TabOrder = 5
           Text = '1024'
           OnChange = EditorOptionsChanged
@@ -115,6 +116,7 @@ object FrmEditorOptions: TFrmEditorOptions
           Height = 21
           ItemHeight = 13
           ItemIndex = 1
+          MaxLength = 2
           TabOrder = 6
           Text = '4'
           OnChange = EditorOptionsChanged

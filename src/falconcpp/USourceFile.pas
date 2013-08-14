@@ -2403,6 +2403,7 @@ begin
     SynMemo.Gutter.ShowLineNumbers := ShowLineNumber;
     SynMemo.Gutter.Gradient := GradientGutter;
     SynMemo.Gutter.AutoSize := True;
+    SynMemo.Gutter.Cursor := crReverseArrow;
     //-------------- Colors -------------------------//
 
     FrmFalconMain.SintaxList.Selected.UpdateEditor(SynMemo);

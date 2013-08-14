@@ -130,6 +130,7 @@ function GetLanguagesList: TStrings;
 function GetLanguageName(LangID: Word): string;
 function IsForeground(Handle: HWND): Boolean;
 function BringUpApp(const ClassName: string): Boolean;
+function GetReverseArrowCursor: HCURSOR;
 function IsSubMenu(Value: string): Boolean;
 function GetSubMenu(Value: string): string;
 function FindFiles(Search: string; Finded: TStrings): Boolean; overload;
@@ -1068,6 +1069,51 @@ begin
       ShowWindow(Handle, SW_RESTORE);
     Result := True;
   end;
+end;
+
+procedure FlipBitmap(bitmap: HBITMAP; width: Integer; height: Integer);
+var
+  ahdc: HDC;
+  prevBmp: HGDIOBJ;
+begin
+	ahdc := CreateCompatibleDC(0);
+	if ahdc <> 0 then
+  begin
+		prevBmp := SelectObject(ahdc, bitmap);
+		StretchBlt(ahdc, width - 1, 0, -width, height, ahdc, 0, 0, width, height, SRCCOPY);
+		SelectObject(ahdc, prevBmp);
+		DeleteDC(ahdc);
+	end;
+end;
+
+function GetReverseArrowCursor: HCURSOR;
+var
+  info: ICONINFO;
+  crPlatformLock: TRTLCriticalSection;
+  bmp: BITMAP;
+  revArrow: HCURSOR;
+begin
+  InitializeCriticalSection(crPlatformLock);
+  EnterCriticalSection(crPlatformLock);
+	Result := LoadCursor(0, IDC_ARROW);
+  if GetIconInfo(Result, info) then
+  begin
+			if GetObject(info.hbmMask, SizeOf(bmp), @bmp) <> 0 then
+      begin
+				FlipBitmap(info.hbmMask, bmp.bmWidth, bmp.bmHeight);
+				if info.hbmColor <> 0 then
+					FlipBitmap(info.hbmColor, bmp.bmWidth, bmp.bmHeight);
+				info.xHotspot := Cardinal(bmp.bmWidth) - 1 - info.xHotspot;
+				revArrow := CreateIconIndirect(info);
+				if revArrow <> 0 then
+					Result := revArrow;
+			end;
+			DeleteObject(info.hbmMask);
+			if info.hbmColor <> 0 then
+				DeleteObject(info.hbmColor);
+		end;
+	LeaveCriticalSection(crPlatformLock);
+  DeleteCriticalSection(crPlatformLock);
 end;
 
 function IsSubMenu(Value: string): Boolean;

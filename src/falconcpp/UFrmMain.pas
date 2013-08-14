@@ -27,6 +27,7 @@ uses
   PluginManager, PluginServiceManager;
 
 const
+  crReverseArrow = TCursor(-99);
   MAX_OUTLINE_TREE_IMAGES = 29;
   TreeImages: array[0..MAX_OUTLINE_TREE_IMAGES - 1] of Integer = (
     0,  // Include List
@@ -1433,6 +1434,7 @@ begin
 
   SplashScreen.TextOut(55, 300, STR_FRM_MAIN[25]);
   Screen.Cursors[crHandPoint] := LoadCursor(0, IDC_HAND);
+  Screen.Cursors[crReverseArrow] := GetReverseArrowCursor;
   FTemplates := TTemplates.Create;
   Template := TTemplate.Create;
   Template.Sheet := 'Basic';

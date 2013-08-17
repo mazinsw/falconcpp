@@ -114,7 +114,6 @@ function BrowseDialog(Handle: HWND; const Title: string;
   var Directory: string): Boolean;
 function HumanToBool(Resp: string): Boolean;
 function BoolToHuman(Question: Boolean): string;
-function GetFullFileName(Name: string): string;
 
 function EditorGotoXY(Memo: TSynEditEx; X, Y: Integer): Boolean;
 function SearchSourceFile(FileName: string;
@@ -148,7 +147,7 @@ function IsNumber(Str: string): Boolean;
 
 implementation
 
-uses UFrmMain, ULanguages, UConfig, SynRegExpr, TokenUtils;
+uses UFrmMain, ULanguages, UConfig, SynRegExpr, TokenUtils, StrUtils;
 
 { ---------- Font Methods ---------- }
 
@@ -290,26 +289,30 @@ var
   I, J, K: Integer;
 begin
   List.Clear;
-  //find compilers
-  BaseDir := ExcludeTrailingPathDelimiter(GetEnvironmentVariable('MINGW_PATH'));
-  if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') then
+  //Falcon C++
+  BaseDir := ExtractFilePath(Application.ExeName) + 'MinGW';
+  if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
+    (findString(BaseDir, List) < 0) then
   begin
     List.Add(BaseDir);
     PathCompiler := BaseDir;
   end
   else
     PathCompiler := '';
-  //Falcon C++
-  BaseDir := ExtractFilePath(Application.ExeName) + 'MinGW';
-  if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
-    (findString(BaseDir, List) < 0) then
-    List.Add(BaseDir);
 
   ProgFiles := GetEnvironmentVariable('PROGRAMFILES');
   BaseDir := IncludeTrailingPathDelimiter(ProgFiles) + 'Falcon\MinGW';
   if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
     (findString(BaseDir, List) < 0) then
-    List.Add(BaseDir);
+  begin
+    if (PathCompiler = '') and (Pos('FALCON', UpperCase(BaseDir)) <> 0) then
+    begin
+      List.Insert(0, BaseDir);
+      PathCompiler := BaseDir;
+    end
+    else
+      List.Add(BaseDir);
+  end;
 
   //Code::Blocks
   BaseDir := ProgFiles + '\CodeBlocks\MinGW';
@@ -360,7 +363,15 @@ begin
     BaseDir := Temp2;
     if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
       (findString(BaseDir, List) < 0) then
-      List.Add(BaseDir);
+    begin
+      if (PathCompiler = '') and (Pos('FALCON', UpperCase(BaseDir)) <> 0) then
+      begin
+        List.Insert(0, BaseDir);
+        PathCompiler := BaseDir;
+      end
+      else
+        List.Add(BaseDir);
+    end;
     I := Pos('MINGW', Temp);
   end;
 
@@ -1542,14 +1553,6 @@ begin
     Result := 'Yes'
   else
     Result := 'No';
-end;
-
-function GetFullFileName(Name: string): string;
-var
-  MinGWPath: string;
-begin
-  MinGWPath := GetEnvironmentVariable('MINGW_PATH');
-  Result := MinGWPath + '\bin\' + Name;
 end;
 
 function EditorGotoXY(Memo: TSynEditEx; X, Y: Integer): Boolean;

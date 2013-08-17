@@ -953,15 +953,13 @@ procedure SetActiveCompiler(OldPath, Actpath: string;
   end;
 
 var
-  path, mingw_PathEnv: string;
+  path: string;
   UpdatePath: Boolean;
 begin
   Actpath := ExcludeTrailingPathDelimiter(Actpath);
   path := GetEnvironmentVariable('PATH');
-  mingw_PathEnv := GetEnvironmentVariable('MINGW_PATH');
   if (CompareText(OldPath, Actpath) = 0) and
-    (Pos(UpperCase(Actpath + '\bin'), UpperCase(path)) = 1) and
-    (CompareText(mingw_PathEnv, Actpath) = 0) then
+    (Pos(UpperCase(Actpath + '\bin'), UpperCase(path)) = 1) then
   begin
     Exit;
   end;
@@ -973,9 +971,6 @@ begin
     path := RemoveFromPath(path, Oldpath + '\bin');
     UpdatePath := True;
   end;
-  //add active to path
-  if CompareText(mingw_PathEnv, Actpath) <> 0 then
-    SetEnvironmentVariable('MINGW_PATH', PChar(Actpath));
   if Pos(UpperCase(Actpath + '\bin'), UpperCase(path)) <> 1 then
   begin
     path := RemoveFromPath(path, Actpath + '\bin');
@@ -8977,11 +8972,8 @@ begin
     sheet.Memo.BeginUpdate;
     caret := sheet.Memo.CaretXY;
     topLine := sheet.Memo.TopLine;
-    sheet.Memo.UncollapseAll;
     sheet.Memo.SelectAll;
-    sheet.Memo.LockFoldUpdate;
     sheet.Memo.SelText := Format(sheet.Memo.UnCollapsedLines.Text);
-    sheet.Memo.UnlockFoldUpdate;
     sheet.Memo.CaretXY := caret;
     sheet.Memo.TopLine := topLine;
     sheet.Memo.EndUpdate;

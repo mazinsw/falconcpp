@@ -77,6 +77,23 @@ begin
     Result := '"' + Result + '"';
 end;
 
+function SingleQuotedStr(const S: string): string;
+begin
+  Result := S;
+  if Pos(' ', Trim(S)) > 0 then
+    Result := '''' + Result + '''';
+end;
+
+function ConvertToUnixSlashes(const Path: string): string;
+var
+  i: Integer;
+begin
+  Result := Path;
+  for i := 1 to Length(Result) do
+    if Result[i] = '\' then
+      Result[i] := '/';
+end;
+
 {TMakefile}
 
 constructor TMakefile.Create;
@@ -131,8 +148,7 @@ function TMakefile.BuildMakefile: Integer;
 var
   Source, Resources, OutFile, Includes: TStrings;
   I, J: Integer;
-  S, Temp, Cop, EchoStr, IncludeHeaders: string;
-  ShowAnsiOBJS: Boolean;
+  S, Temp, Cop, EchoStr, IncludeHeaders, aTarget: string;
 begin
   Result := 0;
   EchoStr := '';
@@ -153,24 +169,19 @@ begin
     OutFile.Add('AR     = ar');
     OutFile.Add('RANLIB = ranlib');
   end;
-  ShowAnsiOBJS := False;
+  OutFile.Add('RM     = rm -f');
   if Source.Count > 0 then
   begin
     S := ChangeFileExt(Source.Strings[0], '.o');
-    if (ConvertAnsiToOem(S) <> S) or (Pos(' ', S) > 0) then
-      ShowAnsiOBJS := True;
-    S := EscapeString(ConvertAnsiToOem(S));
+    S := EscapeString(ConvertToUnixSlashes(S));
     if (Source.Count + Resources.Count) > 1 then
       OutFile.Add('OBJS   = ' + S + ' \')
     else
       OutFile.Add('OBJS   = ' + S);
-
     for I := 1 to Source.Count - 2 do
     begin
       S := ChangeFileExt(Source.Strings[I], '.o');
-      if (ConvertAnsiToOem(S) <> S) or (Pos(' ', S) > 0) then
-        ShowAnsiOBJS := True;
-      S := EscapeString(ConvertAnsiToOem(S));
+      S := EscapeString(ConvertToUnixSlashes(S));
       OutFile.Add('         ' + S + ' \');
     end;
     if Resources.Count = 1 then
@@ -178,81 +189,27 @@ begin
       if Source.Count > 1 then
       begin
         S := ChangeFileExt(Source.Strings[Source.Count - 1], '.o');
-        if (ConvertAnsiToOem(S) <> S) or (Pos(' ', S) > 0) then
-          ShowAnsiOBJS := True;
-        S := EscapeString(ConvertAnsiToOem(S));
+        S := EscapeString(ConvertToUnixSlashes(S));
         OutFile.Add('         ' + S + ' \');
       end;
       S := ChangeFileExt(Resources.Strings[0], '.res');
-      if (ConvertAnsiToOem(S) <> S) or (Pos(' ', S) > 0) then
-        ShowAnsiOBJS := True;
-      S := EscapeString(ConvertAnsiToOem(S));
+      S := EscapeString(ConvertToUnixSlashes(S));
       OutFile.Add('         ' + S);
     end
     else if Source.Count > 1 then
     begin
       S := ChangeFileExt(Source.Strings[Source.Count - 1], '.o');
-      if (ConvertAnsiToOem(S) <> S) or (Pos(' ', S) > 0) then
-        ShowAnsiOBJS := True;
-      S := EscapeString(ConvertAnsiToOem(S));
+      S := EscapeString(ConvertToUnixSlashes(S));
       OutFile.Add('         ' + S);
     end;
   end
   else if Resources.Count = 1 then
   begin
     S := ChangeFileExt(Resources.Strings[0], '.res');
-    if (ConvertAnsiToOem(S) <> S) or (Pos(' ', S) > 0) then
-      ShowAnsiOBJS := True;
-    S := EscapeString(ConvertAnsiToOem(S));
+    S := EscapeString(ConvertToUnixSlashes(S));
     OutFile.Add('OBJS   = ' + S);
   end;
   OutFile.Add('');
-
-  if ShowAnsiOBJS then
-  begin
-    if Source.Count > 0 then
-    begin
-      S := ChangeFileExt(Source.Strings[0], '.o');
-      S := DoubleQuotedStr(ConvertAnsiToOem(S));
-      if (Source.Count + Resources.Count) > 1 then
-        OutFile.Add('AOBJS  = ' + S + ' \')
-      else
-        OutFile.Add('AOBJS  = ' + S);
-
-      for I := 1 to Source.Count - 2 do
-      begin
-        S := ChangeFileExt(Source.Strings[I], '.o');
-        S := DoubleQuotedStr(ConvertAnsiToOem(S));
-        OutFile.Add('         ' + S + ' \');
-      end;
-      if Resources.Count = 1 then
-      begin
-        if Source.Count > 1 then
-        begin
-          S := ChangeFileExt(Source.Strings[Source.Count - 1], '.o');
-          S := DoubleQuotedStr(ConvertAnsiToOem(S));
-          OutFile.Add('         ' + S + ' \');
-        end;
-        S := ChangeFileExt(Resources.Strings[0], '.res');
-        S := DoubleQuotedStr(ConvertAnsiToOem(S));
-        OutFile.Add('         ' + S);
-      end
-      else if Source.Count > 1 then
-      begin
-        S := ChangeFileExt(Source.Strings[Source.Count - 1], '.o');
-        S := DoubleQuotedStr(ConvertAnsiToOem(S));
-        OutFile.Add('         ' + S);
-      end;
-    end
-    else if Resources.Count = 1 then
-    begin
-      S := ChangeFileExt(Resources.Strings[0], '.res');
-      S := DoubleQuotedStr(ConvertAnsiToOem(S));
-      OutFile.Add('OBJS   = ' + S);
-    end;
-    OutFile.Add('');
-  end;
-
   if Length(CompilerPath) > 0 then
   begin
     OutFile.Add(Trim('LIBS   = -L"' + CompilerPath + '\lib" ' + Libs));
@@ -267,23 +224,22 @@ begin
 
   if not Echo then
     EchoStr := '@';
-  S := 'build';
-  if CleanBefore or ForceClean then
-    S := 'clean-before ' + S;
+  aTarget := ConvertToUnixSlashes(Target);
+  S := EscapeString(aTarget);
+  Temp := S + ' clean';
   if CleanAfter then
-    S := S + ' clean-after';
+    Temp := Temp + ' clean-after';
+  OutFile.Add('.PHONY: ' + Temp);
+  OutFile.Add('');
   OutFile.Add('all: ' + S);
   OutFile.Add('');
-  if CleanBefore or ForceClean then
-  begin
-    OutFile.Add('clean-before:');
-    OutFile.Add(TabChar + EchoStr + 'rm -f $(OBJS)');
-    OutFile.Add('');
-  end;
+  OutFile.Add('clean:');
+  OutFile.Add(TabChar + EchoStr + '$(RM) $(OBJS) ' + S);
+  OutFile.Add('');
   if CleanAfter then
   begin
     OutFile.Add('clean-after:');
-    OutFile.Add(TabChar + EchoStr + 'rm -f $(OBJS)');
+    OutFile.Add(TabChar + EchoStr + '$(RM) $(OBJS)');
     OutFile.Add('');
   end;
   Cop := Trim(CompilerOptions);
@@ -291,37 +247,43 @@ begin
     Cop := Trim('-g ' + Cop);
   if Length(S) > 0 then
     Cop := Cop + ' ';
-  S := DoubleQuotedStr(ConvertAnsiToOem(Target));
-  OutFile.Add('build' + ': $(OBJS)');
+  if Pos(' ', aTarget) > 0 then
+    aTarget := '''$@'''
+  else
+    aTarget := '$@';
+  OutFile.Add(S + ': $(OBJS)');
   if CreateLibrary then
   begin
-    OutFile.Add(TabChar + EchoStr + '$(AR) rc ' + S + ' $(OBJS)');
-    OutFile.Add(TabChar + EchoStr + '$(RANLIB) ' + S);
+    OutFile.Add(TabChar + EchoStr + '$(AR) rc ' + aTarget + ' $(OBJS)');
+    OutFile.Add(TabChar + EchoStr + '$(RANLIB) ' + aTarget);
   end
   else
   begin
     Temp := ' $(OBJS) $(LIBS)';
-    if ShowAnsiOBJS then
-      Temp := ' $(AOBJS) $(LIBS)';
     if CompilerIsCpp then
-      OutFile.Add(TabChar + EchoStr + '$(CPP) ' + Cop + '-o ' + S + Temp)
+      OutFile.Add(TabChar + EchoStr + '$(CPP) ' + Cop + '-o ' + aTarget + Temp)
     else
-      OutFile.Add(TabChar + EchoStr + '$(CC) ' + Cop + '-o ' + S + Temp);
+      OutFile.Add(TabChar + EchoStr + '$(CC) ' + Cop + '-o ' + aTarget + Temp);
   end;
   OutFile.Add('');
 
   for I := 0 to Source.Count - 1 do
   begin
-    S := ChangeFileExt(Source.Strings[I], '.o');
-    S := ConvertAnsiToOem(S);
-    Temp := Source.Strings[I];
+    Temp := ConvertToUnixSlashes(Source.Strings[I]);
+    S := ChangeFileExt(Temp, '.o');
     IncludeHeaders := '';
     Includes := TStrings(Source.Objects[I]);
     for J := 0 to Includes.Count - 1 do
-      IncludeHeaders := IncludeHeaders + ' ' + DoubleQuotedStr(Includes.Strings[J]);
+      IncludeHeaders := IncludeHeaders + ' ' + EscapeString(ConvertToUnixSlashes(Includes.Strings[J]));
     OutFile.Add(EscapeString(S) + ': ' + EscapeString(Temp) + IncludeHeaders);
-    S := DoubleQuotedStr(S);
-    Temp := DoubleQuotedStr(ConvertAnsiToOem(Temp));
+    if Pos(' ', S) > 0 then
+      S := '''$@'''
+    else
+      S := '$@';
+    if Pos(' ', Temp) > 0 then
+      Temp := '''$<'''
+    else
+      Temp := '$<';
     if CompilerIsCpp then
       OutFile.Add(TabChar + EchoStr + '$(CPP) ' + Cop + '-c ' + Temp + ' -o ' + S + ' $(CFLAGS)')
     else
@@ -330,12 +292,11 @@ begin
   end;
   if Resources.Count = 1 then
   begin
-    S := ChangeFileExt(Resources.Strings[0], '.res');
-    S := ConvertAnsiToOem(S);
-    Temp := Resources.Strings[0];
+    Temp := ConvertToUnixSlashes(Resources.Strings[0]);
+    S := ChangeFileExt(Temp, '.res');
     OutFile.Add(EscapeString(S) + ': ' + EscapeString(Temp));
-    S := DoubleQuotedStr(S);
-    Temp := DoubleQuotedStr(ConvertAnsiToOem(Temp));
+    S := SingleQuotedStr(S);
+    Temp := SingleQuotedStr(Temp);
     OutFile.Add(TabChar + EchoStr + '$(WINDRES) -i ' + Temp + ' -J rc -o ' + S + ' -O coff');
     OutFile.Add('');
   end;

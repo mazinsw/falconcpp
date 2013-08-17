@@ -1089,7 +1089,7 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object CheckBoxBreakClosingHeadersBrackets: TCheckBox
             Left = 6
-            Top = 64
+            Top = 62
             Width = 259
             Height = 17
             Hint = 
@@ -1106,7 +1106,7 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object CheckBoxBreakElseIf: TCheckBox
             Left = 6
-            Top = 82
+            Top = 80
             Width = 339
             Height = 17
             Hint = 
@@ -1123,7 +1123,7 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object CheckBoxDontBreakComplex: TCheckBox
             Left = 6
-            Top = 154
+            Top = 152
             Width = 408
             Height = 17
             Hint = 
@@ -1139,7 +1139,7 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object CheckBoxDontBreakOneLineBlocks: TCheckBox
             Left = 6
-            Top = 136
+            Top = 134
             Width = 219
             Height = 17
             Hint = 'Don'#39't break one-line blocks.'
@@ -1151,7 +1151,7 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object CheckBoxConvToSpaces: TCheckBox
             Left = 6
-            Top = 172
+            Top = 170
             Width = 187
             Height = 17
             Hint = 
@@ -1168,7 +1168,7 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object CheckBoxAddBrackets: TCheckBox
             Left = 6
-            Top = 100
+            Top = 98
             Width = 235
             Height = 17
             Hint = 
@@ -1186,7 +1186,7 @@ object FrmEditorOptions: TFrmEditorOptions
           end
           object CheckBoxAddOneLineBrackets: TCheckBox
             Left = 6
-            Top = 118
+            Top = 116
             Width = 235
             Height = 17
             Hint = 

@@ -693,7 +693,10 @@ begin
     FSheet.Memo.LockFoldUpdate;
   Text.LoadFromFile(FileName);
   if (FSheet <> nil) and (FSheet.Memo.Lines = Text) then
+  begin
+    FSheet.Memo.Gutter.AutoSizeDigitCount(FSheet.Memo.UnCollapsedLines.Count);
     FSheet.Memo.UnlockFoldUpdate;
+  end;
 end;
 
 procedure TSourceFile.GetSubFiles(List: TStrings);
@@ -971,7 +974,7 @@ begin
   FCompilerType := COMPILER_CPP;
   FPropertyChanged := False;
   FCompilerPropertyChanged := False;
-  FCompilerPath := '$(MINGW_PATH)';
+  FCompilerPath := '';
 end;
 
 destructor TProjectBase.Destroy;
@@ -2110,8 +2113,8 @@ begin
       ExecParams := ExecParams + ' ' + Temp;
       Temp := DoubleQuotedStr(Target);
       ExecParams := ExecParams + ' -o ' + Temp;
-      ExecParams := Trim(ExecParams + ' -L"$(MINGW_PATH)\lib" ' + Libs);
-      ExecParams := Trim(ExecParams + ' -I"$(MINGW_PATH)\include" ' + Flags);
+      ExecParams := Trim(ExecParams + Libs);
+      ExecParams := Trim(ExecParams + Flags);
       MkRes := 0;
     end
     else
@@ -2144,6 +2147,12 @@ begin
       mk.CleanAfter := DeleteObjsAfter;
       mk.Echo := True;
       MkRes := mk.BuildMakefile;
+      if mk.CleanBefore or  mk.ForceClean then
+        ExecParams := ExecParams + ' clean all'
+      else
+        ExecParams := ExecParams + ' all';
+      if mk.CleanAfter then
+        ExecParams := ExecParams + ' clean-after';
       mk.Free;
     end;
     for I := 0 to Files.Count - 1 do

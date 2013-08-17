@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project>
+	<Libs Value=""/>
+	<Flags Value=""/>
+	<Target Value="libaccents and spaces íéóúâô.a"/>
+	<CommandLine Value=""/>
+	<CompilerOptions Value="-Wall -s"/>
+	<DeleteObjectsBefore Value="Yes"/>
+	<DeleteObjectsAfter Value="Yes"/>
+	<DeleteMakefileAfter Value="No"/>
+	<DeleteResourcesAfter Value="No"/>
+	<EnableTheme Value="No"/>
+	<RequiresAdmin Value="No"/>
+	<CompilerType Value="CPP"/>
+	<AppType Value="LIB"/>
+	<Files>
+		<File Name="source file íéóúâô.c"/>
+		<File Name="source file íéóúâô.h"/>
+		<Folder Name="folder space">
+			<File Name="source file íéóúâô2.c"/>
+		</Folder>
+	</Files>
+</Project>

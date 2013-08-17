@@ -364,7 +364,7 @@ Section "$(NAME_SecMinGW)" SecMinGW
   ;MinGW Packages
   File "..\..\res\Packages\mingw32-make 3.81.fpk"
   File "..\..\res\Packages\mingw-runtime 3.16.fpk"
-  File "..\..\res\Packages\binutils 2.19.1.fpk"
+  File "..\..\res\Packages\binutils 2.20.51.fpk"
   File "..\..\res\Packages\gdb 7.6.fpk"
   File "..\..\res\Packages\w32api 3.17.fpk"
   File "..\..\res\Packages\gcc-core 4.4.1.fpk"
@@ -376,14 +376,14 @@ Section "$(NAME_SecMinGW)" SecMinGW
   !insertmacro INST_PKG "gcc-core 4.4.1.fpk" "$(DESC_InstGCC_Core)"
   !insertmacro INST_PKG "gcc-g++ 4.4.1.fpk" "$(DESC_InstGCC_GPP)"
   !insertmacro INST_PKG "gdb 7.6.fpk" "$(DESC_InstGDB)"
-  !insertmacro INST_PKG "binutils 2.19.1.fpk" "$(DESC_InstBinutils)"
+  !insertmacro INST_PKG "binutils 2.20.51.fpk" "$(DESC_InstBinutils)"
   !insertmacro INST_PKG "mingw32-make 3.81.fpk" "$(DESC_InstMake)"
   !insertmacro INST_PKG "w32api 3.17.fpk" "$(DESC_InstW32API)"
   
   ;Delete installeds packages
   Delete "$INSTDIR\mingw32-make 3.81.fpk"
   Delete "$INSTDIR\mingw-runtime 3.16.fpk"
-  Delete "$INSTDIR\binutils 2.19.1.fpk"
+  Delete "$INSTDIR\binutils 2.20.51.fpk"
   Delete "$INSTDIR\gdb 7.6.fpk"
   Delete "$INSTDIR\w32api 3.17.fpk"
   Delete "$INSTDIR\gcc-core 4.4.1.fpk"
@@ -391,8 +391,7 @@ Section "$(NAME_SecMinGW)" SecMinGW
   
   
   DetailPrint "$(DESC_AdjEnvVar)"
-  NSIS_EnvSet::SetGlobalEnvironment "MINGW_PATH" "$INSTDIR\MinGW" 0
-  NSIS_EnvSet::AddVariableToPath "%MINGW_PATH%\bin"
+  NSIS_EnvSet::AddVariableToPath "$INSTDIR\MinGW\bin"
 
 SectionEnd
 !endif

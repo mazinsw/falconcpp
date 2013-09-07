@@ -11,6 +11,10 @@ glh_linear.h:180: warning: friend declaration 'bool glh::operator==(const glh::v
 glh_linear.h:180: note: (if this is not what you intended, make sure the function template has already been declared and add <> after the function name here) 
 InvMatrix.hpp:28: error: 'boost' has not been declared
 ..\problems\allocation\SA\main.cpp:38: error: 'AllocStateManager' is an inaccessible base of 'SA'
+NovoArquivo.cpp: In function `int main(int, char**)':
+NovoArquivo.cpp:7: error: `dsadsad' was not declared in this scope
+NovoArquivo.cpp:7: error: expected `;' before "printf"
+tmatrix.h:111: error: extra qualification 'TMatrix33::' on member 'inverse'
 
 already in use:
 %s: In function '%s':

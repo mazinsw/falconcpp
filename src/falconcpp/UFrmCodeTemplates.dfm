@@ -269,6 +269,28 @@ object FrmCodeTemplates: TFrmCodeTemplates
       OnDeletion = ListViewTemplatesDeletion
       OnSelectItem = ListViewTemplatesSelectItem
     end
+    object SynTemplates: TSynEdit
+      Left = 9
+      Top = 192
+      Width = 426
+      Height = 177
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Courier New'
+      Font.Style = []
+      TabOrder = 1
+      Gutter.Font.Charset = DEFAULT_CHARSET
+      Gutter.Font.Color = clWindowText
+      Gutter.Font.Height = -11
+      Gutter.Font.Name = 'Courier New'
+      Gutter.Font.Style = []
+      Gutter.RightOffset = 21
+      Highlighter = FrmFalconMain.CppHighligher
+      Lines.Strings = (
+        'SynTemplates')
+      ScrollBars = ssNone
+    end
   end
   object BtnOk: TButton
     Left = 377

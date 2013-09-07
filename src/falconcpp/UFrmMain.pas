@@ -23,7 +23,7 @@ uses
   SynEditExport, SynExportHTML, SynExportTeX, DebugConsts,
   XMLDoc, XMLIntf, BreakPoint, HintTree, DebugWatch, 
   UParseMsgs, SynEditMiscClasses, TBXStatusBars, XPPanels, ModernTabs,
-  VistaAltFixUnit, TB2Toolbar, ThreadFileDownload, NativeTreeView, SynEditEx,
+  VistaAltFixUnit, TB2Toolbar, ThreadFileDownload, NativeTreeView,
   PluginManager, PluginServiceManager;
 
 const
@@ -768,7 +768,7 @@ type
       ShowContent: Boolean = False);
     procedure ToggleBreakpoint(aLine: Integer);
     procedure CheckIfFilesHasChanged;
-    function DetectScope(Memo: TSynEditEx;
+    function DetectScope(Memo: TSynEdit;
       TokenFile: TTokenFile; ShowInTreeview: Boolean): TTokenClass;
     procedure UpdateCompletionColors(EdtOpt: TEditorOptions);
     procedure ParseFile(FileName: string; SourceFile: TSourceFile);
@@ -799,9 +799,9 @@ type
     procedure ProcessDebugHint(Input: string; Line, SelStart: integer;
       CursorPos: TPoint);
     procedure SelectToken(Token: TTokenClass);
-    procedure ShowHintParams(Memo: TSynEditEx);
+    procedure ShowHintParams(Memo: TSynEdit);
     procedure ProcessHintView(FileProp: TSourceFile;
-      Memo: TSynEditEx; const X, Y: Integer);
+      Memo: TSynEdit; const X, Y: Integer);
     procedure TextEditorUpdateStatusBar(Sender: TObject);
     procedure ExecutorStart(Sender: TObject);
     function FillTreeView(Parent: PNativeNode; Token: TTokenClass;
@@ -825,7 +825,7 @@ type
     FalconVersion: TVersion; //this file version
 
     procedure SelectFromSelStart(SelStart, SelCount: Integer;
-      Memo: TSynEditEx);
+      Memo: TSynEdit);
     function CreateProject(NodeText: string; FileType: Integer): TProjectFile;
     function CreateSource(ParentNode: TTreeNode;
       NodeText: string): TSourceFile;
@@ -851,7 +851,7 @@ type
     function GetSourcesFiles(List: TStrings;
       IncludeRC: Boolean = False): Integer;
     function GetActiveSheet(var sheet: TSourceFileSheet): Boolean;
-    procedure GotoLineAndAlignCenter(Memo: TSynEditEx; Line: Integer;
+    procedure GotoLineAndAlignCenter(Memo: TSynEdit; Line: Integer;
       Col: Integer = 1; EndCol: Integer = 1; CursorEnd: Boolean = False);
 
     property LastProjectBuild: TProjectFile read FLastProjectBuild write FLastProjectBuild;
@@ -2221,7 +2221,7 @@ end;
 procedure TFrmFalconMain.UpdateOpenedSheets;
 var
   I: Integer;
-  SynMemo: TSynEditEx;
+  SynMemo: TSynEdit;
 begin
   ZoomEditor := Config.Editor.FontSize;
   UpdateCompletionColors(Config.Editor);
@@ -2241,7 +2241,7 @@ end;
 procedure TFrmFalconMain.UpdateEditorZoom;
 var
   I: Integer;
-  SynMemo: TSynEditEx;
+  SynMemo: TSynEdit;
 begin
   for I := 0 to PageControlEditor.PageCount - 1 do
   begin
@@ -2389,7 +2389,9 @@ var
 begin
   if Sender is TDataMenuItem then
   begin
-    FileName := Config.Environment.UsersDefDir + TDataMenuItem(Sender).HelpFile;
+    FileName := TDataMenuItem(Sender).HelpFile;
+    if Pos('http://', FileName) = 0 then
+      FileName := Config.Environment.UsersDefDir + FileName;
     ShellExecute(Handle, 'open', PChar(FileName), '',
       PChar(ExtractFilePath(FileName)), SW_SHOW);
   end;
@@ -4590,7 +4592,7 @@ begin
   end;
 end;
 
-function TFrmFalconMain.DetectScope(Memo: TSynEditEx;
+function TFrmFalconMain.DetectScope(Memo: TSynEdit;
   TokenFile: TTokenFile; ShowInTreeview: Boolean): TTokenClass;
 var
   Token: TTokenClass;
@@ -4757,13 +4759,13 @@ end;
 
 procedure TFrmFalconMain.TextEditorChange(Sender: TObject);
 var
-  Memo: TSynEditEx;
+  Memo: TSynEdit;
   Sheet: TSourceFileSheet;
   FilePrp: TSourceFile;
 begin
-  if (Sender is TSynEditEx) then
+  if (Sender is TSynEdit) then
   begin
-    Memo := TSynEditEx(Sender);
+    Memo := TSynEdit(Sender);
     UpdateMenuItems([rmFile, rmEdit, rmSearch, rmRun]); {rmRun for Breakpoint}
     if Config.Editor.HighligthCurrentLine then
       Memo.ActiveLineColor := Config.Editor.CurrentLineColor
@@ -4809,7 +4811,7 @@ begin
     if LastKeyPressed in ['(', '{'] then
     begin
       LastKeyPressed := #0;
-      ShowHintParams(Sender as TSynEditEx);
+      ShowHintParams(Sender as TSynEdit);
     end;
   end;
 end;
@@ -4825,19 +4827,19 @@ begin
   TimerHintTipEvent.Enabled := False;
   HintTip.Cancel;
   DebugHint.Cancel;
-  if (Sender is TSynEditEx) then
+  if (Sender is TSynEdit) then
   begin
     UpdateMenuItems([rmEdit]);
-    DetectScope(Sender as TSynEditEx, ActiveEditingFile, True);
+    DetectScope(Sender as TSynEdit, ActiveEditingFile, True);
     if ActiveErrorLine > 0 then
     begin
       LastActiveErrorLine := ActiveErrorLine;
       ActiveErrorLine := 0;
-      (Sender as TSynEditEx).InvalidateLine(LastActiveErrorLine);
+      (Sender as TSynEdit).InvalidateLine(LastActiveErrorLine);
     end;
   end;
   if HintParams.Activated and ((scCaretX in Changes) or (scCaretY in Changes))
-    and (Sender is TSynEditEx) then
+    and (Sender is TSynEdit) then
   begin
     TimerHintParams.Enabled := False;
     TimerHintParams.Enabled := True;
@@ -4849,11 +4851,11 @@ procedure TFrmFalconMain.TextEditorUpdateStatusBar(Sender: TObject);
 var
   W: Integer;
 begin
-  if (Sender is TSynEditEx) then
+  if (Sender is TSynEdit) then
   begin
     StatusBar.Panels.Items[1].Caption := Format('Ln : %d    Col : %d    Sel : %d',
-      [(Sender as TSynEditEx).GetRealLineNumber((Sender as TSynEditEx).DisplayY),
-       (Sender as TSynEditEx).DisplayX, (Sender as TSynEditEx).SelLength]);
+      [(Sender as TSynEdit).GetRealLineNumber((Sender as TSynEdit).DisplayY),
+       (Sender as TSynEdit).DisplayX, (Sender as TSynEdit).SelLength]);
     W := Canvas.TextWidth(StatusBar.Panels.Items[1].Caption) + 20;
     StatusBar.Panels.Items[1].Size := Max(W, 170);
   end;
@@ -4877,11 +4879,11 @@ begin
   end;
   if GetActiveProject(ProjProp) then
   begin
-    if (Sender is TSynEditEx) then
+    if (Sender is TSynEdit) then
     begin
       TextEditorUpdateStatusBar(Sender);
       for I := 1 to 9 do
-        if TSynEditEx(Sender).GetBookMark(I, X, Y) then
+        if TSynEdit(Sender).GetBookMark(I, X, Y) then
         begin
           TTBXItem(EditBookmarks.Items[I - 1]).Checked := True;
           TTBXItem(EditGotoBookmarks.Items[I - 1]).Checked := True;
@@ -5409,8 +5411,8 @@ var
 begin
   if not GetActiveSheet(sheet) or (sheet.SourceFile.Breakpoint.Count = 0) then
     Exit;
-  LineBegin := TSynEditEx(Sender).GetRealLineNumber(Index + 1);
-  LineEnd := TSynEditEx(Sender).GetRealLineNumber(Index + Count);
+  LineBegin := TSynEdit(Sender).GetRealLineNumber(Index + 1);
+  LineEnd := TSynEdit(Sender).GetRealLineNumber(Index + Count);
   sheet.SourceFile.Breakpoint.DeleteFrom(LineBegin, LineEnd);
 end;
 
@@ -5422,7 +5424,7 @@ var
 begin
   if not GetActiveSheet(sheet) or (sheet.SourceFile.Breakpoint.Count = 0) then
     Exit;
-  LineBegin := TSynEditEx(Sender).GetRealLineNumber(Index + 1);
+  LineBegin := TSynEdit(Sender).GetRealLineNumber(Index + 1);
   sheet.SourceFile.Breakpoint.MoveBy(LineBegin, Count);
 end;
 
@@ -5825,8 +5827,8 @@ begin
     NewPrj.Flags := ini.ReadString('Project', 'Compiler', '');
   end;
   NewPrj.Libs := ini.ReadString('Project', 'Linker', '');
-  NewPrj.Libs := StringReplace(NewPrj.Libs, '_@@_', '', [rfReplaceAll]);
-  NewPrj.Flags := StringReplace(NewPrj.Flags, '_@@_', '', [rfReplaceAll]);
+  NewPrj.Libs := StringReplace(NewPrj.Libs, '_@@_', ' ', [rfReplaceAll]);
+  NewPrj.Flags := StringReplace(NewPrj.Flags, '_@@_', ' ', [rfReplaceAll]);
   PrjDevType := ini.ReadInteger('Project', 'Type', 1);
   if PrjDevType > 3 then
     PrjDevType := 1;
@@ -6876,7 +6878,7 @@ begin
   StartFindPrevText(Self, LastSearch);
 end;
 
-procedure TFrmFalconMain.GotoLineAndAlignCenter(Memo: TSynEditEx; Line,
+procedure TFrmFalconMain.GotoLineAndAlignCenter(Memo: TSynEdit; Line,
   Col, EndCol: Integer; CursorEnd: Boolean);
 var
   BS, BE: TBufferCoord;
@@ -7036,7 +7038,7 @@ end;
 
 //hint functions
 
-procedure TFrmFalconMain.ShowHintParams(Memo: TSynEditEx);
+procedure TFrmFalconMain.ShowHintParams(Memo: TSynEdit);
 var
   S, Params, Fields, Input, SaveInput, SaveFields: string;
   Token, tokenParams, scope: TTokenClass;
@@ -7406,7 +7408,7 @@ begin
 end;
 
 procedure TFrmFalconMain.ProcessHintView(FileProp: TSourceFile;
-  Memo: TSynEditEx; const X, Y: Integer);
+  Memo: TSynEdit; const X, Y: Integer);
 
   function BufferIn(BS, Buffer, BE: TBufferCoord): Boolean;
   begin
@@ -8201,7 +8203,7 @@ procedure TFrmFalconMain.PaintTokenItemV2(const ToCanvas: TCanvas;
 var
   Flag, FullFlag, Vector, Params: string;
   HasVector, ChangeTextColor: Boolean;
-  I, Len: Integer;
+  I, Len, TopOffset: Integer;
 begin
   DefaultDraw := False;
   if Token.Token in [tkInclude, tkTypedefProto, tkIncludeList, tkDefineList,
@@ -8211,6 +8213,7 @@ begin
     Exit;
   end;
   ChangeTextColor := not Selected;
+  TopOffset := (DisplayRect.Bottom - DisplayRect.Top - ToCanvas.TextHeight('WTI')) div 2;
   if Token.Token in [tkFunction, tkProtoType, tkConstructor, tkDestructor, tkOperator] then
   begin
     if Token.Token = tkOperator then
@@ -8229,18 +8232,18 @@ begin
       ToCanvas.Font.Color := clWindowText;
       ChangeTextColor := False;
     end;
-    ToCanvas.TextOut(DisplayRect.Left, DisplayRect.Top + 2, Params);
+    ToCanvas.TextOut(DisplayRect.Left, DisplayRect.Top + TopOffset, Params);
     if Flag = '' then
       Exit;
     //custom return type or value defined
     if ChangeTextColor then
       ToCanvas.Font.Color := clBlue;
     Inc(DisplayRect.Left, ToCanvas.TextWidth(Params));
-    ToCanvas.TextOut(DisplayRect.Left, DisplayRect.Top + 2, ' : ');
+    ToCanvas.TextOut(DisplayRect.Left, DisplayRect.Top + TopOffset, ' : ');
     if ChangeTextColor then
       ToCanvas.Font.Color := clOlive;
     Inc(DisplayRect.Left, ToCanvas.TextWidth(' : '));
-    ToCanvas.TextOut(DisplayRect.Left, DisplayRect.Top + 2, Flag);
+    ToCanvas.TextOut(DisplayRect.Left, DisplayRect.Top + TopOffset, Flag);
     Exit;
   end;
   Len := Length(Token.Flag);
@@ -8261,12 +8264,12 @@ begin
     ToCanvas.Font.Color := clWindowText;
     ChangeTextColor := False;
   end;
-  ToCanvas.TextOut(DisplayRect.Left, DisplayRect.Top + 2, Token.Name);
+  ToCanvas.TextOut(DisplayRect.Left, DisplayRect.Top + TopOffset, Token.Name);
   //custom return type or value defined
   if ChangeTextColor then
     ToCanvas.Font.Color := clBlue;
   Inc(DisplayRect.Left, ToCanvas.TextWidth(Token.Name));
-  ToCanvas.TextOut(DisplayRect.Left, DisplayRect.Top + 2, ' : ');
+  ToCanvas.TextOut(DisplayRect.Left, DisplayRect.Top + TopOffset, ' : ');
 
   if ChangeTextColor then
     ToCanvas.Font.Color := clOlive;
@@ -8294,17 +8297,17 @@ begin
   Inc(DisplayRect.Left, ToCanvas.TextWidth(Flag) + 2);
   while True do
   begin
-    ToCanvas.TextOut(DisplayRect.Left, DisplayRect.Top + 2, '[');
+    ToCanvas.TextOut(DisplayRect.Left, DisplayRect.Top + TopOffset, '[');
 
     if ChangeTextColor then
       ToCanvas.Font.Color := clGreen;
     Inc(DisplayRect.Left, ToCanvas.TextWidth('[') + 1);
-    ToCanvas.TextOut(DisplayRect.Left, DisplayRect.Top + 2, Vector);
+    ToCanvas.TextOut(DisplayRect.Left, DisplayRect.Top + TopOffset, Vector);
 
     if ChangeTextColor then
       ToCanvas.Font.Color := clMaroon;
     Inc(DisplayRect.Left, ToCanvas.TextWidth(Vector) + 1);
-    ToCanvas.TextOut(DisplayRect.Left, DisplayRect.Top + 2, ']');
+    ToCanvas.TextOut(DisplayRect.Left, DisplayRect.Top + TopOffset, ']');
     Inc(DisplayRect.Left, ToCanvas.TextWidth(']') + 1);
 
     Len := Length(FullFlag);
@@ -8692,7 +8695,7 @@ var
   I: Integer;
   Project: TProjectBase;
   Parent: TSourceFile;
-  Memo: TSynEditEx;
+  Memo: TSynEdit;
   Directive: string;
 begin
   Result := False;
@@ -9378,7 +9381,7 @@ var
   BS: TBufferCoord;
   LastLineText, ScopeFlag: string;
   ClassFuncList, FuncList, TODOFuncList: TStrings;
-  Memo: TSynEditEx;
+  Memo: TSynEdit;
   ClassHasFound: Boolean;
 begin
   if not GetActiveSheet(sheet) then
@@ -10514,7 +10517,7 @@ begin
 end;
 
 procedure TFrmFalconMain.SelectFromSelStart(SelStart, SelCount: Integer;
-  Memo: TSynEditEx);
+  Memo: TSynEdit);
 var
   BS, BE: TBufferCoord;
 begin

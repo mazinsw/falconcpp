@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ComCtrls, Buttons, SynEdit, SynMemo, StdCtrls, SynEditAutoComplete,
-  SynEditEx, USourceFile;
+  USourceFile;
 
 type
   TFrmCodeTemplates = class(TForm)
@@ -17,6 +17,7 @@ type
     BtnRem: TSpeedButton;
     BtnEdit: TSpeedButton;
     ListViewTemplates: TListView;
+    SynTemplates: TSynEdit;
     procedure FormCreate(Sender: TObject);
     procedure ListViewTemplatesSelectItem(Sender: TObject; Item: TListItem;
       Selected: Boolean);
@@ -39,7 +40,6 @@ type
       Shift: TShiftState);
   private
     { Private declarations }
-    SynTemplates: TSynEditEx;
   protected
     procedure CreateParams(var Params: TCreateParams); override;
   public
@@ -99,14 +99,6 @@ var
   Rs: TResourceStream;
 begin
   AutoComplete := TSynAutoCompleteTemplate.Create(Self);
-  SynTemplates := TSynEditEx.Create(GroupBox1);
-  SynTemplates.Parent := GroupBox1;
-  SynTemplates.Left := 9;
-  SynTemplates.Top := 192;
-  SynTemplates.Width := 426;
-  SynTemplates.Height := 177;
-  SynTemplates.ScrollBars := ssNone;
-  SynTemplates.Highlighter := FrmFalconMain.CppHighligher;
   TSourceFileSheet.UpdateEditor(SynTemplates);
   SynTemplates.Gutter.Visible := False;
   Rs := TResourceStream.Create(HInstance, 'AUTOCOMPLETE', RT_RCDATA);

@@ -700,7 +700,7 @@ object FrmEditorOptions: TFrmEditorOptions
         Width = 114
         Height = 21
         AutoComplete = False
-        ItemHeight = 0
+        ItemHeight = 13
         MaxLength = 48
         TabOrder = 1
         OnSelect = CbDefSinSelect
@@ -734,6 +734,62 @@ object FrmEditorOptions: TFrmEditorOptions
         TabOrder = 4
         OnChange = ColorChange
       end
+      object SynPrev: TSynEdit
+        Left = 6
+        Top = 152
+        Width = 475
+        Height = 241
+        LinkEnable = True
+        LinkOptions.Color = clBlue
+        LinkOptions.AttributeList.Strings = (
+          'Preprocessor'
+          'Identifier')
+        BracketHighlighting = False
+        BracketHighlight.Background = clSkyBlue
+        BracketHighlight.Foreground = clGray
+        BracketHighlight.AloneBackground = clNone
+        BracketHighlight.AloneForeground = clRed
+        BracketHighlight.Style = [fsBold]
+        BracketHighlight.AloneStyle = [fsBold]
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -13
+        Font.Name = 'Courier New'
+        Font.Style = []
+        TabOrder = 5
+        OnMouseDown = SynPrevMouseDown
+        Gutter.DigitCount = 2
+        Gutter.Font.Charset = DEFAULT_CHARSET
+        Gutter.Font.Color = clWindowText
+        Gutter.Font.Height = -11
+        Gutter.Font.Name = 'Courier New'
+        Gutter.Font.Style = []
+        Gutter.LeftOffset = 6
+        Gutter.RightOffset = 21
+        Gutter.ShowLineNumbers = True
+        HideSelection = True
+        Highlighter = SynCpp
+        Lines.Strings = (
+          '// Sintax Preview'
+          '#include <stdio.h>'
+          ''
+          '/**'
+          ' * Main program function'
+          ' */'
+          'int main(int argc, char *argv[])'
+          '{'
+          '    int name[10] = "Falcon C++";'
+          ''
+          '    name[0] = '#39'F'#39';'
+          '    return ( 0x00 * 0765 * 0.7f );'
+          '}'
+          'Selected Text')
+        Options = [eoAutoIndent, eoDisableScrollArrows, eoDragDropEditing, eoEnhanceEndKey, eoGroupUndo, eoHideShowScrollbars, eoNoCaret, eoNoSelection, eoScrollPastEol, eoShowScrollHint, eoSmartTabDelete, eoSmartTabs, eoTabsToSpaces]
+        ReadOnly = True
+        ScrollBars = ssNone
+        OnGutterClick = SynPrevGutterClick
+        OnSpecialLineColors = SynPrevSpecialLineColors
+      end
     end
     object TSFormatter: TTabSheet
       Caption = 'Formatter'
@@ -754,6 +810,58 @@ object FrmEditorOptions: TFrmEditorOptions
             Height = 347
             Caption = 'Sample'
             TabOrder = 0
+            object SynMemoSample: TSynEdit
+              Left = 10
+              Top = 16
+              Width = 313
+              Height = 320
+              LinkEnable = True
+              LinkOptions.Color = clBlue
+              LinkOptions.AttributeList.Strings = (
+                'Preprocessor'
+                'Identifier')
+              BracketHighlighting = False
+              BracketHighlight.Background = clSkyBlue
+              BracketHighlight.Foreground = clGray
+              BracketHighlight.AloneBackground = clNone
+              BracketHighlight.AloneForeground = clRed
+              BracketHighlight.Style = [fsBold]
+              BracketHighlight.AloneStyle = [fsBold]
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -13
+              Font.Name = 'Courier New'
+              Font.Style = []
+              TabOrder = 0
+              Gutter.DigitCount = 2
+              Gutter.Font.Charset = DEFAULT_CHARSET
+              Gutter.Font.Color = clWindowText
+              Gutter.Font.Height = -11
+              Gutter.Font.Name = 'Courier New'
+              Gutter.Font.Style = []
+              Gutter.LeftOffset = 6
+              Gutter.RightOffset = 21
+              Gutter.ShowLineNumbers = True
+              Gutter.Visible = False
+              HideSelection = True
+              Highlighter = SynCpp
+              Lines.Strings = (
+                'namespace foospace'
+                '{'
+                '    int Foo()'
+                '    {'
+                '        if (isBar)'
+                '        {'
+                '            bar();'
+                '            return 1;'
+                '        }'
+                '        else'
+                '            return 0;'
+                '    }'
+                '}')
+              Options = [eoAutoIndent, eoDisableScrollArrows, eoDragDropEditing, eoEnhanceEndKey, eoGroupUndo, eoHideShowScrollbars, eoScrollPastEol, eoShowScrollHint, eoSmartTabDelete, eoSmartTabs, eoTabsToSpaces]
+              ScrollBars = ssNone
+            end
           end
           object RadioGroupFormatterStyles: TRadioGroup
             Left = 6

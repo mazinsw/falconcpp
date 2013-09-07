@@ -55,7 +55,6 @@ uses
   FastcodePatch in '..\others\nativehint\FastcodePatch.pas',
   NativeHintWindow in '..\others\nativehint\NativeHintWindow.pas',
   rbtree in 'rbtree.pas',
-  SynEditEx in 'SynEditEx.pas',
   CodeTemplate in 'CodeTemplate.pas',
   UFrmVisualCppOptions in 'UFrmVisualCppOptions.pas' {FrmVisualCppOptions},
   PluginManager in '..\others\plugins\PluginManager.pas',

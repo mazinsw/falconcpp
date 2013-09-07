@@ -7,6 +7,9 @@ uses
   Dialogs, ComCtrls, StdCtrls, ExtCtrls, Buttons, UFrmMain, SynMemo, 
   SynEditTypes, SynEditSearch, SynEditRegexSearch;
 
+const
+  reduce_rate_form = 0.494475138121547;
+  reduce_rate_tab = 0.4756446991404011;
 type
   TFrmFind = class(TForm)
     TabCtrl: TTabControl;
@@ -88,7 +91,7 @@ function EncodeStr(const S: string): string;
 
 implementation
 
-uses USourceFile, SynEditEx, SynEditMiscClasses, ULanguages,
+uses USourceFile, SynEditMiscClasses, ULanguages,
   UUtils, UParseMsgs, SynEdit;
 
 {$R *.dfm}
@@ -97,7 +100,7 @@ procedure StartFindText(frm: TFrmFalconMain);
 var
   prop: TSourceFile;
   sheet: TSourceFileSheet;
-  memo: TSynEditEx;
+  memo: TSynEdit;
   seltext: string;
 begin
   if not frm.GetActiveFile(prop) then
@@ -123,7 +126,7 @@ procedure StartFindNextText(frm: TFrmFalconMain; LastSearch: TSearchItem);
 var
   prop: TSourceFile;
   sheet: TSourceFileSheet;
-  memo: TSynEditEx;
+  memo: TSynEdit;
   BE: TBufferCoord;
   sopt: TSynSearchOptions;
   I, Start, Index, Count, SelEnd: Integer;
@@ -193,7 +196,7 @@ procedure StartFindPrevText(frm: TFrmFalconMain; LastSearch: TSearchItem);
 var
   prop: TSourceFile;
   sheet: TSourceFileSheet;
-  memo: TSynEditEx;
+  memo: TSynEdit;
   sopt: TSynSearchOptions;
   BS: TBufferCoord;
   I, Start, Index, Count, SelStart: Integer;
@@ -260,7 +263,7 @@ procedure StartFindFilesText(frm: TFrmFalconMain);
 var
   prop: TSourceFile;
   sheet: TSourceFileSheet;
-  memo: TSynEditEx;
+  memo: TSynEdit;
   seltext: string;
 begin
   seltext := '';
@@ -288,7 +291,7 @@ procedure StartReplaceText(frm: TFrmFalconMain);
 var
   prop: TSourceFile;
   sheet: TSourceFileSheet;
-  memo: TSynEditEx;
+  memo: TSynEdit;
   seltext: string;
 begin
   if not frm.GetActiveFile(prop) then
@@ -350,8 +353,8 @@ procedure TFrmFind.FormCreate(Sender: TObject);
 var
   bmp: TBitmap;
 begin
-  ClientHeight := 179;
-  TabCtrl.Height := 166;
+  ClientHeight := Round(ClientHeight * reduce_rate_form);
+  TabCtrl.Height := Round(TabCtrl.Height * reduce_rate_tab);
   DoubleBuffered := True;
   TabCtrl.DoubleBuffered := True;
   bmp := TBitmap.Create;
@@ -413,8 +416,8 @@ begin
   bmp := TBitmap.Create;
   if BtnMore.Tag = 1 then
   begin
-    ClientHeight := 179;
-    TabCtrl.Height := 166;
+    ClientHeight := Round(ClientHeight * reduce_rate_form);
+    TabCtrl.Height := Round(TabCtrl.Height * reduce_rate_tab);
     BtnMore.Tag := 0;
     bmp.LoadFromResourceName(HInstance, 'moredown');
     BtnMore.Glyph.Assign(bmp);
@@ -435,8 +438,8 @@ begin
     GBoxDirection.Visible := TabCtrl.TabIndex <> 2;
     RdbtUp.Enabled := TabCtrl.TabIndex < 1;
     GBoxTransp.Visible := True;
-    ClientHeight := 362;
-    TabCtrl.Height := 349;
+    ClientHeight := Round(ClientHeight / reduce_rate_form);
+    TabCtrl.Height := Round(TabCtrl.Height / reduce_rate_tab);
     BtnMore.Tag := 1;
     bmp.LoadFromResourceName(HInstance, 'moreup');
     BtnMore.Glyph.Assign(bmp);
@@ -760,7 +763,7 @@ end;
 procedure TFrmFind.BtnFindClick(Sender: TObject);
 var
   sheet: TSourceFileSheet;
-  memo: TSynEditEx;
+  memo: TSynEdit;
   search: string;
   I, Start, Index, Count, lastlength, selstart, selend: Integer;
   pt: TPoint;
@@ -903,7 +906,7 @@ end;
 procedure TFrmFind.BtnReplaceClick(Sender: TObject);
 var
   sheet: TSourceFileSheet;
-  memo: TSynEditEx;
+  memo: TSynEdit;
   search, replace, text: string;
   selstart: Integer;
   sopt: TSynSearchOptions;
@@ -949,7 +952,7 @@ end;
 procedure TFrmFind.BtnReplAllClick(Sender: TObject);
 var
   sheet: TSourceFileSheet;
-  memo: TSynEditEx;
+  memo: TSynEdit;
   search, replace: string;
   Count: Integer;
   sopt: TSynSearchOptions;

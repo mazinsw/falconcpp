@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ComCtrls, StdCtrls, ExtCtrls, SynEdit, SynEditEx, SynMemo, Buttons,
+  Dialogs, ComCtrls, StdCtrls, ExtCtrls, SynEdit, SynMemo, Buttons,
   SynEditHighlighter, SynHighlighterCpp;
 
 const
@@ -64,7 +64,7 @@ type
     function GetSintaxString: string;
     procedure SetSintaxString(const S: string);
     procedure Insert(Index: Integer; Item: TSintaxType);
-    procedure UpdateEditor(Editor: TSynEditEx; AttributeName: string = '');
+    procedure UpdateEditor(Editor: TSynEdit; AttributeName: string = '');
     procedure UpdateHighlight(Highlight: TSynCustomHighlighter;
       AttributeName: string = '');
     procedure Clear;
@@ -227,6 +227,8 @@ type
     ComboBoxPointerAlign: TComboBox;
     ChbAutoCloseBrackets: TCheckBox;
     ChbCursorPastEOL: TCheckBox;
+    SynPrev: TSynEdit;
+    SynMemoSample: TSynEdit;
     procedure FormKeyPress(Sender: TObject; var Key: Char);
     procedure SynPrevMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -273,9 +275,6 @@ type
     procedure CreateParams(var Params: TCreateParams); override;
   public
     { Public declarations }
-    SynPrev: TSynEditEx;
-    SynMemoSample: TSynEditEx;
-    constructor Create(AOwner: TComponent); override;
     procedure UpdateLangNow;
     procedure Load;
   end;
@@ -522,7 +521,7 @@ begin
 
 end;
 
-procedure TSintax.UpdateEditor(Editor: TSynEditEx; AttributeName: string = '');
+procedure TSintax.UpdateEditor(Editor: TSynEdit; AttributeName: string = '');
 var
   st: TSintaxType;
 begin
@@ -1886,102 +1885,6 @@ end;
 procedure TFrmEditorOptions.ComboBoxPointerAlignChange(Sender: TObject);
 begin
   OptionsChange;
-end;
-
-constructor TFrmEditorOptions.Create(AOwner: TComponent);
-begin
-  inherited;
-  SynPrev := TSynEditEx.Create(TSSintax);
-  SynMemoSample := TSynEditEx.Create(GroupBoxFormatterSample);
-  SynPrev.Parent := TSSintax;
-  SynPrev.Left := 6;
-  SynPrev.Top := 152;
-  SynPrev.Width := 475;
-  SynPrev.Height := 241;
-  SynPrev.OnMouseDown := SynPrevMouseDown;
-  SynPrev.BracketHighlight.Background := clSkyBlue;
-  SynPrev.BracketHighlight.Foreground := clGray;
-  SynPrev.BracketHighlight.AloneBackground := clNone;
-  SynPrev.BracketHighlight.AloneForeground := clRed;
-  SynPrev.BracketHighlight.Style := [fsBold];
-  SynPrev.BracketHighlight.AloneStyle := [fsBold];
-  SynPrev.LinkOptions.Color := clBlue;
-  SynPrev.LinkOptions.AttributeList.Add('Preprocessor');
-  SynPrev.LinkOptions.AttributeList.Add('Identifier');
-  SynPrev.LinkEnable := True;
-  SynPrev.Gutter.DigitCount := 2;
-  SynPrev.Gutter.LeftOffset := 6;
-  SynPrev.Gutter.RightOffset := 21;
-  SynPrev.Gutter.ShowLineNumbers := True;
-  SynPrev.HideSelection := True;
-  SynPrev.Highlighter := SynCpp;
-  SynPrev.Lines.Text :=
-    '// Sintax Preview'#13 +
-    '#include <stdio.h>'#13 +
-    ''#13 +
-    '/**'#13 +
-    ' * Main program function'#13 +
-    ' */'#13 +
-    'int main(int argc, char *argv[])'#13 +
-    '{'#13 +
-    '    int name[10] = "Falcon C++";'#13 +
-    ''#13 +
-    '    name[0] = '#39'F'#39';'#13 +
-    '    return ( 0x00 * 0765 * 0.7f );'#13 +
-    '}'#13 +
-    'Selected Text';
-  SynPrev.Options := [eoAutoIndent, eoDisableScrollArrows, eoDragDropEditing,
-    eoEnhanceEndKey, eoGroupUndo,
-    eoHideShowScrollbars, eoNoCaret,
-    eoNoSelection, eoScrollPastEol, eoShowScrollHint,
-    eoSmartTabDelete, eoSmartTabs, eoTabsToSpaces];
-  SynPrev.ReadOnly := True;
-  SynPrev.ScrollBars := ssNone;
-  SynPrev.OnGutterClick := SynPrevGutterClick;
-  SynPrev.OnSpecialLineColors := SynPrevSpecialLineColors;
-
-  SynMemoSample.Parent := GroupBoxFormatterSample;
-  SynMemoSample.Left := 10;
-  SynMemoSample.Top := 16;
-  SynMemoSample.Width := 313;
-  SynMemoSample.Height := 320;
-  SynMemoSample.OnMouseDown := SynPrevMouseDown;
-  SynMemoSample.BracketHighlight.Background := clSkyBlue;
-  SynMemoSample.BracketHighlight.Foreground := clGray;
-  SynMemoSample.BracketHighlight.AloneBackground := clNone;
-  SynMemoSample.BracketHighlight.AloneForeground := clRed;
-  SynMemoSample.BracketHighlight.Style := [fsBold];
-  SynMemoSample.BracketHighlight.AloneStyle := [fsBold];
-  SynMemoSample.LinkOptions.Color := clBlue;
-  SynMemoSample.LinkOptions.AttributeList.Add('Preprocessor');
-  SynMemoSample.LinkOptions.AttributeList.Add('Identifier');
-  SynMemoSample.LinkEnable := True;
-  SynMemoSample.Gutter.DigitCount := 2;
-  SynMemoSample.Gutter.LeftOffset := 6;
-  SynMemoSample.Gutter.RightOffset := 21;
-  SynMemoSample.Gutter.ShowLineNumbers := True;
-  SynMemoSample.Gutter.Visible := False;
-  SynMemoSample.HideSelection := True;
-  SynMemoSample.Highlighter := SynCpp;
-  SynMemoSample.Lines.Text :=
-    'namespace foospace'#13 +
-    '{'#13 +
-    '    int Foo()'#13 +
-    '    {'#13 +
-    '        if (isBar)'#13 +
-    '        {'#13 +
-    '            bar();'#13 +
-    '            return 1;'#13 +
-    '        }'#13 +
-    '        else'#13 +
-    '            return 0;'#13 +
-    '    }'#13 +
-    '}';
-  SynMemoSample.Options := [eoAutoIndent, eoDisableScrollArrows,
-    eoDragDropEditing, eoEnhanceEndKey, eoGroupUndo,
-    eoHideShowScrollbars, eoScrollPastEol, eoShowScrollHint,
-    eoSmartTabDelete, eoSmartTabs, eoTabsToSpaces];
-  SynMemoSample.ScrollBars := ssNone;
 end;
 
 procedure TFrmEditorOptions.FormKeyDown(Sender: TObject; var Key: Word;

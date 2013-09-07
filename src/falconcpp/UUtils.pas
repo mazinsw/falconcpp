@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Classes, Dialogs, ComCtrls, Controls, 
-  USourceFile, Registry, ImgList, SynEditKeyCmds, SynMemo, SynEdit, SynEditEx,
+  USourceFile, Registry, ImgList, SynEditKeyCmds, SynMemo, SynEdit,
   ShlObj, Graphics, Messages, XMLDoc, XMLIntf, UParseMsgs,
   ShellAPI, Forms;
 
@@ -115,7 +115,7 @@ function BrowseDialog(Handle: HWND; const Title: string;
 function HumanToBool(Resp: string): Boolean;
 function BoolToHuman(Question: Boolean): string;
 
-function EditorGotoXY(Memo: TSynEditEx; X, Y: Integer): Boolean;
+function EditorGotoXY(Memo: TSynEdit; X, Y: Integer): Boolean;
 function SearchSourceFile(FileName: string;
   var FileProp: TSourceFile): Boolean;
 function OpenFile(FileName: string): TProjectFile;
@@ -1555,7 +1555,7 @@ begin
     Result := 'No';
 end;
 
-function EditorGotoXY(Memo: TSynEditEx; X, Y: Integer): Boolean;
+function EditorGotoXY(Memo: TSynEdit; X, Y: Integer): Boolean;
 var
   DisplayCoord: TDisplayCoord;
   BufferCoord: TBufferCoord;

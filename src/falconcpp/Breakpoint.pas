@@ -3,7 +3,7 @@ unit Breakpoint;
 interface
 
 uses
-  Windows, Controls, Classes, SysUtils, SynEditEx;
+  Windows, Controls, Classes, SysUtils, SynEdit;
 
 type
   TBreakpoint = class
@@ -42,7 +42,7 @@ type
     procedure Assign(Value: TBreakpointList);
     function MoveBy(LineFrom, aCount: Integer): Integer;
     function HasBreakpoint(Line: Integer): Boolean;
-    procedure DrawBreakpoint(Editor: TSynEditEx; Line, X, Y: Integer);
+    procedure DrawBreakpoint(Editor: TSynEdit; Line, X, Y: Integer);
     function DeleteFrom(LineBegin, LineEnd: Integer): Integer;
     function ToogleBreakpoint(Line: Integer): Boolean;
     function GetBreakpoint(Line: Integer): TBreakpoint;
@@ -178,7 +178,7 @@ begin
   Result := GetBreakpointIndex(Line) <> -1;
 end;
 
-procedure TBreakpointList.DrawBreakpoint(Editor: TSynEditEx; Line, X, Y: Integer);
+procedure TBreakpointList.DrawBreakpoint(Editor: TSynEdit; Line, X, Y: Integer);
 var
   Breakpoint: TBreakpoint;
   Index, DrawIndex: Integer;

@@ -5,7 +5,7 @@ interface
 uses
   Windows, SysUtils, Forms, Graphics, Classes, Dialogs,
   Menus, ComCtrls, Controls, ShellApi,
-  SynEdit, SynEditEx, XMLDoc, XMLIntf, SynEditHighlighter, SynEditKeyCmds,
+  SynEdit, XMLDoc, XMLIntf, SynEditHighlighter, SynEditKeyCmds,
   Makefile, Breakpoint, UTemplates, ModernTabs, SynEditMiscClasses,
   SynEditCodeFolding;
 
@@ -296,16 +296,16 @@ type
 
   TSourceFileSheet = class(TPropertySheet)
   private
-    FSynMemo: TSynEditEx;
+    FSynMemo: TSynEdit;
     FSourceFile: TSourceFile;
     procedure TextEditorMouseDown(Sender: TObject;
       Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
   public
-    class procedure UpdateEditor(SynMemo: TSynEditEx);
+    class procedure UpdateEditor(SynMemo: TSynEdit);
     constructor CreateEditor(SourceFile: TSourceFile; PageCtrl: TModernPageControl;
       SelectTab: Boolean = True);
     destructor Destroy; override;
-    property Memo: TSynEditEx read FSynMemo;
+    property Memo: TSynEdit read FSynMemo;
     property SourceFile: TSourceFile read FSourceFile;
   end;
 
@@ -2321,7 +2321,7 @@ end;
 
 {TSourceFileSheet}
 
-class procedure TSourceFileSheet.UpdateEditor(SynMemo: TSynEditEx);
+class procedure TSourceFileSheet.UpdateEditor(SynMemo: TSynEdit);
 var
   Options: TSynEditorOptions;
 begin
@@ -2430,7 +2430,7 @@ begin
   FSourceFile := SourceFile;
   FSourceFile.FSheet := Self;
   FSheetType := SHEET_TYPE_FILE;
-  FSynMemo := TSynEditEx.Create(Self);
+  FSynMemo := TSynEdit.Create(Self);
   UpdateEditor(FSynMemo);
   FSynMemo.ReadOnly := SourceFile.ReadOnly;
   if SourceFile.ReadOnly then

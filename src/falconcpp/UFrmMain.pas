@@ -657,6 +657,8 @@ type
     procedure EditUncollapseAllClick(Sender: TObject);
     procedure MenuBarMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
+    procedure TreeViewProjectsEditing(Sender: TObject; Node: TTreeNode;
+      var AllowEdit: Boolean);
   private
     { Private declarations }
     fWorkerThread: TThread;
@@ -922,6 +924,26 @@ uses
 
 {$R *.dfm}
 {$R resources.res}
+
+var
+  g_OrigEditProc: Pointer = nil;
+
+function TreeViewEditSubclassProc(HWindow: HWnd; Message, WParam: Longint;
+  LParam: Longint): Longint; stdcall;
+begin
+  case Message of
+    WM_CHAR:
+    begin
+      if Chr(wParam) in ['<', '>', ':', '"', '/', '\', '|', '?', '*'] then
+      begin
+        Beep;
+        Result := 0;
+        Exit;
+      end;
+    end;
+  end;
+  Result := CallWindowProc(g_OrigEditProc, HWindow, Message, WParam, LParam);
+end;
 
 procedure ProgressbarSetMarqueue(Progressbar: TProgressBar);
 begin
@@ -2276,7 +2298,8 @@ begin
   Result := False;
   if (TreeViewProjects.SelectionCount > 0) and (TreeViewProjects.Selected <> nil) then
   begin
-    if (TreeViewProjects.Focused) then
+    if TreeViewProjects.Focused or ((PageControlEditor.ActivePageIndex >= 0) and
+      not TSourceFileSheet(PageControlEditor.ActivePage).Memo.Focused) then
       ActiveFile := TSourceFile(TreeViewProjects.Selected.Data)
     else
     begin
@@ -3221,6 +3244,13 @@ begin
     ProjProp.ForceClean := True;
     ProjProp.Build;
   end;
+end;
+
+procedure TFrmFalconMain.TreeViewProjectsEditing(Sender: TObject;
+  Node: TTreeNode; var AllowEdit: Boolean);
+begin
+  g_OrigEditProc := Pointer(SetWindowLong(TreeView_GetEditControl(TreeViewProjects.Handle),
+    GWL_WNDPROC, Integer(@TreeViewEditSubclassProc)));
 end;
 
 procedure TFrmFalconMain.TreeViewProjectsEdited(Sender: TObject; Node: TTreeNode;

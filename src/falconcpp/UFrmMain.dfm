@@ -1346,6 +1346,7 @@ object FrmFalconMain: TFrmFalconMain
           OnDragDrop = TreeViewProjectsDragDrop
           OnDragOver = TreeViewProjectsDragOver
           OnEdited = TreeViewProjectsEdited
+          OnEditing = TreeViewProjectsEditing
           OnEnter = TreeViewProjectsEnter
           OnKeyDown = TreeViewProjectsKeyDown
           OnKeyPress = TreeViewProjectsKeyPress

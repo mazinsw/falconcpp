@@ -2267,7 +2267,7 @@ var
   Sheet: TSourceFileSheet;
   OldFileName, OldName: string;
 begin
-  if (CompareText(FileName, Value) = 0) or (Value = '') then
+  if (FileName = Value) or (Value = '') then
     Exit;
   if FileExists(FileName) then
   begin

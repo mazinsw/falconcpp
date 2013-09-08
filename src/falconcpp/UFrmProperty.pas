@@ -641,7 +641,7 @@ begin
       if BrowseDialog(Handle, STR_FRM_PROP[57], Direct) then
       begin
         Direct := ExtractRelativePath(ProjDir, Direct);
-        if (Pos('\', Direct) > 0) then
+        if (Pos(' ', Direct) > 0) or (Pos(':', Direct) > 0) then
           CBLibs.Text := '-L"' + Direct + '"'
         else
           CBLibs.Text := '-L' + Direct;
@@ -757,7 +757,7 @@ begin
     if BrowseDialog(Handle, STR_FRM_PROP[55], Direct) then
     begin
       Direct := ExtractRelativePath(ProjDir, Direct);
-      if (Pos('\', Direct) > 0) then
+      if (Pos(' ', Direct) > 0) or (Pos(':', Direct) > 0) then
         CBIncs.Text := '-I"' + Direct + '"'
       else
         CBIncs.Text := '-I' + Direct;

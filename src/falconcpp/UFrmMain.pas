@@ -1695,8 +1695,12 @@ begin
   end;
   FilesParsed.PathList.Add(Config.Compiler.Path + '\include\');
   if Config.Compiler.Version <> '' then
+  begin
     FilesParsed.PathList.Add(Config.Compiler.Path + '\lib\gcc\mingw32\' +
       Config.Compiler.Version + '\include\c++\');
+    FilesParsed.PathList.Add(Config.Compiler.Path + '\lib\gcc\mingw32\' +
+      Config.Compiler.Version + '\include\');
+  end;
   IsLoadingSrcFiles := False;
   FIncludeFileListFlag := 2;
   SleepAtEnd := False;
@@ -1734,7 +1738,7 @@ begin
     SourceFileList.Clear;
     // parse and load C++ header files
     if FindFiles(Config.Compiler.Path + '\lib\gcc\mingw32\' +
-      Config.Compiler.Version + '\include\c++\', '*.*', SourceFileList) then
+      Config.Compiler.Version + '\include\', '*.*', SourceFileList) then
     begin
       IsLoadingSrcFiles := True;
       ThreadTokenFiles.Start(SourceFileList,
@@ -1745,7 +1749,7 @@ begin
     begin
       FIncludeFileList.AddObject(ConvertToUnixSlashes(ExtractRelativePath(
         Config.Compiler.Path + '\lib\gcc\mingw32\' + Config.Compiler.Version +
-        '\include\c++\', SourceFileList.Strings[I])), SourceFileList.Objects[I]);
+        '\include\', SourceFileList.Strings[I])), SourceFileList.Objects[I]);
     end;
     SourceFileList.Free;
     FIncludeFileListFlag := 0;
@@ -2032,7 +2036,7 @@ begin
   end;
   SourceFileList.Clear;
   if FindFiles(Config.Compiler.Path + '\lib\gcc\mingw32\' +
-    Config.Compiler.Version + '\include\c++\', '*.*', SourceFileList) then
+    Config.Compiler.Version + '\include\', '*.*', SourceFileList) then
   begin
     IsLoadingSrcFiles := True;
     ThreadTokenFiles.Start(SourceFileList,
@@ -7593,9 +7597,9 @@ begin
     if FIncludeFileListFlag = 1 then
     begin
       J := FIncludeFileList.Count;
-      FindFiles(Config.Compiler.Path + '\lib\gcc\mingw32\' + Config.Compiler.Version + '\include\c++\', '*.*', FIncludeFileList);
+      FindFiles(Config.Compiler.Path + '\lib\gcc\mingw32\' + Config.Compiler.Version + '\include\', '*.*', FIncludeFileList);
       for I := J to FIncludeFileList.Count - 1 do
-        FIncludeFileList.Strings[I] := ConvertToUnixSlashes(ExtractRelativePath(Config.Compiler.Path + '\lib\gcc\mingw32\' + Config.Compiler.Version + '\include\c++\', FIncludeFileList.Strings[I]));
+        FIncludeFileList.Strings[I] := ConvertToUnixSlashes(ExtractRelativePath(Config.Compiler.Path + '\lib\gcc\mingw32\' + Config.Compiler.Version + '\include\', FIncludeFileList.Strings[I]));
       Dec(FIncludeFileListFlag);
     end;
     for I := 0 to FIncludeFileList.Count - 1 do

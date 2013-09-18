@@ -2113,8 +2113,8 @@ begin
       ExecParams := ExecParams + ' ' + Temp;
       Temp := DoubleQuotedStr(Target);
       ExecParams := ExecParams + ' -o ' + Temp;
-      ExecParams := Trim(ExecParams + Libs);
-      ExecParams := Trim(ExecParams + Flags);
+      ExecParams := Trim(ExecParams + ' ' + Libs);
+      ExecParams := Trim(ExecParams + ' ' + Flags);
       MkRes := 0;
     end
     else

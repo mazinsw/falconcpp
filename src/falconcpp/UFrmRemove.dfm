@@ -42,6 +42,7 @@ object FrmRemove: TFrmRemove
           AutoSize = True
           Caption = 'FileName'
         end>
+      HideSelection = False
       MultiSelect = True
       ReadOnly = True
       RowSelect = True

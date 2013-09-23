@@ -93,6 +93,7 @@ end;
 
 destructor THintTree.Destroy;
 begin
+  DebugParser.Clear;
   DebugParser.Free;
   Timer.Free;
   inherited Destroy;

@@ -1309,6 +1309,13 @@ begin
   Rs.Position := 0;
   AutoComplete.AutoCompleteList.LoadFromStream(Rs);
   Rs.Free;
+  SetExplorerTheme(TreeViewProjects.Handle);
+  if CheckWin32Version(6, 0) then
+  begin
+    SendMessage(TreeViewProjects.Handle, $1100 + 44, $0040, $0040);
+    SendMessage(TreeViewProjects.Handle, $1100 + 44, $0020, $0020);
+    TreeViewProjects.ShowLines := False;
+  end;
   //outline images
   ConvertTo32BitImageList(ImgListOutLine);
   AddImages(ImgListOutLine, 'OUTLINEIMAGES');
@@ -9913,33 +9920,6 @@ begin
   NodeObject.ImageIndex := 0;
   Result := True;
 end;
-
-{function TFrmFalconMain.DeleteWatchItem(const Name: string): Boolean;
-var
-  Node: PNativeNode;
-  Item: TWatchVariable;
-  NodeObject: TNodeObject;
-begin
-  Result := False;
-  Node := TreeViewOutline.GetFirst;
-  while Node <> nil do
-  begin
-    NodeObject := TNodeObject(TreeViewOutline.GetNodeData(Node)^);
-    Item := TWatchVariable(NodeObject.Data);
-    if Item.Name = Name then
-    begin
-      if WatchList.DeleteWatch(Name) then
-      begin
-        Item.Free;
-        NodeObject.Data := nil;
-        TreeViewOutline.DeleteNode(Node);
-        Result := True;
-      end;
-      Exit;
-    end;
-    Node := TreeViewOutline.GetNextSibling(Node);
-  end;
-end;}
 
 function TFrmFalconMain.SearchAndOpenFile(const FileName: string;
   var fp: TSourceFile): Boolean;

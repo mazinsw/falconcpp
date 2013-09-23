@@ -92,6 +92,8 @@ type
     procedure CopyFileName1Click(Sender: TObject);
     procedure FileListChange(Sender: TObject; Node: TTreeNode);
     procedure OpenFolder1Click(Sender: TObject);
+    procedure FileListContextPopup(Sender: TObject; MousePos: TPoint;
+      var Handled: Boolean);
   private
     { Private declarations }
     PkgListWndProc: TWndMethod;
@@ -314,6 +316,14 @@ end;
 procedure TFrmPkgMan.FormCreate(Sender: TObject);
 begin
   ApplyTranslation;
+  SetExplorerTheme(PkgList.Handle);
+  SetExplorerTheme(FileList.Handle);
+  if CheckWin32Version(6, 0) then
+  begin
+    SendMessage(FileList.Handle, $1100 + 44, $0040, $0040);
+    SendMessage(FileList.Handle, $1100 + 44, $0020, $0020);
+    FileList.ShowLines := False;
+  end;
   PkgListWndProc := PkgList.WindowProc;
   PkgList.WindowProc := PkgListProc;
   DragAcceptFiles(PkgList.Handle, True);
@@ -595,6 +605,29 @@ begin
   Label5.Caption := STR_FRM_DESC[9];
   for I := 0 to PopupMenu1.Items.Count - 1 do
     PopupMenu1.Items.Items[I].Caption := STR_FRM_PKG_MAN[I + 27];
+end;
+
+procedure TFrmPkgMan.FileListContextPopup(Sender: TObject;
+  MousePos: TPoint; var Handled: Boolean);
+var
+  Node: TTreeNode;
+  MPos: TPoint;
+begin
+  GetCursorPos(MPos);
+  MPos := FileList.ScreenToClient(MPos);
+  Node := FileList.GetNodeAt(MPos.X, MPos.Y);
+  if not Assigned(Node) and Assigned(FileList.Selected) then
+    Node := FileList.Selected;
+  if not Assigned(Node) then
+  begin
+    if (FileList.SelectionCount = 1) then
+      FileList.Selected.Selected := False;
+  end
+  else
+  begin
+    Node.Selected := True;
+    Node.Focused := True;
+  end;
 end;
 
 end.

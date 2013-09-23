@@ -2312,6 +2312,7 @@ begin
   FListView.HideSelection := False;
   FListView.ReadOnly := True;
   FListView.IconOptions.AutoArrange := True;
+  SetExplorerTheme(FListView.Handle);
 end;
 
 destructor TProjectsSheet.Destroy;

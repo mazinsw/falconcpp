@@ -51,7 +51,7 @@ var
 implementation
 
 uses
-  UFrmMain;
+  UFrmMain, UUtils;
 
 {$R *.dfm}
 
@@ -156,6 +156,7 @@ procedure TFrmRemove.FormCreate(Sender: TObject);
 begin
   HistoryPos := -1;
   HistoryList := TList.Create;
+  SetExplorerTheme(FileList.Handle);
 end;
 
 procedure TFrmRemove.FormDestroy(Sender: TObject);

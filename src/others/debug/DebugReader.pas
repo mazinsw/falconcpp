@@ -942,7 +942,7 @@ begin
   while Node <> nil do
   begin
     TWatchVariable(TNodeObject(TreeView.GetNodeData(Node)^).Data).Free;
-    Node := TreeView.GetNext(Node)
+    Node := TreeView.GetNext(Node);
   end;
   TreeView.Clear;
 end;

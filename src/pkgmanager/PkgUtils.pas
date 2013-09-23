@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Forms, Classes, SysUtils, ShlObj, CommCtrl, ImgList, Controls, ShellAPI,
-  Consts;
+  Consts, UxTheme;
 
 const
   CSIDL_PROGRAM_FILES = $0026;
@@ -27,6 +27,7 @@ function GetUserTemp: String;
 function GetSysDir: String;
 function GetFalconDir: String;
 function GetCompilerDir: String;
+procedure SetExplorerTheme(Handle: HWND);
 function EmptyDirectory(Dir: string): Boolean;
 function ConvertSlashes(Path: String): String;
 procedure ConvertTo32BitImageList(const ImageList: TImageList);
@@ -48,6 +49,11 @@ begin
     until FindNext(F) <> 0;
     FindClose(F);
   end;
+end;
+
+procedure SetExplorerTheme(Handle: HWND);
+begin
+  SetWindowTheme(Handle, 'Explorer', nil);
 end;
 
 function EmptyDirectory(Dir: string): Boolean;

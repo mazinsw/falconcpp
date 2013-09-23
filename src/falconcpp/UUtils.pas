@@ -140,6 +140,7 @@ function DOSFileName(FileName: string): string;
 function NextFileName(FirstName, Ext: string; Node: TTreeNode): string;
 function NextProjectName(FirstName, Ext: string; Nodes: TTreeNodes): string;
 function RemoveFileExt(const FileName: string): string;
+procedure SetExplorerTheme(Handle: HWND);
 function ExtractName(const FileName: string): string;
 function GetFilesByExt(Extension: string; List: TStrings): string;
 procedure SelectFilesByExt(Extensions: array of string; List, OutList: TStrings);
@@ -147,7 +148,8 @@ function IsNumber(Str: string): Boolean;
 
 implementation
 
-uses UFrmMain, ULanguages, UConfig, SynRegExpr, TokenUtils, StrUtils;
+uses UFrmMain, ULanguages, UConfig, SynRegExpr, TokenUtils, StrUtils,
+  UxTheme;
 
 { ---------- Font Methods ---------- }
 
@@ -1761,6 +1763,11 @@ end;
 function ExtractName(const FileName: string): string;
 begin
   Result := ExtractFileName(RemoveFileExt(FileName));
+end;
+
+procedure SetExplorerTheme(Handle: HWND);
+begin
+  SetWindowTheme(Handle, 'Explorer', nil);
 end;
 
 procedure TransformToRelativePath(BaseName: string; Files: TStrings);

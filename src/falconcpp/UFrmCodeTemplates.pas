@@ -62,7 +62,7 @@ var
 
 implementation
 
-uses UFrmMain, UFrmPromptCodeTemplate, ULanguages;
+uses UFrmMain, UFrmPromptCodeTemplate, ULanguages, UUtils;
 
 {$R *.dfm}
 
@@ -98,6 +98,7 @@ var
   Item: TListItem;
   Rs: TResourceStream;
 begin
+  SetExplorerTheme(ListViewTemplates.Handle);
   AutoComplete := TSynAutoCompleteTemplate.Create(Self);
   TSourceFileSheet.UpdateEditor(SynTemplates);
   SynTemplates.Gutter.Visible := False;

@@ -274,6 +274,18 @@ object FrmCodeTemplates: TFrmCodeTemplates
       Top = 192
       Width = 426
       Height = 177
+      LinkEnable = True
+      LinkOptions.Color = clBlue
+      LinkOptions.AttributeList.Strings = (
+        'Preprocessor'
+        'Identifier')
+      BracketHighlighting = False
+      BracketHighlight.Background = clSkyBlue
+      BracketHighlight.Foreground = clBlue
+      BracketHighlight.AloneBackground = clNone
+      BracketHighlight.AloneForeground = clRed
+      BracketHighlight.Style = [fsBold]
+      BracketHighlight.AloneStyle = [fsBold]
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -13

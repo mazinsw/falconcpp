@@ -57,8 +57,8 @@ Version=2.0
 233=Adicionar/Remover marcador
 234=Ir para um marcador
 #-----------
-236=Identar
-237=Unidentar
+236=Indentar
+237=Desindentar
 #-----------
 239=Adicionar/Remover comentário de linha
 #-----------

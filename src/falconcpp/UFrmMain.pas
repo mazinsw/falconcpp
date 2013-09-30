@@ -714,6 +714,7 @@ type
     FLastProjectBuild: TProjectFile; //last builded project
     FLastSelectedProject: TProjectFile;
     FLastPathInclude: string;
+    FLastProjectIncludePath: string;
     startBuildTicks: Cardinal;
     ReloadAfterCodeCompletion: Boolean;
     fShowCodeCompletion: Integer;
@@ -726,6 +727,7 @@ type
     ThreadFilesParsed: TThreadTokenFiles;
     AllParsedList: TStrings;
     ProjectIncludeList: TStrings;
+    FProjectIncludePathList: TStrings;
 
     //for Cache
     ParseAllFiles: TTokenFiles; //parse unparsed static files
@@ -1250,6 +1252,7 @@ begin
   FIncludeFileList := TStringList.Create;
   FReplaceList := TStringList.Create;
   ProjectIncludeList := TStringList.Create;
+  FProjectIncludePathList := TStringList.Create;
   FConfig := TConfig.Create;
   FAppRoot := ExtractFilePath(Application.ExeName);
   FConfigRoot := GetUserFolderPath(CSIDL_APPDATA) + 'Falcon\';
@@ -1311,11 +1314,7 @@ begin
   Rs.Free;
   SetExplorerTheme(TreeViewProjects.Handle);
   if CheckWin32Version(6, 0) then
-  begin
-    SendMessage(TreeViewProjects.Handle, $1100 + 44, $0040, $0040);
-    SendMessage(TreeViewProjects.Handle, $1100 + 44, $0020, $0020);
     TreeViewProjects.ShowLines := False;
-  end;
   //outline images
   ConvertTo32BitImageList(ImgListOutLine);
   AddImages(ImgListOutLine, 'OUTLINEIMAGES');
@@ -3326,8 +3325,10 @@ begin
       if Node.getPrevSibling <> nil then
       begin
         Node.MoveTo(Node.getPrevSibling, naInsert);
-        TSourceFile(Node.Data).Project.PropertyChanged := True;
+        if Node.Parent <> nil then
+          TSourceFile(Node.Data).Project.PropertyChanged := True;
         UpdateMenuItems([rmFile]);
+        BoldTreeNode(Node, True);
       end;
     end
     else if Key = VK_DOWN then
@@ -3338,7 +3339,9 @@ begin
           Node.MoveTo(Node.getNextSibling.getNextSibling, naInsert)
         else
           Node.MoveTo(Node.getNextSibling, naAdd);
-        TSourceFile(Node.Data).Project.PropertyChanged := True;
+        if Node.Parent <> nil then
+          TSourceFile(Node.Data).Project.PropertyChanged := True;
+        BoldTreeNode(Node, True);
         UpdateMenuItems([rmFile]);
       end;
     end
@@ -5733,6 +5736,12 @@ begin
       ProjectIncludeList.Objects[I].Free;
   end;
   ProjectIncludeList.Free;
+  for I := 0 to FProjectIncludePathList.Count - 1 do
+  begin
+    if FProjectIncludePathList.Objects[I] <> nil then
+      FProjectIncludePathList.Objects[I].Free;
+  end;
+  FProjectIncludePathList.Free;
   DebugParser.Free;
   DebugReader.Free;
   CommandQueue.Free;
@@ -7588,10 +7597,13 @@ var
   sheet: TSourceFileSheet;
   proj: TProjectFile;
   S: string;
-  I, J: Integer;
+  I, J, LastStart: Integer;
   List: TStrings;
 begin
   Result := True;
+  if not GetActiveSheet(sheet) then
+    Exit;
+  proj := sheet.SourceFile.Project;
   if IncludePathFilesOnly then
   begin
     if FIncludeFileListFlag = 2 then
@@ -7604,11 +7616,46 @@ begin
     if FIncludeFileListFlag = 1 then
     begin
       J := FIncludeFileList.Count;
-      FindFiles(Config.Compiler.Path + '\lib\gcc\mingw32\' + Config.Compiler.Version + '\include\', '*.*', FIncludeFileList);
+      S := Config.Compiler.Path + '\lib\gcc\mingw32\' + Config.Compiler.Version + '\include\';
+      FindFiles(S, '*.*', FIncludeFileList);
       for I := J to FIncludeFileList.Count - 1 do
-        FIncludeFileList.Strings[I] := ConvertToUnixSlashes(ExtractRelativePath(Config.Compiler.Path + '\lib\gcc\mingw32\' + Config.Compiler.Version + '\include\', FIncludeFileList.Strings[I]));
+        FIncludeFileList.Strings[I] := ConvertToUnixSlashes(ExtractRelativePath(S, FIncludeFileList.Strings[I]));
       Dec(FIncludeFileListFlag);
     end;
+    S := ExtractFilePath(proj.FileName);
+    if CompareText(S, FLastProjectIncludePath) <> 0 then
+    begin
+      FLastProjectIncludePath := S;
+      for I := 0 to FProjectIncludePathList.Count - 1 do
+        TTokenClass(FProjectIncludePathList.Objects[I]).Free;
+      FProjectIncludePathList.Clear;
+      List := TStringList.Create;
+      GetIncludeDirs(S, proj.Flags, List);
+      LastStart := 0;
+      for I := 0 to List.Count - 1 do
+      begin
+        S := ConvertSlashes(List[I]);
+        FindFiles(S, '*.h', FProjectIncludePathList);
+        for J := LastStart to FProjectIncludePathList.Count - 1 do
+        begin
+          NewToken := TTokenClass.Create;
+          FProjectIncludePathList.Objects[J] := NewToken;
+          NewToken.Name := ConvertToUnixSlashes(ExtractRelativePath(S, FProjectIncludePathList.Strings[J]));
+          NewToken.Flag := 'S';
+          NewToken.Token := tkInclude;
+        end;
+        LastStart := FProjectIncludePathList.Count;
+      end;
+      List.Free;
+    end;
+    // project include path
+    for I := 0 to FProjectIncludePathList.Count - 1 do
+    begin
+      NewToken := TTokenClass(FProjectIncludePathList.Objects[I]);
+      CodeCompletion.InsertList.AddObject(CompletionInsertItem(NewToken), NewToken);
+      CodeCompletion.ItemList.AddObject(CompletionShowItem(NewToken, CompletionColors, OutlineImages), NewToken);
+    end;
+    // compiler include path
     for I := 0 to FIncludeFileList.Count - 1 do
     begin
       if FIncludeFileList.Objects[I] = nil then
@@ -7626,9 +7673,6 @@ begin
     end;
     Exit;
   end;
-  if not GetActiveSheet(sheet) then
-    Exit;
-  proj := sheet.SourceFile.Project;
   S := ExtractFilePath(sheet.SourceFile.FileName);
   if CompareText(S, FLastPathInclude) <> 0 then
   begin

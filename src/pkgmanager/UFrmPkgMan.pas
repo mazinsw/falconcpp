@@ -319,11 +319,7 @@ begin
   SetExplorerTheme(PkgList.Handle);
   SetExplorerTheme(FileList.Handle);
   if CheckWin32Version(6, 0) then
-  begin
-    SendMessage(FileList.Handle, $1100 + 44, $0040, $0040);
-    SendMessage(FileList.Handle, $1100 + 44, $0020, $0020);
     FileList.ShowLines := False;
-  end;
   PkgListWndProc := PkgList.WindowProc;
   PkgList.WindowProc := PkgListProc;
   DragAcceptFiles(PkgList.Handle, True);

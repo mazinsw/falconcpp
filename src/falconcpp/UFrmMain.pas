@@ -1313,6 +1313,7 @@ begin
   AutoComplete.AutoCompleteList.LoadFromStream(Rs);
   Rs.Free;
   SetExplorerTheme(TreeViewProjects.Handle);
+  SetExplorerTheme(ListViewMsg.Handle);
   if CheckWin32Version(6, 0) then
     TreeViewProjects.ShowLines := False;
   //outline images
@@ -3326,9 +3327,10 @@ begin
       begin
         Node.MoveTo(Node.getPrevSibling, naInsert);
         if Node.Parent <> nil then
-          TSourceFile(Node.Data).Project.PropertyChanged := True;
+          TSourceFile(Node.Data).Project.PropertyChanged := True
+        else
+          BoldTreeNode(Node, True);
         UpdateMenuItems([rmFile]);
-        BoldTreeNode(Node, True);
       end;
     end
     else if Key = VK_DOWN then
@@ -3340,8 +3342,9 @@ begin
         else
           Node.MoveTo(Node.getNextSibling, naAdd);
         if Node.Parent <> nil then
-          TSourceFile(Node.Data).Project.PropertyChanged := True;
-        BoldTreeNode(Node, True);
+          TSourceFile(Node.Data).Project.PropertyChanged := True
+        else
+          BoldTreeNode(Node, True);
         UpdateMenuItems([rmFile]);
       end;
     end

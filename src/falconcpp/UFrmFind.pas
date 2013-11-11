@@ -7,9 +7,6 @@ uses
   Dialogs, ComCtrls, StdCtrls, ExtCtrls, Buttons, UFrmMain, SynMemo, 
   SynEditTypes, SynEditSearch, SynEditRegexSearch;
 
-const
-  reduce_rate_form = 0.494475138121547;
-  reduce_rate_tab = 0.4756446991404011;
 type
   TFrmFind = class(TForm)
     TabCtrl: TTabControl;
@@ -353,8 +350,8 @@ procedure TFrmFind.FormCreate(Sender: TObject);
 var
   bmp: TBitmap;
 begin
-  ClientHeight := Round(ClientHeight * reduce_rate_form);
-  TabCtrl.Height := Round(TabCtrl.Height * reduce_rate_tab);
+  ClientHeight := 178;
+  TabCtrl.Height := 166;
   DoubleBuffered := True;
   TabCtrl.DoubleBuffered := True;
   bmp := TBitmap.Create;
@@ -416,8 +413,8 @@ begin
   bmp := TBitmap.Create;
   if BtnMore.Tag = 1 then
   begin
-    ClientHeight := Round(ClientHeight * reduce_rate_form);
-    TabCtrl.Height := Round(TabCtrl.Height * reduce_rate_tab);
+    ClientHeight := 178;
+    TabCtrl.Height := 166;
     BtnMore.Tag := 0;
     bmp.LoadFromResourceName(HInstance, 'moredown');
     BtnMore.Glyph.Assign(bmp);
@@ -438,8 +435,8 @@ begin
     GBoxDirection.Visible := TabCtrl.TabIndex <> 2;
     RdbtUp.Enabled := TabCtrl.TabIndex < 1;
     GBoxTransp.Visible := True;
-    ClientHeight := Round(ClientHeight / reduce_rate_form);
-    TabCtrl.Height := Round(TabCtrl.Height / reduce_rate_tab);
+    ClientHeight := 360;
+    TabCtrl.Height := 349;
     BtnMore.Tag := 1;
     bmp.LoadFromResourceName(HInstance, 'moreup');
     BtnMore.Glyph.Assign(bmp);
@@ -766,8 +763,8 @@ var
   memo: TSynEdit;
   search: string;
   I, Start, Index, Count, lastlength, selstart, selend: Integer;
-  pt: TPoint;
-  rect: TRect;
+  rect, selRect: TRect;
+  isAbove: Boolean;
   sopt: TSynSearchOptions;
   BS, BE: TBufferCoord;
 begin
@@ -882,10 +879,24 @@ begin
   frm.LastSearch.FullWord := ChbFullWord.Checked;
   if ChbTransp.Checked then
   begin
-    pt := memo.RowColumnToPixels(memo.BufferToDisplayPos(memo.CaretXY));
-    pt := memo.ClientToScreen(pt);
+    selRect.TopLeft := memo.RowColumnToPixels(memo.BufferToDisplayPos(memo.BlockBegin));
+    selRect.BottomRight := memo.RowColumnToPixels(memo.BufferToDisplayPos(memo.BlockEnd));
+    Inc(selRect.Bottom, memo.LineHeight);
+    selRect.TopLeft := memo.ClientToScreen(selRect.TopLeft);
+    selRect.BottomRight := memo.ClientToScreen(selRect.BottomRight);
     GetWindowRect(Handle, rect);
-    if PtInRect(rect, pt) = TRUE then
+    isAbove := PtInRect(rect, selRect.TopLeft) = TRUE;
+    if not isAbove then
+      isAbove := PtInRect(rect, selRect.BottomRight) = TRUE;
+    if not isAbove then
+    begin
+      Inc(selRect.Top, memo.LineHeight);
+      Dec(selRect.Bottom, memo.LineHeight);
+      isAbove := PtInRect(rect, selRect.TopLeft) = TRUE;
+      if not isAbove then
+        isAbove := PtInRect(rect, selRect.BottomRight) = TRUE;
+    end;
+    if isAbove then
     begin
       AlphaBlendValue := 55 + TrkBar.Position;
       AlphaBlend := True;

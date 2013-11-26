@@ -823,6 +823,7 @@ type
     procedure UpdateEditorZoom;
     function InternalMessageBox(Text, Caption: string;
       uType: UINT; Handle: HWND = 0): Integer;
+    procedure UpdateStatusbar;
   public
     { Public declarations }
     LastSearch: TSearchItem;
@@ -2441,9 +2442,7 @@ begin
   UpdateMenuItems([rmFile, rmFileNew, rmSearch, rmProject, rmRun, rmProjectsPopup]);
   if (TreeViewProjects.Items.Count = 0) then
   begin
-    StatusBar.Panels.Items[0].ImageIndex := -1;
-    StatusBar.Panels.Items[0].Caption := '';
-    StatusBar.Panels.Items[0].Hint := '';
+    UpdateStatusbar;
     StatusBar.Panels.Items[1].Caption := '';
     StatusBar.Panels.Items[2].ImageIndex := -1;
     StatusBar.Panels.Items[2].Caption := '';
@@ -2464,15 +2463,9 @@ begin
     FilePrp := TSourceFile(Node.Data);
   if (FilePrp <> nil) or GetActiveFile(FilePrp) then
     BoldTreeNode(FilePrp.Project.Node, True);
-  if FilePrp <> nil then
-    StatusBar.Panels.Items[0].ImageIndex := FILE_IMG_LIST[FilePrp.FileType]
-  else
-  begin
-    StatusBar.Panels.Items[0].ImageIndex := -1;
+  UpdateStatusbar;
+  if FilePrp = nil then
     Exit;
-  end;
-  StatusBar.Panels.Items[0].Caption := FilePrp.Name;
-  StatusBar.Panels.Items[0].Hint := FilePrp.FileName;
   if FilePrp.Editing then
     FilePrp.ViewPage;
 end;
@@ -2773,6 +2766,7 @@ begin
         ProjProp.SaveAll;
         ProjProp.Save;
       end;
+      UpdateStatusbar;
     except
       ProjProp.Saved := OldSaved;
       ProjProp.IsNew := OldIsNew;
@@ -2782,6 +2776,24 @@ begin
     UpdateMenuItems([rmFile]);
     Result := True;
   end;
+end;
+
+procedure TFrmFalconMain.UpdateStatusbar;
+var
+  FileProp: TSourceFile;
+begin
+  GetActiveFile(FileProp);
+  if FileProp = nil then
+  begin
+    StatusBar.Panels.Items[0].ImageIndex := -1;
+    StatusBar.Panels.Items[0].Caption := '';
+    StatusBar.Panels.Items[0].Hint := '';
+    Exit;
+  end;
+  //update status bar
+  StatusBar.Panels.Items[0].ImageIndex := FILE_IMG_LIST[FileProp.FileType];
+  StatusBar.Panels.Items[0].Caption := FileProp.Name;
+  StatusBar.Panels.Items[0].Hint := FileProp.FileName;
 end;
 
 //save selected project or file in list
@@ -2986,6 +2998,7 @@ end;
 procedure TFrmFalconMain.TreeViewProjectsEnter(Sender: TObject);
 begin
   UpdateMenuItems([rmFile, rmProject, rmRun]);
+  UpdateStatusbar;
 end;
 
 //on change the active tab
@@ -4630,12 +4643,7 @@ begin
   begin
     ProjProp := FileProp.Project;
     if SaveProject(ProjProp, smSaveAs) then
-    begin
-      //update status bar
-      StatusBar.Panels.Items[0].ImageIndex := FILE_IMG_LIST[FileProp.FileType];
-      StatusBar.Panels.Items[0].Caption := FileProp.Name;
-      StatusBar.Panels.Items[0].Hint := FileProp.FileName;
-    end;
+      UpdateStatusbar;
   end;
 end;
 
@@ -4919,11 +4927,7 @@ begin
   CheckIfFilesHasChanged;
   UpdateMenuItems([rmFile, rmEdit, rmSearch]);
   if GetActiveFile(FileProp) then
-  begin
-    StatusBar.Panels.Items[0].ImageIndex := FILE_IMG_LIST[FileProp.FileType];
-    StatusBar.Panels.Items[0].Caption := FileProp.Name;
-    StatusBar.Panels.Items[0].Hint := FileProp.FileName;
-  end;
+    UpdateStatusbar;
   if GetActiveProject(ProjProp) then
   begin
     if (Sender is TSynEdit) then
@@ -5366,7 +5370,8 @@ begin
         SpaceCount1 := i;
       end;
       Key := #0;
-      S := GetLeftSpacing(SpaceCount1, sheet.Memo.TabWidth, sheet.Memo.WantTabs and not (eoTabsToSpaces in sheet.Memo.Options));
+      S := GetLeftSpacing(SpaceCount1, sheet.Memo.TabWidth, sheet.Memo.WantTabs
+        and not (eoTabsToSpaces in sheet.Memo.Options));
       bStart.Char := 1;
       if Config.Editor.AutoCloseBrackets then
       begin
@@ -5374,7 +5379,8 @@ begin
         if replaceLine then
           str := S;
         str := str + '{' + #13 + S + GetLeftSpacing(sheet.Memo.TabWidth,
-          sheet.Memo.TabWidth, sheet.Memo.WantTabs and not (eoTabsToSpaces in sheet.Memo.Options)) + #13 + S + '}';
+          sheet.Memo.TabWidth, sheet.Memo.WantTabs and
+          not (eoTabsToSpaces in sheet.Memo.Options)) + #13 + S + '}';
         sheet.Memo.BeginUpdate;
         if replaceLine then
           sheet.Memo.SetCaretAndSelection(bStart, bStart, bEnd);
@@ -5389,7 +5395,8 @@ begin
         sheet.Memo.EndUpdate;
         Inc(bStart.Line);
         bStart.Char := Length(GetLeftSpacing(SpaceCount1 + sheet.Memo.TabWidth,
-          sheet.Memo.TabWidth, sheet.Memo.WantTabs and not (eoTabsToSpaces in sheet.Memo.Options))) + 1;
+          sheet.Memo.TabWidth, sheet.Memo.WantTabs and
+          not (eoTabsToSpaces in sheet.Memo.Options))) + 1;
         sheet.Memo.CaretXY := bStart;
       end
       else
@@ -7622,7 +7629,12 @@ begin
       S := Config.Compiler.Path + '\lib\gcc\mingw32\' + Config.Compiler.Version + '\include\';
       FindFiles(S, '*.*', FIncludeFileList);
       for I := J to FIncludeFileList.Count - 1 do
+      begin
         FIncludeFileList.Strings[I] := ConvertToUnixSlashes(ExtractRelativePath(S, FIncludeFileList.Strings[I]));
+        if StartsWith(FIncludeFileList.Strings[I], 'c++/') then
+          FIncludeFileList.Strings[I] := Copy(FIncludeFileList.Strings[I], 5,
+            Length(FIncludeFileList.Strings[I]) - 4);
+      end;
       Dec(FIncludeFileListFlag);
     end;
     S := ExtractFilePath(proj.FileName);
@@ -10425,10 +10437,10 @@ var
 begin
   if not GetActiveSheet(sheet) then
     Exit;
-  if sheet.Memo.Lines.Count < 3 then
+  if sheet.Memo.UnCollapsedLines.Count < 3 then
     Exit;
   FormGotoLine := TFormGotoLine.CreateParented(Handle);
-  FormGotoLine.ShowWithRange(1, sheet.Memo.CaretY, sheet.Memo.Lines.Count);
+  FormGotoLine.ShowWithRange(1, sheet.Memo.CaretY, sheet.Memo.UnCollapsedLines.Count);
 end;
 
 procedure TFrmFalconMain.SearchGotoPrevFuncClick(Sender: TObject);

@@ -145,6 +145,7 @@ function ExtractName(const FileName: string): string;
 function GetFilesByExt(Extension: string; List: TStrings): string;
 procedure SelectFilesByExt(Extensions: array of string; List, OutList: TStrings);
 function IsNumber(Str: string): Boolean;
+function StartsWith(const S, Token: string): Boolean;
 
 implementation
 
@@ -1805,6 +1806,21 @@ begin
       end;
     end;
   end;
+end;
+
+function StartsWith(const S, Token: string): Boolean;
+var
+  I: Integer;
+begin
+  Result := False;
+  if Length(S) < Length(Token) then
+    Exit;
+  for I := 1 to Length(Token) do
+  begin
+    if Token[I] <> S[I] then
+      Exit;
+  end;
+  Result := True;
 end;
 
 end.

@@ -978,7 +978,10 @@ begin
     search := ResolveStr(search);
   if RGrpSearchMode.ItemIndex = 1 then //resolve \n \r \t
     replace := ResolveStr(replace);
-
+  if RGrpSearchMode.ItemIndex = 2 then
+    memo.SearchEngine := FrmFalconMain.EditorRegexSearch
+  else
+    memo.SearchEngine := FrmFalconMain.EditorSearch;
   sopt := [ssoReplaceAll];
   if ChbReplSel.Checked then
     sopt := sopt + [ssoSelectedOnly]
@@ -988,9 +991,6 @@ begin
     sopt := sopt + [ssoMatchCase];
   if ChbFullWord.Checked then
     sopt := sopt + [ssoWholeWord];
-  if ChbCircSearch.Checked then
-    sopt := sopt + [ssoEntireScope];
-
   Count := memo.SearchReplace(search, replace, sopt);
   MessageBox(Handle, PChar(Format(STR_FRM_FIND[31], [Count])),
     PChar(STR_FRM_FIND[9]), MB_OK);

@@ -15,6 +15,7 @@ NovoArquivo.cpp: In function `int main(int, char**)':
 NovoArquivo.cpp:7: error: `dsadsad' was not declared in this scope
 NovoArquivo.cpp:7: error: expected `;' before "printf"
 tmatrix.h:111: error: extra qualification 'TMatrix33::' on member 'inverse'
+NovoArquivo.c:4: error: initializer element is not constant
 
 already in use:
 %s: In function '%s':

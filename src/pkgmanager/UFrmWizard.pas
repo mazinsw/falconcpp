@@ -23,6 +23,7 @@ type
     procedure BtnCanClick(Sender: TObject);
     procedure BtnBackClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
   protected
@@ -324,6 +325,11 @@ begin
     if BorderStyle = bsNone then
       Params.Style := Params.Style or WS_POPUP;
   end;
+end;
+
+procedure TFrmWizard.FormDestroy(Sender: TObject);
+begin
+  Installer.Free;
 end;
 
 end.

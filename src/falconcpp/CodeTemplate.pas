@@ -375,12 +375,30 @@ begin
   end;
 end;
 
+procedure StripTemplate(Token: TTokenClass; var Code, ShowCode: string);
+var
+  pcode, ipcode: PChar;
+begin
+  pcode := PChar(Token.Comment) + Length(Token.Comment) - 2;
+  ShowCode := StrPas(PChar(Token.Comment));
+  ipcode := pcode;
+  while (ipcode > PChar(Token.Comment)) and ((ipcode - 1)^ <> #0) do
+    Dec(ipcode);
+  if ipcode >= PChar(Token.Comment) then
+  begin
+    SetLength(Code, pcode - ipcode + 1);
+    StrLCopy(PChar(Code), ipcode, pcode - ipcode + 1);
+  end
+  else
+    Code := '';
+end;
+
 procedure ExecuteCompletion(const Input: string; Token: TTokenClass;
   AEditor: TCustomSynEdit);
 var
-  i, j, Len, IndentLen, AfterLen: integer;
-  s: string;
-  ptr, iptr, pcode, ipcode: PChar;
+  i, j, K, L, Len, IndentLen, AfterLen: integer;
+  s, sc, ln: string;
+  ptr, iptr: PChar;
   p: TBufferCoord;
   NewCaretPos, PipeFind: boolean;
   Temp: TStringList;
@@ -392,19 +410,60 @@ begin
   AEditor.BeginUpdate;
   try
     AfterLen := 0;
-    s := AEditor.Lines[p.Line - 1];
-    for I := p.Char to Length(s) do
+    ln := AEditor.Lines[p.Line - 1];
+    for I := p.Char to Length(ln) do
     begin
-      if s[I] in LetterChars + DigitChars then
+      if ln[I] in LetterChars + DigitChars then
         Inc(AfterLen)
       else
         Break;
     end;
-    AEditor.BlockBegin := BufferCoord(p.Char - Len, p.Line);
+    Temp := TStringList.Create;
+    StripTemplate(Token, s, sc);
+    Temp.Text := s;
+    if Temp.Count > 0 then
+      s := Temp[0];
+    // override equivalent prior codes
+    K := 0;
+    I := 1;
+    while (I >= 1) and (I <= (p.Char - Len) - 1) do
+    begin
+      L := I; // save next try position
+      J := 1;
+      while J <= Length(s) do
+      begin
+        if s[J] = ln[I] then
+        begin
+          if K = 0 then
+            K := I;
+          while (J <= Length(s)) and (s[J] in [#9, ' ']) do
+            Inc(J);
+          // can exceed input
+          while (I <= (p.Char - Len) - 1) and (ln[I] in [#9, ' ']) do
+            Inc(I);
+          if I >= (p.Char - Len) - 1 then
+            Break
+          else
+            Inc(I);
+        end
+        else
+          Break;
+        Inc(J);
+      end;
+      if not (I >= (p.Char - Len) - 1) then
+      begin
+        K := 0;
+        I := L;
+      end;
+      Inc(I);
+    end;
+    if (K = 0) or (I <= (p.Char - Len) - 1) then
+      K := p.Char - Len;
+    AEditor.BlockBegin := BufferCoord(K, p.Line);
     AEditor.BlockEnd := BufferCoord(p.Char + AfterLen, p.Line);
     // indent the completion string if necessary, determine the caret pos
     IndentLen := 0;
-    ptr := PChar(s);
+    ptr := PChar(ln);
     if Assigned(ptr) and (ptr^ <> #0) then
       repeat
         if not (ptr^ in [#9, #32]) then Break;
@@ -416,20 +475,7 @@ begin
       until ptr^ = #0;
     p := AEditor.BlockBegin;
     NewCaretPos := FALSE;
-    Temp := TStringList.Create;
-    pcode := PChar(Token.Comment) + Length(Token.Comment) - 2;
-    ipcode := pcode;
     try
-      while (ipcode > PChar(Token.Comment)) and ((ipcode - 1)^ <> #0) do
-        Dec(ipcode);
-      if ipcode >= PChar(Token.Comment) then
-      begin
-        SetLength(s, pcode - ipcode + 1);
-        StrLCopy(PChar(s), ipcode, pcode - ipcode + 1);
-        Temp.Text := s;
-      end
-      else
-        Temp.Text := '';
       // indent lines
       if (IndentLen > 0) and (Temp.Count > 1) then
       begin

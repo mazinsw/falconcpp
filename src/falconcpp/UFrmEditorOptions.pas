@@ -459,6 +459,8 @@ begin
     else
       AddSintaxType('Instruction Word', clBlue);
   end;
+  if not GetType('Include', Sxt) then
+    AddSintaxType('Include', clBlue);
 end;
 
 procedure TSintax.AddSintaxType(Name: string; Foreground: TColor;
@@ -676,6 +678,7 @@ begin
   Stx.AddSintaxType('Symbol', clNavy, clNone, [fsBold]);
   Stx.AddSintaxType('Gutter', clGray, $00E4E4E4);
   Stx.AddSintaxType('Selection', clWindowText, clSilver);
+  Stx.AddSintaxType('Include', clBlue);
   FItemIndex := Add(Stx);
 
   //Borland
@@ -699,6 +702,7 @@ begin
   Stx.AddSintaxType('Symbol', clYellow);
   Stx.AddSintaxType('Gutter', clYellow, clNavy);
   Stx.AddSintaxType('Selection', clWindowText, clGray);
+  Stx.AddSintaxType('Include', clYellow);
   Add(Stx);
 
   //Visual Studio
@@ -722,6 +726,7 @@ begin
   Stx.AddSintaxType('Symbol', clNone);
   Stx.AddSintaxType('Gutter', clWindowText, clBtnFace);
   Stx.AddSintaxType('Selection', clHighlightText, clHighlight);
+  Stx.AddSintaxType('Include', clMaroon);
   Add(Stx);
 
   //Obsidian
@@ -745,6 +750,7 @@ begin
   Stx.AddSintaxType('Symbol', $00B7E2E8);
   Stx.AddSintaxType('Gutter', $0088806A, $003C382F);
   Stx.AddSintaxType('Selection', $00FFFFFF, $00514E40);
+  Stx.AddSintaxType('Include', $000076EC);
   Add(Stx);
 
   //default
@@ -768,6 +774,7 @@ begin
   Stx.AddSintaxType('Symbol', clNavy, clNone, [fsBold]);
   Stx.AddSintaxType('Gutter', clGrayText, clBtnFace);
   Stx.AddSintaxType('Selection', clWindowText, clSilver);
+  Stx.AddSintaxType('Include', clBlue);
   FItemIndex := Add(Stx);
 end;
 

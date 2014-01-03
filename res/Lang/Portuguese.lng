@@ -1222,3 +1222,46 @@ Version=2.0
 1951=Declarações iniciais de laço '$3' só são permitidos no modo $4
 #$1:$2: note: use option $3 or $4 to compile your code
 1952=Use a opção $3 ou $4 para compilar seu código
+
+#$1:$2:$3: fatal error: $4: No such file or directory
+1953=Arquivo $4 não encontrado
+#compilation terminated.
+1954=Compilação encerrada.
+#$1:$2:$3: warning: no newline at end of file
+1955=Nenhuma linha em branco no final do arquivo
+#$1:$2: error: '$3' previously defined here
+1956='$3' Anteriormente definida aqui
+#$1:$2: error: invalid use of '$3'
+1957=Uso inválido de '$3'
+#$1:$2: error: expected declaration before '$3' token
+1958=Esperado uma declaração antes do símbolo '$3'
+#$1:$2: warning: '$3' defined but not used
+1959='$3' definido, mas não usado
+#$1:$2: error: variable-sized object may not be initialized
+1960=Variável objeto de tamanho não fixo não pode ser inicializada
+#$1:$2:$3: warning: this is the location of the previous definition
+1961=Esta é a localização da definição anterior
+#$1:$2: warning: friend declaration '$3' declares a non-template function
+1962=Declaração friend '$3' declara uma função sem template
+#$1:$2: note: (if this is not what you intended, make sure the function template has already been declared and add <> after the function name here) 
+1963=se isso não é o que você pretendia, verifique se o template da função já foi declarado e adicione <> após o nome desta função
+#$1:$2: error: '$3' has not been declared
+1964='$3' Não foi declarado
+#$1:$2: error: '$3' is an inaccessible base of '$4'
+1965='$3' é uma base inacessível de '$4'
+#$1: In function `$2':
+1966=Na função '$2':
+#$1:$2: error: `$3' was not declared in this scope
+1967='$3' não foi declarado neste escopo
+#$1:$2: error: expected `$3' before "$4"
+1968=Esperado '$3' antes de "$4"
+#$1:$2: error: extra qualification '$3' on member '$4'
+1969=Declaração '$3' desnecessária no membro '$4'
+#$1:$2: error: initializer element is not constant
+1970=Elemento de inicialização não é uma constante
+#$1:$2: warning: conflicting types for '$3'
+1971=Conflito de tipos para '$3'
+#$1:$2: note: previous implicit declaration of '$3' was here
+1972=Declaração anterior de '$3' foi feita aqui
+#$1: At top level:
+1973=No nível do topo:

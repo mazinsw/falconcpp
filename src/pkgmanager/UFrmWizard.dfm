@@ -17,6 +17,7 @@ object FrmWizard: TFrmWizard
   Position = poScreenCenter
   OnClose = FormClose
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   OnKeyPress = FormKeyPress
   PixelsPerInch = 96
   TextHeight = 13

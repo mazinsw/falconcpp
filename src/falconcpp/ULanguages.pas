@@ -91,7 +91,7 @@ const
     'Replace...',
     'Incremental Search...',
     '',
-    'Goto Funcion...',
+    'Goto Function...',
     'Goto Previous Function',
     'Goto Next Function',
     'Goto Line Number...'
@@ -853,9 +853,9 @@ const
     );
 
   //Translate mingw messages
-  MAX_CMPMSG = 168;
+  MAX_CMPMSG = 189;
   CONST_STR_CMPMSG: array[1..MAX_CMPMSG] of TCompilerMessage = (
-        (Expression: '([^:]*): In function ''(.*)'':$'; FileName: 1; Line: 0; Column: 0),
+    (Expression: '([^:]*): In function ''(.*)'':$'; FileName: 1; Line: 0; Column: 0),
     (Expression: '([^:]*):([0-9]+): warning: implicit declaration of function ''(.*)''$'; FileName: 1; Line: 2; Column: 0),
     (Expression: '([^:]*):([0-9]+): warning: assignment makes pointer from integer without a cast$'; FileName: 1; Line: 2; Column: 0),
     (Expression: '([^:]*):([0-9]+):([0-9]+): error: invalid suffix "(.*)" on integer constant$'; FileName: 1; Line: 2; Column: 3),
@@ -1023,7 +1023,29 @@ const
     (Expression: '([^:]*):([0-9]+):([0-9]+): warning: assignment makes integer from pointer without a cast [enabled by default]$'; FileName: 1; Line: 2; Column: 3),
     (Expression: '([^:]*):([0-9]+):([0-9]+): error: lvalue required as unary ''(.*)'' operand$'; FileName: 1; Line: 2; Column: 3),
     (Expression: '([^:]*):([0-9]+): error: ''(.*)'' loop initial declarations are only allowed in (.*) mode$'; FileName: 1; Line: 2; Column: 0),
-    (Expression: '([^:]*):([0-9]+): note: use option (.*) or (.*) to compile your code$'; FileName: 1; Line: 2; Column: 0)
+    (Expression: '([^:]*):([0-9]+): note: use option (.*) or (.*) to compile your code$'; FileName: 1; Line: 2; Column: 0),
+
+    (Expression: '([^:]*):([0-9]+):([0-9]+): fatal error: ([^:]*): No such file or directory$'; FileName: 1; Line: 2; Column: 3),
+    (Expression: 'compilation terminated\.$'; FileName: 0; Line: 0; Column: 0),
+    (Expression: '([^:]*):([0-9]+):([0-9]+): warning: no newline at end of file$'; FileName: 1; Line: 2; Column: 3),
+    (Expression: '([^:]*):([0-9]+): error: ''(.*)'' previously defined here$'; FileName: 1; Line: 2; Column: 0),
+    (Expression: '([^:]*):([0-9]+): error: invalid use of ''(.*)''$'; FileName: 1; Line: 2; Column: 0),
+    (Expression: '([^:]*):([0-9]+): error: expected declaration before ''(.*)'' token$'; FileName: 1; Line: 2; Column: 0),
+    (Expression: '([^:]*):([0-9]+): warning: ''(.*)'' defined but not used$'; FileName: 1; Line: 2; Column: 0),
+    (Expression: '([^:]*):([0-9]+): error: variable-sized object may not be initialized$'; FileName: 1; Line: 2; Column: 0),
+    (Expression: '([^:]*):([0-9]+):([0-9]+): warning: this is the location of the previous definition$'; FileName: 1; Line: 2; Column: 3),
+    (Expression: '([^:]*):([0-9]+): warning: friend declaration ''(.*)'' declares a non-template function$'; FileName: 1; Line: 2; Column: 0),
+    (Expression: '([^:]*):([0-9]+): note: \(if this is not what you intended, make sure the function template has already been declared and add <> after the function name here\) $'; FileName: 1; Line: 2; Column: 0),
+    (Expression: '([^:]*):([0-9]+): error: ''(.*)'' has not been declared$'; FileName: 1; Line: 2; Column: 0),
+    (Expression: '([^:]*):([0-9]+): error: ''(.*)'' is an inaccessible base of ''(.*)''$'; FileName: 1; Line: 2; Column: 0),
+    (Expression: '([^:]*): In function `%s'':$'; FileName: 1; Line: 0; Column: 0),
+    (Expression: '([^:]*):([0-9]+): error: `%s'' was not declared in this scope$'; FileName: 1; Line: 2; Column: 0),
+    (Expression: '([^:]*):([0-9]+): error: expected `%s'' before "%s"$'; FileName: 1; Line: 2; Column: 0),
+    (Expression: '([^:]*):([0-9]+): error: extra qualification ''(.*)'' on member ''(.*)''$'; FileName: 1; Line: 2; Column: 0),
+    (Expression: '([^:]*):([0-9]+): error: initializer element is not constant$'; FileName: 1; Line: 2; Column: 0),
+    (Expression: '([^:]*):([0-9]+): warning: conflicting types for ''(.*)''$'; FileName: 1; Line: 2; Column: 0),
+    (Expression: '([^:]*):([0-9]+): note: previous implicit declaration of ''(.*)'' was here$'; FileName: 1; Line: 2; Column: 0),
+    (Expression: '([^:]*): At top level:$'; FileName: 1; Line: 0; Column: 0)
   );
 
 type

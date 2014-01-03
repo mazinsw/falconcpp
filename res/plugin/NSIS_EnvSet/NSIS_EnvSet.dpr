@@ -4,7 +4,9 @@ uses
   Windows, Messages, SysUtils, NSIS, Registry;
 
 function SetGlobalEnvironmentA(const Name, Value: string;
-const User: Boolean = True): Boolean;
+  const User: Boolean = True): Boolean;
+var
+  rv: DWORD;
 begin
   with TRegistry.Create do
     try
@@ -14,16 +16,13 @@ begin
       begin
         RootKey := HKEY_LOCAL_MACHINE;
         Result  := OpenKey('System\CurrentControlSet\Control\Session Manager\' +
-                           'Environment', True);
+                           'Environment', False);
       end;
       if Result then
       begin
-        if CompareText(Name, 'path') = 0 then
-          WriteExpandString(Name, Value)
-        else
-          WriteString(Name, Value);
-        SetEnvironmentVariable(PChar(Name), PChar(Value));
-        SendMessage(HWND_BROADCAST, WM_SETTINGCHANGE, 0, Integer(PChar('Environment')));
+        WriteExpandString(Name, Value);
+        SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE,
+          0, Integer(PChar('Environment')), SMTO_ABORTIFHUNG, 5000, rv);
       end;
     finally
       Free;
@@ -36,7 +35,7 @@ begin
   try
     RootKey := HKEY_LOCAL_MACHINE;
     OpenKey('System\CurrentControlSet\Control\Session Manager\' +
-            'Environment', True);
+            'Environment', False);
     Result := ReadString(Name);
   finally
     Free;
@@ -49,7 +48,7 @@ begin
   try
     RootKey := HKEY_LOCAL_MACHINE;
     OpenKey('System\CurrentControlSet\Control\Session Manager\' +
-            'Environment', True);
+            'Environment', False);
     Result := DeleteValue(Name);
   finally
     Free;
@@ -158,4 +157,5 @@ exports GetEnvironmentVariable;
 exports DeleteEnvironmentVariable;
 exports AddVariableToPath;
 exports DelVariableOfPath;
+
 end.

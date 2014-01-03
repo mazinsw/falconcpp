@@ -140,23 +140,6 @@ begin
   inherited Destroy;
 end;
 
-procedure addimages(imglist: TImageList; resname: String);
-var
-  Rs: TResourceStream;
-  png: TPNGObject;
-  bmp: TBitmap;
-begin
-  Rs := TResourceStream.Create(HInstance, resname, RT_RCDATA);
-  Rs.Position := 0;
-  png := TPNGObject.Create;
-  png.LoadFromStream(Rs);
-  bmp := PNGToBMP32(png);
-  imglist.AddMasked(bmp, clNone);
-  bmp.Free;
-  Rs.Free;
-  png.Free;
-end;
-
 procedure TFrmPkgMan.CreateTree(Files: TStrings; Expanded: Boolean = False);
 
   function GetImgIndex(FileName: String): Integer;
@@ -304,6 +287,7 @@ begin
     Item.ImageIndex := 0;
     ini.Free;
   end;
+  Files.Free;
 end;
 
 procedure TFrmPkgMan.ReloadPackages(var Message: TMessage);
@@ -376,30 +360,6 @@ end;
 
 procedure TFrmPkgMan.InstallClick(Sender: TObject);
 begin
-  {with TOpenDialog.Create(Self) do
-  begin
-    Filter :=
-    'All package files(*.fpk, *.DevPak, *.zip)|*.fpk; *.DevPak; *.zip|' +
-    'Falcon C++ package file(*.fpk)|*.fpk|' +
-    'DevC++ package file(*.DevPak)|*.DevPak|' +
-    'Zip file(*.zip)|*.zip|' +
-    'All files|*.*';
-    if Execute then
-    begin
-      if LoadPackageFile(FileName) then
-      begin
-        FrmWizard := TFrmWizard.CreateParented(Handle);
-        FraFnsh.ChbShow.Checked := False;
-        FraFnsh.ChbShow.Enabled := False;
-        FrmWizard.ShowModal;
-        FrmWizard.Free;
-        PkgList.Clear;
-        FileList.Items.Clear;
-        LoadPackages;
-      end;
-      Free;
-    end;
-  end;}
   InstallPackages(Handle);
 end;
 

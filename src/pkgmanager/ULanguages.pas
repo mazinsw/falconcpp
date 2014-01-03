@@ -294,16 +294,14 @@ begin
   ConfigPath := GetSpecialFolderPath(CSIDL_APPDATA) + 'Falcon\';
   ini := TIniFile.Create(ConfigPath + 'Config.ini');
   AlterConfIni := ini.ReadString('EnvironmentOptions', 'ConfigurationFile', '');
-  LangID := ini.ReadInteger('EnvironmentOptions', 'LanguageID', GetSystemDefaultLangID);
-  LangDir := ini.ReadString('EnvironmentOptions', 'LanguageDir', FalconDir + 'Lang\');
   if ini.ReadBool('EnvironmentOptions', 'AlternativeConfFile', False) and
     FileExists(AlterConfIni) then
   begin
     ini.Free;
-    ini := TIniFile.Create(ConfigPath + 'Config.ini');
-    LangID := ini.ReadInteger('EnvironmentOptions', 'LanguageID', LangID);
-    LangDir := ini.ReadString('EnvironmentOptions', 'LanguageDir', FalconDir + 'Lang\');
+    ini := TIniFile.Create(AlterConfIni);
   end;
+  LangID := ini.ReadInteger('EnvironmentOptions', 'LanguageID', GetSystemDefaultLangID);
+  LangDir := ini.ReadString('EnvironmentOptions', 'LanguageDir', FalconDir + 'Lang\');
   ini.Free;
   Files := TStringList.Create;
   FindFiles(LangDir + '*.lng', Files);

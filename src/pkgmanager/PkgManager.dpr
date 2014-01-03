@@ -1,6 +1,8 @@
 program PkgManager;
 
 uses
+  FastMM4 in '..\others\fastmm\FastMM4.pas',
+  FastMM4Messages in '..\others\fastmm\FastMM4Messages.pas',
   Windows,
   SysUtils,
   Forms,
@@ -72,7 +74,7 @@ begin
       Application.Initialize;
 	    Application.Title := 'Falcon C++ Install Wizard';
       Application.CreateForm(TFrmWizard, FrmWizard);
-      Application.Run;
+  Application.Run;
     end
     else
       ExitCode := 1;

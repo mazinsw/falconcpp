@@ -41,6 +41,7 @@ type
     procedure FileDownloadStart(Sender: TObject);
     procedure FormShow(Sender: TObject);
   private
+    procedure LoadInternetConfiguration;
     { Private declarations }
   public
     { Public declarations }
@@ -57,6 +58,30 @@ implementation
 uses UFraGetVer, UFraUpdate, CompressUtils, ExecWait;
 
 {$R *.dfm}
+
+procedure TFrmUpdate.LoadInternetConfiguration;
+var
+  FalconDir, AlterConfIni, ConfigPath: String;
+  ini: TIniFile;
+begin
+  FalconDir := AppRoot;
+  ini := TIniFile.Create(ConfigPath + 'Config.ini');
+  AlterConfIni := ini.ReadString('EnvironmentOptions', 'ConfigurationFile', '');
+  if ini.ReadBool('EnvironmentOptions', 'AlternativeConfFile', False) and
+    FileExists(AlterConfIni) then
+  begin
+    ini.Free;
+    ini := TIniFile.Create(AlterConfIni);
+  end;
+  FileDownload.Proxy := ini.ReadBool('Proxy', 'Enabled', False);
+  FileDownload.Server := ini.ReadString('Proxy', 'IP', 'localhost');
+  FileDownload.Port := ini.ReadInteger('Proxy', 'Port', 80);
+
+  UpdateDownload.Proxy := FileDownload.Proxy;
+  UpdateDownload.Server := FileDownload.Server;
+  UpdateDownload.Port := FileDownload.Port;
+  ini.Free;
+end;
 
 //update user selected language in Falcon C++
 procedure TFrmUpdate.UpdateLangNow;
@@ -75,6 +100,7 @@ begin
   FraGetVer := TFraGetVer.Create(Self);
   FraGetVer.Parent := PnlFra;
   FraUpdate := TFraUpdate.Create(Self);
+  LoadInternetConfiguration;
   { TODO -oMazin -c : resolve flik:FraGetVer.PrgsUpdate.DoubleBuffered := True; 17/02/2013 22:39:53 }
   UpdateLangNow;
   Install := (ParamCount = 1);//has URL as parameter

@@ -700,7 +700,7 @@ object FrmEditorOptions: TFrmEditorOptions
         Width = 114
         Height = 21
         AutoComplete = False
-        ItemHeight = 13
+        ItemHeight = 0
         MaxLength = 48
         TabOrder = 1
         OnSelect = CbDefSinSelect

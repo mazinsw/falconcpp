@@ -1,22 +1,3 @@
-main.cpp:15:21: fatal error: GL/glut.h: No such file or directory
-compilation terminated.
-NovoArquivo.cpp:8:2: warning: no newline at end of file
-NovoArquivo.cpp:10: error: 'int teste(int, char**)' previously defined here
-NovoArquivo.cpp:33: error: invalid use of 'class Teste'
-main.cpp:67: error: expected declaration before '}' token
-main.cpp:9: warning: 'void draw()' defined but not used
-mochila_backtrack.c:130: error: variable-sized object may not be initialized
-math.h:58:1: warning: this is the location of the previous definition
-glh_linear.h:180: warning: friend declaration 'bool glh::operator==(const glh::vec<N, T>&, const glh::vec<N, T>&)' declares a non-template function
-glh_linear.h:180: note: (if this is not what you intended, make sure the function template has already been declared and add <> after the function name here) 
-InvMatrix.hpp:28: error: 'boost' has not been declared
-..\problems\allocation\SA\main.cpp:38: error: 'AllocStateManager' is an inaccessible base of 'SA'
-NovoArquivo.cpp: In function `int main(int, char**)':
-NovoArquivo.cpp:7: error: `dsadsad' was not declared in this scope
-NovoArquivo.cpp:7: error: expected `;' before "printf"
-tmatrix.h:111: error: extra qualification 'TMatrix33::' on member 'inverse'
-NovoArquivo.c:4: error: initializer element is not constant
-
 already in use:
 %s: In function '%s':
 %s:%d: warning: implicit declaration of function '%s'
@@ -107,7 +88,7 @@ In file included from %s:%d:
 %s:%d:%d: warning: "%s" within comment
 %s:%d:%d: warning: missing terminating %s character
 %s: cannot open output file %s: No such file or directory
-%s: %s: No such file or directory
+#conflict#%s: %s: No such file or directory
 %s:%d: error: missing terminating %s character
 %s:%d: error: array size missing in '%s'
 %s:%d: warning: passing argument %d of '%s' from incompatible pointer type
@@ -187,3 +168,24 @@ Creating library file: %s
 %s:%d:%d: error: lvalue required as unary '%s' operand
 %s:%d: error: '%s' loop initial declarations are only allowed in %s mode
 %s:%d: note: use option %s or %s to compile your code
+%s:%d:%d: fatal error: %s: No such file or directory
+compilation terminated.
+%s:%d:%d: warning: no newline at end of file
+%s:%d: error: '%s' previously defined here
+%s:%d: error: invalid use of '%s'
+%s:%d: error: expected declaration before '%s' token
+%s:%d: warning: '%s' defined but not used
+%s:%d: error: variable-sized object may not be initialized
+%s:%d:%d: warning: this is the location of the previous definition
+%s:%d: warning: friend declaration '%s' declares a non-template function
+%s:%d: note: (if this is not what you intended, make sure the function template has already been declared and add <> after the function name here) 
+%s:%d: error: '%s' has not been declared
+%s:%d: error: '%s' is an inaccessible base of '%s'
+%s: In function `%s':
+%s:%d: error: `%s' was not declared in this scope
+%s:%d: error: expected `%s' before "%s"
+%s:%d: error: extra qualification '%s' on member '%s'
+%s:%d: error: initializer element is not constant
+%s:%d: warning: conflicting types for '%s'
+%s:%d: note: previous implicit declaration of '%s' was here
+%s: At top level:

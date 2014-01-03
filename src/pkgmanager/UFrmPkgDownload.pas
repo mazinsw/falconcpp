@@ -164,6 +164,7 @@ type
     procedure InstallPkgStart(Sender: TObject);
     procedure UninstallPkgFinish(Sender: TObject; Sucess: Boolean);
     procedure UninstallPkgStart(Sender: TObject);
+    procedure LoadInternetConfiguration;
   protected
     procedure CreateParams(var Params: TCreateParams); override;
   public
@@ -178,7 +179,8 @@ function InstallPackages(ParentWindow: HWND): Integer;
 
 implementation
 
-uses UInstaller, UFrmPkgMan, ShlObj, UUninstaller, PkgUtils, ULanguages;
+uses UInstaller, UFrmPkgMan, ShlObj, UUninstaller, PkgUtils, ULanguages,
+  IniFiles;
 
 {$R *.dfm}
 
@@ -336,7 +338,6 @@ begin
   try
     XMLDoc.LoadFromStream(Ms);
   except
-    XMLDoc.Free;
     ProgressBar1.Position := 0;
     LabelProgresss.Caption := STR_FRM_PKG_DOWN[15];
     BtnCancel.Caption := STR_FRM_PKG_DOWN[16];
@@ -393,7 +394,6 @@ begin
           DependencyItem.Version := DependencyNode.Attributes['version'];
           BuildDependencyList.Add(DependencyItem);
           DependencyNode := DependencyNode.NextSibling;
-        { TODO -oMazin -c : loop dependency 20/09/2012 16:01:27 }
         end;
         PackageNode := PackageNode.NextSibling;
       end;
@@ -427,10 +427,10 @@ begin
       raise Exception.CreateFmt(STR_FRM_PKG_DOWN[17],
         [DependencyItem.Name, DependencyItem.Version,
         DependencyItem.Package.Name, DependencyItem.Package.Version]);
+    DependencyItem.Free;
   end;
   pkgList.Free;
   BuildDependencyList.Free;
-  XMLDoc.Free;
   LoadDone;
   SearchPackage(UpperCase(Trim(EditSearch.Text)));
 end;
@@ -562,9 +562,35 @@ begin
   Dec(LoadingPkg);
 end;
 
+procedure TFrmPkgDownload.LoadInternetConfiguration;
+var
+  FalconDir, AlterConfIni, ConfigPath: String;
+  ini: TIniFile;
+begin
+  FalconDir := GetFalconDir;
+  ConfigPath := GetSpecialFolderPath(CSIDL_APPDATA) + 'Falcon\';
+  ini := TIniFile.Create(ConfigPath + 'Config.ini');
+  AlterConfIni := ini.ReadString('EnvironmentOptions', 'ConfigurationFile', '');
+  if ini.ReadBool('EnvironmentOptions', 'AlternativeConfFile', False) and
+    FileExists(AlterConfIni) then
+  begin
+    ini.Free;
+    ini := TIniFile.Create(AlterConfIni);
+  end;
+  FileDownloadXML.Proxy := ini.ReadBool('Proxy', 'Enabled', False);
+  FileDownloadXML.Server := ini.ReadString('Proxy', 'IP', 'localhost');
+  FileDownloadXML.Port := ini.ReadInteger('Proxy', 'Port', 80);
+
+  FileDownloadPkg.Proxy := FileDownloadXML.Proxy;
+  FileDownloadPkg.Server := FileDownloadXML.Server;
+  FileDownloadPkg.Port := FileDownloadXML.Port;
+  ini.Free;
+end;
+
 procedure TFrmPkgDownload.FormCreate(Sender: TObject);
 begin
   Canceled := False;
+  LoadInternetConfiguration;
   ApplyTranslation;
   PkgImg := GetPNGResource('PKGIMG');
   ConvertTo32BitImageList(ImageList16x16);
@@ -1006,20 +1032,16 @@ begin
   end;
   UninstalingList.Clear;
   UpdateButtonsCaption;
-  //Inc(UninstalledCount, InstalingList.Count);
   LabelProgresss.Caption := STR_FRM_PKG_DOWN[38];
   ProgressBar1.Position := 0;
   BtnCancel.Enabled := False;
 end;
 
 function TFrmPkgDownload.UninstallPackageFromQueue: Boolean;
-//var
-//  Package: TPackage;
 begin
   Result := UninstallQueue.Count > 0;
-  if not Result{ or ThreadUninstall.IsBusy} then
+  if not Result then
     Exit;
-  //Package := TPackage(UninstallQueue.Peek);
   UninstallPackages;
 end;
 
@@ -1159,7 +1181,6 @@ end;
 
 procedure TFrmPkgDownload.InstallPkgStart(Sender: TObject);
 begin
-  //
 end;
 
 procedure TFrmPkgDownload.InstallPkgFinish(Sender: TObject; Sucess: Boolean);
@@ -1199,7 +1220,6 @@ end;
 
 procedure TFrmPkgDownload.UninstallPkgStart(Sender: TObject);
 begin
-//
 end;
 
 procedure TFrmPkgDownload.UninstallPkgFinish(Sender: TObject;

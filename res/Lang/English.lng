@@ -18,7 +18,7 @@ Version=your translate version
 4=&View
 5=&Project
 6=&Run
-7=Tools
+7=&Tools
 8=&Help
 
 #File Menu
@@ -1221,3 +1221,45 @@ Version=your translate version
 1951='$3' loop initial declarations are only allowed in $4 mode
 #$1:$2: note: use option $3 or $4 to compile your code
 1952=use option $3 or $4 to compile your code
+#$1:$2:$3: fatal error: $4: No such file or directory
+1953=$4: No such file or directory
+#compilation terminated.
+1954=compilation terminated.
+#$1:$2:$3: warning: no newline at end of file
+1955=no newline at end of file
+#$1:$2: error: '$3' previously defined here
+1956='$3' previously defined here
+#$1:$2: error: invalid use of '$3'
+1957=invalid use of '$3'
+#$1:$2: error: expected declaration before '$3' token
+1958=expected declaration before '$3' token
+#$1:$2: warning: '$3' defined but not used
+1959='$3' defined but not used
+#$1:$2: error: variable-sized object may not be initialized
+1960=variable-sized object may not be initialized
+#$1:$2:$3: warning: this is the location of the previous definition
+1961=this is the location of the previous definition
+#$1:$2: warning: friend declaration '$3' declares a non-template function
+1962=friend declaration '$3' declares a non-template function
+#$1:$2: note: (if this is not what you intended, make sure the function template has already been declared and add <> after the function name here) 
+1963=if this is not what you intended, make sure the function template has already been declared and add <> after the function name here
+#$1:$2: error: '$3' has not been declared
+1964='$3' has not been declared
+#$1:$2: error: '$3' is an inaccessible base of '$4'
+1965='$3' is an inaccessible base of '$4'
+#$1: In function `$2':
+1966=In function `$2':
+#$1:$2: error: `$3' was not declared in this scope
+1967=`$3' was not declared in this scope
+#$1:$2: error: expected `$3' before "$4"
+1968=expected `$3' before "$4"
+#$1:$2: error: extra qualification '$3' on member '$4'
+1969=extra qualification '$3' on member '$4'
+#$1:$2: error: initializer element is not constant
+1970=initializer element is not constant
+#$1:$2: warning: conflicting types for '$3'
+1971=conflicting types for '$3'
+#$1:$2: note: previous implicit declaration of '$3' was here
+1972=previous implicit declaration of '$3' was here
+#$1: At top level:
+1973=At top level:

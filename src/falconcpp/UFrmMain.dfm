@@ -1507,6 +1507,7 @@ object FrmFalconMain: TFrmFalconMain
     Top = 272
   end
   object TimerStartUpdate: TTimer
+    Enabled = False
     Interval = 10000
     OnTimer = TimerStartUpdateTimer
     Left = 139

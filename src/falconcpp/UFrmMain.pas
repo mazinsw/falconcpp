@@ -824,6 +824,7 @@ type
     function InternalMessageBox(Text, Caption: string;
       uType: UINT; Handle: HWND = 0): Integer;
     procedure UpdateStatusbar;
+    procedure LoadInternetConfiguration;
   public
     { Public declarations }
     LastSearch: TSearchItem;
@@ -1313,6 +1314,8 @@ begin
   Rs.Position := 0;
   AutoComplete.AutoCompleteList.LoadFromStream(Rs);
   Rs.Free;
+  // load proxy configuration
+  LoadInternetConfiguration;
   SetExplorerTheme(TreeViewProjects.Handle);
   SetExplorerTheme(ListViewMsg.Handle);
   if CheckWin32Version(6, 0) then
@@ -1542,8 +1545,20 @@ begin
   ParseFiles(List);
   List.Free;
   SplashScreen.Hide;
+  TimerStartUpdate.Enabled := True;
   IsLoading := False;
   //update grayed project and outline
+end;
+
+procedure TFrmFalconMain.LoadInternetConfiguration;
+var
+  ini: TIniFile;
+begin
+  ini := TIniFile.Create(FIniConfigFile);
+  UpdateDownload.Proxy := ini.ReadBool('Proxy', 'Enabled', False);
+  UpdateDownload.Server := ini.ReadString('Proxy', 'IP', 'localhost');
+  UpdateDownload.Port := ini.ReadInteger('Proxy', 'Port', 80);
+  ini.Free;
 end;
 
 //on close application
@@ -1755,9 +1770,12 @@ begin
     end;
     for I := 0 to SourceFileList.Count - 1 do
     begin
-      FIncludeFileList.AddObject(ConvertToUnixSlashes(ExtractRelativePath(
+      S := ConvertToUnixSlashes(ExtractRelativePath(
         Config.Compiler.Path + '\lib\gcc\mingw32\' + Config.Compiler.Version +
-        '\include\', SourceFileList.Strings[I])), SourceFileList.Objects[I]);
+        '\include\', SourceFileList.Strings[I]));
+      if StartsWith(S, 'c++/') then
+          S := Copy(S, 5, Length(S) - 4);
+      FIncludeFileList.AddObject(S, SourceFileList.Objects[I]);
     end;
     SourceFileList.Free;
     FIncludeFileListFlag := 0;
@@ -5013,7 +5031,7 @@ var
   WS: TBufferCoord;
 begin
   //#include <stdio.h>
-  if (AttriName = SYNS_AttrPreprocessor) and (FirstWord = 'include') then
+  if (AttriName = SYNS_AttrInclude) then
   begin
     S := ConvertSlashes(S);
     if not GetActiveSheet(sheet) then
@@ -7126,7 +7144,7 @@ begin
   QuoteChar := #0;
   if Memo.GetHighlighterAttriAtRowCol(BC, S, Attri) then
   begin
-    if StringIn(Attri.Name, [SYNS_AttrPreprocessor]) then
+    if StringIn(Attri.Name, [SYNS_AttrPreprocessor, SYNS_AttrInclude]) then
     begin
       HintParams.Cancel;
       Exit;
@@ -7523,9 +7541,9 @@ begin
   begin
     //invalid attribute
     if ((not StringIn(attri.Name, ['Identifier', SYNS_AttrPreprocessor]) or
-      (Pos('include', Input) > 0)) and not DebugReader.Running) or
-      (StringIn(attri.Name, [SYNS_AttrString, SYNS_AttrComment, SYNS_AttrDocComment, SYNS_AttrPreprocessor]) and
-      DebugReader.Running) then
+        (Pos('include', Input) > 0)) and not DebugReader.Running) or
+       (StringIn(attri.Name, [SYNS_AttrString, SYNS_AttrComment, SYNS_AttrDocComment, SYNS_AttrPreprocessor, SYNS_AttrInclude]) and
+        DebugReader.Running) then
     begin
       HintTip.Cancel;
       DebugHint.Cancel;
@@ -7769,16 +7787,16 @@ begin
   if sheet.Memo.GetHighlighterAttriAtRowCol(Buffer, S, Attri) then
   begin
     if StringIn(Attri.Name, [SYNS_AttrCharacter, SYNS_AttrString, SYNS_AttrDocComment, SYNS_AttrComment,
-      SYNS_AttrPreprocessor]) then
+      SYNS_AttrInclude]) then
     begin
       Dec(Buffer.Char);
-      if (Attri.Name <> SYNS_AttrPreprocessor) and
+      if (Attri.Name <> SYNS_AttrInclude) and
         sheet.Memo.GetHighlighterAttriAtRowCol(Buffer, S, Attri) then
       begin
         if StringIn(Attri.Name, [SYNS_AttrCharacter, SYNS_AttrString, SYNS_AttrDocComment, SYNS_AttrComment,
-          SYNS_AttrPreprocessor]) then
+          SYNS_AttrInclude]) then
         begin
-          if (Attri.Name = SYNS_AttrPreprocessor) and (Pos('include', LineStr) > 0) and
+          if (Attri.Name = SYNS_AttrInclude) and (Pos('include', LineStr) > 0) and
             (Pos('>', LineStr) = 0) and (CountChar(LineStr, '"') <= 1) and
             ((Pos('<', LineStr) > 0) or (Pos('"', LineStr) > 0)) then
           begin
@@ -7794,7 +7812,7 @@ begin
       end
       else
       begin
-        if (Attri.Name = SYNS_AttrPreprocessor) and (Pos('include', LineStr) > 0) and
+        if (Attri.Name = SYNS_AttrInclude) and (Pos('include', LineStr) > 0) and
           (Pos('>', LineStr) = 0) and (CountChar(LineStr, '"') <= 1) and
             ((Pos('<', LineStr) > 0) or (Pos('"', LineStr) > 0)) then
         begin
@@ -7814,16 +7832,16 @@ begin
     if sheet.Memo.GetHighlighterAttriAtRowCol(Buffer, S, Attri) then
     begin
       if StringIn(Attri.Name, [SYNS_AttrCharacter, SYNS_AttrString, SYNS_AttrDocComment, SYNS_AttrComment,
-        SYNS_AttrPreprocessor]) then
+        SYNS_AttrInclude, SYNS_AttrPreprocessor]) then
       begin
         Dec(Buffer.Char);
-        if (Attri.Name <> SYNS_AttrPreprocessor) and
+        if (Attri.Name <> SYNS_AttrInclude) and (Attri.Name <> SYNS_AttrPreprocessor) and
           sheet.Memo.GetHighlighterAttriAtRowCol(Buffer, S, Attri) then
         begin
           if StringIn(Attri.Name, [SYNS_AttrCharacter, SYNS_AttrString,
-            SYNS_AttrDocComment, SYNS_AttrComment, SYNS_AttrPreprocessor]) then
+            SYNS_AttrDocComment, SYNS_AttrComment, SYNS_AttrInclude]) then
           begin
-            if (Attri.Name = SYNS_AttrPreprocessor) and (Pos('include', LineStr) > 0)
+            if (Attri.Name = SYNS_AttrInclude) and (Pos('include', LineStr) > 0)
               and (Pos('>', LineStr) = 0) and (CountChar(LineStr, '"') <= 1) and
             ((Pos('<', LineStr) > 0) or (Pos('"', LineStr) > 0)) then
             begin
@@ -7839,7 +7857,7 @@ begin
         end
         else
         begin
-          if (Attri.Name = SYNS_AttrPreprocessor) and (Pos('include', LineStr) > 0)
+          if (Attri.Name = SYNS_AttrInclude) and (Pos('include', LineStr) > 0)
             and (Pos('>', LineStr) = 0) and (CountChar(LineStr, '"') <= 1) and
             ((Pos('<', LineStr) > 0) or (Pos('"', LineStr) > 0)) then
           begin
@@ -7849,6 +7867,7 @@ begin
             HintTip.Cancel;
             CanExecute := True;
           end
+          // show preprocessors code completion list
           else if Pos(' ', LineStr) = 0 then
           begin
             if ParseFields(sheet.Memo.UnCollapsedLines.Text, sheet.Memo.RowColToCharIndex(SaveBuffer), SaveInput, Fields, InputError) then
@@ -8072,7 +8091,7 @@ begin
   end;
   if sheet.Memo.GetHighlighterAttriAtRowCol(bCoord, S, Attri) then
   begin
-    if (Attri.Name = SYNS_AttrPreprocessor) and (Pos('include', LineStr) > 0) then
+    if (Attri.Name = SYNS_AttrInclude) then
     begin
       WordBreakChars := '<>"';
       ScanBreakChars := '<>"';

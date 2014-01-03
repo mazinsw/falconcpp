@@ -389,6 +389,9 @@ Section "$(NAME_SecMinGW)" SecMinGW
   Delete "$INSTDIR\gcc-core 4.4.1.fpk"
   Delete "$INSTDIR\gcc-g++ 4.4.1.fpk"
   
+  ;write compiler path
+  SetShellVarContext current
+  WriteINIStr "$APPDATA\Falcon\Config.ini" "CompilerOptions" "Path" "$INSTDIR\MinGW"
   
   DetailPrint "$(DESC_AdjEnvVar)"
   NSIS_EnvSet::AddVariableToPath "$INSTDIR\MinGW\bin"

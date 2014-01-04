@@ -1,17 +1,17 @@
 [FALCON]
 
-#Language definitions
+# Language definitions
 LangID=1033
 LangName=English(Default)
 ImageIndex=220
 
-#Translated by
-Name=Your Name
-Email=email@email.com
-Version=your translate version
+# Translated by
+Name=Mazinsw
+Email=mazinsw@gmail.com
+Version=1.0
 
-#Main Form
-#Top Menu
+# Main Form
+# Top Menu
 1=&File
 2=&Edit
 3=&Search
@@ -21,66 +21,52 @@ Version=your translate version
 7=&Tools
 8=&Help
 
-#File Menu
+# File Menu
 109=&New
 110=&Open...
 111=&Reopen
-#-----------
 113=&Save
 114=Save &As...
 115=Save All
-#-----------
 117=Import
 118=Export
-#-----------
 120=&Close
 121=C&lose All
 122=Re&move
-#-----------
 124=&Print
-#-----------
 126=&Exit
 
-#Edit Menu
+# Edit Menu
 221=Undo
 222=Redo
-#-----------
 224=Cut
 225=Copy
 226=Paste
-#-----------
 228=Swap header/source
-#-----------
 230=Delete
 231=Select All
-#-----------
 233=Toggle Bookmarks
 234=Goto Bookmarks
-#-----------
 236=Indent
 237=Unindent
-#-----------
 239=Toggle Line Comment
-#-----------
 241=Format
-#-----------
 243=Collapse All
 244=Uncollapse All
 
-#Search Menu
+# Search Menu
 334=Find...
 335=Find Next
 336=Find Previous
 337=Find in Files...
 338=Replace...
 339=Incremental Search...
-#-----------
 341=Goto Funcion...
 342=Goto Previous Function
 343=Goto Next Function
 344=Goto Line Number...
 
-#View Menu
+# View Menu
 391=Project Manager
 392=Statusbar
 393=Outline
@@ -88,24 +74,19 @@ Version=your translate version
 395=Toolbars
 396=Themes
 397=Zoom
-#-----------
 399=Full Screen
-#-----------
 401=Restore Default
 
-#Project Menu
+# Project Menu
 435=Add...
 436=Remove...
-#-----------
 438=Build
-#-----------
 440=Properties...
 
-#Run Menu
+# Run Menu
 541=Run
 542=Compile
 543=Execute
-#-----------
 545=Toggle Breakpoint
 546=Step Into
 547=Step Over
@@ -113,40 +94,35 @@ Version=your translate version
 549=Run to Cursor
 550=Stop
 
-#Tools Menu
+# Tools Menu
 646=Environment Options...
 647=Compiler Options...
 648=Editor Options...
-#-----------
 650=Template Creator...
 651=Package Creator...
-#-----------
 653=Packages...
 
-#Help Menu
+# Help Menu
 854=Falcon Help
 855=Tip of the Day...
-#-----------
 857=Update
-#-----------
 859=About...
 
-#submenu New from File Menu
+# SubMenu New from File Menu
 959=&Project...
 960=C File
 961=C++ File
 962=Header File
 963=Resource File
 964=Empty File
-#-----------
 966=Folder
 
-#submenu Import from File Menu
+# SubMenu Import from File Menu
 970=Dev-C++ Project
 971=Code::Blocks Project
 972=MS Visual C++ Project
 
-#submenu Toolbars from View Menu
+# SubMenu Toolbars from View Menu
 978=Default Bar
 979=Edit Bar
 980=Search Bar
@@ -156,146 +132,125 @@ Version=your translate version
 984=Help Bar
 985=Debug Bar
 
-#DefaultBar ToolBar
+# DefaultBar ToolBar
 1067=New
 1068=Open
 1069=Remove
-#-----------
 1071=Save
 1072=Save All
 
-#EditBar ToolBar
+# EditBar ToolBar
 1080=Undo
 1081=Redo
 
-#NavigatorBar ToolBar
+# NavigatorBar ToolBar
 1089=Previous Page
 1090=Next Page
-#------------
 1092=Toggle Bookmarks
 1093=Goto Bookmarks
 
-#CompilerBar ToolBar
+# CompilerBar ToolBar
 1098=Run
 1099=Compile
 1100=Execute
-#------------
 1102=Stop
 
-#HelpBar ToolBar
+# HelpBar ToolBar
 1110=Help
 1111=Context Help
 
-#ProjectBar ToolBar
+# ProjectBar ToolBar
 1119=New Project
 1120=Properties
 
-#DebugBar Toolbar
+# DebugBar Toolbar
 1128=Step Into
 1129=Step Over
 1130=Step Return
 
-#SearchBar Toolbar
+# SearchBar Toolbar
 1138=Find
 1139=Replace
-#------------
 1141=Goto Line Number
 
-#PopupMenu from Project List
+# PopupMenu from Project List
 1181=&New
-#------------
 1183=Edit
 1184=Open
-#------------
 1186=Add to project
 1187=Remove
 1188=Rename
 1189=Delete from disk
-#------------
 1191=Property...
 
-#PopupMenu from Editor
+# PopupMenu from Editor
 1291=Open declaration
-#------------
 1293=Complete class at cursor
 1294=Swap header/source
-#------------
 1296=Undo
 1297=Redo
-#------------
 1299=Cut
 1300=Copy
 1301=Paste
 1302=Delete
 1303=Select All
-#------------
 1305=Tools
-#------------
 1307=Toggle Bookmarks
 1308=Goto Bookmarks
-#------------
 1310=Properties...
 
-#PopupMenu from Tabs
+# PopupMenu from Tabs
 1351=&Close
 1352=Close &all
 1353=Close all others
-#------------
 1355=Save
 1356=Save all
-#------------
 1358=Copy full filename
 1359=Copy filename
 1360=Copy directory path
-#------------
 1362=Swap header/source
-#------------
 1364=Read only
-#------------
 1366=Tabs at top
 1367=Tabs at bottom
-#------------
 1369=Properties...
 
-#PopupMenu from Messages
+# PopupMenu from Messages
 1375=Copy
 1376=Copy original message
-#------------
 1378=Original message
-#------------
 1380=Goto line
 1381=Clear
 
-#Tabs Left
+# Tabs Left
 1405=Projects
 1406=Explorer
 
-#Tabs Right
+# Tabs Right
 1407=Outline
 
-#Tabs Down
+# Tabs Down
 1408=Messages
 
-#Messages List
+# Messages List
 1410=File
 1411=Line
 1412=Notification
 
-#Others
+# Others
 1413=Empty project
 1414=Save changes to "%s"?
 
-#Filters
+# Filters
 1415=Falcon project file
 1416=All types
 
-#default FileName
+# default FileName
 1417=NewFile
 1418=NewFolder
 1419=main
 1420=resource
 
-#Others
+# Others
 1421=Running
 1422=Compiling
 1423=Building
@@ -304,7 +259,7 @@ Version=your translate version
 1426=Generic error
 1427=Project
 
-#splash screen
+# Splash Screen
 1428=Translated by: %s
 1429=Creating standard templates...
 1430=Loading Templates...
@@ -317,18 +272,17 @@ Version=your translate version
 1437=Loading History...
 1438=File %s not found
 
-#Filters
+# Filters
 1439=All known files
 1440=Loading all installed packages...
 1441=Checking for new installed packages...
 1442=dddd, d of mmmm of yyyy t
 
-#compilation messages
+# Compilation messages
 1443=Compilation success in %s s
 1444=Compilation failed
 1445=Adding messages %d/%d
 1446=Parsing results %d/%d
-
 1447=Do you want to create it?
 1448=Debugging
 1449=Loading configurations...
@@ -342,14 +296,14 @@ Version=your translate version
 1457=Delete folder "%s" from disk?
 1458=The file "%s" already exists.\nDo you want to override it?
 
-#Property Form
-#Tabs
+# Property Form
+# Tabs
 1528=Application
 1529=Version Info
 1530=Compiler
 1531=Run
 
-#Sheet Application
+# Sheet Application
 1532=Application settings
 1533=Project name:
 1534=Tarjet:
@@ -359,7 +313,6 @@ Version=your translate version
 1538=Output settings
 1539=Target file extension:
 1540=Includes all files into project
-#2.3.2.0
 1573=Properties
 1574=Application Type
 1575=Console Application
@@ -369,17 +322,16 @@ Version=your translate version
 1579=Enable theme
 1580=Requires admin level
 1581=Create linked library
-#3.2.0.0
 1582=Select folder to include
 1583=Edit selected
 1584=Select library folder
 
-#Btns
+# Common buttons
 1541=&Ok
 1542=&Cancel
 1543=Apply
 
-#Sheet Version Info
+# Sheet Version Info
 1544=Include version information in project
 1545=Version numbers
 1546=Major version
@@ -392,7 +344,7 @@ Version=your translate version
 1553=Key
 1554=Value
 
-#Sheet Compiler
+# Sheet Compiler
 1555=Compiler Type
 1556=Optmizations
 1557=Minimize Size
@@ -410,19 +362,21 @@ Version=your translate version
 1569=Delete makefile after compilation
 1570=Delete resources after compilation
 
-#Sheet Run
+# Sheet Run
 1571=Application
 1572=Params:
 
-#New Project Form
+# New Project Form
 1673=New Project
 1674=< Back
 1675=Next >
 1676=Finish
-#Projects Frame
+
+# Projects Frame
 1677=Description
 1678=Falcon C++ Project Wizard
-#Project Options Frame
+
+# Project Options Frame
 1679=Change
 1680=Application Icon
 1681=Company
@@ -430,7 +384,7 @@ Version=your translate version
 1683=Product Name
 1684=Name
 
-#Update Frame
+# Update Frame
 4001=Application Update
 4002=Looking for updates
 4003=&Update
@@ -444,9 +398,11 @@ Version=your translate version
 4011=Downloading 0%...
 4012=Connecting...
 4013=Downloading...
-#Get Version Frame
+
+# Get Version Frame
 4014=Locating new version of the Falcon C++...
-#Update Frame
+
+# Update Frame
 4015=Changes:
 4016=XML Format error
 4017=No update available
@@ -459,7 +415,7 @@ Version=your translate version
 4024=&Cancel
 4025=Installing...
 
-#Find/Replace Form
+# Find/Replace Form
 4201=Find and replace
 4202=&Find
 4203=&Replace
@@ -495,19 +451,17 @@ Version=your translate version
 4233=Find '%s' in file '%s'
 4234=Found '%s' in line %d, column %d
 
-#Editor Options Form
+# Editor Options Form
 4333=Editor Options
-#General Sheet
+
+# General Sheet
 4334=General
 4335=Editor Options
 4336=Auto Indent
-#4337
 4338=Insert Mode
 4339=Group Undo
 4340=Keep Trailing Spaces
 4341=Show Space and Tab Characters
-4470=Auto close brackets/parentheses
-4471=Cursor past EOL
 4342=Scroll Hint
 4343=Tab Indent/Unindent
 4344=Smart Tabs
@@ -523,7 +477,10 @@ Version=your translate version
 4354=Color
 4355=Link click
 4356=Restore Default
-#Display Sheet
+4470=Auto close brackets/parentheses
+4471=Cursor past EOL
+
+# Display Sheet
 4357=Display
 4358=Editor font:
 4359=Size:
@@ -535,7 +492,8 @@ Version=your translate version
 4365=Gradient gutter
 4366=Right margin:
 4367=Gutter width:
-#Colors Sheet
+
+# Colors Sheet
 4368=Colors
 4369=Type:
 4370=Defined sintax:
@@ -548,14 +506,17 @@ Version=your translate version
 4377=Italic
 4378=Underlined
 4379=New Sintax
-#Formatter
+
+# Formatter
 4380=Formatter
-#Style
+
+# Style
 4381=Style
 4382=Custom
 4383=Preview
 4384=Sample
-#Indentation
+
+# Indentation
 4385=Indentation
 4386=Force using TABs
 4387=Indent classes (keywords public:, protected: and private:)
@@ -567,7 +528,8 @@ Version=your translate version
 4393=Indent labels
 4394=Indent mult-line preprocessor definitions
 4395=Indent single line comments
-#hints
+
+# Hints
 4396=Indent using tab characters.
 4397=Indent 'class' and 'struct' blocks so that the blocks 'public:', 'protected:' and 'private:' are indented. The struct blocks are\nindented only if an access modifier is declared somewhere in the struct. The entire block is indented. This option is \neffective for C++ files only.
 4398=Indent 'switch' blocks so that the 'case X:' statements are indented in the switch block. The entire case block is indented.
@@ -576,7 +538,8 @@ Version=your translate version
 4401=Add extra indentation to labels so they appear 1 indent less than the current indentation, \nrather than being flushed to the left (the default).
 4402=Indent multi-line preprocessor definitions ending with a backslash. Should be used with --convert-tabs for proper results. \nDoes a pretty good job, but cannot perform miracles in obfuscated preprocessor definitions. Without this option the \npreprocessor statements remain unchanged.
 4403=Indent C++ comments beginning in column one. By default C++ comments beginning in column one are not indented. \nThis option will allow the comments to be indented with the code.
-#Padding sheet
+
+# Padding sheet
 4404=Padding
 4405=Pad empty lines around header blocks ('if' 'while' ..)
 4406=Break closing header blocks
@@ -587,7 +550,8 @@ Version=your translate version
 4411=Remove extra space padding around parenthesis
 4412=Delete empty lines
 4413=Fill empty lines with the whitespace of their previous lines
-#hints
+
+# Hints
 4414=Pad empty lines around header blocks (e.g. 'if', 'for', 'while'...).
 4415=Pad empty lines around header blocks (e.g. 'if', 'for', 'while'...). Treat closing header blocks (e.g. 'else', 'catch') as \nstand-alone blocks.
 4416=Insert space padding around operators. Any end of line comments will remain in the original column, if possible. \nNote that there is no option to unpad. Once padded, they stay padded.
@@ -597,7 +561,8 @@ Version=your translate version
 4420=Remove extra space padding around parenthesis on the inside and outside. Any end of line comments will remain in the \noriginal column, if possible.
 4421=Delete empty lines within a function or method. Empty lines outside of functions or methods are NOT deleted.
 4422=Fill empty lines with the white space of the previous line.
-#Formatting
+
+# Formatting
 4423=Formatting
 4424=Brackets style:
 4425=None
@@ -611,7 +576,8 @@ Version=your translate version
 4433=Don't break one-line blocks
 4434=Don't break complex statements and multiple statements residing in a single line
 4435=Convert TABs to spaces
-#hints
+
+# Hints
 4436=When used with brackets=attach, brackets=linux, this breaks closing headers (e.g. 'else', 'catch', ...) from their\nimmediately preceding closing brackets. Closing header brackets are always broken with broken brackets, horstmann \nbrackets, indented blocks, and indented brackets.
 4437=Break "else if" header combinations into separate lines. This option has no effect if keep one line statements is used, the\n"else if" statements will remain as they are.\nIf this option is NOT used, "else if" header combinations will be placed on a single line.
 4438=Add brackets to unbracketed one line conditional statements (e.g. 'if', 'for', 'while'...). The statement must be on a single \nline. The brackets will be added according to the currently requested predefined style or bracket type. If no style or \nbracket type is requested the brackets will be attached. If add one line brackets is also used the result will be one line \nbrackets.
@@ -624,9 +590,9 @@ Version=your translate version
 4445=Type
 4446=Middle
 4447=Name
-#hints
 4448=Attach a pointer or reference operator (* or &) to either the variable type (left) or variable name (right), or place it\nbetween the type and name (middle). The spacing between the type and name will be preserved, if possible. To format\nreferences separately use the following align-reference option.
-#Code Resources
+
+# Code Resources
 4449=Code Resources
 4450=Automatic features
 4451=Code completion
@@ -648,11 +614,11 @@ Version=your translate version
 4467=Custom Code Template File:
 4468=Open
 4469=Edit
-#last 4471
 
-#Form Environment Options
+# Form Environment Options
 4569=Environment Options
-#General
+
+# General
 4570=General
 4571=Default to C++ on new file
 4572=Show toolbars in full screen
@@ -668,13 +634,15 @@ Version=your translate version
 4582=Only last open file
 4583=Only first project
 4584=None
-#Interface
+
+# Interface
 4585=Interface
 4586=Max files in reopen menu
 4587=Language:
 4588=Show splash screen
 4589=Theme
-#Files and Directories
+
+# Files and Directories
 4590=Files and Directories
 4591=Alternative configuration file
 4592=Configuration file
@@ -691,7 +659,7 @@ Version=your translate version
 4603=Restart application to apply changes
 4604=Configuration files
 
-#Form Code Templates
+# Form Code Templates
 4704=Templates
 4705=Code
 4706=Invalid Name!
@@ -699,11 +667,11 @@ Version=your translate version
 4708=Add Code Template
 4709=Edit Code Template
 
-#Form Prompt Code Templates
+# Form Prompt Code Templates
 4808=Name
 4809=Description
 
-#About Form
+# About Form
 4909=About
 4910=Compatibility: %s
 4911=Licence
@@ -711,11 +679,11 @@ Version=your translate version
 4913=Translators
 4914=Testers
 
-#Form Goto Line
+# Form Goto Line
 5015=Goto Line
 5016=Line (%d - %d):
 
-#Form Goto Function
+# Form Goto Function
 5117=Goto Function
 5118=Function name
 5119=Name
@@ -723,15 +691,16 @@ Version=your translate version
 5121=Line
 5122=File
 
-#Console Runner
+# Console Runner
 6001=Process returned %ld   execution time : %0.3f s
 6002=Press any key to continue.
 
-#Package Manager
-#Loading form
+# Package Manager
+# Loading form
 7001=Please wait while extract package...
 7002=unpacking data: %d%%
-#Wizard form
+
+# Wizard form
 7101=%s Installation
 7102=< Back
 7103=Next >
@@ -758,24 +727,29 @@ Version=your translate version
 7124=Installation of %s has been aborted:\nError couldn't open file '%s' for writing.
 7125=Error opening temp file:
 7126=Removing temp files...
-#Welcome frame
+
+# Welcome frame
 7201=Welcome to the %s Package Installation Wizard
 7202=This wizard will guide you through the instalation of %s.
 7203=It is recommended that you close Falcon C++ application before starting Installation. This will make it possible to update all files on the compiler folder.
 7204=Click Next to continue.
-#Install step frame
+
+# Install step frame
 7301=Falcon C++ Install Package
-#Agreement frame
+
+# Agreement frame
 7401=If you accept the terms of the agreement, click I Agree to continue. You must accept the agreement to install %s.
 7402=License Agreement
 7403=Please review the license terms before installing %s.
 7404=Press Page Down to see the rest of the agreement.
-#Readme frame
+
+# Readme frame
 7501=Press Page Down to see the rest of the README.
 7502=Click Next to continue.
 7503=README
 7504=Please read the following README.
-#Description frame
+
+# Description frame
 7601=Package description
 7602=Package details of %s.
 7603=Space required:
@@ -786,22 +760,26 @@ Version=your translate version
 7608=Website:
 7609=Description:
 7610=Click Install to start the installation.
-#Progress frame
+
+# Progress frame
 7701=Show details
 7702=Installing
 7703=Please wait while %s Package is being installed.
 7704=Click Abort to stop the instalation,\nRetry to try again, or\nIgnore to skip this file.
-#Finish frame
+
+# Finish frame
 7801=Completing the %s Installation Wizard
 7802=Click Finish to close this wizard.
 7803=Show Package Manager
-#Uninstall form
+
+# Uninstall form
 7901=Uninstalling package...
 7902=Ok
 7903=Complete.
 7904=Package "%s" not found
 7905=Others Depends:
-#Package Manager form
+
+# Package Manager form
 8001=Falcon C++ Package Manager
 8002=Packages
 8003=View
@@ -833,9 +811,11 @@ Version=your translate version
 8029=%d of %d Files not Found
 8030=Intact package files!
 8031=Remove "%s" - Version: %s ?
-#Help form
+
+# Help form
 8032=Ok
-#Download form
+
+# Download form
 8101=Install packages
 8102=Packages
 8103=Name
@@ -879,387 +859,193 @@ Version=your translate version
 8141=Error on install %s package
 8142=Error on uninstall %s package
 
-#mingw messages
-#translation example
-
-#   $1:$2:$3: error: invalid suffix "$4" on integer constant
-#1784=invalid suffix "$4" on integer constant, on Line $2
-
-#$1: In function '$2':
+# Compiler messages
 1785=In function '$2':
-#$1:$2: warning: implicit declaration of function '$3'
 1786=implicit declaration of function '$3'
-#$1:$2: warning: assignment makes pointer from integer without a cast
 1787=assignment makes pointer from integer without a cast
-#$1:$2:$3: error: invalid suffix "$4" on integer constant
 1788=invalid suffix "$4" on integer constant
-#$1:$2: warning: unused variable '$3'
 1789=unused variable '$3'
-#$1:$2: error: '$3' was not declared in this scope
 1790='$3' was not declared in this scope
-#$1:$2: error: expected '$3' before '$4'
 1791=expected '$3' before '$4'
-#$1:$2:$3: error: macro "$4" passed $5 arguments, but takes just $6
 1792=macro "$4" passed $5 arguments, but takes just $6
-#$1:$2:$3: error: macro "$4" requires $5 arguments, but only $6 given
 1793=macro "$4" requires $5 arguments, but only $6 given
-#$1:$2: error: at this point in file
 1794=at this point in file
-#$1:$2: error: too many arguments to function '$3'
 1795=too many arguments to function '$3'
-#$1:$2: error: '$3' undeclared (first use in this function)
 1796='$3' undeclared (first use in this function)
-#$1:$2: error: expected '$3' before numeric constant
 1797=expected '$3' before numeric constant
-#$1:$2: error: (Each undeclared identifier is reported only once for each function it appears in.)
 1798=(Each undeclared identifier is reported only once for each function it appears in.)
-#$1:$2: warning: statement has no effect
 1799=statement has no effect
-#$1:$2: warning: passing argument $3 of '$4' makes integer from pointer without a cast
 1800=passing argument $3 of '$4' makes integer from pointer without a cast
-#$1:$2: note: expected '$3' but argument is of type '$4'
 1801=expected '$3' but argument is of type '$4'
-#$1:$2: error: invalid conversion from '$3' to '$4'
 1802=invalid conversion from '$3' to '$4'
-#$1:$2: error:   initializing argument $3 of '$4'
-1803=  initializing argument $3 of '$4'
-#$1:$2: error: too few arguments to function '$3'
+1803=initializing argument $3 of '$4'
 1804=too few arguments to function '$3'
-#$1:$2:$3: undefined reference to `$4'
 1805=undefined reference to `$4'
-#$1:$2: error: cannot convert '$3' to '$4' for argument '$5' to '$6'
 1806=cannot convert '$3' to '$4' for argument '$5' to '$6'
-#$1:$2: warning: value computed is not used
 1807=value computed is not used
-#$1:$2: warning: '$3' is used uninitialized in this function
 1808='$3' is used uninitialized in this function
-#$1:$2: error: base operand of '$3' has non-pointer type '$4'
 1809=base operand of '$3' has non-pointer type '$4'
-#$1:$2:$3: error: $4: No such file or directory
 1810=$4: No such file or directory
-#$1:$2: error: '$3' does not name a type
 1811='$3' does not name a type
-#$1:$2: error: expected initializer before '$3'
 1812=expected initializer before '$3'
-#$1:$2: error: a function-definition is not allowed here before '$3' token expected '$4' at end of input
 1813=a function-definition is not allowed here before '$3' token expected '$4' at end of input
-#$1:$2: warning: return makes integer from pointer without a cast
 1814=return makes integer from pointer without a cast
-#$1:$2: warning: overflow in implicit constant conversion
 1815=overflow in implicit constant conversion
-#$1:$2: warning: integer constant is too large for '$3' type
 1816=integer constant is too large for '$3' type
-#$1:$2:$3: warning: integer constant is too large for its type
 1817=integer constant is too large for its type
-#$1:$2: warning: this decimal constant is unsigned only in ISO C90
 1818=this decimal constant is unsigned only in ISO C90
-#$1:$2: error: expected '$3' before '$4' token
 1819=expected '$3' before '$4' token
-#$1:$2: error: expected expression before '$3' token
 1820=expected expression before '$3' token
-#$1:$2: note: '$3' was declared here
 1821='$3' was declared here
-#$1:$2: warning: statement with no effect
 1822=statement with no effect
-#$1:$2: error: lvalue required as left operand of assignment
 1823=lvalue required as left operand of assignment
-#$1:$2: warning: type defaults to '$3' in declaration of '$4'
 1824=type defaults to '$3' in declaration of '$4'
-#$1:$2: warning: initialization makes integer from pointer without a cast
 1825=initialization makes integer from pointer without a cast
-#$1:$2:$3: warning: character constant too long for its type
 1826=character constant too long for its type
-#$1:$2: error: expected identifier or '$3' before numeric constant
 1827=expected identifier or '$3' before numeric constant
-#$1:$2: error: expected '=', ',', ';', 'asm' or '__attribute__' before '$3'
 1828=expected '=', ',', ';', 'asm' or '__attribute__' before '$3'
-#$1:$2: warning: label '$3' defined but not used
 1829=label '$3' defined but not used
-#$1:$2: error: '$3' has no member named '$4'
 1830='$3' has no member named '$4'
-#$1:$2: error: array subscript is not an integer
 1831=array subscript is not an integer
-#$1:$2: warning: too few arguments for format
 1832=too few arguments for format
-#$1:$2: warning: format '$3' expects type '$4', but argument $5 has type '$6'
 1833=format '$3' expects type '$4', but argument $5 has type '$6'
-#$1:$2: error: switch quantity not an integer
 1834=switch quantity not an integer
-#$1:$2: error: incompatible type for argument $3 of '$4'
 1835=incompatible type for argument $3 of '$4'
-#$1:$2: error: expected statement before '$3' token
 1836=expected statement before '$3' token
-#$1:$2: warning: control reaches end of non-void function
 1837=control reaches end of non-void function
-#$1:$2: warning: '$3' may be used uninitialized in this function
 1838='$3' may be used uninitialized in this function
-#$1:$2: warning: missing braces around initializer
 1839=missing braces around initializer
-#$1:$2: warning: (near initialization for '$3')
 1840=(near initialization for '$3')
-#$1:$2: warning: statement is a reference, not call, to function '$3'
 1841=statement is a reference, not call, to function '$3'
-#$1:$2: error: case label '$3' not within a switch statement
 1842=case label '$3' not within a switch statement
-#$1:$2: error: expected primary-expression before '$3' token
 1843=expected primary-expression before '$3' token
-#$1:$2: warning: no return statement in function returning non-void
 1844=no return statement in function returning non-void
-#$1:$2: error: expected unqualified-id before '$3'
 1845=expected unqualified-id before '$3'
-#$1:$2: warning: array subscript is above array bounds
 1846=array subscript is above array bounds
-#$1:$2: warning: suggest parentheses around assignment used as truth value
 1847=suggest parentheses around assignment used as truth value
-#$1:$2: error: storage size of '$3' isn't known
 1848=storage size of '$3' isn't known
-#$1:$2: error: invalid application of '$3' to incomplete type '$4' 
-1849=invalid application of '$3' to incomplete type '$4' 
-#$1:$2: warning: incompatible implicit declaration of built-in function '$3'
+1849=invalid application of '$3' to incomplete type '$4'
 1850=incompatible implicit declaration of built-in function '$3'
-#$1:$2: warning: comparison between signed and unsigned integer expressions
 1851=comparison between signed and unsigned integer expressions
-#$1:$2: warning: deprecated conversion from string constant to '$3'
 1852=deprecated conversion from string constant to '$3'
-#$1:$2: error: expected class-name before '$3' token
 1853=expected class-name before '$3' token
-#$1:$2: error: ISO C++ forbids declaration of '$3' with no type
 1854=ISO C++ forbids declaration of '$3' with no type
-#$1:$2: error: typedef '$3' is initialized (use decltype instead)
 1855=typedef '$3' is initialized (use decltype instead)
-#$1:$2: error: expected constructor, destructor, or type conversion before '$3' token
 1856=expected constructor, destructor, or type conversion before '$3' token
-#$1:$2: error: expected initializer before '$3' token
 1857=expected initializer before '$3' token
-#$1:$2: error: expected constructor, destructor, or type conversion before '$3'
 1858=expected constructor, destructor, or type conversion before '$3'
-#In file included from $1:$2:
 1859=file included from $1:$2:
-#$1:$2:($3): first defined here
 1860=first defined here
-#$1:$2: warning: enumeration value '$3' not handled in switch
 1861=enumeration value '$3' not handled in switch
-#$1: In member function '$2':
 1862=In member function '$2':
-#$1:$2: error: stray '$3' in program
 1863=stray '$3' in program
-#$1:$2: error: expected '$3' at end of input
 1864=expected '$3' at end of input
-#$1:$2: warning: field width should have type '$3', but argument $4 has type '$5'
 1865=field width should have type '$3', but argument $4 has type '$5'
-#$1:$2: error: subscripted value is neither array nor pointer
 1866=subscripted value is neither array nor pointer
-#$1:$2: error: array type has incomplete element type
 1867=array type has incomplete element type
-#$1:$2: warning: too many arguments for format
 1868=too many arguments for format
-#$1:$2: warning: operation on '$3' may be undefined
 1869=operation on '$3' may be undefined
-#$1:$2:$3: error: unterminated comment
 1870=unterminated comment
-#$1:$2:$3: warning: "$4" within comment
 1871="$4" within comment
-#$1:$2:$3: warning: missing terminating $4 character
 1872=missing terminating $4 character
-#$1: cannot open output file $2: No such file or directory
 1873=$2: No such file or directory
-#$1:$2: error: missing terminating $3 character
 1874=missing terminating $3 character
-#$1:$2: error: array size missing in '$3'
 1875=array size missing in '$3'
-#$1:$2: warning: passing argument $3 of '$4' from incompatible pointer type
 1876=passing argument $3 of '$4' from incompatible pointer type
-#$1:$2: warning: return type defaults to '$3'
 1877=return type defaults to '$3'
-#$1:$2: error: expected identifier or '$3' before '$4' token
 1878=expected identifier or '$3' before '$4' token
-#$1:$2: error: expected identifier or '$3' at end of input
 1879=expected identifier or '$3' at end of input
-#$1:$2: error: expected specifier-qualifier-list before '$3'
 1880=expected specifier-qualifier-list before '$3'
-#$1:$2: warning: declaration does not declare anything
 1881=declaration does not declare anything
-#$1:$2: error: bit-field '$3' width not an integer constant
 1882=bit-field '$3' width not an integer constant
-#$1:$2: error: '$3' undeclared here (not in a function)
 1883='$3' undeclared here (not in a function)
-#$1: warning: '$2' after last input file has no effect
 1884='$2' after last input file has no effect
-#$1: no input files
 1885=no input files
-#$1: preprocessing failed.
 1886=preprocessing failed.
-#$1:$2: error: zero width for bit-field '$3'
 1887=zero width for bit-field '$3'
-#$1:$2: error: width of '$3' exceeds its type
 1888=width of '$3' exceeds its type
-#$1:$2: warning: braces around scalar initializer
 1889=braces around scalar initializer
-#$1:$2: warning: initialization from incompatible pointer type
 1890=initialization from incompatible pointer type
-#$1:$2: warning: excess elements in scalar initializer
 1891=excess elements in scalar initializer
-#$1:$2: warning: left-hand operand of comma expression has no effect
 1892=left-hand operand of comma expression has no effect
-#$1:$2: warning: assignment from incompatible pointer type
 1893=assignment from incompatible pointer type
-#$1:$2: warning: initializer-string for array of chars is too long
 1894=initializer-string for array of chars is too long
-#$1: no resources
 1895=no resources
-#$1:$2: error: invalid application of '$3' to incomplete type '$4'
 1896=invalid application of '$3' to incomplete type '$4'
-#$1:$2: error: void value not ignored as it ought to be
 1897=void value not ignored as it ought to be
-#Creating library file: $1
 1898=Creating library file
-#$1:$2: warning: useless type name in empty declaration
 1899=useless type name in empty declaration
-#$1:$2: warning: unknown conversion type character '$3' in format
 1900=unknown conversion type character '$3' in format
-#$1:$2: error: parameter name omitted
 1901=parameter name omitted
-#$1:$2: error: expected declaration specifiers before '$3'
 1902=expected declaration specifiers before '$3'
-#$1:$2: error: old-style parameter declarations in prototyped function definition
 1903=old-style parameter declarations in prototyped function definition
-#$1:$2: warning: empty declaration
 1904=empty declaration
-#$1:$2: error: expected declaration specifiers before '$3' token
 1905=expected declaration specifiers before '$3' token
-#$1:$2: error: expected declaration specifiers or '$3' before '$4'
 1906=expected declaration specifiers or '$3' before '$4'
-#$1:$2: error: storage class specified for parameter '$3'
 1907=storage class specified for parameter '$3'
-#$1:$2: error: duplicate member '$3'
 1908=duplicate member '$3'
-#$1:$2: error: expected '$3' before string constant
 1909=expected '$3' before string constant
-#$1:$2: error: called object '$3' is not a function
 1910=called object '$3' is not a function
-#$1:$2: Error: too many memory references for `$3'
 1911=too many memory references for `$3'
-#$1:$2: warning: excess elements in array initializer
 1912=excess elements in array initializer
-#$1:$2: error: size of array '$3' is too large
 1913=size of array '$3' is too large
-#$1:$2: error: incompatible types when assigning to type '$3' from type '$4'
 1914=incompatible types when assigning to type '$3' from type '$4'
-#$1:$2: error: invalid operands to binary $3 (have '$4' and '$5')
 1915=invalid operands to binary $3 (have '$4' and '$5')
-#$1:$2: warning: assuming signed overflow does not occur when assuming that $3 is always $4
 1916=assuming signed overflow does not occur when assuming that $3 is always $4
-#$1:$2:($3): more undefined references to `$4' follow
 1917=more undefined references to `$4' follow
-#$1:$2: warning: extended initializer lists only available with $3 or $4
 1918=extended initializer lists only available with $3 or $4
-#$1:$2: error: type of formal parameter $3 is incomplete
 1919=type of formal parameter $3 is incomplete
-#$1:$2: warning: dereferencing '$3' pointer
 1920=dereferencing '$3' pointer
-#$1:$2: error: request for member '$3' in something not a structure or union
 1921=request for member '$3' in something not a structure or union
-#$1:$2: error: conflicting types for '$3'
 1922=conflicting types for '$3'
-#$1:$2: note: previous definition of '$3' was here
 1923=previous definition of '$3' was here
-#$1:$2: warning: useless storage class specifier in empty declaration
 1924=useless storage class specifier in empty declaration
-#$1:$2: warning: '$3' was ignored in this declaration
 1925='$3' was ignored in this declaration
-#$1:$2: error: overflow in array dimension
 1926=overflow in array dimension
-#$1:$2: error: dereferencing pointer to incomplete type
 1927=dereferencing pointer to incomplete type
-#$1:$2: error: no matching function for call to '$3'
 1928=no matching function for call to '$3'
-#$1:$2: note: candidates are: $3
 1929=candidates are: $3
-#$1:$2: error: declaration of '$3' shadows a parameter
 1930=declaration of '$3' shadows a parameter
-#$1:$2: error: within this context
 1931=within this context
-#$1:$2: note: previous declaration of '$3' was here
 1932=previous declaration of '$3' was here
-#$1:$2: error: return-statement with a value, in function returning '$3'
 1933=return-statement with a value, in function returning '$3'
-#$1:$2: error: passing '$3' as '$4' argument of '$5' discards qualifiers
 1934=passing '$3' as '$4' argument of '$5' discards qualifiers
-#$1:$2: error: template argument $3 is invalid
 1935=template argument $3 is invalid
-#$1:$2: error: expected unqualified-id before '$3' token
 1936=expected unqualified-id before '$3' token
-#$1:$2: warning: return type of '$3' is not '$4'
 1937=return type of '$3' is not '$4'
-#$1:$2: warning: '$3' with a value, in function returning void
 1938='$3' with a value, in function returning void
-#$1:$2: warning: '$3' with no value, in function returning non-void
 1939='$3' with no value, in function returning non-void
-#$1:$2: error: redefinition of '$3'
 1940=redefinition of '$3'
-#$1:$2:$3: warning: integer constant is so large that it is unsigned
 1941=integer constant is so large that it is unsigned
-#$1:$2: error: '$3' or '$4' invalid for '$5'
 1942='$3' or '$4' invalid for '$5'
-#$1:$2: error: variable or field '$3' declared void
 1943=variable or field '$3' declared void
-#$1:$2: error: expected primary-expression before '$3'
 1944=expected primary-expression before '$3'
-#$1:$2: error: redeclaration of '$3' with no linkage
 1945=redeclaration of '$3' with no linkage
-#$1:(.text+$2): undefined reference to `$3'
 1946=undefined reference to `$3'
-#$1: cannot open output file $2: Permission denied
 1947=cannot open output file $2: Permission denied
-#$1:$2:$3: error: too many decimal points in number
 1948=too many decimal points in number
-#$1:$2:$3: warning: assignment makes integer from pointer without a cast [enabled by default]
 1949=assignment makes integer from pointer without a cast [enabled by default]
-#$1:$2:$3: error: lvalue required as unary '$4' operand
 1950=lvalue required as unary '$4' operand
-#$1:$2: error: '$3' loop initial declarations are only allowed in $4 mode
 1951='$3' loop initial declarations are only allowed in $4 mode
-#$1:$2: note: use option $3 or $4 to compile your code
 1952=use option $3 or $4 to compile your code
-#$1:$2:$3: fatal error: $4: No such file or directory
 1953=$4: No such file or directory
-#compilation terminated.
 1954=compilation terminated.
-#$1:$2:$3: warning: no newline at end of file
 1955=no newline at end of file
-#$1:$2: error: '$3' previously defined here
 1956='$3' previously defined here
-#$1:$2: error: invalid use of '$3'
 1957=invalid use of '$3'
-#$1:$2: error: expected declaration before '$3' token
 1958=expected declaration before '$3' token
-#$1:$2: warning: '$3' defined but not used
 1959='$3' defined but not used
-#$1:$2: error: variable-sized object may not be initialized
 1960=variable-sized object may not be initialized
-#$1:$2:$3: warning: this is the location of the previous definition
 1961=this is the location of the previous definition
-#$1:$2: warning: friend declaration '$3' declares a non-template function
 1962=friend declaration '$3' declares a non-template function
-#$1:$2: note: (if this is not what you intended, make sure the function template has already been declared and add <> after the function name here) 
 1963=if this is not what you intended, make sure the function template has already been declared and add <> after the function name here
-#$1:$2: error: '$3' has not been declared
 1964='$3' has not been declared
-#$1:$2: error: '$3' is an inaccessible base of '$4'
 1965='$3' is an inaccessible base of '$4'
-#$1: In function `$2':
 1966=In function `$2':
-#$1:$2: error: `$3' was not declared in this scope
 1967=`$3' was not declared in this scope
-#$1:$2: error: expected `$3' before "$4"
 1968=expected `$3' before "$4"
-#$1:$2: error: extra qualification '$3' on member '$4'
 1969=extra qualification '$3' on member '$4'
-#$1:$2: error: initializer element is not constant
 1970=initializer element is not constant
-#$1:$2: warning: conflicting types for '$3'
 1971=conflicting types for '$3'
-#$1:$2: note: previous implicit declaration of '$3' was here
 1972=previous implicit declaration of '$3' was here
-#$1: At top level:
 1973=At top level:

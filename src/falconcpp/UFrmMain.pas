@@ -5161,39 +5161,14 @@ procedure TFrmFalconMain.TextEditorKeyDown(Sender: TObject; var Key: Word;
 var
   Sheet: TSourceFileSheet;
 begin
-  Sheet := TSourceFileSheet(TComponent(Sender).Owner);
-  if (ssCtrl in Shift) and (Key = VK_DIVIDE) then
-    EditToggleCommentClick(EditToggleComment);
-  if (ssCtrl in Shift) and (Key = VK_OEM_PLUS) then
-    ViewZoomIncClick(ViewZoomInc);
-  if (ssCtrl in Shift) and (Key = VK_OEM_MINUS) then
-    ViewZoomDecClick(ViewZoomDec);
-  if (ssCtrl in Shift) and ((Key = VK_NUMPAD0) or (Key = Ord('0'))) then
-  begin
-    ZoomEditor := Config.Editor.FontSize;
-    UpdateEditorZoom;
-  end;
   CanShowHintTip := False;
   TimerHintTipEvent.Enabled := False;
-  if (Key = VK_ESCAPE) then
-  begin
-    HintTip.Cancel;
-    DebugHint.Cancel;
-    //HintParams.Cancel; no cancel
-  end;
+  Sheet := TSourceFileSheet(TComponent(Sender).Owner);
   // show parameters hit
   if ([ssShift, ssCtrl] = Shift) and (Key = VK_SPACE) then
   begin
     Key := 0;
     ShowHintParams(Sheet.Memo);
-  end
-  // show code completion
-  else if ([ssCtrl] = Shift) and (Key = VK_SPACE) then
-  begin
-    Key := 49;
-    UsingCtrlSpace := True;
-    CodeCompletion.ActivateCompletion;
-    UsingCtrlSpace := False;
   end
   // move code up
   else if ([ssCtrl, ssShift] = Shift) and (Key = VK_UP) then
@@ -5202,11 +5177,38 @@ begin
   else if ([ssCtrl, ssShift] = Shift) and (Key = VK_DOWN) then
     Sheet.Memo.MoveSelectionDown
   // fold current
-  else if ([ssCtrl, ssShift] = Shift) and (Key = VK_OEM_5) then
+  else if ([ssCtrl, ssShift] = Shift) and (Key = VK_OEM_5) then  // ]
     Sheet.Memo.CollapseCurrent
   // unfold current
-  else if ([ssCtrl, ssShift] = Shift) and (Key = VK_OEM_6) then
-    Sheet.Memo.UncollapseLine(Sheet.Memo.GetRealLineNumber(Sheet.Memo.CaretY));
+  else if ([ssCtrl, ssShift] = Shift) and (Key = VK_OEM_6) then  // [
+    Sheet.Memo.UncollapseLine(Sheet.Memo.GetRealLineNumber(Sheet.Memo.CaretY))
+  // comment/uncomment
+  else if ([ssCtrl] = Shift) and (Key = VK_DIVIDE) then
+    EditToggleCommentClick(EditToggleComment)
+  // restore zoom
+  else if ([ssCtrl] = Shift) and ((Key = VK_NUMPAD0) or (Key = Ord('0'))) then
+  begin
+    ZoomEditor := Config.Editor.FontSize;
+    UpdateEditorZoom;
+  end
+  else if ([ssCtrl] = Shift) and (Key = VK_OEM_PLUS) then
+    ViewZoomIncClick(ViewZoomInc)
+  else if ([ssCtrl] = Shift) and (Key = VK_OEM_MINUS) then
+    ViewZoomDecClick(ViewZoomDec)
+  // show code completion
+  else if ([ssCtrl] = Shift) and (Key = VK_SPACE) then
+  begin
+    Key := 49;
+    UsingCtrlSpace := True;
+    CodeCompletion.ActivateCompletion;
+    UsingCtrlSpace := False;
+  end
+  else if (Key = VK_ESCAPE) then
+  begin
+    HintTip.Cancel;
+    DebugHint.Cancel;
+    //HintParams.Cancel; no cancel
+  end;
 end;
 
 procedure TFrmFalconMain.TextEditorKeyPress(Sender: TObject;

@@ -16,15 +16,12 @@
 ;sections description
     
   !insertmacro LANG_STRING DESC_SecCore "IDE C++"
-  !insertmacro LANG_STRING DESC_SecFtm "Modelos básicos: Aplicacão Windows, Aplicação Console e Biblioteca de ligação dinâmica(DLL)."
+  !insertmacro LANG_STRING DESC_SecFtm "Modelos básicos: Aplicacão de Janelas, Aplicação Console e Biblioteca de ligação estática e dinâmica(DLL)."
   !insertmacro LANG_STRING DESC_SecAssoc "Associar arquivos C/C++ ao Falcon C++."
   !insertmacro LANG_STRING DESC_SecLangFile "Instalar arquivos de todas as linguagens."
   !insertmacro LANG_STRING DESC_SecDeskScut "Criar atalho na área de trabalho."
   !insertmacro LANG_STRING DESC_SecQckLScut "Criar atalho na barra de inicialização rápida."
   !insertmacro LANG_STRING DESC_SecMinGW "Compilador C/C++."
-
-;Shortcut description
-
 
 ;Package instalation description
 
@@ -37,7 +34,7 @@
   !insertmacro LANG_STRING DESC_InstGCC_Core "Instalando pacote GCC Core..."
   !insertmacro LANG_STRING DESC_InstGCC_GPP  "Instalando pacote GCC G++..."
   
-  !insertmacro LANG_STRING DESC_AdjEnvVar    "Ajustando Variável de Ambiênte..."
+  !insertmacro LANG_STRING DESC_AdjEnvVar    "Ajustando Variável de Ambiente..."
 
 ;Association description file format
 
@@ -54,4 +51,10 @@
   !insertmacro LANG_STRING DESC_Assoc_O "Arquivo Objeto"
   !insertmacro LANG_STRING DESC_Assoc_A "Arquivo de Biblioteca"
   
+;Shortcut description
+
+  !insertmacro LANG_STRING DESC_LinkPkgMan "Gerenciador de pacotes do Falcon C++"
+  !insertmacro LANG_STRING DESC_LinkUpdater "Atualizador do Falcon C++"
+  !insertmacro LANG_STRING DESC_LinkUninstall "Programa de desinstalação"
+
 ;-----------------------------------------------------------

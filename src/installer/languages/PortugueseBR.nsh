@@ -1,57 +1,60 @@
 ;-----------------------------------------------------------
-;Portuguese Brazil sections translation
-  
-  !define LANG "PORTUGUESEBR"
-  
-;sections name
+; Portuguese Brazil translate sections
 
-  !insertmacro LANG_STRING NAME_SecCore "N˙cleo"
-  !insertmacro LANG_STRING NAME_SecFtm "Modelos b·sicos"
-  !insertmacro LANG_STRING NAME_SecAssoc "AssociaÁ„o de arquivos C/C++"
+  !define LANG "PORTUGUESEBR"
+
+; Name of sections
+
+  !insertmacro LANG_STRING NAME_SecCore "N√∫cleo"
+  !insertmacro LANG_STRING NAME_SecFtm "Modelos b√°sicos"
+  !insertmacro LANG_STRING NAME_SecAssoc "Associa√ß√£o de arquivos C/C++"
   !insertmacro LANG_STRING NAME_SecLangFile "Arquivos de linguagens"
-  !insertmacro LANG_STRING NAME_SecDeskScut "Atalho na ¡rea de Trabalho"
-  !insertmacro LANG_STRING NAME_SecQckLScut "Atalho R·pido"
+  !insertmacro LANG_STRING NAME_SecDeskScut "Atalho na √Årea de Trabalho"
+  !insertmacro LANG_STRING NAME_SecQckLScut "Atalho R√°pido"
   !insertmacro LANG_STRING NAME_SecMinGW "MinGW(Compilador)"
-      
-;sections description
-    
+
+; Description of sections
+
   !insertmacro LANG_STRING DESC_SecCore "IDE C++"
-  !insertmacro LANG_STRING DESC_SecFtm "Modelos b·sicos: Aplicac„o Windows, Aplicac„o Console e Biblioteca de ligaÁ„o din‚mica(DLL)."
+  !insertmacro LANG_STRING DESC_SecFtm "Modelos b√°sicos: Aplicac√£o de Janelas, Aplicac√£o Console e Biblioteca de liga√ß√£o est√°tica e din√¢mica(DLL)."
   !insertmacro LANG_STRING DESC_SecAssoc "Associar arquivos C/C++ ao Falcon C++."
   !insertmacro LANG_STRING DESC_SecLangFile "Instalar arquivos de todas as linguagens."
-  !insertmacro LANG_STRING DESC_SecDeskScut "Criar atalho na ·rea de trabalho."
-  !insertmacro LANG_STRING DESC_SecQckLScut "Criar atalho na barra de inicializaÁ„o r·pida."
+  !insertmacro LANG_STRING DESC_SecDeskScut "Criar atalho na √°rea de trabalho."
+  !insertmacro LANG_STRING DESC_SecQckLScut "Criar atalho na barra de inicializa√ß√£o r√°pida."
   !insertmacro LANG_STRING DESC_SecMinGW "Compilador C/C++."
 
-;Shortcut description
+; Package instalation description
 
-
-;Package instalation description
-
-  !insertmacro LANG_STRING DESC_InstMinGW    "Instalando MinGW..."
-  !insertmacro LANG_STRING DESC_InstMake     "Instalando pacote MinGW Make..."
-  !insertmacro LANG_STRING DESC_InstRuntime  "Instalando pacote MinGW Runtime..."
+  !insertmacro LANG_STRING DESC_InstMinGW "Instalando MinGW..."
+  !insertmacro LANG_STRING DESC_InstMake "Instalando pacote MinGW Make..."
+  !insertmacro LANG_STRING DESC_InstRuntime "Instalando pacote MinGW Runtime..."
   !insertmacro LANG_STRING DESC_InstBinutils "Instalando pacote BinUtils..."
-  !insertmacro LANG_STRING DESC_InstGDB      "Instalando pacote GDB..."
-  !insertmacro LANG_STRING DESC_InstW32API   "Instalando pacote Windows API..."
+  !insertmacro LANG_STRING DESC_InstGDB "Instalando pacote GDB..."
+  !insertmacro LANG_STRING DESC_InstW32API "Instalando pacote Windows API..."
   !insertmacro LANG_STRING DESC_InstGCC_Core "Instalando pacote GCC Core..."
-  !insertmacro LANG_STRING DESC_InstGCC_GPP  "Instalando pacote GCC G++..."
-  
-  !insertmacro LANG_STRING DESC_AdjEnvVar    "Ajustando Vari·vel de AmbiÍnte..."
+  !insertmacro LANG_STRING DESC_InstGCC_GPP "Instalando pacote GCC G++..."
 
-;Association description file format
+  !insertmacro LANG_STRING DESC_AdjEnvVar "Ajustando Vari√°vel de Ambiente..."
+
+; Association file format description
 
   !insertmacro LANG_STRING DESC_Assoc_FPJ "Projeto do Falcon C++"
   !insertmacro LANG_STRING DESC_Assoc_FTM "Modelo de Projeto do Falcon C++"
-  !insertmacro LANG_STRING DESC_Assoc_FPK "Pacote de InstalaÁ„o do Falcon C++"
-  
+  !insertmacro LANG_STRING DESC_Assoc_FPK "Pacote de Instala√ß√£o do Falcon C++"
+
   !insertmacro LANG_STRING DESC_Assoc_C "Arquivo Fonte C"
   !insertmacro LANG_STRING DESC_Assoc_CPP "Arquivo Fonte C++"
-  !insertmacro LANG_STRING DESC_Assoc_H "Arquivo de CabeÁalho"
+  !insertmacro LANG_STRING DESC_Assoc_H "Arquivo de Cabe√ßalho"
   !insertmacro LANG_STRING DESC_Assoc_RC "Arquivo de Recurso"
   !insertmacro LANG_STRING DESC_Assoc_INL "Arquivo Fonte Inline"
   !insertmacro LANG_STRING DESC_Assoc_RES "Objeto de Recurso"
   !insertmacro LANG_STRING DESC_Assoc_O "Arquivo Objeto"
   !insertmacro LANG_STRING DESC_Assoc_A "Arquivo de Biblioteca"
-  
+
+; Shortcut description
+
+  !insertmacro LANG_STRING DESC_LinkPkgMan "Gerenciador de pacotes do Falcon C++"
+  !insertmacro LANG_STRING DESC_LinkUpdater "Atualizador do Falcon C++"
+  !insertmacro LANG_STRING DESC_LinkUninstall "Programa de desinstala√ß√£o"
+
 ;-----------------------------------------------------------

@@ -132,9 +132,10 @@
 ;Separated language strings files
 
   !insertmacro LANG_LOAD "English"
-  !insertmacro LANG_LOAD "Portuguese"
+;  !insertmacro LANG_LOAD "Portuguese"
   !insertmacro LANG_LOAD "PortugueseBR"
-  !insertmacro LANG_LOAD "Spanish"
+;  !insertmacro LANG_LOAD "Spanish"
+;  !insertmacro LANG_LOAD "Italian"
   /*!insertmacro LANG_LOAD "French"
   !insertmacro LANG_LOAD "German"
   !insertmacro LANG_LOAD "SpanishInternational"
@@ -142,7 +143,6 @@
   !insertmacro LANG_LOAD "TradChinese"
   !insertmacro LANG_LOAD "Japanese"
   !insertmacro LANG_LOAD "Korean"
-  !insertmacro LANG_LOAD "Italian"
   !insertmacro LANG_LOAD "Dutch"
   !insertmacro LANG_LOAD "Danish"
   !insertmacro LANG_LOAD "Swedish"
@@ -247,9 +247,9 @@ SectionGroup "${PROJECT_NAME}" GroupFalcon
     SetShellVarContext all
     CreateDirectory "$SMPROGRAMS\${PROJECT_NAME}"
     createShortCut  "$SMPROGRAMS\${PROJECT_NAME}\${PROJECT_NAME}.lnk" "$INSTDIR\Falcon.exe" "" "" "" "" "" "C++ IDE easy and complete"
-    createShortCut  "$SMPROGRAMS\${PROJECT_NAME}\PkgManager.lnk" "$INSTDIR\PkgManager.exe" "" "" "" "" "" "${PROJECT_NAME} Package Manager"
-    createShortCut  "$SMPROGRAMS\${PROJECT_NAME}\Updater.lnk" "$INSTDIR\Updater.exe" "" "" "" "" "" "${PROJECT_NAME} Updater"
-    createShortCut  "$SMPROGRAMS\${PROJECT_NAME}\Uninstall.lnk" "$INSTDIR\Uninstall.exe" "" "" "" "" "" "Uninstall program"
+    createShortCut  "$SMPROGRAMS\${PROJECT_NAME}\PkgManager.lnk" "$INSTDIR\PkgManager.exe" "" "" "" "" "" "$(DESC_LinkPkgMan)"
+    createShortCut  "$SMPROGRAMS\${PROJECT_NAME}\Updater.lnk" "$INSTDIR\Updater.exe" "" "" "" "" "" "$(DESC_LinkUpdater)"
+    createShortCut  "$SMPROGRAMS\${PROJECT_NAME}\Uninstall.lnk" "$INSTDIR\Uninstall.exe" "" "" "" "" "" "$(DESC_LinkUninstall)"
     
     ;Writing uninstall info to registry:
     WriteRegStr HKLM "${REG_UNINSTALL}" "DisplayName" "${PROJECT_NAME} ${MAJ_VERSION}"

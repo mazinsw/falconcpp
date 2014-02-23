@@ -40,7 +40,7 @@ var
 implementation
 
 uses UFraProjs, UFraNewOpt, UFrmMain, UUtils, ULanguages,
-  TokenUtils;
+  TokenUtils, icoformat;
 
 {$R *.dfm}
 
@@ -155,17 +155,12 @@ var
   I: Integer;
   Bitmap: TBitmap;
   AIcon: TIcon;
-  rs: TResourceStream;
 begin
   FraProjs := TFraProjs.Create(Self);
   ConvertTo32BitImageList(FraProjs.ImageList);
-  rs := TResourceStream.Create(HInstance, 'ICONFAL', RT_RCDATA);
-  rs.Position := 0;
-  AIcon := TIcon.Create;
-  AIcon.LoadFromStream(rs);
+  AIcon := LoadIconFromResource('MAINICON', 48);
   Bitmap := IconToBitmap(AIcon);
-  aIcon.Free;
-  rs.Free;
+  AIcon.Free;
   FraProjs.ImageList.AddMasked(Bitmap, 0);
   Bitmap.Free;
   FraProjs.Parent := PainelFra;

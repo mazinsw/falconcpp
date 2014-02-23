@@ -44,7 +44,7 @@ var
 
 implementation
 
-uses UFrmMain;
+uses UFrmMain, UUtils;
 
 {$R *.dfm}
 
@@ -94,13 +94,8 @@ begin
 end;
 
 procedure TFormAbout.FormCreate(Sender: TObject);
-var
-  rs: TResourceStream;
 begin
-  rs := TResourceStream.Create(HInstance, 'ICONFAL', RT_RCDATA);
-  rs.Position := 0;
-  Image1.Picture.Icon.LoadFromStream(rs);
-  rs.Free;
+  AssignAppIcon(Image1.Picture);
   UpdateLangNow;
   LblNameVersion.Caption := Format('Falcon C++ v%d.%d.%d.%d',
     [FrmFalconMain.FalconVersion.Major,

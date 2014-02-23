@@ -137,6 +137,7 @@ function FindFiles(const PathName, FileName: string; List: TStrings): Boolean; o
 procedure GetRowColFromCharIndex(SelStart: Integer; Lines: TStrings;
   var Line, Column: Integer);
 function DOSFileName(FileName: string): string;
+procedure AssignAppIcon(Picture: TPicture);
 function NextFileName(FirstName, Ext: string; Node: TTreeNode): string;
 function NextProjectName(FirstName, Ext: string; Nodes: TTreeNodes): string;
 function RemoveFileExt(const FileName: string): string;
@@ -150,7 +151,7 @@ function StartsWith(const S, Token: string): Boolean;
 implementation
 
 uses UFrmMain, ULanguages, UConfig, SynRegExpr, TokenUtils, StrUtils,
-  UxTheme;
+  UxTheme, icoformat;
 
 { ---------- Font Methods ---------- }
 
@@ -1684,6 +1685,15 @@ begin
     Inc(X);
   end;
   Result := FileName;
+end;
+
+procedure AssignAppIcon(Picture: TPicture);
+var
+  FIcon: TIcon;
+begin
+  FIcon := LoadIconFromResource('MAINICON', 48);
+  Picture.Icon := FIcon;
+  FIcon.Free;
 end;
 
 function NextFileName(FirstName, Ext: string; Node: TTreeNode): string;

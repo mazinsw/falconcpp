@@ -1,6 +1,5 @@
 #include "version.rc"
 
-ICONFAL RCDATA "../../res/images/falcon.ico"
 MANFTHEME RCDATA "../../res/Theme.manifest"
 MANFADMIN RCDATA "../../res/Admin.manifest"
 MANFBOTH RCDATA "../../res/Both.manifest"

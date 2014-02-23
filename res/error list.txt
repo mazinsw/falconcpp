@@ -189,3 +189,5 @@ compilation terminated.
 %s:%d: warning: conflicting types for '%s'
 %s:%d: note: previous implicit declaration of '%s' was here
 %s: At top level:
+
+linha.c:7:1: warning: "max" redefined

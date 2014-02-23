@@ -135,8 +135,8 @@
 ;  !insertmacro LANG_LOAD "Portuguese"
   !insertmacro LANG_LOAD "PortugueseBR"
 ;  !insertmacro LANG_LOAD "Spanish"
-;  !insertmacro LANG_LOAD "Italian"
-  /*!insertmacro LANG_LOAD "French"
+  !insertmacro LANG_LOAD "Italian"
+/*!insertmacro LANG_LOAD "French"
   !insertmacro LANG_LOAD "German"
   !insertmacro LANG_LOAD "SpanishInternational"
   !insertmacro LANG_LOAD "SimpChinese"
@@ -227,7 +227,7 @@ SectionGroup "${PROJECT_NAME}" GroupFalcon
     File "..\..\bin\astyle.dll"
     File "..\..\bin\ConsoleRunner.exe"
     
-    StrCmpS "$INSTDIR" "$PROGRAMFILES\Falcon" 0 noadm
+    StrCmp "$INSTDIR" "$PROGRAMFILES\Falcon" 0 noadm
       File "..\..\bin\PkgManager.exe"
       Goto endadm
     noadm: 
@@ -275,7 +275,7 @@ SectionGroup "${PROJECT_NAME}" GroupFalcon
     ;Custom Code Template
     SetOutPath "$APPDATA\Falcon"
     IfFileExists "$APPDATA\Falcon\CustomAutoComplete.txt" file_found 0
-    File "..\..\res\CustomAutoComplete.txt"
+      File "..\..\res\CustomAutoComplete.txt"
     file_found:
     SetOutPath "$INSTDIR"
    
@@ -341,8 +341,8 @@ SectionGroup "${PROJECT_NAME}" GroupFalcon
   
   Section "$(NAME_SecLangFile)" SecLangFile 
     SetOutPath "$INSTDIR\Lang" 
-  File "..\..\res\Lang\Portuguese.lng"
-    ;...
+    File "..\..\res\Lang\Portuguese.lng"
+    File "..\..\res\Lang\Italian.lng"
   SectionEnd
   Section "$(NAME_SecDeskScut)" SecDeskScut 
     SetOutPath "$INSTDIR"
@@ -419,10 +419,11 @@ Section "Un.Falcon C++" UnSecCore
   
   ;delete languages files
   Delete "$INSTDIR\Lang\Portuguese.lng"
+  Delete "$INSTDIR\Lang\Italian.lng"
   RMDir  "$INSTDIR\Lang"
   
   ;delete help
-  ;Delete "$INSTDIR\Help\FalconCpp.hlp"
+  ;Delete "$INSTDIR\Help\falcon.chm"
   RMDir  "$INSTDIR\Help"
   
   ;delete templates

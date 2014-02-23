@@ -82,6 +82,24 @@ type
     images:array of iconImage;
   end;
 
+  TGrpIconDir = packed record
+    idReserved: Word;           // Reserved (must be 0)
+    idType: Word;               // Resource type (1 for icons)
+    idCount: Word;              // How many images?
+  end;
+
+  TGrpIconDirEntry = packed record
+    bWidth: Byte;               // Width, in pixels, of the image
+    bHeight: Byte;              // Height, in pixels, of the image
+    bColorCount: Byte;          // Number of colors in image (0 if >=8bpp)
+    bReserved: Byte;            // Reserved
+    wPlanes: Word;              // Color Planes
+    wBitCount: Word;            // Bits per pixel
+    dwBytesInRes: DWORD;        // how many bytes in this resource?
+    nID: Word;                  // the ID
+  end;
+
+function LoadIconFromResource(const ResName: string; Dimension: Integer): TIcon;
 procedure addBitmapsToIcon(bitmapImage,grayscaleAlpha:tBitmap;var workicon:icon);
 procedure destroyIcon(var icondata:icon);
 function newIcon(bitmapImage,grayscaleAlpha:tBitmap):icon;
@@ -96,6 +114,66 @@ function saveBitmapsToIcon(bitmapImage,grayscaleAlpha:tBitmap;filename:string):i
 //same exit codes as saveIcon, except exit code 1 should never happen...
 
 implementation
+
+uses
+  Classes;
+
+function LoadIconFromResource(const ResName: string; Dimension: Integer): TIcon;
+var
+  Rs, RsI: TResourceStream;
+  Ms: TMemoryStream;
+  I: Integer;
+  dwOffset: Cardinal;
+  GroupDir: TGrpIconDir;
+  GroupDirEntry: TGrpIconDirEntry;  
+  IconDir: TCursorOrIcon;
+  IconDirEntry: TIconRec;
+  Info: TBitmapInfoHeader;
+begin
+  Result := TIcon.Create;
+  Rs := TResourceStream.Create(MainInstance, ResName, RT_GROUP_ICON);
+  Rs.Read(GroupDir, SizeOf(TGrpIconDir));
+  if not (GroupDir.idType in [RC3_STOCKICON, RC3_ICON]) then
+  begin
+    Rs.Free;
+    Exit;
+  end;
+  I := 0;
+  Ms := TMemoryStream.Create;
+  while I < GroupDir.idCount do
+  begin
+    dwOffset := SizeOf(TGrpIconDir) + I * SizeOf(TGrpIconDirEntry);
+    Rs.Seek(dwOffset, soFromBeginning);
+    Rs.Read(GroupDirEntry, SizeOf(TGrpIconDirEntry));
+    RsI := TResourceStream.CreateFromID(MainInstance, GroupDirEntry.nID, RT_ICON);
+    RsI.Read(Info, SizeOf(TBitmapInfoHeader));
+    if (Info.biWidth = Dimension) and (Info.biHeight div 2 = Dimension) then
+    begin
+      RsI.Seek(0, soFromBeginning);
+      IconDir.Reserved := 0;
+      IconDir.wType := RC3_ICON;
+      IconDir.Count := 1;
+      Ms.Write(IconDir, SizeOf(TCursorOrIcon));
+      IconDirEntry.Width := Info.biWidth;
+      IconDirEntry.Height := Info.biHeight div 2;
+      IconDirEntry.Colors := Info.biBitCount div 8;
+      IconDirEntry.Reserved1 := Info.biPlanes;
+      IconDirEntry.Reserved2 := Info.biBitCount;
+      IconDirEntry.DIBSize := GroupDirEntry.dwBytesInRes;
+      IconDirEntry.DIBOffset := SizeOf(TCursorOrIcon) + SizeOf(TIconRec);
+      Ms.Write(IconDirEntry, SizeOf(TIconRec));
+      Ms.CopyFrom(RsI, RsI.Size);
+      RsI.Free;
+      Break;
+    end;
+    RsI.Free;
+    Inc(I);
+  end;
+  Ms.Position := 0;
+  Result.LoadFromStream(Ms);
+  Ms.Free;
+  Rs.Free;
+end;
 
 procedure addBitmapsToIcon(bitmapImage,grayscaleAlpha:tBitmap;var workicon:icon);
 var

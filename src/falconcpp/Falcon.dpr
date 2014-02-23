@@ -63,7 +63,8 @@ uses
   Plugin in '..\others\plugins\Plugin.pas',
   PluginServiceManager in '..\others\plugins\PluginServiceManager.pas',
   PluginWidgetMap in '..\others\plugins\PluginWidgetMap.pas',
-  PluginWidget in '..\others\plugins\PluginWidget.pas';
+  PluginWidget in '..\others\plugins\PluginWidget.pas',
+  icoformat in '..\others\icoformat\icoformat.pas';
 
 function OpenWithOther: Boolean;
 var

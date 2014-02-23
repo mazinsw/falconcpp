@@ -1559,7 +1559,7 @@ object FormAbout: TFormAbout
           Height = 236
           Align = alClient
           Lines.Strings = (
-            'Mazinsw: mailto:mazin.z@hotmail.com      '#13)
+            'Mazinsw: mailto:mazin.z@hotmail.com       '#13)
           ReadOnly = True
           ScrollBars = ssVertical
           TabOrder = 0
@@ -1575,7 +1575,7 @@ object FormAbout: TFormAbout
           Height = 236
           Align = alClient
           Lines.Strings = (
-            'Mazinsw: mailto:mazin.z@hotmail.com        '#13)
+            'Mazinsw: mailto:mazin.z@hotmail.com         '#13)
           ReadOnly = True
           ScrollBars = ssVertical
           TabOrder = 0
@@ -1591,7 +1591,7 @@ object FormAbout: TFormAbout
           Height = 236
           Align = alClient
           Lines.Strings = (
-            'Marcos Castro: mailto:marcoscastro87@hotmail.com      '#13
+            'Marcos Castro: mailto:marcoscastro87@hotmail.com       '#13
             'Gilvan Veras: mailto:gilvanokra@hotmail.com '#13)
           ReadOnly = True
           ScrollBars = ssVertical

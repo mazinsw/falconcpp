@@ -39,7 +39,7 @@ var
 
 implementation
 
-uses UFrmNew, UTemplates, USourceFile;
+uses UFrmNew, UTemplates, USourceFile, UUtils;
 
 {$R *.dfm}
 
@@ -69,8 +69,6 @@ end;
 
 procedure TFraProjs.ProjectListSelectItem(Sender: TObject; Item: TListItem;
   Selected: Boolean);
-var
-  Rs: TResourceStream;
 begin
   if Assigned(FrmNewProj) then
   begin
@@ -84,11 +82,7 @@ begin
       if Assigned(TTemplate(Item.Data).Icon) then
         ImageProj.Picture.Icon := TTemplate(Item.Data).Icon
       else
-      begin
-        Rs := TResourceStream.Create(HInstance, 'ICONFAL', RT_RCDATA);
-        ImageProj.Picture.Icon.LoadFromStream(Rs);
-        Rs.Free;
-      end;
+        AssignAppIcon(ImageProj.Picture);
       FrmNewProj.BtnProx.Enabled := Selected;
       if (FrmNewProj.Page = pwProj) then
         FrmNewProj.BtnFnsh.Enabled := Selected;
@@ -117,7 +111,6 @@ var
   Item: TListItem;
   Tmplt: TTemplate;
   ListV: TListView;
-  Rs: TResourceStream;
 begin
   if not Assigned(Sender) then
     Exit;
@@ -136,11 +129,7 @@ begin
       if Assigned(Tmplt.Icon) then
         ImageProj.Picture.Icon := Tmplt.Icon
       else
-      begin
-        Rs := TResourceStream.Create(HInstance, 'ICONFAL', RT_RCDATA);
-        ImageProj.Picture.Icon.LoadFromStream(Rs);
-        Rs.Free;
-      end;
+        AssignAppIcon(ImageProj.Picture);
     end;
   end
   else
@@ -166,11 +155,7 @@ begin
           if Assigned(Tmplt.Icon) then
             ImageProj.Picture.Icon := Tmplt.Icon
           else
-          begin
-            Rs := TResourceStream.Create(HInstance, 'ICONFAL', RT_RCDATA);
-            ImageProj.Picture.Icon.LoadFromStream(Rs);
-            Rs.Free;
-          end;
+            AssignAppIcon(ImageProj.Picture);
         end;
       end;
     end
@@ -195,11 +180,7 @@ begin
         if Assigned(Tmplt.Icon) then
           ImageProj.Picture.Icon := Tmplt.Icon
         else
-        begin
-          Rs := TResourceStream.Create(HInstance, 'ICONFAL', RT_RCDATA);
-          ImageProj.Picture.Icon.LoadFromStream(Rs);
-          Rs.Free;
-        end;
+          AssignAppIcon(ImageProj.Picture);
       end;
     end;
   end;
@@ -210,7 +191,6 @@ procedure TFraProjs.PageControlPageChange(Sender: TObject;
 var
   Tmplt: TTemplate;
   ListV: TListView;
-  Rs: TResourceStream;
 begin
   if Assigned(FrmNewProj) and Assigned(PageControl.ActivePage) then
   begin
@@ -231,11 +211,7 @@ begin
       if Assigned(Tmplt.Icon) then
         ImageProj.Picture.Icon := Tmplt.Icon
       else
-      begin
-        Rs := TResourceStream.Create(HInstance, 'ICONFAL', RT_RCDATA);
-        ImageProj.Picture.Icon.LoadFromStream(Rs);
-        Rs.Free;
-      end;
+        AssignAppIcon(ImageProj.Picture);
     end;
     FrmNewProj.BtnProx.Enabled := (ListV.SelCount > 0);
     FrmNewProj.BtnFnsh.Enabled := (ListV.SelCount > 0);

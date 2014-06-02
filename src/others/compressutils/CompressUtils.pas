@@ -3,7 +3,7 @@ unit CompressUtils;
 interface
 
 uses
-  SysUtils, Classes, LibTar, BZip2, StrMatch, SciZipFile;
+  SysUtils, Classes, LibTar, BZip2, StrMatch, KAZip;
 
 const
   FILE_TYPE_BZIP2 = 0;
@@ -21,9 +21,9 @@ function FindTarFile(const FindName: string; Source, OutFile: TStream): Boolean;
 {no extract/search only}
 function FindedTarFile(const FindName: string; Source: TStream): Boolean;
 { search match file }
-function FindZipFile(const FindName: string; Source: TZipFile; OutFile: TStream): Boolean;
+function FindZipFile(const FindName: string; Source: TKAZip; OutFile: TStream): Boolean;
 {no extract/search only}
-function FindedZipFile(const FindName: string; Source: TZipFile): Boolean;
+function FindedZipFile(const FindName: string; Source: TKAZip): Boolean;
 
 implementation
 
@@ -42,7 +42,7 @@ var
   Tp: Integer;
   Src: TFileStream;
   Dest: TFileStream;
-  Zp: TZipFile;
+  Zp: TKAZip;
   Ft: array[0..2] of Char;
 begin
   Result := False;
@@ -106,10 +106,13 @@ begin
           Src.Free;
           Exit;
         end;
-        Zp := TZipFile.Create;
-        Zp.LoadFromStream(Src);
-        if not Zp.ExtractFile(Dest) then
-        begin
+        Zp := TKAZip.Create(nil);
+        Zp.Open(Src);
+        try
+          if Zp.Entries.Count = 0 then
+            raise Exception.Create('No zip entry found');
+          Zp.Entries.Items[0].ExtractToStream(Dest);
+        except
           Zp.Free;
           Src.Free;
           Dest.Free;
@@ -266,36 +269,33 @@ begin
   end;
 end;
 
-function FindZipFile(const FindName: string; Source: TZipFile; OutFile: TStream): Boolean;
+function FindZipFile(const FindName: string; Source: TKAZip; OutFile: TStream): Boolean;
 var
   I: Integer;
-  Ss: TStringStream;
   S: string;
 begin
   Result := False;
-  for I := 0 to Source.Count - 1 do
+  for I := 0 to Source.Entries.Count - 1 do
   begin
-    S := ConvertSlashes(Source.Name[I]);
+    S := ConvertSlashes(Source.Entries.Items[I].FileName);
     if FileNameMatch(FindName, S) then
     begin
       Result := True;
-      Ss := TStringStream.Create(Source.Data[i]);
-      OutFile.CopyFrom(Ss, Ss.Size);
-      Ss.Free;
+      Source.Entries.Items[I].ExtractToStream(OutFile);
       Exit;
     end;
   end;
 end;
 
-function FindedZipFile(const FindName: string; Source: TZipFile): Boolean;
+function FindedZipFile(const FindName: string; Source: TKAZip): Boolean;
 var
   I: Integer;
   S: string;
 begin
   Result := False;
-  for I := 0 to Source.Count - 1 do
+  for I := 0 to Source.Entries.Count - 1 do
   begin
-    S := ConvertSlashes(Source.Name[I]);
+    S := ConvertSlashes(Source.Entries.Items[I].FileName);
     if FileNameMatch(FindName, S) then
     begin
       Result := True;

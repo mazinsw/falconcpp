@@ -34,7 +34,6 @@ uses
   AStyle in '..\others\astyle\AStyle.pas',
   BZip2 in '..\others\bzip2\BZip2.pas',
   LibTar in '..\others\libtar\LibTar.pas',
-  SciZipFile in '..\others\scizipfile\SciZipFile.pas',
   CompressUtils in '..\others\compressutils\CompressUtils.pas',
   StrMatch in '..\others\compressutils\StrMatch.pas',
   BreakPoint in 'Breakpoint.pas',
@@ -64,7 +63,17 @@ uses
   PluginServiceManager in '..\others\plugins\PluginServiceManager.pas',
   PluginWidgetMap in '..\others\plugins\PluginWidgetMap.pas',
   PluginWidget in '..\others\plugins\PluginWidget.pas',
-  icoformat in '..\others\icoformat\icoformat.pas';
+  icoformat in '..\others\icoformat\icoformat.pas',
+  KAZip in '..\others\zip\KAZip.pas',
+  UEditor in 'UEditor.pas',
+  Highlighter in 'editor\Highlighter.pas',
+  CppHighlighter in 'editor\CppHighlighter.pas',
+  CustomColors in 'editor\CustomColors.pas',
+  SintaxList in 'editor\SintaxList.pas',
+  UnicodeUtils in 'editor\UnicodeUtils.pas',
+  AutoComplete in 'editor\AutoComplete.pas',
+  CppTokenizer in '..\others\cppparser\CppTokenizer.pas',
+  CompletionProposal in 'editor\CompletionProposal.pas';
 
 function OpenWithOther: Boolean;
 var

@@ -4,8 +4,7 @@ interface
 
 uses
   Windows, SysUtils, IniFiles, Graphics, Classes, TBX, 
-  Controls, Dialogs, CompressUtils, SciZipFile, PNGImage,
-  FormEffect;
+  Controls, Dialogs, CompressUtils, PNGImage, FormEffect;
 
 const
   pngSign: array[0..3] of Byte = ($89, $50, $4E, $47);
@@ -135,7 +134,7 @@ type
 implementation
 
 uses
-  UUtils, USourceFile;
+  UUtils, USourceFile, KAZip;
 
 {TTemplateResources}
 
@@ -190,28 +189,35 @@ function TTemplateResources.SaveToFile(const FileName: string;
   Index: Integer): Boolean;
 var
   S, Path: string;
+  Test: Boolean;
   fs: TFileStream;
 begin
   Result := False;
   if (Index < 0) or (Index >= Count) then
     Exit;
   S := FList.Strings[Index];
+  Path := ExtractFilePath(FileName);
+  Test := DirectoryExists(Path);
+  if not Test then
+    Test := ForceDirectories(Path);
+  if not Test then //can't create directory
+    Exit;
   try
-    Path := ExtractFilePath(FileName);
-    Result := DirectoryExists(Path);
-    if not Result then
-      Result := ForceDirectories(Path);
-    if not Result then //can't create directory
-      Exit;
     if FileExists(FileName) then
       fs := TFileStream.Create(FileName, fmOpenReadWrite)
     else
       fs := TFileStream.Create(FileName, fmCreate);
+  except
+    Exit;
+  end;
+  try
     Result := FTemplate.GetFile(S, fs);
     fs.Free;
   except
-    Result := False;
+    fs.Free;
+    Exit;
   end;
+  Result := True;
 end;
 
 {TTemplateFiles}
@@ -289,7 +295,7 @@ function TTemplate.GetFile(aFileName: string; Stream: TStream): Boolean;
 var
   FileType: Integer;
   Fs: TFileStream;
-  Zp: TZipFile;
+  Zp: TKAZip;
   Ts: TMemoryStream;
   sign: array[0..1] of Byte;
 begin
@@ -323,9 +329,9 @@ begin
       end;
     FILE_TYPE_ZIP:
       begin
-        Zp := TZipFile.Create;
+        Zp := TKAZip.Create(nil);
         try
-          Zp.LoadFromStream(Fs);
+          Zp.Open(Fs);
           Result := FindZipFile(aFileName, Zp, Stream);
         finally
           Zp.Free;
@@ -384,7 +390,7 @@ var
 
   Tp: Integer;
   Fs: TFileStream;
-  Zp: TZipFile;
+  Zp: TKAZip;
   Ts, Ms: TMemoryStream;
   Ft: array[0..2] of Char;
   imgSign: array[0..3] of Byte;
@@ -590,8 +596,8 @@ begin
       end;
     FILE_TYPE_ZIP:
       begin
-        Zp := TZipFile.Create;
-        Zp.LoadFromStream(Fs);
+        Zp := TKAZip.Create(nil);
+        Zp.Open(Fs);
         if FindZipFile('*.ini', Zp, Ms) then
         begin
           SetIniFile;

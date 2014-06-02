@@ -32,7 +32,7 @@ function CreateMenuTool(RootMenu: TTBXSubmenuItem; Caption, StrCmd,
 
 implementation
 
-uses UFrmMain, SynEdit;
+uses UFrmMain, SynEdit, UEditor;
 
 function GetIdent(Column: Integer): string;
 begin
@@ -106,7 +106,7 @@ const
   NCHAR = 'âÂàÀáÁãÃêÊèÈéÉîÎìÌíÍõÕôÔòÒóÓüÜûÛúÚùÙçÇñÑªº°¹²³®©±÷½¼¾';
 var
   SelText, Temp, Ident: string;
-  Memo: TSynEdit;
+  Memo: TEditor;
   Line, Column, I, J: Integer;
   FileProp: TSourceFile;
   Sheet: TSourceFileSheet;

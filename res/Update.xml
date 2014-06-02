@@ -1,45 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <FalconCPP>
-	<Core Version="3.2.0.86">
-		<File Name="Falcon.exe" URL="https://downloads.sourceforge.net/project/falconcpp/Binaries/3.2.0.86/Falcon C++-3.2.0.86.zip">
-			Date: 2013/05/20
-			Fix: Compiling new files disable save button
-			Fix: Makefile rules fail when include headers files from directories using -I flag
-			Fix: Add new file don't changing project properties
-			Fix: OEM plus, minus shortcut for zoom, Ctrl + 0 for restore zoom 
-			Fix: Overriding source project files without prompt
-			Fix: Optimize option from new project
-			Fix: Race condition between parse files and load includes
-			Fix: Treeview selection color on Windows XP
-			Fix: Read only file open writable include file
-			Fix: HTML exporter export empty file
-			Fix: Invalid memory access on close when parsing files
-			Fix: Overriding CustomAutoComplete.txt file on update
-			Fix: Detecting return value as STDCALL on functions
-			Fix: don't parsing changed files when tab changed
-			Fix: keeping erroneous parsed file when discard changes on close file
-			Complete class at cursor implemented
-			Debugger auto watch global variables from current file
-			Changed default compiler path selection order
-			Import Visual C++ project from 7.10 to 9.00 version
-			Implemented Remove files from project menu
-			Search files on include path of compiler flags
-			Ctrl + Click works on included files from directories added from -I flag
-			Statement using cast now work on code completion
-			Parse header files out of project
-			Completion list with icons
-			Code completion now insert only necessary bracket, using BalancingBracket function
-			Balancing bracket when auto close {, [ and ( chars
-			Add libs from path when -L found on libs list to selection list on project property
-			Auto complete documentation comment
-			Tips with documentation comment
-			Code template with Ctrl + Space
-			Open file and select it on folder more fast using ShellAPI functions
-			remove double connecting to download and post data available to Updater and PkgManager
-			Minor changes for indentation enhancement
-			Override virtual functions in class with code completion
-			Disabling menu items from new file menu when a file is selected in project list
-			Reload header files when compiler path has changed on compiler options
+	<Core Version="3.3.0.0">
+		<File Name="Falcon.exe" URL="https://downloads.sourceforge.net/project/falconcpp/Binaries/3.3.0.0/Falcon C++-3.3.0.0.zip">
+			Date: 2014/02/23
+			Fix: Infinite wait for adjust environment variable to path
+			Fix: move project up/down changes project state
+			Fix: doesn't renaming file when change only case sensitive
+			Fix: Move breakpoint when delete or insert lines
+			Fix: after change project property doesn't enable immediately save button
+			Fix: keep as bold source item on treeview when drag drop over other folder or project
+			Fix: accept rename file with illegal chars
+			Fix: CodeCompletion scrollbar move selection over list limit
+			Fix: Slow function get selection length
+			Fix: Modern page control don't updating active page when close tab sheet before active page
+			Fix: Parse recognizing extern function as variable
+			Fix: Editor options force save syntax when click on Apply button
+			Fix: Scrollbar position when undo large lines
+			Fix: makefile rules with problem when found ':' on source filename
+			Fix: crashes when documentation comment is too large
+			Fix: can't open C++ files when click on included file
+			Fix: don't updating status bar for current file when save with a new name
+			Fix: incorrect search engine for replace all action
+			Added: code folding
+			Added: toggle line comment Ctrl + /
+			Added: Move selection up and Move selection down
+			Added: Italian language
+			Added: include files from include path of project flags to code completion
+			Added: Fold(Ctrl + ]), Unfold(Ctrl + [) shortcut
+			Added: Include to syntax Highlight
+			Added: Memory Manager FastMM4
+			Changed: Override common code when auto complete
+			Changed: Add double quotes on -I, -L include path only when has space chars
+			Changed: Now makefile uses Unix slashes
+			Changed: Add full bin directory to path, MINGW_PATH is no longer used
+			Parse STL C++ files
+			Reload include list when select different files base path
+			Started implementation of IDE Plugin extension
+			Include C++ operators to parser
+			Prevent screen saver and monitor trying to enter power save
+			Auto show code completion after type four characters
+			Force clean on build
+			balancing bracket on auto close bracket
+			Future support for reverse debugging
+			Package GDB and Win32API updated
+			Added tab menu item 'Copy full filename', 'Copy filename', 'Copy directory path' and 'Read only'
+			-I or -L flag browse dialog select directory
+			Import Code::Blocks project with relative path files
+			Code completion enhancement
 		</File>
 	</Core>
 </FalconCPP>

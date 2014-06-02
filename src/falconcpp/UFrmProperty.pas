@@ -245,6 +245,7 @@ procedure TFrmProperty.FindLibs(LibPath: string; LibPathList: TStrings);
 var
   List: TStrings;
   I: Integer;
+  LibName: string;
 begin
   if not DirectoryExists(LibPath) then
     Exit;
@@ -253,9 +254,9 @@ begin
   FindFiles(LibPath + '*.a', List);
   for I := 0 to List.Count - 1 do
   begin
-    LibPathList.Add(
-      StringReplace(
-      ChangeFileExt(List.Strings[I], ''), 'lib', '-l', []));
+    LibName := StringReplace(ChangeFileExt(ChangeFileExt(List.Strings[I],''), ''),
+      'lib', '-l', []);
+    LibPathList.Add(LibName);
   end;
   List.Clear;
   FindFiles(LibPath + '*.lib', List);
@@ -280,6 +281,7 @@ begin
   GetLibraryDirs(ExtractFilePath(Project.FileName), Libs, PathLibList);
   LibList := TStringList.Create;
   LibList.Duplicates := dupIgnore;
+  LibList.Sorted := True;
   for I := 0 to PathLibList.Count - 1 do
     FindLibs(ExpandFileName(PathLibList.Strings[I]), LibList);
   PathLibList.Free;
@@ -933,8 +935,7 @@ begin
           if Idx2 < 0 then
           begin
             if ChbCreateLL.Checked then
-              ListLibs.Items.Insert(1, Format(LD_DLL_STATIC_LIB,
-                [ExtractFilePath(EditTarget.Text), RemoveFileExt(ExtractFileName(EditTarget.Text)) + 'dll.a']))
+              ListLibs.Items.Insert(1, FormatLibrary(EditTarget.Text))
             else
               ListLibs.Items.Insert(1, LD_COMMAND + ',' + LD_OPTION_KILL_AT);
           end;
@@ -1025,10 +1026,7 @@ begin
   if J >= 0 then
   begin
     if ChbCreateLL.Checked then
-    begin
-      ListLibs.Items.Strings[J] := Format(LD_DLL_STATIC_LIB,
-        [ExtractFilePath(EditTarget.Text), RemoveFileExt(ExtractFileName(EditTarget.Text)) + 'dll.a']);
-    end
+      ListLibs.Items.Strings[J] := FormatLibrary(EditTarget.Text)
     else
       ListLibs.Items.Strings[J] := LD_COMMAND + ',' + LD_OPTION_KILL_AT;
   end;

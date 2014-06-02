@@ -6,7 +6,7 @@ uses
   Windows, SysUtils, Classes, Dialogs, ComCtrls, Controls, 
   USourceFile, Registry, ImgList, SynEditKeyCmds, SynMemo, SynEdit,
   ShlObj, Graphics, Messages, XMLDoc, XMLIntf, UParseMsgs,
-  ShellAPI, Forms;
+  ShellAPI, Forms, UEditor;
 
 const
   MAKEFILE_MSG: array[0..3] of string = (
@@ -83,7 +83,10 @@ function ExecuteFile(Handle: HWND; const Filename, Paramaters,
 procedure LoadFontNames(List: TStrings);
 procedure LoadFontSize(FontName: string; List: TStrings);
 procedure BitmapToAlpha(bmp: TBitmap; Color: TColor = clFuchsia);
-function IconToBitmap(const Icon: TIcon): TBitmap;
+function IconToBitmap(const Icon: TIcon; Width: Integer = 48;
+  Height: Integer = 48): TBitmap;
+function GetRGBAPointerFromImageIndex(ImageList: TCustomImageList;
+  Index: Integer; var Width, Height: Integer): PAnsiChar;
 function GetFileVersionA(FileName: string): TVersion;
 function ParseVersion(Version: string): TVersion;
 function CompareVersion(Ver1, Ver2: TVersion): Integer;
@@ -110,12 +113,13 @@ function CreateSourceFolder(const Name: string;
 function NewSourceFile(FileType, Compiler: Integer; FirstName, BaseName,
   Ext, FileName: string; OwnerFile: TSourceFile; UseFileName,
   Expand: Boolean): TSourceFile;
+function FormatLibrary(const FileName: string): string;
 function BrowseDialog(Handle: HWND; const Title: string;
   var Directory: string): Boolean;
 function HumanToBool(Resp: string): Boolean;
 function BoolToHuman(Question: Boolean): string;
 
-function EditorGotoXY(Memo: TSynEdit; X, Y: Integer): Boolean;
+function EditorGotoXY(Memo: TEditor; X, Y: Integer): Boolean;
 function SearchSourceFile(FileName: string;
   var FileProp: TSourceFile): Boolean;
 function OpenFile(FileName: string): TProjectFile;
@@ -539,7 +543,7 @@ begin
   end;
 end;
 
-function IconToBitmap(const Icon: TIcon): TBitmap;
+function IconToBitmap(const Icon: TIcon; Width, Height: Integer): TBitmap;
 
   function GetBitmap(const Icon: TIcon): TBitmap;
   var
@@ -561,13 +565,14 @@ begin
   bmp := GetBitmap(Icon);
   if Assigned(bmp) then
   begin
-    if (bmp.Width <> 48) then
+    if (Width > 0) and (Height > 0) and
+      ((bmp.Width <> Width) or (bmp.Height <> Height)) then
     begin
       bmp.PixelFormat := pf32bit;
       Result := TBitmap.Create;
-      Result.PixelFormat := pf32bit;
-      Result.Height := 48;
-      Result.Width := 48;
+      Result.PixelFormat := pf32bit; 
+      Result.Width := Width;
+      Result.Height := Height;
       Result.Canvas.Brush.Color := clBlack;
       Result.Canvas.FillRect(Result.Canvas.ClipRect);
       for y := 0 to Result.Height - 1 do
@@ -576,12 +581,46 @@ begin
         for x := 0 to Result.Width - 1 do
           ColorSL^[x].rgbReserved := 0;
       end;
-      Result.Canvas.Draw((48 - bmp.Width) div 2, (48 - bmp.Height) div 2, bmp);
+      Result.Canvas.Draw((Width - bmp.Width) div 2, (Height - bmp.Height) div 2, bmp);
       bmp.Free;
     end
     else
       Result := bmp;
   end;
+end;
+
+function GetRGBAPointerFromImageIndex(ImageList: TCustomImageList;
+  Index: Integer; var Width, Height: Integer): PAnsiChar;
+var
+  I, J: Integer;
+  Icon: TIcon;  
+  Image: TBitmap;
+  ImgPtr, DestPtr, TmpPtr: PRGBQuad;
+begin
+  // breakpoint icon
+  Icon := TIcon.Create;
+  ImageList.GetIcon(Index, Icon);
+  Image := IconToBitmap(Icon, 0, 0);
+  Icon.Free;
+  Width := Image.Width;
+  Height := Image.Height;
+  GetMem(DestPtr, Image.Width * Image.Height * 4);
+  TmpPtr := DestPtr;
+  for I := 0 to Image.Height - 1 do
+  begin
+    ImgPtr := Image.ScanLine[I];
+    for J := 0 to Image.Width - 1 do
+    begin
+      TmpPtr^.rgbBlue := ImgPtr^.rgbRed;
+      TmpPtr^.rgbGreen := ImgPtr^.rgbGreen;
+      TmpPtr^.rgbRed := ImgPtr^.rgbBlue;
+      TmpPtr^.rgbReserved := ImgPtr^.rgbReserved;
+      Inc(ImgPtr);
+      Inc(TmpPtr);
+    end;
+  end;
+  Image.Free;
+  Result := PAnsiChar(DestPtr);
 end;
 
 procedure SwitchToThisWindow; external user32 name 'SwitchToThisWindow';
@@ -1510,6 +1549,18 @@ begin
   result := 0;
 end;
 
+function FormatLibrary(const FileName: string): string;
+var
+  Name, Lib: string;
+begin
+  Name := ExtractFileName(FileName);
+  Lib := 'lib';
+  if Pos('lib', Name) = 1 then
+    Lib := '';
+  Result := Format(LD_DLL_STATIC_LIB,
+        [ExtractFilePath(FileName), Lib, RemoveFileExt(Name) + '.dll.a']);
+end;
+
 function BrowseDialog(Handle: HWND; const Title: string;
   var Directory: string): Boolean;
 var
@@ -1559,7 +1610,7 @@ begin
     Result := 'No';
 end;
 
-function EditorGotoXY(Memo: TSynEdit; X, Y: Integer): Boolean;
+function EditorGotoXY(Memo: TEditor; X, Y: Integer): Boolean;
 var
   DisplayCoord: TDisplayCoord;
   BufferCoord: TBufferCoord;
@@ -1567,7 +1618,8 @@ begin
   DisplayCoord.Column := X;
   DisplayCoord.Row := Y;
   BufferCoord := Memo.DisplayToBufferPos(DisplayCoord);
-  Memo.ExecuteCommand(ecGotoXY, #0, @BufferCoord);
+  // TODO: commented
+  //Memo.ExecuteCommand(ecGotoXY, #0, @BufferCoord);
   Result := (Memo.DisplayX = X) and (Memo.DisplayY = Y);
 end;
 

@@ -3,13 +3,13 @@ unit CodeTemplate;
 interface
 
 uses
-  Classes, TokenList, TokenUtils, TokenConst, USourceFile, SynEdit, SynEditTypes;
+  Classes, TokenList, TokenUtils, TokenConst, USourceFile, SynEdit, SynEditTypes, UEditor;
 
 procedure AddTemplates(Trigger: string; Scope: TTkType; ItemList,
   ShowList: TStrings; CompletionColors: TCompletionColors;
   Images: array of Integer; CompilerType: Integer; Filter: TTokenSearchMode = []);
 procedure ExecuteCompletion(const Input: string; Token: TTokenClass;
-  AEditor: TCustomSynEdit);
+  AEditor: TEditor);
 
 implementation
 
@@ -394,7 +394,7 @@ begin
 end;
 
 procedure ExecuteCompletion(const Input: string; Token: TTokenClass;
-  AEditor: TCustomSynEdit);
+  AEditor: TEditor);
 var
   i, j, K, L, Len, IndentLen, AfterLen: integer;
   s, sc, ln: string;
@@ -479,7 +479,7 @@ begin
       // indent lines
       if (IndentLen > 0) and (Temp.Count > 1) then
       begin
-        if AEditor.WantTabs and not (eoTabsToSpaces in AEditor.Options) then
+        if AEditor.WantTabs then
           s := StringOfChar(#9, IndentLen div AEditor.TabWidth) + StringOfChar(' ', IndentLen mod AEditor.TabWidth)
         else
           s := StringOfChar(' ', IndentLen);
@@ -505,7 +505,7 @@ begin
           until ptr^ = #0;
         if not PipeFind then
           j := Pos('|', s);
-        if (IndentLen >= AEditor.TabWidth) and not (eoTabsToSpaces in AEditor.Options) and
+        if (IndentLen >= AEditor.TabWidth) and
           (ptr - iptr <= IndentLen) then
         begin
             s := StringOfChar(#9, IndentLen div AEditor.TabWidth) + StringOfChar(' ', IndentLen mod AEditor.TabWidth) +

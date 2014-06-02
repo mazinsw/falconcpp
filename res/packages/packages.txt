@@ -1,7 +1,7 @@
-binutils-2.19.1
-gcc-core-4.4.1-tdm-2
-gcc-g++-4.4.1-tdm-2
-gdb-6.8-3
-mingw32-make-3.81-20080326-3
-mingw-runtime-3.16
-w32api-3.13
+binutils-2.23.1-1-mingw32
+gcc-4.8.1-tdm-2-core
+gcc-4.8.1-tdm-2-c++
+gdb-7.6
+make-3.82.90-2-mingw32-cvs-20120902
+mingwrt-3.20-2-mingw32
+w32api-3.17-2

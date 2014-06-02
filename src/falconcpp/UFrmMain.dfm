@@ -1425,19 +1425,6 @@ object FrmFalconMain: TFrmFalconMain
     Left = 186
     Top = 112
   end
-  object CppHighligher: TSynCppSyn
-    CommentAttri.Foreground = clGreen
-    DirecAttri.Foreground = clTeal
-    NumberAttri.Foreground = clGreen
-    FloatAttri.Foreground = clGreen
-    HexAttri.Foreground = clGreen
-    OctalAttri.Foreground = clGreen
-    StringAttri.Foreground = clBlue
-    CharAttri.Foreground = 33023
-    SymbolAttri.Foreground = clMaroon
-    Left = 458
-    Top = 272
-  end
   object OpenDlg: TOpenDialog
     Filter = 
       'All know files|*.fpj; *.dev; *.cbp; *.vcproj; *.c; *.cc; *.cpp; ' +
@@ -1474,37 +1461,6 @@ object FrmFalconMain: TFrmFalconMain
     ConvertOemToAnsi = False
     Left = 435
     Top = 521
-  end
-  object CodeCompletion: TSynCompletionProposal
-    Options = [scoLimitToMatchedText, scoUseInsertList, scoUsePrettyText, scoUseBuiltInTimer, scoEndCharCompletion, scoCompleteWithTab, scoCompleteWithEnter]
-    ClSelectedText = clWindowText
-    ClTitleBackground = clBtnHighlight
-    Width = 450
-    EndOfTokenChr = '().:'
-    TriggerChars = '.>:'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -12
-    Font.Name = 'Segoe UI'
-    Font.Style = []
-    TitleFont.Charset = DEFAULT_CHARSET
-    TitleFont.Color = clBtnText
-    TitleFont.Height = -11
-    TitleFont.Name = 'MS Sans Serif'
-    TitleFont.Style = [fsBold]
-    Columns = <>
-    ItemHeight = 19
-    Images = ImgListOutLine
-    OnClose = CodeCompletionClose
-    OnExecute = CodeCompletionExecute
-    ShortCut = 0
-    TimerInterval = 300
-    OnAfterCodeCompletion = CodeCompletionAfterCodeCompletion
-    OnCodeCompletion = CodeCompletionCodeCompletion
-    OnGetWordBreakChars = CodeCompletionGetWordBreakChars
-    OnGetWordEndChars = CodeCompletionGetWordEndChars
-    Left = 610
-    Top = 272
   end
   object TimerStartUpdate: TTimer
     Enabled = False
@@ -1689,7 +1645,7 @@ object FrmFalconMain: TFrmFalconMain
   object PopupMsg: TTBXPopupMenu
     Images = ImgListMenus
     Left = 467
-    Top = 519
+    Top = 521
     object PupMsgCopy: TTBXItem
       Caption = 'Copy'
       ImageIndex = 16

@@ -7,7 +7,7 @@ uses
   Menus, ComCtrls, Controls, ShellApi,
   SynEdit, XMLDoc, XMLIntf, SynEditHighlighter, SynEditKeyCmds,
   Makefile, Breakpoint, UTemplates, ModernTabs, SynEditMiscClasses,
-  SynEditCodeFolding;
+  SynEditCodeFolding, UEditor;
 
 const
   FILE_TYPE_PROJECT = 1;
@@ -63,7 +63,7 @@ const
   LD_OPTION_KILL_AT = '--kill-at';
   LD_OPTION_OUT_LIB = '--out-implib';
   LD_DLL_STATIC_LIB = LD_COMMAND + ',' + LD_OPTION_KILL_AT + ',' +
-    LD_OPTION_OUT_LIB + ',%slib%s';
+    LD_OPTION_OUT_LIB + ',%s%s%s';
 type
   TVersionInfo = class
     Major: Integer;
@@ -296,16 +296,16 @@ type
 
   TSourceFileSheet = class(TPropertySheet)
   private
-    FSynMemo: TSynEdit;
+    FEditor: TEditor;
     FSourceFile: TSourceFile;
     procedure TextEditorMouseDown(Sender: TObject;
       Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
   public
-    class procedure UpdateEditor(SynMemo: TSynEdit);
+    class procedure UpdateEditor(SynMemo: TEditor);
     constructor CreateEditor(SourceFile: TSourceFile; PageCtrl: TModernPageControl;
       SelectTab: Boolean = True);
     destructor Destroy; override;
-    property Memo: TSynEdit read FSynMemo;
+    property Memo: TEditor read FEditor;
     property SourceFile: TSourceFile read FSourceFile;
   end;
 
@@ -313,7 +313,8 @@ type
 
 implementation
 
-uses UFrmMain, UUtils, UConfig, TokenFile, TokenList, TokenUtils;
+uses UFrmMain, UUtils, UConfig, TokenFile, TokenList, TokenUtils, DScintillaTypes,
+  CustomColors, Highlighter;
 
 const
   fileMoveError = 'Can''t move file ''%s'' to ''%s.''';
@@ -507,7 +508,10 @@ begin
   if FileExists(FileName) and Saved then
   begin
     if GetSheet(sheet) then
-      LoadFile(sheet.Memo.Lines);
+    begin
+      sheet.Memo.Lines.LoadFromFile(FileName);
+      sheet.Memo.EmptyUndoBuffer;
+    end;
     UpdateDate;
   end;
 end;
@@ -623,7 +627,8 @@ begin
       Sheet.ImageIndex := FILE_IMG_LIST[FileType];
       case FileType of
         FILE_TYPE_C..FILE_TYPE_H: Sheet.Memo.Highlighter := FrmFalconMain.CppHighligher;
-        FILE_TYPE_RC: Sheet.Memo.Highlighter := FrmFalconMain.ResourceHighlighter;
+        // TODO: commented
+//        FILE_TYPE_RC: Sheet.Memo.Highlighter := FrmFalconMain.ResourceHighlighter;
       end;
     end;
   end;
@@ -644,12 +649,13 @@ begin
   Sheet := TSourceFileSheet.CreateEditor(Self, FrmFalconMain.PageControlEditor, SelectTab);
   Sheet.Caption := Caption;
   Sheet.ImageIndex := FILE_IMG_LIST[FileType];
-  case FileType of
-    FILE_TYPE_C..FILE_TYPE_H, FILE_TYPE_UNKNOW: Sheet.Memo.Highlighter := FrmFalconMain.CppHighligher;
-    FILE_TYPE_RC: Sheet.Memo.Highlighter := FrmFalconMain.ResourceHighlighter;
-  end;
   if Saved then
-    LoadFile(Sheet.Memo.Lines);
+  begin
+    Sheet.Memo.ReadOnly := False;
+    Sheet.Memo.Lines.LoadFromFile(FileName);
+    Sheet.Memo.EmptyUndoBuffer;
+    Sheet.Memo.ReadOnly := ReadOnly;
+  end;
   FrmFalconMain.PageControlEditor.Show;
   if FrmFalconMain.Showing and Sheet.Memo.Showing then
     Sheet.Memo.SetFocus;
@@ -689,14 +695,7 @@ end;
 
 procedure TSourceFile.LoadFile(Text: TStrings);
 begin
-  if (FSheet <> nil) and (FSheet.Memo.Lines = Text) then
-    FSheet.Memo.LockFoldUpdate;
   Text.LoadFromFile(FileName);
-  if (FSheet <> nil) and (FSheet.Memo.Lines = Text) then
-  begin
-    FSheet.Memo.Gutter.AutoSizeDigitCount(FSheet.Memo.UnCollapsedLines.Count);
-    FSheet.Memo.UnlockFoldUpdate;
-  end;
 end;
 
 procedure TSourceFile.GetSubFiles(List: TStrings);
@@ -838,10 +837,10 @@ begin
     Project.Compiled := False;
     if GetSheet(Sheet) then
     begin
-      Sheet.Memo.UnCollapsedLines.SaveToFile(FileName);
+      Sheet.Memo.Lines.SaveToFile(FileName);
       if sheet.Memo.Modified and not Project.Saved and IsNew then
         Project.SomeFileChanged := True;
-      sheet.Memo.Modified := False;
+      sheet.Memo.SetSavePoint;
     end // create empty file
     else if not FileExists(FileName) then
     begin
@@ -932,10 +931,10 @@ begin
   begin
     if GetSheet(Sheet) then
     begin
-      Sheet.Memo.UnCollapsedLines.SaveToFile(ToFileName);
+      Sheet.Memo.Lines.SaveToFile(ToFileName);
       if sheet.Memo.Modified and not Project.Saved and IsNew then
         Project.SomeFileChanged := True;
-      sheet.Memo.Modified := False;
+      sheet.Memo.SetSavePoint;
       if not FSaved then
         FSaved := True;
       FFileDateTime := FileDateTime(ToFileName);
@@ -2322,14 +2321,26 @@ end;
 
 {TSourceFileSheet}
 
-class procedure TSourceFileSheet.UpdateEditor(SynMemo: TSynEdit);
+class procedure TSourceFileSheet.UpdateEditor(SynMemo: TEditor);
 var
+  DefStyle: THighlighStyle;
   Options: TSynEditorOptions;
 begin
   SynMemo.BeginUpdate;
-  //FSynMemo.BorderStyle := bsNone;
+  //FEditor.BorderStyle := bsNone;
   with FrmFalconMain.Config.Editor do
   begin
+    FrmFalconMain.SintaxList.Selected.UpdateEditor(SynMemo);
+    DefStyle := FrmFalconMain.CppHighligher.FindStyleByID(SCE_C_DEFAULT);
+    if (DefStyle <> nil) then
+    begin
+      FrmFalconMain.CppHighligher.BeginUpdate;
+      DefStyle.FontName := FontName;
+      DefStyle.FontSize := FontSize;          
+      FrmFalconMain.CppHighligher.EndUpdate;
+    end;
+    SynMemo.Zoom := FrmFalconMain.ZoomEditor;
+    SynMemo.Folding := True;
     Options := SYNEDIT_DEFAULT_OPTIONS;
     Include(Options, eoKeepCaretX);
     Include(Options, eoShowIndentGuides);
@@ -2369,56 +2380,47 @@ begin
       Include(Options, eoSmartTabs)
     else
       Exclude(Options, eoSmartTabs);
-    if UseTabChar then
-      Exclude(Options, eoTabsToSpaces)
-    else
-      Include(Options, eoTabsToSpaces);
+    SynMemo.SetUseTabs(UseTabChar);
     if EnhancedHomeKey then
       Include(Options, eoEnhanceHomeKey)
     else
       Exclude(Options, eoEnhanceHomeKey);
     if ShowSpaceChars then
-      Include(Options, eoShowSpaceChars)
+      SynMemo.SetViewWS(SCWS_VISIBLEALWAYS)
     else
-      Exclude(Options, eoShowSpaceChars);
-
-    SynMemo.MaxUndo := MaxUndo;
+      SynMemo.SetViewWS(SCWS_INVISIBLE);
+    SynMemo.SetWhitespaceFore(True, clOrange);
     SynMemo.TabWidth := TabWidth;
+    SynMemo.ShowLineNumber := ShowLineNumber;
 
-    SynMemo.BracketHighlighting := HighligthMatchBraceParentheses;
     SynMemo.BracketHighlight.Foreground := NormalColor;
-    SynMemo.BracketHighlight.AloneForeground := ErrorColor;
     SynMemo.BracketHighlight.Style := [fsBold];
-    SynMemo.BracketHighlight.AloneStyle := [fsBold];
     SynMemo.BracketHighlight.Background := BgColor;
+    SynMemo.BadBracketHighlight.Foreground := ErrorColor;
+    SynMemo.BracketHighlighting := HighligthMatchBraceParentheses;
 
     if HighligthCurrentLine then
       SynMemo.ActiveLineColor := CurrentLineColor
     else
       SynMemo.ActiveLineColor := clNone;
-
-    SynMemo.LinkEnable := LinkClick;
-    SynMemo.LinkOptions.Color := LinkColor;
+    // set link color
+    SynMemo.SetHotspotActiveFore(LinkClick, LinkColor);
 
     //---------------- Display ---------------------//
-    SynMemo.Font.Name := FontName;
-    SynMemo.Font.Size := FrmFalconMain.ZoomEditor;
-    SynMemo.Gutter.Width := GutterWidth;
-    SynMemo.Gutter.Font.Size := FrmFalconMain.ZoomEditor;
+    // TODO: commented
+//    SynMemo.Gutter.Width := GutterWidth;
     if ShowRightMargin then
-      SynMemo.RightEdge := RightMargin
+    begin
+      SynMemo.SetEdgeMode(EDGE_LINE);
+      SynMemo.SetEdgeColumn(RightMargin);
+    end
     else
-      SynMemo.RightEdge := 0;
-    SynMemo.Gutter.Visible := ShowGutter;
-    SynMemo.Gutter.ShowLineNumbers := ShowLineNumber;
-    SynMemo.Gutter.Gradient := GradientGutter;
-    SynMemo.Gutter.AutoSize := True;
-    SynMemo.Gutter.Cursor := crReverseArrow;
+      SynMemo.SetEdgeMode(EDGE_NONE);
+//    SynMemo.Gutter.Visible := ShowGutter;
+//    SynMemo.Gutter.ShowLineNumbers := ShowLineNumber;
+//    SynMemo.Gutter.AutoSize := True;
+//    SynMemo.Gutter.Cursor := crReverseArrow;
     //-------------- Colors -------------------------//
-
-    FrmFalconMain.SintaxList.Selected.UpdateEditor(SynMemo);
-    //-------------- Code Resources -----------------//
-    SynMemo.Options := Options;
   end;
   SynMemo.EndUpdate;
 end;
@@ -2431,59 +2433,46 @@ begin
   FSourceFile := SourceFile;
   FSourceFile.FSheet := Self;
   FSheetType := SHEET_TYPE_FILE;
-  FSynMemo := TSynEdit.Create(Self);
-  UpdateEditor(FSynMemo);
-  FSynMemo.ReadOnly := SourceFile.ReadOnly;
+  FEditor := TEditor.Create(Self);
+  FEditor.Parent := Self;
+  FEditor.Align := alClient;
+  FEditor.WantTabs := True;
+  FEditor.PopupMenu := FrmFalconMain.PopupEditor;
+  FEditor.OnContextPopup := FrmFalconMain.EditorContextPopup;
+  FEditor.SearchEngine := FrmFalconMain.EditorSearch;
+  FEditor.ImageList := FrmFalconMain.ImageListGutter;
+  FEditor.ReadOnly := SourceFile.ReadOnly;
   if SourceFile.ReadOnly then
     Font.Color := clGrayText;
-  FSynMemo.Parent := Self;
-  FSynMemo.Align := alClient;
-  FSynMemo.WantTabs := True;
-  FSynMemo.PopupMenu := FrmFalconMain.PopupEditor;
-  FSynMemo.OnContextPopup := FrmFalconMain.EditorContextPopup;
-  FSynMemo.SearchEngine := FrmFalconMain.EditorSearch;
   PageControl := PageCtrl;
-  FrmFalconMain.CodeCompletion.Editor := FSynMemo;
-  FrmFalconMain.AutoComplete.Editor := FSynMemo;
-  FSynMemo.AddKey(ecAutoCompletion, Word('J'), [ssCtrl], 0, []);
-  FSynMemo.OnChange := FrmFalconMain.TextEditorChange;
-  FSynMemo.OnExit := FrmFalconMain.TextEditorExit;
-  FSynMemo.OnEnter := FrmFalconMain.TextEditorEnter;
-  FSynMemo.OnMouseLeave := FrmFalconMain.TextEditorMouseLeave;
-  FSynMemo.OnStatusChange := FrmFalconMain.TextEditorStatusChange;
-  FSynMemo.OnMouseDown := TextEditorMouseDown;
-  FSynMemo.OnMouseMove := FrmFalconMain.TextEditorMouseMove;
-  FSynMemo.OnLinkClick := FrmFalconMain.TextEditorLinkClick;
-  FSynMemo.OnKeyDown := FrmFalconMain.TextEditorKeyDown;
-  FSynMemo.OnKeyPress := FrmFalconMain.TextEditorKeyPress;
-  FSynMemo.OnKeyUp := FrmFalconMain.TextEditorKeyUp;
-  FSynMemo.OnGutterClick := FrmFalconMain.TextEditorGutterClick;
-  FSynMemo.OnGutterPaint := FrmFalconMain.TextEditorGutterPaint;
-  FSynMemo.OnSpecialLineColors := FrmFalconMain.TextEditorSpecialLineColors;
-  FSynMemo.OnCommandProcessed := FrmFalconMain.TextEditorCommandProcessed;
-  FSynMemo.OnScroll := FrmFalconMain.TextEditorScroll;
-  FSynMemo.OnClick := FrmFalconMain.TextEditorClick;
-  FSynMemo.OnLinesDeleted := FrmFalconMain.TextLinesDeleted;
-  FSynMemo.OnLinesInserted := FrmFalconMain.TextLinesInserted;
-  // Initialise code folding
-  with FSynMemo.CodeFolding do
-  begin
-    FSynMemo.BeginUpdate;
-    CaseSensitive := True;
-    FolderBarLinesColor := clGray;
-    CollapsingMarkStyle := msSquare;
-    with FoldRegions do
-    begin
-      Add(rtChar, False, False, False, '{', '}', nil);
-      SkipRegions.Add('/*', '*/', '\', itMultiLineComment);
-      SkipRegions.Add('//', '', '\', itSingleLineComment);
-      SkipRegions.Add('"', '"', '\', itString);
-      SkipRegions.Add('''', '''', '\', itString);
-      //Add(rtKeyword, False, False, True, 'BEGIN', 'END', nil); //for resources
-    end;
-    Enabled := True;
-    FSynMemo.EndUpdate;
+  case SourceFile.FileType of
+    FILE_TYPE_C..FILE_TYPE_H, FILE_TYPE_UNKNOW: FEditor.Highlighter := FrmFalconMain.CppHighligher;
+  // TODO: commented
+//    FILE_TYPE_RC: Sheet.Memo.Highlighter := FrmFalconMain.ResourceHighlighter;
   end;
+  SetWindowLong(FEditor.Handle, GWL_EXSTYLE,
+    GetWindowLong(FEditor.Handle, GWL_EXSTYLE) or WS_EX_STATICEDGE);
+  FEditor.Init;
+  UpdateEditor(FEditor);
+  FEditor.OnChange := FrmFalconMain.TextEditorChange;
+  FEditor.OnExit := FrmFalconMain.TextEditorExit;
+  FEditor.OnEnter := FrmFalconMain.TextEditorEnter;
+  FEditor.OnMouseLeave := FrmFalconMain.TextEditorMouseLeave;
+  FEditor.OnUpdateUI := FrmFalconMain.TextEditorStatusChange;
+  FEditor.OnMouseDown := TextEditorMouseDown;
+  FEditor.OnMouseMove := FrmFalconMain.TextEditorMouseMove;
+  FEditor.OnHotSpotClick := FrmFalconMain.TextEditorLinkClick;
+  FEditor.OnCharAdded := FrmFalconMain.TextEditorCharAdded;
+  FEditor.OnKeyDown := FrmFalconMain.TextEditorKeyDown;
+  FEditor.OnKeyPress := FrmFalconMain.TextEditorKeyPress;
+  FEditor.OnKeyUp := FrmFalconMain.TextEditorKeyUp;
+  FEditor.OnMarginClick := FrmFalconMain.TextEditorGutterClick;
+  //FEditor.OnGutterPaint := FrmFalconMain.TextEditorGutterPaint;
+  //FEditor.OnSpecialLineColors := FrmFalconMain.TextEditorSpecialLineColors;
+  FEditor.OnScroll := FrmFalconMain.TextEditorScroll;
+  FEditor.OnClick := FrmFalconMain.TextEditorClick;
+  //FEditor.OnLinesDeleted := FrmFalconMain.TextLinesDeleted;
+  //FEditor.OnLinesInserted := FrmFalconMain.TextLinesInserted;
   if SelectTab then
     PageCtrl.ActivePageIndex := PageIndex;
 end;
@@ -2498,7 +2487,8 @@ begin
     P := Memo.DisplayToBufferPos(Memo.PixelsToRowColumn(X, Y));
     if (P.Char > 0) and (P.Line > 0) and (Memo.CanPaste) then
     begin
-      Memo.ExecuteCommand(ecGotoXY, #0, @P);
+      // TODO: commented
+      // Memo.ExecuteCommand(ecGotoXY, #0, @P);
       Memo.PasteFromClipboard;
     end;
   end;

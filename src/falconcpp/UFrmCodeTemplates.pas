@@ -100,7 +100,8 @@ var
 begin
   SetExplorerTheme(ListViewTemplates.Handle);
   AutoComplete := TSynAutoCompleteTemplate.Create(Self);
-  TSourceFileSheet.UpdateEditor(SynTemplates);
+  // TODO: commented
+  //TSourceFileSheet.UpdateEditor(SynTemplates);
   SynTemplates.Gutter.Visible := False;
   Rs := TResourceStream.Create(HInstance, 'AUTOCOMPLETE', RT_RCDATA);
   Rs.Position := 0;

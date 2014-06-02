@@ -445,7 +445,7 @@ begin
       NewFile.Edit.Memo.LockFoldUpdate;
       NewFile.Edit.Memo.Lines.Assign(FileText);
       NewFile.Edit.Memo.UnlockFoldUpdate;
-      NewFile.Edit.Memo.Modified := False;
+      NewFile.Edit.Memo.EmptyUndoBuffer;
       NewFile.IsNew := True;
       FileText.Free;
     end;

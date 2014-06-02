@@ -89,7 +89,7 @@ function EncodeStr(const S: string): string;
 implementation
 
 uses USourceFile, SynEditMiscClasses, ULanguages,
-  UUtils, UParseMsgs, SynEdit;
+  UUtils, UParseMsgs, SynEdit, UEditor;
 
 {$R *.dfm}
 
@@ -97,7 +97,7 @@ procedure StartFindText(frm: TFrmFalconMain);
 var
   prop: TSourceFile;
   sheet: TSourceFileSheet;
-  memo: TSynEdit;
+  memo: TEditor;
   seltext: string;
 begin
   if not frm.GetActiveFile(prop) then
@@ -123,7 +123,7 @@ procedure StartFindNextText(frm: TFrmFalconMain; LastSearch: TSearchItem);
 var
   prop: TSourceFile;
   sheet: TSourceFileSheet;
-  memo: TSynEdit;
+  memo: TEditor;
   BE: TBufferCoord;
   sopt: TSynSearchOptions;
   I, Start, Index, Count, SelEnd: Integer;
@@ -153,14 +153,14 @@ begin
   memo.SearchEngine.Pattern := LastSearch.Search;
   memo.SearchEngine.Options := sopt;
   { TODO -oMazin -c : Change to Lines 04/05/2013 22:14:59 }
-  memo.SearchEngine.FindAll(memo.UnCollapsedLines.Text);
+  memo.SearchEngine.FindAll(memo.Lines.Text);
   Start := 0;
   Count := 0;
   if memo.SelAvail then
     BE := memo.BlockEnd
   else
     BE := memo.CaretXY;
-  BE.Line := memo.GetRealLineNumber(BE.Line);
+  BE.Line := BE.Line;
   SelEnd := memo.RowColToCharIndex(BE);
   for I := 0 to memo.SearchEngine.ResultCount - 1 do
     if memo.SearchEngine.Results[I] > SelEnd then
@@ -193,7 +193,7 @@ procedure StartFindPrevText(frm: TFrmFalconMain; LastSearch: TSearchItem);
 var
   prop: TSourceFile;
   sheet: TSourceFileSheet;
-  memo: TSynEdit;
+  memo: TEditor;
   sopt: TSynSearchOptions;
   BS: TBufferCoord;
   I, Start, Index, Count, SelStart: Integer;
@@ -223,14 +223,14 @@ begin
   memo.SearchEngine.Pattern := LastSearch.Search;
   memo.SearchEngine.Options := sopt;
   { TODO -oMazin -c : Change to Lines 04/05/2013 22:14:59 }
-  memo.SearchEngine.FindAll(memo.UnCollapsedLines.Text);
+  memo.SearchEngine.FindAll(memo.Lines.Text);
   Start := 0;
   Count := 0;
   if memo.SelAvail then
     BS := memo.BlockBegin
   else
     BS := memo.CaretXY;
-  BS.Line := memo.GetRealLineNumber(BS.Line);
+  BS.Line := BS.Line;
   selstart := memo.RowColToCharIndex(BS);
   for I := 0 to memo.SearchEngine.ResultCount - 1 do
     if memo.SearchEngine.Results[I] > SelStart then
@@ -260,7 +260,7 @@ procedure StartFindFilesText(frm: TFrmFalconMain);
 var
   prop: TSourceFile;
   sheet: TSourceFileSheet;
-  memo: TSynEdit;
+  memo: TEditor;
   seltext: string;
 begin
   seltext := '';
@@ -288,7 +288,7 @@ procedure StartReplaceText(frm: TFrmFalconMain);
 var
   prop: TSourceFile;
   sheet: TSourceFileSheet;
-  memo: TSynEdit;
+  memo: TEditor;
   seltext: string;
 begin
   if not frm.GetActiveFile(prop) then
@@ -649,7 +649,7 @@ begin
     LblRep.Caption := LastFindFilesDescription;
 
     if FileProp.GetSheet(sheet) then
-      Lines.Assign(sheet.Memo.UnCollapsedLines)
+      Lines.Assign(sheet.Memo.Lines)
     else
       FileProp.LoadFile(Lines);
     Results := Results + Search.FindAll(Lines.Text);
@@ -760,7 +760,7 @@ end;
 procedure TFrmFind.BtnFindClick(Sender: TObject);
 var
   sheet: TSourceFileSheet;
-  memo: TSynEdit;
+  memo: TEditor;
   search: string;
   I, Start, Index, Count, lastlength, selstart, selend: Integer;
   rect, selRect: TRect;
@@ -794,20 +794,20 @@ begin
   memo.SearchEngine.Pattern := search;
   memo.SearchEngine.Options := sopt;
   { TODO -oMazin -c : Change to Lines 04/05/2013 22:14:59 }
-  memo.SearchEngine.FindAll(memo.UnCollapsedLines.Text);
+  memo.SearchEngine.FindAll(memo.Lines.Text);
   Count := memo.SearchEngine.ResultCount;
   Start := 0;
   if memo.SelAvail then
     BS := memo.BlockBegin
   else
     BS := memo.CaretXY;
-  BS.Line := memo.GetRealLineNumber(BS.Line);
+  BS.Line := BS.Line;
   selstart := memo.RowColToCharIndex(BS);
   if memo.SelAvail then
     BE := memo.BlockEnd
   else
     BE := memo.CaretXY;
-  BE.Line := memo.GetRealLineNumber(BE.Line);
+  BE.Line := BE.Line;
   selend := memo.RowColToCharIndex(BE);
   if not ChbCircSearch.Checked then
   begin
@@ -917,7 +917,7 @@ end;
 procedure TFrmFind.BtnReplaceClick(Sender: TObject);
 var
   sheet: TSourceFileSheet;
-  memo: TSynEdit;
+  memo: TEditor;
   search, replace, text: string;
   selstart: Integer;
   sopt: TSynSearchOptions;
@@ -963,7 +963,7 @@ end;
 procedure TFrmFind.BtnReplAllClick(Sender: TObject);
 var
   sheet: TSourceFileSheet;
-  memo: TSynEdit;
+  memo: TEditor;
   search, replace: string;
   Count: Integer;
   sopt: TSynSearchOptions;

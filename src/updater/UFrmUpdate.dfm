@@ -111,8 +111,4 @@ object FrmUpdate: TFrmUpdate
     Left = 8
     Top = 62
   end
-  object VistaAltFix1: TVistaAltFix
-    Left = 8
-    Top = 94
-  end
 end

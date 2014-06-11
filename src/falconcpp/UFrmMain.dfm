@@ -1,9 +1,9 @@
 object FrmFalconMain: TFrmFalconMain
   Left = 256
   Top = 230
-  Width = 922
-  Height = 655
   Caption = 'Falcon C++'
+  ClientHeight = 617
+  ClientWidth = 906
   Color = clBtnFace
   Constraints.MinHeight = 480
   Constraints.MinWidth = 640
@@ -1439,14 +1439,6 @@ object FrmFalconMain: TFrmFalconMain
     Left = 123
     Top = 49
   end
-  object ResourceHighlighter: TSynRCSyn
-    CommentAttri.Foreground = clGreen
-    NumberAttri.Foreground = clGreen
-    StringAttri.Foreground = clBlue
-    SymbolAttri.Foreground = clMaroon
-    Left = 492
-    Top = 272
-  end
   object SendData: TSendData
     ClassNamed = 'TFrmFalconMain'
     SendType = stSend
@@ -1691,10 +1683,6 @@ object FrmFalconMain: TFrmFalconMain
     Left = 731
     Top = 4
   end
-  object EditorSearch: TSynEditSearch
-    Left = 545
-    Top = 272
-  end
   object TimerHintTipEvent: TTimer
     Enabled = False
     Interval = 300
@@ -1715,86 +1703,6 @@ object FrmFalconMain: TFrmFalconMain
     OnTimer = TimerHintParamsTimer
     Left = 374
     Top = 272
-  end
-  object EditorPrint: TSynEditPrint
-    Copies = 1
-    Header.DefaultFont.Charset = DEFAULT_CHARSET
-    Header.DefaultFont.Color = clBlack
-    Header.DefaultFont.Height = -13
-    Header.DefaultFont.Name = 'Arial'
-    Header.DefaultFont.Style = []
-    Footer.DefaultFont.Charset = DEFAULT_CHARSET
-    Footer.DefaultFont.Color = clBlack
-    Footer.DefaultFont.Height = -13
-    Footer.DefaultFont.Name = 'Arial'
-    Footer.DefaultFont.Style = []
-    Margins.Left = 5.000000000000000000
-    Margins.Right = 5.000000000000000000
-    Margins.Top = 10.000000000000000000
-    Margins.Bottom = 10.000000000000000000
-    Margins.Header = 9.000000000000000000
-    Margins.Footer = 9.000000000000000000
-    Margins.LeftHFTextIndent = 0.500000000000000000
-    Margins.RightHFTextIndent = 0.500000000000000000
-    Margins.HFInternalMargin = 1.000000000000000000
-    Margins.MirrorMargins = True
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    Colors = True
-    TabWidth = 4
-    Color = clWhite
-    Left = 76
-    Top = 243
-  end
-  object PrintDialog: TPrintDialog
-    Left = 75
-    Top = 215
-  end
-  object EditorRegexSearch: TSynEditRegexSearch
-    Left = 577
-    Top = 272
-  end
-  object ExporterHTML: TSynExporterHTML
-    Color = clWindow
-    DefaultFilter = 'HTML Documents (*.htm;*.html)|*.htm;*.html'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Courier New'
-    Font.Style = []
-    Title = 'Untitled'
-    UseBackground = True
-    Left = 43
-    Top = 215
-  end
-  object ExporterRTF: TSynExporterRTF
-    Color = clWindow
-    DefaultFilter = 'Rich Text Format Documents (*.rtf)|*.rtf'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Courier New'
-    Font.Style = []
-    Title = 'Untitled'
-    UseBackground = True
-    Left = 43
-    Top = 247
-  end
-  object ExporterTeX: TSynExporterTeX
-    Color = clWindow
-    DefaultFilter = 'TeX Files (*.tex)|*.tex'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Courier New'
-    Font.Style = []
-    Title = 'Untitled'
-    UseBackground = True
-    Left = 43
-    Top = 279
   end
   object PopupTabs: TTBXPopupMenu
     Images = ImgListMenus
@@ -1885,9 +1793,5 @@ object FrmFalconMain: TFrmFalconMain
   object ImageListDebug: TImageList
     Left = 340
     Top = 243
-  end
-  object VistaAltFix1: TVistaAltFix
-    Left = 112
-    Top = 248
   end
 end

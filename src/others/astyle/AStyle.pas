@@ -100,7 +100,7 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    function Format(const Source: string): string;
+    function Format(const Source: PChar): PChar;
     property Style: TFormatterStyle read FStyle write SetStyle;
     property BracketFormat: TBracketFormat read FBracketFormat
       write SetBracketFormat;
@@ -229,7 +229,7 @@ begin
   AStyleSetMaxInstatementIndent(astyle, Value);
 end;
 
-function TAStyle.Format(const Source: string): string;
+function TAStyle.Format(const Source: PChar): PChar;
 begin
   if not Assigned(astyle) or not Assigned(AStyleFormatText) or
     not Assigned(AStyleText) then
@@ -237,12 +237,12 @@ begin
     Result := Source;
     Exit;
   end;
-  if AStyleFormatText(astyle, PChar(Source)) <> 0 then
+  if AStyleFormatText(astyle, Source) <> 0 then
   begin
     Result := Source;
     Exit;
   end;
-  Result := StrPas(AStyleText(astyle));
+  Result := AStyleText(astyle);
 end;
 
 procedure AStyleLoadLibrary;

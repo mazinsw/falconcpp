@@ -151,7 +151,7 @@ begin
   FPosition := 0;
   FTotal := ListFiles.Count;
   FFinished := False;
-  Resume;
+  Start;
 end;
 
 {TUninstaller}

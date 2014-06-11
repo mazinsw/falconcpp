@@ -4,8 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ComCtrls, StdCtrls, ExtCtrls, Buttons, UFrmMain, SynMemo, 
-  SynEditTypes, SynEditSearch, SynEditRegexSearch;
+  Dialogs, ComCtrls, StdCtrls, ExtCtrls, Buttons, UFrmMain;
 
 type
   TFrmFind = class(TForm)
@@ -88,8 +87,7 @@ function EncodeStr(const S: string): string;
 
 implementation
 
-uses USourceFile, SynEditMiscClasses, ULanguages,
-  UUtils, UParseMsgs, SynEdit, UEditor;
+uses USourceFile, ULanguages, UUtils, UParseMsgs, UEditor;
 
 {$R *.dfm}
 
@@ -125,7 +123,7 @@ var
   sheet: TSourceFileSheet;
   memo: TEditor;
   BE: TBufferCoord;
-  sopt: TSynSearchOptions;
+  //sopt: TSynSearchOptions;
   I, Start, Index, Count, SelEnd: Integer;
 begin
   if not frm.GetActiveFile(prop) then
@@ -141,19 +139,20 @@ begin
   end
   else if memo.SelAvail then
     LastSearch.Search := memo.SelText;
-  sopt := [];
-  if LastSearch.DiffCase then
-    sopt := sopt + [ssoMatchCase];
-  if LastSearch.FullWord then
-    sopt := sopt + [ssoWholeWord];
-  if LastSearch.SearchMode = 2 then
-    memo.SearchEngine := frm.EditorRegexSearch
-  else
-    memo.SearchEngine := frm.EditorSearch;
-  memo.SearchEngine.Pattern := LastSearch.Search;
-  memo.SearchEngine.Options := sopt;
+  //sopt := [];
+  //if LastSearch.DiffCase then
+  //  sopt := sopt + [ssoMatchCase];
+  //if LastSearch.FullWord then
+  //  sopt := sopt + [ssoWholeWord];
+  // TODO: commented
+  //if LastSearch.SearchMode = 2 then
+  //  memo.SearchEngine := frm.EditorRegexSearch
+  //else
+  //  memo.SearchEngine := frm.EditorSearch;
+  //memo.SearchEngine.Pattern := LastSearch.Search;
+  //memo.SearchEngine.Options := sopt;
   { TODO -oMazin -c : Change to Lines 04/05/2013 22:14:59 }
-  memo.SearchEngine.FindAll(memo.Lines.Text);
+  //memo.SearchEngine.FindAll(memo.Lines.Text);
   Start := 0;
   Count := 0;
   if memo.SelAvail then
@@ -162,13 +161,14 @@ begin
     BE := memo.CaretXY;
   BE.Line := BE.Line;
   SelEnd := memo.RowColToCharIndex(BE);
-  for I := 0 to memo.SearchEngine.ResultCount - 1 do
-    if memo.SearchEngine.Results[I] > SelEnd then
-    begin
-      Count := memo.SearchEngine.ResultCount - I;
-      Start := I;
-      Break;
-    end;
+  // TODO: commented
+//  for I := 0 to memo.SearchEngine.ResultCount - 1 do
+//    if memo.SearchEngine.Results[I] > SelEnd then
+//    begin
+//      Count := memo.SearchEngine.ResultCount - I;
+//      Start := I;
+//      Break;
+//    end;
   if Count = 0 then
   begin
     MessageBox(frm.Handle, PChar(Format(STR_FRM_FIND[30], [LastSearch.Search])),
@@ -176,16 +176,17 @@ begin
     Exit;
   end;
   Index := -1;
-  for I := Start to memo.SearchEngine.ResultCount - 1 do
-    if memo.SearchEngine.Results[I] > SelEnd then
-    begin
-      Index := I;
-      Break;
-    end;
+  // TODO: commented
+//  for I := Start to memo.SearchEngine.ResultCount - 1 do
+//    if memo.SearchEngine.Results[I] > SelEnd then
+//    begin
+//      Index := I;
+//      Break;
+//    end;
   if Index = -1 then
     Index := Start;
-  I := memo.SearchEngine.Results[Index];
-  Count := memo.SearchEngine.Lengths[Index];
+//  I := memo.SearchEngine.Results[Index];
+//  Count := memo.SearchEngine.Lengths[Index];
   frm.SelectFromSelStart(I - 1, Count, memo);
 end;
 
@@ -194,7 +195,7 @@ var
   prop: TSourceFile;
   sheet: TSourceFileSheet;
   memo: TEditor;
-  sopt: TSynSearchOptions;
+  //sopt: TSynSearchOptions;
   BS: TBufferCoord;
   I, Start, Index, Count, SelStart: Integer;
 begin
@@ -211,19 +212,20 @@ begin
   end
   else if memo.SelAvail then
     LastSearch.Search := memo.SelText;
-  sopt := [];
-  if LastSearch.DiffCase then
-    sopt := sopt + [ssoMatchCase];
-  if LastSearch.FullWord then
-    sopt := sopt + [ssoWholeWord];
-  if LastSearch.SearchMode = 2 then
-    memo.SearchEngine := frm.EditorRegexSearch
-  else
-    memo.SearchEngine := frm.EditorSearch;
-  memo.SearchEngine.Pattern := LastSearch.Search;
-  memo.SearchEngine.Options := sopt;
-  { TODO -oMazin -c : Change to Lines 04/05/2013 22:14:59 }
-  memo.SearchEngine.FindAll(memo.Lines.Text);
+  //sopt := [];
+  //if LastSearch.DiffCase then
+  //  sopt := sopt + [ssoMatchCase];
+  //if LastSearch.FullWord then
+  //  sopt := sopt + [ssoWholeWord];
+    // TODO: commented
+//  if LastSearch.SearchMode = 2 then
+//    memo.SearchEngine := frm.EditorRegexSearch
+//  else
+//    memo.SearchEngine := frm.EditorSearch;
+//  memo.SearchEngine.Pattern := LastSearch.Search;
+//  memo.SearchEngine.Options := sopt;
+//  { TODO -oMazin -c : Change to Lines 04/05/2013 22:14:59 }
+//  memo.SearchEngine.FindAll(memo.Lines.Text);
   Start := 0;
   Count := 0;
   if memo.SelAvail then
@@ -232,18 +234,19 @@ begin
     BS := memo.CaretXY;
   BS.Line := BS.Line;
   selstart := memo.RowColToCharIndex(BS);
-  for I := 0 to memo.SearchEngine.ResultCount - 1 do
-    if memo.SearchEngine.Results[I] > SelStart then
-    begin
-      Count := I;
-      Start := I - 1;
-      Break;
-    end;
-  if (Count = 0) and (Start = 0) then
-  begin
-    Count := memo.SearchEngine.ResultCount;
-    Start := Count - 1;
-  end;
+  // TODO: commented
+//  for I := 0 to memo.SearchEngine.ResultCount - 1 do
+//    if memo.SearchEngine.Results[I] > SelStart then
+//    begin
+//      Count := I;
+//      Start := I - 1;
+//      Break;
+//    end;
+//  if (Count = 0) and (Start = 0) then
+//  begin
+//    Count := memo.SearchEngine.ResultCount;
+//    Start := Count - 1;
+//  end;
   if Count = 0 then
   begin
     MessageBox(frm.Handle, PChar(Format(STR_FRM_FIND[30], [LastSearch.Search])),
@@ -251,8 +254,9 @@ begin
     Exit;
   end;
   Index := Start;
-  I := memo.SearchEngine.Results[Index];
-  Count := memo.SearchEngine.Lengths[Index];
+  // TODO: commented
+//  I := memo.SearchEngine.Results[Index];
+//  Count := memo.SearchEngine.Lengths[Index];
   frm.SelectFromSelStart(I - 1, Count, memo);
 end;
 
@@ -603,9 +607,9 @@ var
   FileName: string;
   FileProp: TSourceFile;
   I, J, Results, Line, Column, EndColumn: Integer;
-  Search: TSynEditSearchCustom;
+  //Search: TSynEditSearchCustom;
   sheet: TSourceFileSheet;
-  sopt: TSynSearchOptions;
+  //sopt: TSynSearchOptions;
   Lines: TStrings;
 
   procedure CheckIfCanceled;
@@ -613,28 +617,28 @@ var
     if FindFilesCanceled then
     begin
       Files.Free;
-      Search.Free;
+      //Search.Free;
       FinishFindAll(OriFindText, Results, FindFilesCanceled);
       Exit;
     end;
   end;
 
 begin
-  sopt := [];
-  if Sensitive then
-    sopt := sopt + [ssoMatchCase];
-  if WholeWord then
-    sopt := sopt + [ssoWholeWord];
+  //sopt := [];
+  //if Sensitive then
+  //  sopt := sopt + [ssoMatchCase];
+  //if WholeWord then
+  //  sopt := sopt + [ssoWholeWord];
   Result := False;
   Results := 0;
   Files := TStringList.Create;
-  if RegExp then
-    Search := TSynEditRegexSearch.Create(nil)
-  else
-    Search := TSynEditSearch.Create(nil);
+  //if RegExp then
+  //  Search := TSynEditRegexSearch.Create(nil)
+  //else
+  //  Search := TSynEditSearch.Create(nil);
   CheckIfCanceled;
-  Search.Options := sopt;
-  Search.Pattern := aText;
+  //Search.Options := sopt;
+  //Search.Pattern := aText;
   FrmFalconMain.ListViewMsg.Clear;
   I := FrmFalconMain.GetSourcesFiles(Files, True);
   ProgressBarFindFiles.Max := I;
@@ -652,23 +656,23 @@ begin
       Lines.Assign(sheet.Memo.Lines)
     else
       FileProp.LoadFile(Lines);
-    Results := Results + Search.FindAll(Lines.Text);
+    //Results := Results + Search.FindAll(Lines.Text);
     CheckIfCanceled;
-    for J := 0 to Search.ResultCount - 1 do
-    begin
-      GetRowColFromCharIndex(Search.Results[J], Lines, Line, Column);
-      if Column > 1 then
-        Dec(Column);
-      EndColumn := Column + Search.Lengths[J];
-      ProgressFindFile(FileName, Format(STR_FRM_FIND[34],
-        [OriFindText, Line, Column]), Line, Column, EndColumn);
-      Application.ProcessMessages;
-      CheckIfCanceled;
-    end;
+//    for J := 0 to Search.ResultCount - 1 do
+//    begin
+//      GetRowColFromCharIndex(Search.Results[J], Lines, Line, Column);
+//      if Column > 1 then
+//        Dec(Column);
+//      EndColumn := Column + Search.Lengths[J];
+//      ProgressFindFile(FileName, Format(STR_FRM_FIND[34],
+//        [OriFindText, Line, Column]), Line, Column, EndColumn);
+//      Application.ProcessMessages;
+//      CheckIfCanceled;
+//    end;
     Application.ProcessMessages;
   end;
   Lines.Free;
-  Search.Free;
+  //Search.Free;
   Files.Free;
   FinishFindAll(OriFindText, Results, FindFilesCanceled);
 end;
@@ -765,7 +769,7 @@ var
   I, Start, Index, Count, lastlength, selstart, selend: Integer;
   rect, selRect: TRect;
   isAbove: Boolean;
-  sopt: TSynSearchOptions;
+  //sopt: TSynSearchOptions;
   BS, BE: TBufferCoord;
 begin
   UpdateSearchHistoryList(CboFind.Text);
@@ -778,24 +782,25 @@ begin
     Exit;
   memo := sheet.Memo;
   search := CboFind.Text;
-  sopt := [];
-  if RGrpSearchMode.ItemIndex = 1 then //resolve \n \r \t
-    search := ResolveStr(search);
-  if ChbCircSearch.Checked then
-    sopt := sopt + [ssoEntireScope];
-  if ChbDiffCase.Checked then
-    sopt := sopt + [ssoMatchCase];
-  if ChbFullWord.Checked then
-    sopt := sopt + [ssoWholeWord];
-  if RGrpSearchMode.ItemIndex = 2 then
-    memo.SearchEngine := FrmFalconMain.EditorRegexSearch
-  else
-    memo.SearchEngine := FrmFalconMain.EditorSearch;
-  memo.SearchEngine.Pattern := search;
-  memo.SearchEngine.Options := sopt;
-  { TODO -oMazin -c : Change to Lines 04/05/2013 22:14:59 }
-  memo.SearchEngine.FindAll(memo.Lines.Text);
-  Count := memo.SearchEngine.ResultCount;
+//  sopt := [];
+//  if RGrpSearchMode.ItemIndex = 1 then //resolve \n \r \t
+//    search := ResolveStr(search);
+//  if ChbCircSearch.Checked then
+//    sopt := sopt + [ssoEntireScope];
+//  if ChbDiffCase.Checked then
+//    sopt := sopt + [ssoMatchCase];
+//  if ChbFullWord.Checked then
+//    sopt := sopt + [ssoWholeWord];
+    // TODO: commented
+//  if RGrpSearchMode.ItemIndex = 2 then
+//    memo.SearchEngine := FrmFalconMain.EditorRegexSearch
+//  else
+//    memo.SearchEngine := FrmFalconMain.EditorSearch;
+//  memo.SearchEngine.Pattern := search;
+//  memo.SearchEngine.Options := sopt;
+//  { TODO -oMazin -c : Change to Lines 04/05/2013 22:14:59 }
+//  memo.SearchEngine.FindAll(memo.Lines.Text);
+//  Count := memo.SearchEngine.ResultCount;
   Start := 0;
   if memo.SelAvail then
     BS := memo.BlockBegin
@@ -814,38 +819,41 @@ begin
     Count := 0;
     if RdbtUp.Checked then
     begin
-      for I := 0 to memo.SearchEngine.ResultCount - 1 do
-        if memo.SearchEngine.Results[I] > selstart then
-        begin
-          Count := I;
-          Start := I - 1;
-          Break;
-        end;
-      if (Count = 0) and (Start = 0) then
-      begin
-        Count := memo.SearchEngine.ResultCount;
-        Start := Count - 1;
-      end;
+      // TODO: commented
+//      for I := 0 to memo.SearchEngine.ResultCount - 1 do
+//        if memo.SearchEngine.Results[I] > selstart then
+//        begin
+//          Count := I;
+//          Start := I - 1;
+//          Break;
+//        end;
+//      if (Count = 0) and (Start = 0) then
+//      begin
+//        Count := memo.SearchEngine.ResultCount;
+//        Start := Count - 1;
+//      end;
     end
     else
     begin
-      for I := 0 to memo.SearchEngine.ResultCount - 1 do
-        if memo.SearchEngine.Results[I] > selend then
-        begin
-          Count := memo.SearchEngine.ResultCount - I;
-          Start := I;
-          Break;
-        end;
+      // TODO: commented
+//      for I := 0 to memo.SearchEngine.ResultCount - 1 do
+//        if memo.SearchEngine.Results[I] > selend then
+//        begin
+//          Count := memo.SearchEngine.ResultCount - I;
+//          Start := I;
+//          Break;
+//        end;
     end;
   end
   else if RdbtUp.Checked then
   begin
-    for I := 0 to memo.SearchEngine.ResultCount - 1 do
-      if memo.SearchEngine.Results[I] > selstart then
-      begin
-        Start := I - 1;
-        Break;
-      end;
+    // TODO: commented
+//    for I := 0 to memo.SearchEngine.ResultCount - 1 do
+//      if memo.SearchEngine.Results[I] > selstart then
+//      begin
+//        Start := I - 1;
+//        Break;
+//      end;
     if Start < 0 then
       Start := Count - 1;
   end;
@@ -860,19 +868,21 @@ begin
   Index := -1;
   if RdbtDown.Checked then
   begin
-    for I := Start to memo.SearchEngine.ResultCount - 1 do
-      if memo.SearchEngine.Results[I] > selend then
-      begin
-        Index := I;
-        Break;
-      end;
+    // TODO: commented
+//    for I := Start to memo.SearchEngine.ResultCount - 1 do
+//      if memo.SearchEngine.Results[I] > selend then
+//      begin
+//        Index := I;
+//        Break;
+//      end;
   end
   else
     Index := Start;
   if Index = -1 then
     Index := Start;
-  I := memo.SearchEngine.Results[Index];
-  lastlength := memo.SearchEngine.Lengths[Index];
+  // TODO:commented
+//  I := memo.SearchEngine.Results[Index];
+//  lastlength := memo.SearchEngine.Lengths[Index];
   FrmFalconMain.SelectFromSelStart(I - 1, lastlength, memo);
   frm.LastSearch.Search := search;
   frm.LastSearch.DiffCase := ChbDiffCase.Checked;
@@ -920,7 +930,7 @@ var
   memo: TEditor;
   search, replace, text: string;
   selstart: Integer;
-  sopt: TSynSearchOptions;
+  //sopt: TSynSearchOptions;
 begin
   if not frm.GetActiveSheet(sheet) then
     Exit;
@@ -932,30 +942,31 @@ begin
     search := ResolveStr(search);
   if RGrpSearchMode.ItemIndex = 1 then //resolve \n \r \t
     replace := ResolveStr(replace);
-  if RGrpSearchMode.ItemIndex = 2 then
-    memo.SearchEngine := FrmFalconMain.EditorRegexSearch
-  else
-    memo.SearchEngine := FrmFalconMain.EditorSearch;
-  sopt := [];
-  if ChbCircSearch.Checked then
-    sopt := sopt + [ssoEntireScope];
-  if ChbDiffCase.Checked then
-    sopt := sopt + [ssoMatchCase];
-  if ChbFullWord.Checked then
-    sopt := sopt + [ssoWholeWord];
-  memo.SearchEngine.Options := sopt;
+  // TODO: commented
+//  if RGrpSearchMode.ItemIndex = 2 then
+//    memo.SearchEngine := FrmFalconMain.EditorRegexSearch
+//  else
+//    memo.SearchEngine := FrmFalconMain.EditorSearch;
+//  sopt := [];
+//  if ChbCircSearch.Checked then
+//    sopt := sopt + [ssoEntireScope];
+//  if ChbDiffCase.Checked then
+//    sopt := sopt + [ssoMatchCase];
+//  if ChbFullWord.Checked then
+//    sopt := sopt + [ssoWholeWord];
+  //memo.SearchEngine.Options := sopt;
   //compare and replace **********
   text := memo.SelText;
-  memo.SearchEngine.Pattern := search;
-  memo.SearchEngine.FindAll(text);
-  if memo.SearchEngine.ResultCount = 1 then
-  begin
-    replace := memo.SearchEngine.Replace(text, replace);
-    selstart := memo.SelStart;
-    memo.SelText := replace;
-    memo.SelStart := selstart;
-    memo.SelLength := Length(replace);
-  end;
+//  memo.SearchEngine.Pattern := search;
+//  memo.SearchEngine.FindAll(text);
+//  if memo.SearchEngine.ResultCount = 1 then
+//  begin
+//    replace := memo.SearchEngine.Replace(text, replace);
+//    selstart := memo.SelStart;
+//    memo.SelText := replace;
+//    memo.SelStart := selstart;
+//    memo.SelLength := Length(replace);
+//  end;
   //******************************
   BtnFindClick(Sender);
 end;
@@ -966,7 +977,7 @@ var
   memo: TEditor;
   search, replace: string;
   Count: Integer;
-  sopt: TSynSearchOptions;
+  //sopt: TSynSearchOptions;
 begin
   if not frm.GetActiveSheet(sheet) then
     Exit;
@@ -978,20 +989,21 @@ begin
     search := ResolveStr(search);
   if RGrpSearchMode.ItemIndex = 1 then //resolve \n \r \t
     replace := ResolveStr(replace);
-  if RGrpSearchMode.ItemIndex = 2 then
-    memo.SearchEngine := FrmFalconMain.EditorRegexSearch
-  else
-    memo.SearchEngine := FrmFalconMain.EditorSearch;
-  sopt := [ssoReplaceAll];
-  if ChbReplSel.Checked then
-    sopt := sopt + [ssoSelectedOnly]
-  else if ChbCircSearch.Checked then
-    sopt := sopt + [ssoEntireScope];
-  if ChbDiffCase.Checked then
-    sopt := sopt + [ssoMatchCase];
-  if ChbFullWord.Checked then
-    sopt := sopt + [ssoWholeWord];
-  Count := memo.SearchReplace(search, replace, sopt);
+  // TODO: commented
+//  if RGrpSearchMode.ItemIndex = 2 then
+//    memo.SearchEngine := FrmFalconMain.EditorRegexSearch
+//  else
+//    memo.SearchEngine := FrmFalconMain.EditorSearch;
+//  sopt := [ssoReplaceAll];
+//  if ChbReplSel.Checked then
+//    sopt := sopt + [ssoSelectedOnly]
+//  else if ChbCircSearch.Checked then
+//    sopt := sopt + [ssoEntireScope];
+//  if ChbDiffCase.Checked then
+//    sopt := sopt + [ssoMatchCase];
+//  if ChbFullWord.Checked then
+//    sopt := sopt + [ssoWholeWord];
+  //Count := memo.SearchReplace(search, replace, sopt);
   MessageBox(Handle, PChar(Format(STR_FRM_FIND[31], [Count])),
     PChar(STR_FRM_FIND[9]), MB_OK);
 end;

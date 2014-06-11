@@ -22,7 +22,6 @@ uses
   UUninstaller in 'UUninstaller.pas',
   BZip2 in '..\others\bzip2\BZip2.pas',
   LibTar in '..\others\libtar\LibTar.pas',
-  SciZipFile in '..\others\scizipfile\SciZipFile.pas',
   CompressUtils in '..\others\compressutils\CompressUtils.pas',
   StrMatch in '..\others\compressutils\StrMatch.pas',
   UFrmPkgDownload in 'UFrmPkgDownload.pas' {FrmPkgDownload},
@@ -32,7 +31,8 @@ uses
   FastcodePatch in '..\others\nativehint\FastcodePatch.pas',
   NativeHintWindow in '..\others\nativehint\NativeHintWindow.pas',
   ULanguages in 'ULanguages.pas',
-  PkgUtils in 'PkgUtils.pas';
+  PkgUtils in 'PkgUtils.pas',
+  KAZip in '..\others\zip\KAZip.pas';
 
 //{$DEFINE PKGMAN_RUNAS}
 {$IFDEF PKGMAN_RUNAS}

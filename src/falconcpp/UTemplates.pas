@@ -38,7 +38,7 @@ type
     function Count: Integer;
     property SourceFile[Index: Integer]: TStrings read GetFile;
     property FileName[Index: Integer]: string read GetFileName;
-  published
+  public
     property DefaultFile: Integer read FDefFile;
   end;
 
@@ -97,7 +97,7 @@ type
     function GetFile(aFileName: string; Stream: TStream): Boolean;
     constructor Create;
     destructor Destroy; override;
-  published
+  public
     property SourceFiles: TTemplateFiles read FSrcFiles;
     property CppSourceFiles: TTemplateFiles read FCppSrcFiles;
     property Resources: TTemplateResources read FResources;
@@ -386,13 +386,13 @@ var
   ActualMenu: TTBXSubmenuItem;
   IsSubMn: Boolean;
   AIcon: TIcon;
-  APng: TPNGObject;
+  APng: TPngImage;
 
   Tp: Integer;
   Fs: TFileStream;
   Zp: TKAZip;
   Ts, Ms: TMemoryStream;
-  Ft: array[0..2] of Char;
+  Ft: array[0..2] of AnsiChar;
   imgSign: array[0..3] of Byte;
 
   procedure SetIniFile;
@@ -412,7 +412,7 @@ var
     if CompareMem(@imgSign, @pngSign, SizeOf(pngSign)) then
     begin
       try
-        APng := TPNGObject.Create;
+        APng := TPngImage.Create;
         APng.LoadFromStream(Ms);
         FBitmap := PNGToBMP32(APng);
       except
@@ -544,7 +544,7 @@ begin
     Exit;
   end;
   Ft[2] := #0;
-  Fs.Read(Ft, 2);
+  Fs.Read(Ft, 2 * SizeOf(AnsiChar));
   if string(Ft) = 'BZ' then
   begin
     Tp := FILE_TYPE_BZIP2;

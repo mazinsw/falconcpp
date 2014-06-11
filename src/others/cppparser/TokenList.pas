@@ -6,7 +6,7 @@ uses
   Classes, Dialogs;
 
 const
-  Sign = 'FCP 3.4';
+  Sign: array[0..6] of AnsiChar = ('F', 'C', 'P', ' ', '3', '.', '5');
 
 type
   TTkType = (
@@ -68,26 +68,24 @@ type
   PTokenRec = ^TTokenRec;
   PTokenRecList = ^PTokenRec;
   TTokenRec = packed record
-    Count: Word; //quantity of Child
+    Token: TTkType; //Type of Object
+    Count: Integer; //quantity of Child
     Line: Integer; //Line of word
     Start: Integer; //Start of word in file
-    SelLen: Word; //Length of Selection
-    Level: Word;
-    ScopeStart: Integer;
-    ScopeEnd: Integer;
-    Token: TTkType; //Type of Object
-    Len1: Word; //Length of Name
-    Name: string;
-    Len2: Word; //Length of Flag
-    Flag: string;
-    Len3: Word; //Length of Comment
-    Comment: string;
+    SelLen: Integer; //Length of Selection
+    Level: Integer; // level of statement { {
+    LenName: Integer; //Length of Name
+    LenFlag: Integer; //Length of Flag
+    LenComment: Integer; //Length of Comment
+    Name: string; // name of token
+    Flag: string; // flag of token
+    Comment: string; // comment
     Items: PTokenRecList; //Child objects
   end;
 
   TSimpleFileToken = packed record
-    Sign: array[0..6] of Char; //signature: FCP 1.0 -- Falcon C++ Parser version 1.0
-    Count: Word; //quantity files parsed (TTokenFile)
+    Sign: array[0..6] of AnsiChar; //signature: FCP 1.0 -- Falcon C++ Parser version 1.0
+    Count: Integer; //quantity files parsed (TTokenFile)
     DateOfFile: TDateTime;
   end;
 

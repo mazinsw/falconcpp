@@ -63,7 +63,7 @@ var
   Lsc: String;
   Rs: TResourceStream;
   Ms: TMemoryStream;
-  png: TPNGObject;
+  png: TPngImage;
 begin
   BtnBack.Caption := STR_FRM_WIZARD[2];
   BtnNext.Caption := STR_FRM_WIZARD[3];

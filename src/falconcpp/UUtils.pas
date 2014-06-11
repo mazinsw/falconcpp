@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Classes, Dialogs, ComCtrls, Controls, 
-  USourceFile, Registry, ImgList, SynEditKeyCmds, SynMemo, SynEdit,
+  USourceFile, Registry, ImgList,
   ShlObj, Graphics, Messages, XMLDoc, XMLIntf, UParseMsgs,
   ShellAPI, Forms, UEditor;
 
@@ -154,8 +154,8 @@ function StartsWith(const S, Token: string): Boolean;
 
 implementation
 
-uses UFrmMain, ULanguages, UConfig, SynRegExpr, TokenUtils, StrUtils,
-  UxTheme, icoformat;
+uses UFrmMain, ULanguages, UConfig, TokenUtils, StrUtils,
+  UxTheme, icoformat, PerlRegEx;
 
 { ---------- Font Methods ---------- }
 
@@ -245,7 +245,7 @@ begin
   aName := '';
   aVersion := '';
   line := '';
-  while not (ptr^ in [#0, #10]) do
+  while not CharInSet(ptr^, [#0, #10]) do
   begin
     line := line + ptr^;
     Inc(ptr);
@@ -259,7 +259,7 @@ begin
     while (ptr >= init) and (ptr^ <> '(') do
       Dec(ptr);
   end;
-  while (ptr >= init) and not (ptr^ in ['0'..'9']) do
+  while (ptr >= init) and not CharInSet(ptr^, ['0'..'9']) do
     Dec(ptr);
   while (ptr >= init) and (ptr^ <> ' ') do
   begin
@@ -673,13 +673,13 @@ type
     Result := '';
     for I := 1 to Length(str) do
     begin
-      if str[I] in Chars then
+      if CharInSet(str[I], Chars) then
         Result := Result + str[I];
     end;
   end;
 
 var
-  RegExp: TRegExpr;
+  RegExp: TPerlRegEx;
 begin
   Version := StringReplace(Version, ',', '.', [rfReplaceAll]);
   Version := Trim('.', Only(Version, ['0'..'9', '.']), '.');
@@ -688,13 +688,15 @@ begin
     1: Version := Version + '.0.0';
     2: Version := Version + '.0';
   end;
-  RegExp := TRegExpr.Create;
-  if RegExp.Exec('([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)', Version) then
+  RegExp := TPerlRegEx.Create;
+  RegExp.RegEx := '([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)';
+  RegExp.Subject := Version;
+  if RegExp.Match then
   begin
-    Result.Major := StrToInt(RegExp.Match[1]);
-    Result.Minor := StrToInt(RegExp.Match[2]);
-    Result.Release := StrToInt(RegExp.Match[3]);
-    Result.Build := StrToInt(RegExp.Match[4]);
+    Result.Major := StrToInt(RegExp.Groups[1]);
+    Result.Minor := StrToInt(RegExp.Groups[2]);
+    Result.Release := StrToInt(RegExp.Groups[3]);
+    Result.Build := StrToInt(RegExp.Groups[4]);
   end
   else
   begin
@@ -836,7 +838,7 @@ var
 begin
   Result := Length(Str) > 0;
   for I := 1 to Length(Str) do
-    if not (Str[I] in ['0'..'9', '.']) then
+    if not CharInSet(Str[I], ['0'..'9', '.']) then
     begin
       Result := False;
       Exit;
@@ -1343,7 +1345,7 @@ begin
   ptr := PChar(HEXText);
   while ptr^ <> #0 do
   begin
-    if not (ptr^ in [#13, #10, ' ', #9]) then
+    if not CharInSet(ptr^, [#13, #10, ' ', #9]) then
     begin
       pres^ := ptr^;
       Inc(pres);
@@ -1384,14 +1386,14 @@ begin
   pstr := PChar(Path);
   while pstr^ <> #0 do
   begin
-    if not (pstr^ in ['/', '\']) then
+    if not CharInSet(pstr^, ['/', '\']) then
       Break;
     Inc(pstr);
   end;
   Result := '';
   while pstr^ <> #0 do
   begin
-    if (pstr^ in ['/', '\']) then
+    if CharInSet(pstr^, ['/', '\']) then
       Break;
     Result := Result + pstr^;
     Inc(pstr);
@@ -1405,17 +1407,17 @@ begin
   pstr := PChar(Path);
   while pstr^ <> #0 do
   begin
-    if not (pstr^ in ['/', '\']) then
+    if not CharInSet(pstr^, ['/', '\']) then
       Break;
     Inc(pstr);
   end;
   while pstr^ <> #0 do
   begin
-    if (pstr^ in ['/', '\']) then
+    if CharInSet(pstr^, ['/', '\']) then
       Break;
     Inc(pstr);
   end;
-  if (pstr^ in ['/', '\']) then
+  if CharInSet(pstr^, ['/', '\']) then
     Inc(pstr);
   Result := StrPas(pstr);
 end;

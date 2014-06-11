@@ -3,7 +3,7 @@ unit CodeTemplate;
 interface
 
 uses
-  Classes, TokenList, TokenUtils, TokenConst, USourceFile, SynEdit, SynEditTypes, UEditor;
+  Classes, TokenList, TokenUtils, TokenConst, USourceFile, UEditor;
 
 procedure AddTemplates(Trigger: string; Scope: TTkType; ItemList,
   ShowList: TStrings; CompletionColors: TCompletionColors;
@@ -193,7 +193,7 @@ begin
         '    break;'#13+
         'default:'#13+
         '    break;'#13+
-        '}',);
+        '}');
       Add('switch', '', '', '');
       Add('if', 'if statement',
         'if(condition)'#13 +

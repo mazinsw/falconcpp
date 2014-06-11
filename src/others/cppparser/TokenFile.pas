@@ -3,7 +3,7 @@ unit TokenFile;
 interface
 
 uses
-  TokenList, Classes, TokenConst, Dialogs, rbtree, Contnrs;
+  Windows, TokenList, Classes, TokenConst, Dialogs, rbtree, Contnrs;
 
 type
   //forward
@@ -26,8 +26,8 @@ type
     FTreeObjList: TTokenClass;
     FFuncObjList: TTokenClass;
     procedure SaveToFileRecurse(Handle: Integer; ItemList: TTokenClass);
-    function LoadFromFileRecurse(Handle: Integer;
-      ParentList: TTokenClass; Count: Integer): Boolean;
+    function LoadFromFileRecurse(Handle: Integer; ParentList: TTokenClass;
+      Count: Integer; var Buffer: PChar; var BufferLen: Integer): Boolean;
   public
     constructor Create; overload;
     constructor Create(AOwner: TTokenFiles); overload;
@@ -235,60 +235,74 @@ begin
   inherited Destroy;
 end;
 
-function TTokenFile.LoadFromFileRecurse(Handle: Integer;
-  ParentList: TTokenClass; Count: Integer): Boolean;
+procedure ReadToken(Handle: Integer; Item: TTokenClass; var Buffer: PChar;
+  var BufferLen, ChildCount: Integer);
 var
-  I: Integer;
   TokenRec: TTokenRec;
-  Buffer: PChar;
-  BufferLen: Integer;
+begin
+  FileRead(Handle, TokenRec.Token, SizeOf(TTkType));
+  Item.Token := TokenRec.Token;
+  FileRead(Handle, TokenRec.Count, SizeOf(Integer));
+  ChildCount := TokenRec.Count;
+  FileRead(Handle, TokenRec.Line, SizeOf(Integer));
+  Item.SelLine := TokenRec.Line;
+  FileRead(Handle, TokenRec.Start, SizeOf(Integer));
+  Item.SelStart := TokenRec.Start;
+  FileRead(Handle, TokenRec.SelLen, SizeOf(Integer));
+  Item.SelLength := TokenRec.SelLen;
+  FileRead(Handle, TokenRec.Level, SizeOf(Integer));
+  Item.Level := TokenRec.Level;
+  FileRead(Handle, TokenRec.LenName, SizeOf(Integer));
+  FileRead(Handle, TokenRec.LenFlag, SizeOf(Integer));
+  FileRead(Handle, TokenRec.LenComment, SizeOf(Integer));
+  // read Name
+  if TokenRec.LenName >= BufferLen then
+  begin
+    FreeMemory(Buffer);
+    BufferLen := TokenRec.LenName + TokenRec.LenName div 2;
+    Buffer := GetMemory(BufferLen);
+  end;
+  FileRead(Handle, Buffer^, TokenRec.LenName);
+  Buffer[TokenRec.LenName div SizeOf(Char)] := #0;
+  Item.Name := StrPas(Buffer);
+  // read Flag
+  if TokenRec.LenFlag >= BufferLen then
+  begin
+    FreeMemory(Buffer);
+    BufferLen := TokenRec.LenFlag + TokenRec.LenFlag div 2;
+    Buffer := GetMemory(BufferLen);
+  end;
+  FileRead(Handle, Buffer^, TokenRec.LenFlag);
+  Buffer[TokenRec.LenFlag div SizeOf(Char)] := #0;
+  Item.Flag := StrPas(Buffer);
+  // read Comment
+  if TokenRec.LenComment >= BufferLen then
+  begin
+    FreeMemory(Buffer);
+    BufferLen := TokenRec.LenComment + TokenRec.LenComment div 2;
+    Buffer := GetMemory(BufferLen);
+  end;
+  FileRead(Handle, Buffer^, TokenRec.LenComment);
+  Buffer[TokenRec.LenComment div SizeOf(Char)] := #0;
+  Item.Comment := StrPas(Buffer);
+end;
+
+function TTokenFile.LoadFromFileRecurse(Handle: Integer;
+  ParentList: TTokenClass; Count: Integer; var Buffer: PChar;
+  var BufferLen: Integer): Boolean;
+var
+  I, ChildCount: Integer;
   Item: TTokenClass;
 begin
-  BufferLen := 4096;
-  Buffer := GetMemory(BufferLen);
   for I := 0 to Count - 1 do
   begin
     Item := TTokenClass.Create(ParentList);
     Item.Owner := Self;
     ParentList.Add(Item);
-    FileRead(Handle, TokenRec.Count, SizeOf(Word));
-    FileRead(Handle, TokenRec.Line, SizeOf(Integer));
-    Item.SelLine := TokenRec.Line;
-    FileRead(Handle, TokenRec.Start, SizeOf(Integer));
-    Item.SelStart := TokenRec.Start;
-    FileRead(Handle, TokenRec.SelLen, SizeOf(Word));
-    Item.SelLength := TokenRec.SelLen;
-    FileRead(Handle, TokenRec.Level, SizeOf(Word));
-    Item.Level := TokenRec.Level;
-    FileRead(Handle, TokenRec.Token, SizeOf(TTkType));
-    Item.Token := TokenRec.Token;
-    FileRead(Handle, TokenRec.Len1, SizeOf(Word));
-    FileRead(Handle, Buffer^, TokenRec.Len1);
-    Buffer[TokenRec.Len1] := #0;
-    Item.Name := StrPas(Buffer);
-    FileRead(Handle, TokenRec.Len2, SizeOf(Word));
-    if TokenRec.Len2 >= BufferLen then
-    begin
-      FreeMemory(Buffer);
-      BufferLen := TokenRec.Len2 + TokenRec.Len2 div 2;
-      Buffer := GetMemory(BufferLen);
-    end;
-    FileRead(Handle, Buffer^, TokenRec.Len2);
-    Buffer[TokenRec.Len2] := #0;
-    Item.Flag := StrPas(Buffer);
-    FileRead(Handle, TokenRec.Len3, SizeOf(Word));
-    if TokenRec.Len3 >= BufferLen then
-    begin
-      FreeMemory(Buffer);
-      BufferLen := TokenRec.Len3 + TokenRec.Len3 div 2;
-      Buffer := GetMemory(BufferLen);
-    end;
-    FileRead(Handle, Buffer^, TokenRec.Len3);
-    Buffer[TokenRec.Len3] := #0;
-    Item.Comment := StrPas(Buffer);
-    LoadFromFileRecurse(Handle, Item, TokenRec.Count);
+    ReadToken(Handle, Item, Buffer, BufferLen, ChildCount);
+    // load Child
+    LoadFromFileRecurse(Handle, Item, ChildCount, Buffer, BufferLen);
   end;
-  FreeMemory(Buffer);
   Result := True;
 end;
 
@@ -305,8 +319,8 @@ begin
     Exit;
 
   FileRead(Handle, Header, SizeOf(TSimpleFileToken));
-  if not CompareMem(Pointer(@Header.Sign), PChar(TokenList.Sign),
-    Sizeof(Header.Sign)) then
+  if not CompareMem(Pointer(@Header.Sign), Pointer(@TokenList.Sign),
+    SizeOf(Header.Sign)) then
   begin
     FileClose(Handle);
     Exit;
@@ -317,11 +331,11 @@ end;
 
 function TTokenFile.LoadFromFile(const FileName, ParsedFileName: string): Boolean;
 var
-  Handle, I: Integer;
+  Handle, I, ChildCount: Integer;
   Header: TSimpleFileToken;
-  Buffer: array[0..4095] of Char;
-  TokenRec: TTokenRec;
-  TkList: TTokenClass;
+  Buffer: PChar;
+  BufferLen: Integer;
+  TkList, Selected: TTokenClass;
 begin
   Result := False;
   if not FileExists(ParsedFileName) then
@@ -333,7 +347,7 @@ begin
     FileDate := FileDateTime(FileName);
 
   FileRead(Handle, Header, SizeOf(TSimpleFileToken));
-  if not CompareMem(Pointer(@Header.Sign), PChar(TokenList.Sign),
+  if not CompareMem(Pointer(@Header.Sign), Pointer(@TokenList.Sign),
     Sizeof(Header.Sign)) then
   begin
     FileClose(Handle);
@@ -345,43 +359,29 @@ begin
   FParsedFileDate := Header.DateOfFile;
   FFileName := FileName;
   FParsedFileName := ParsedFileName;
-  TkList := nil;
+  TkList := TTokenClass.Create;
+  BufferLen := 4096 * SizeOf(Char);
+  Buffer := GetMemory(BufferLen);
+  Result := True;
+  Selected := nil;
   for I := 0 to Header.Count - 1 do
   begin
-    FileRead(Handle, TokenRec.Count, SizeOf(Word));
-    FileRead(Handle, TokenRec.Line, SizeOf(Integer));
-    FileRead(Handle, TokenRec.Start, SizeOf(Integer));
-    FileRead(Handle, TokenRec.SelLen, SizeOf(Word));
-    FileRead(Handle, TokenRec.Level, SizeOf(Word));
-    FileRead(Handle, TokenRec.Token, SizeOf(TTkType));
-    FileRead(Handle, TokenRec.Len1, SizeOf(Word));
-    FileRead(Handle, Buffer, TokenRec.Len1);
-    Buffer[TokenRec.Len1] := #0;
-    TokenRec.Name := StrPas(Buffer);
-    FileRead(Handle, TokenRec.Len2, SizeOf(Word));
-    FileRead(Handle, Buffer, TokenRec.Len2);
-    Buffer[TokenRec.Len2] := #0;
-    TokenRec.Flag := StrPas(Buffer);
-    FileRead(Handle, TokenRec.Len3, SizeOf(Word));
-    FileRead(Handle, Buffer, TokenRec.Len3);
-    Buffer[TokenRec.Len3] := #0;
-    TokenRec.Comment := StrPas(Buffer);
-
-    case TokenRec.Token of
-      tkIncludeList: TkList := FIncludeList;
-      tkDefineList: TkList := FDefineList;
-      tkTreeObjList: TkList := FTreeObjList;
-      tkVarConsList: TkList := FVarConstList;
-      tkFuncProList: TkList := FFuncObjList;
+    ReadToken(Handle, TkList, Buffer, BufferLen, ChildCount);
+    case TkList.Token of
+      tkIncludeList: Selected := FIncludeList;
+      tkDefineList: Selected := FDefineList;
+      tkTreeObjList: Selected := FTreeObjList;
+      tkVarConsList: Selected := FVarConstList;
+      tkFuncProList: Selected := FFuncObjList;
     else
-      FileClose(Handle);
-      Result := True;
-      Exit;
+      Result := False;
+      Break;
     end;
-    LoadFromFileRecurse(Handle, TkList, TokenRec.Count);
+    LoadFromFileRecurse(Handle, Selected, ChildCount, Buffer, BufferLen);
   end;
+  FreeMemory(Buffer);
+  TkList.Free;
   FileClose(Handle);
-  Result := True;
 end;
 
 procedure TTokenFile.SaveToFileRecurse(Handle: Integer; ItemList: TTokenClass);
@@ -389,27 +389,27 @@ var
   I: Integer;
   TokenRec: TTokenRec;
 begin
-  TokenRec.Count := ItemList.Count;
-  FileWrite(Handle, TokenRec.Count, SizeOf(Word));
-  TokenRec.Line := ItemList.SelLine;
-  FileWrite(Handle, TokenRec.Line, SizeOf(Integer));
-  TokenRec.Start := ItemList.SelStart;
-  FileWrite(Handle, TokenRec.Start, SizeOf(Integer));
-  TokenRec.SelLen := ItemList.SelLength;
-  FileWrite(Handle, TokenRec.SelLen, SizeOf(Word));
-  TokenRec.Level := ItemList.Level;
-  FileWrite(Handle, TokenRec.Level, SizeOf(Word));
   TokenRec.Token := ItemList.Token;
+  TokenRec.Count := ItemList.Count;
+  TokenRec.Line := ItemList.SelLine;
+  TokenRec.Start := ItemList.SelStart;
+  TokenRec.SelLen := ItemList.SelLength;
+  TokenRec.Level := ItemList.Level;
+  TokenRec.LenName := Length(ItemList.Name) * SizeOf(Char);
+  TokenRec.LenFlag := Length(ItemList.Flag) * SizeOf(Char);
+  TokenRec.LenComment := Length(ItemList.Comment) * SizeOf(Char);
   FileWrite(Handle, TokenRec.Token, SizeOf(TTkType));
-  TokenRec.Len1 := Length(ItemList.Name);
-  FileWrite(Handle, TokenRec.Len1, SizeOf(Word));
-  FileWrite(Handle, PChar(ItemList.Name)^, TokenRec.Len1);
-  TokenRec.Len2 := Length(ItemList.Flag);
-  FileWrite(Handle, TokenRec.Len2, SizeOf(Word));
-  FileWrite(Handle, PChar(ItemList.Flag)^, TokenRec.Len2);
-  TokenRec.Len3 := Length(ItemList.Comment);
-  FileWrite(Handle, TokenRec.Len3, SizeOf(Word));
-  FileWrite(Handle, PChar(ItemList.Comment)^, TokenRec.Len3);
+  FileWrite(Handle, TokenRec.Count, SizeOf(Integer));
+  FileWrite(Handle, TokenRec.Line, SizeOf(Integer));
+  FileWrite(Handle, TokenRec.Start, SizeOf(Integer));
+  FileWrite(Handle, TokenRec.SelLen, SizeOf(Integer));
+  FileWrite(Handle, TokenRec.Level, SizeOf(Integer));
+  FileWrite(Handle, TokenRec.LenName, SizeOf(Integer));
+  FileWrite(Handle, TokenRec.LenFlag, SizeOf(Integer));
+  FileWrite(Handle, TokenRec.LenComment, SizeOf(Integer));
+  FileWrite(Handle, PChar(ItemList.Name)^, TokenRec.LenName);
+  FileWrite(Handle, PChar(ItemList.Flag)^, TokenRec.LenFlag);
+  FileWrite(Handle, PChar(ItemList.Comment)^, TokenRec.LenComment);
   for I := 0 to ItemList.Count - 1 do
     SaveToFileRecurse(Handle, ItemList.Items[I]);
 end;
@@ -423,7 +423,7 @@ begin
   Handle := FileCreate(ParsedFileName);
   if Handle = 0 then
     Exit;
-  Move(TokenList.Sign, Header.Sign, Sizeof(Header.Sign));
+  Move(TokenList.Sign, Header.Sign, SizeOf(Header.Sign));
   Header.Count := 5;
   Header.DateOfFile := FileDate;
   FileWrite(Handle, Header, SizeOf(TSimpleFileToken));

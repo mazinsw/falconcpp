@@ -3,7 +3,7 @@ unit LoadImage;
 interface
 
 uses
-  Classes, Graphics, PNGImage, Jpeg, GIFImage;
+  Classes, Graphics, PNGImage, Jpeg, GIFImg;
 
 function LoadImageFromStream(Picture: TPicture; Stream: TStream): Boolean;
 
@@ -13,7 +13,7 @@ function LoadImageFromStream(Picture: TPicture; Stream: TStream): Boolean;
 var
   Magic: array[0..4] of Char;
   bmp: TBitmap;
-  png: TPNGObject;
+  png: TPngImage;
   gif: TGIFImage;
   jpg: TJPEGImage;
 begin
@@ -24,7 +24,7 @@ begin
   if String(Magic) = 'PNG' then
   begin
     Stream.Position := 0;
-    png := TPNGObject.Create;
+    png := TPngImage.Create;
     png.LoadFromStream(Stream);
     Picture.Assign(png);
     png.Free;

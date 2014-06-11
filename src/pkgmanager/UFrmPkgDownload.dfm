@@ -1,9 +1,9 @@
 object FrmPkgDownload: TFrmPkgDownload
   Left = 282
   Top = 173
-  Width = 758
-  Height = 506
   Caption = 'Install packages'
+  ClientHeight = 468
+  ClientWidth = 742
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

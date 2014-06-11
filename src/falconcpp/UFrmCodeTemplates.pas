@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ComCtrls, Buttons, SynEdit, SynMemo, StdCtrls, SynEditAutoComplete,
+  Dialogs, ComCtrls, Buttons, UEditor, StdCtrls, AutoComplete,
   USourceFile;
 
 type
@@ -17,7 +17,6 @@ type
     BtnRem: TSpeedButton;
     BtnEdit: TSpeedButton;
     ListViewTemplates: TListView;
-    SynTemplates: TSynEdit;
     procedure FormCreate(Sender: TObject);
     procedure ListViewTemplatesSelectItem(Sender: TObject; Item: TListItem;
       Selected: Boolean);
@@ -40,6 +39,7 @@ type
       Shift: TShiftState);
   private
     { Private declarations }
+    SynTemplates: TEditor;
   protected
     procedure CreateParams(var Params: TCreateParams); override;
   public
@@ -100,9 +100,17 @@ var
 begin
   SetExplorerTheme(ListViewTemplates.Handle);
   AutoComplete := TSynAutoCompleteTemplate.Create(Self);
-  // TODO: commented
-  //TSourceFileSheet.UpdateEditor(SynTemplates);
-  SynTemplates.Gutter.Visible := False;
+  SynTemplates := TEditor.Create(GroupBox1);
+  SynTemplates.Parent := GroupBox1;
+  SynTemplates.Left := 9;
+  SynTemplates.Top := 192;
+  SynTemplates.Width := 426;
+  SynTemplates.Height := 177;
+  SynTemplates.TabOrder := 1;
+  SynTemplates.Highlighter := FrmFalconMain.CppHighligher;
+  TSourceFileSheet.UpdateEditor(SynTemplates);
+  SynTemplates.Folding := False;
+  SynTemplates.ShowLineNumber := False;
   Rs := TResourceStream.Create(HInstance, 'AUTOCOMPLETE', RT_RCDATA);
   Rs.Position := 0;
   AutoComplete.AutoCompleteList.LoadFromStream(Rs);
@@ -153,7 +161,7 @@ begin
   CTI := TCodeTemplateItem(Item.Data);
   BtnRem.Enabled := not CTI.ReadOnly;
   BtnEdit.Enabled := not CTI.ReadOnly;
-  SynTemplates.Text := CTI.Code;
+  SynTemplates.Lines.Text := CTI.Code;
 end;
 
 procedure TFrmCodeTemplates.FormDestroy(Sender: TObject);
@@ -262,7 +270,7 @@ begin
     CTI := TCodeTemplateItem.Create;
     CTI.Name := ctiName;
     CTI.Comment := ctiDesc;
-    CTI.Code := SynTemplates.Text;
+    CTI.Code := SynTemplates.Lines.Text;
     AutoComplete.AddCompletion(CTI.Name, CTI.Code, CTI.Comment);
     FrmFalconMain.AutoComplete.AddCompletion(CTI.Name, CTI.Code, CTI.Comment);
     List := TStringList.Create;
@@ -296,14 +304,14 @@ begin
     I := AutoComplete.Completions.IndexOf(CTI.Name);
     AutoComplete.Completions.Strings[I] := ctiName;
     AutoComplete.CompletionComments.Strings[I] := ctiDesc;
-    AutoComplete.CompletionValues.Strings[I] := SynTemplates.Text;
+    AutoComplete.CompletionValues.Strings[I] := SynTemplates.Lines.Text;
     //update autocompletion of Main Form
     I := FrmFalconMain.AutoComplete.Completions.IndexOf(CTI.Name);
     if I > -1 then
     begin
       FrmFalconMain.AutoComplete.Completions.Strings[I] := ctiName;
       FrmFalconMain.AutoComplete.CompletionComments.Strings[I] := ctiDesc;
-      FrmFalconMain.AutoComplete.CompletionValues.Strings[I] := SynTemplates.Text;
+      FrmFalconMain.AutoComplete.CompletionValues.Strings[I] := SynTemplates.Lines.Text;
     end;
 
     List := TStringList.Create;
@@ -315,7 +323,7 @@ begin
     end;
     CTI.Name := ctiName;
     CTI.Comment := ctiDesc;
-    CTI.Code := SynTemplates.Text;
+    CTI.Code := SynTemplates.Lines.Text;
     Item.Caption := CTI.Name;
     Item.SubItems.Strings[0] := CTI.Comment;
   end;

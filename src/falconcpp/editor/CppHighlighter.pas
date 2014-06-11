@@ -3,7 +3,7 @@ unit CppHighlighter;
 interface
 
 uses
-  Highlighter;
+  Classes, Highlighter;
 
 type
   TCppHighlighter = class(THighlighter)
@@ -11,7 +11,7 @@ type
     function GetID: Integer; override;
     function GetLanguageName: String; override;
   public
-    constructor Create(); override;
+    constructor Create(AOwner: TComponent); override;
     procedure SetKeyWords(Callback: TSetKeyWords); override;
     function IsComment(Style: THighlighStyle): Boolean; override;
     function IsString(Style: THighlighStyle): Boolean; override;
@@ -49,9 +49,9 @@ const
 
 { TCppHighlighter }
 
-constructor TCppHighlighter.Create;
+constructor TCppHighlighter.Create(AOwner: TComponent);
 begin
-  inherited;
+  inherited Create(AOwner);
   Add(SCE_C_COMMENT, HL_Style_Comment, clGreen);
   Add(SCE_C_COMMENTLINE, HL_Style_LineComment, clGreen);
   Add(SCE_C_COMMENTDOC, HL_Style_DocComment, clTeal);
@@ -62,7 +62,7 @@ begin
   //Add(SCE_C_UUID, '');
   Add(SCE_C_PREPROCESSOR, HL_Style_Preprocessor, clMaroon);
   Add(SCE_C_OPERATOR, HL_Style_Symbol, clNavy, [fsBold]);
-  Add(SCE_C_IDENTIFIER, HL_Style_Identifier);
+  Add(SCE_C_IDENTIFIER, HL_Style_Identifier, clWindowText);
   Add(SCE_C_STRINGEOL, HL_Style_UnterminatedString, clBlue);
   //Add(SCE_C_VERBATIM, '');
   //Add(SCE_C_REGEX, '');
@@ -76,9 +76,7 @@ begin
   //Add(SCE_C_HASHQUOTEDSTRING, '');
   Add(SCE_C_PREPROCESSORCOMMENT, HL_Style_PreprocessorComment, clGreen);
   Add(SCE_C_PREPROCESSORCOMMENTDOC, HL_Style_PreprocessorDocComment, clTeal);
-  Add(STYLE_LINENUMBER, 'Gutter', clGrayText).Background := clGray;
-  Add(STYLE_DEFAULT, HL_Style_Default, clGray).Background := clWhite;
-  Add(SCE_C_DEFAULT, HL_Style_Space).Background := clWhite;
+  Add(SCE_C_DEFAULT, HL_Style_Space);
 end;
 
 function TCppHighlighter.GetID: Integer;

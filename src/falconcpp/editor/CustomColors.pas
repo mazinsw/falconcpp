@@ -11,7 +11,7 @@ const
   clMaroon = $00004080;
   clCyan   = $00FFFF00;
 
-function DSColor(Color: TColor; Default: TColor = clWhite): TColor;
+function DSColor(Color: TColor; Default: TColor = clBlack): TColor;
 
 implementation
 

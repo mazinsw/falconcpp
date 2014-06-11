@@ -10,6 +10,17 @@ const
     'Bold', 'Italic', 'Underline', 'StrikeOut'
   );
 
+  STY_PROP_DEFAULT = 'Default';
+  STY_PROP_GUTTER = 'Gutter';
+  STY_PROP_CARETLINE = 'Caret Line';
+  STY_PROP_SELECTION = 'Selection';
+  STY_PROP_BREAKPOINT = 'Breakpoint';
+  STY_PROP_EXECPOINT = 'Execution Point';
+  STY_PROP_CARETCOLOR = 'Caret Color';
+  STY_PROP_BRACE = 'Brace';
+  STY_PROP_BADBRACE = 'Bad Brace';
+  STY_PROP_LINKCOLOR = 'Link Color';
+
 type
   TSintaxType = class;
   TSintax = class;
@@ -82,7 +93,7 @@ type
 implementation
 
 uses
-  TokenUtils, SysUtils;
+  TokenUtils, SysUtils, CustomColors;
 
 {TSintax}
 
@@ -238,14 +249,12 @@ begin
   end;
   L.Free;
   // Keep compatibilities
-  if not GetType(HL_Style_DocComment, Sxt) then
-    AddSintaxType(HL_Style_DocComment, clTeal);
   if not GetType(HL_Style_TypeWord, Sxt) then
   begin
     if GetType('Reserved Word', Sxt) then
       AddSintaxType(HL_Style_TypeWord, Sxt.Foreground, Sxt.Background, Sxt.Style)
     else
-      AddSintaxType(HL_Style_TypeWord, $00FF0080);
+      AddSintaxType(HL_Style_TypeWord, clViolet);
   end;
   if not GetType(HL_Style_InstructionWord, Sxt) then
   begin
@@ -253,9 +262,31 @@ begin
       AddSintaxType(HL_Style_InstructionWord, Sxt.Foreground, Sxt.Background, Sxt.Style)
     else
       AddSintaxType(HL_Style_InstructionWord, clBlue);
-  end;
-  if not GetType('Include', Sxt) then
-    AddSintaxType('Include', clBlue);
+  end;                                         
+  if not GetType(HL_Style_LineComment, Sxt) then
+    AddSintaxType(HL_Style_LineComment, clGreen);
+  if not GetType(HL_Style_DocComment, Sxt) then
+    AddSintaxType(HL_Style_DocComment, clTeal);  
+  if not GetType(HL_Style_DocComment, Sxt) then
+    AddSintaxType(HL_Style_LineDocComment, clGray);
+  if not GetType(HL_Style_CommentKeyword, Sxt) then
+    AddSintaxType(HL_Style_CommentKeyword, clBlue, clNone, [fsBold]);
+  if not GetType(HL_Style_CommentKeywordError, Sxt) then
+    AddSintaxType(HL_Style_CommentKeywordError, clRed);
+  if not GetType(STY_PROP_CARETLINE, Sxt) then
+    AddSintaxType(STY_PROP_CARETLINE, clWindow, $00FFE8E8);
+  if not GetType(STY_PROP_CARETCOLOR, Sxt) then
+    AddSintaxType(STY_PROP_CARETCOLOR, clBlack);
+  if not GetType(STY_PROP_DEFAULT, Sxt) then
+    AddSintaxType(STY_PROP_DEFAULT, clGray, clWhite); 
+  if not GetType(STY_PROP_BREAKPOINT, Sxt) then
+    AddSintaxType(STY_PROP_BREAKPOINT, clNone, clRed);
+  if not GetType(STY_PROP_EXECPOINT, Sxt) then
+    AddSintaxType(STY_PROP_EXECPOINT, clNone, clRed);
+  if not GetType(STY_PROP_BRACE, Sxt) then
+    AddSintaxType(STY_PROP_BRACE, clRed, clNone, [fsBold]);
+  if not GetType(STY_PROP_BADBRACE, Sxt) then
+    AddSintaxType(STY_PROP_BADBRACE, clRed);
 end;
 
 procedure TSintax.AddSintaxType(Name: string; Foreground: TColor;
@@ -328,42 +359,118 @@ begin
     if GetType(StyleName, st) then
     begin
       Editor.BeginUpdate;
-      if st.Name = 'Gutter' then
+      if st.Name = STY_PROP_DEFAULT then
       begin
-        // TODO: commented
-        //Editor.CodeFolding.FolderBarColor := st.Background;
-        //Editor.CodeFolding.FolderBarDivLineColor := st.Background;
-        //Editor.Gutter.Color := st.Background;
-        //Editor.Gutter.GradientEndColor := st.Background;
-        //Editor.Gutter.Font.Color := st.Foreground;
-        //Editor.Gutter.Font.Style := st.Style;
+        Editor.DefaultHighlight.Background := st.Background;
+        Editor.DefaultHighlight.Foreground := st.Foreground;
+        Editor.DefaultHighlight.Style := st.Style;
       end;
-      if st.Name = 'Selection' then
-      begin         
-        // TODO: commented
-        //Editor.SelectedColor.Background := st.Background;
-        //Editor.SelectedColor.Foreground := st.Background;
+      if st.Name = STY_PROP_GUTTER then
+      begin
+        Editor.LineNumberHighlight.Background := st.Background;
+        Editor.LineNumberHighlight.Foreground := st.Foreground;
+        Editor.LineNumberHighlight.Style := st.Style;
+      end;
+      if st.Name = STY_PROP_CARETLINE then
+      begin
+        Editor.CaretLineHighlight.Background := st.Background;
+        Editor.CaretLineHighlight.Foreground := st.Background;
+        Editor.CaretLineHighlight.Style := st.Style;
+      end;
+      if st.Name = STY_PROP_SELECTION then
+      begin
+        Editor.SelectionHighlight.Background := st.Background;
+        Editor.SelectionHighlight.Foreground := st.Background;
+        Editor.SelectionHighlight.Style := st.Style;
+      end;
+      if st.Name = STY_PROP_BREAKPOINT then
+      begin
+        Editor.BreakpointHighlight.Background := st.Background;
+        Editor.BreakpointHighlight.Foreground := st.Foreground;
+        Editor.BreakpointHighlight.Style := st.Style;
+      end;
+      if st.Name = STY_PROP_EXECPOINT then
+      begin
+        Editor.ExecutionPointHighlight.Background := st.Background;
+        Editor.ExecutionPointHighlight.Foreground := st.Foreground;
+        Editor.ExecutionPointHighlight.Style := st.Style;
+      end;
+      if st.Name = STY_PROP_CARETCOLOR then
+      begin
+        Editor.CaretColor := st.Foreground;
+      end; 
+      if st.Name = STY_PROP_BRACE then
+      begin
+        Editor.BracketHighlight.Foreground := st.Foreground;
+        Editor.BracketHighlight.Style := st.Style;
+      end;
+      if st.Name = STY_PROP_BADBRACE then
+      begin
+        Editor.BadBracketHighlight.Foreground := st.Foreground;
+        Editor.BadBracketHighlight.Style := st.Style;
+      end; 
+      if st.Name = STY_PROP_LINKCOLOR then
+      begin
+        Editor.LinkColor := st.Foreground;
       end;
       Editor.EndUpdate;
     end;
     Exit;
   end;
   Editor.BeginUpdate;
-  if GetType('Gutter', st) then
-  begin                 
-    // TODO: commented
-    //Editor.CodeFolding.FolderBarColor := st.Background;
-    //Editor.CodeFolding.FolderBarDivLineColor := st.Background;
-    //Editor.Gutter.Color := st.Background;
-    //Editor.Gutter.GradientEndColor := st.Background;
-    //Editor.Gutter.Font.Color := st.Foreground;
-    //Editor.Gutter.Font.Style := st.Style;
-  end;
-  if GetType('Selection', st) then
+  if GetType(STY_PROP_DEFAULT, st) then
   begin
-    // TODO: commented
-    //Editor.SelectedColor.Background := st.Background;
-    //Editor.SelectedColor.Foreground := st.Foreground;
+    Editor.DefaultHighlight.Background := st.Background;
+    Editor.DefaultHighlight.Foreground := st.Foreground;
+    Editor.DefaultHighlight.Style := st.Style;
+  end;
+  if GetType(STY_PROP_GUTTER, st) then
+  begin                 
+    Editor.LineNumberHighlight.Background := st.Background;
+    Editor.LineNumberHighlight.Foreground := st.Foreground;
+    Editor.LineNumberHighlight.Style := st.Style;
+  end;            
+  if GetType(STY_PROP_CARETLINE, st) then
+  begin
+    Editor.CaretLineHighlight.Background := st.Background;
+    Editor.CaretLineHighlight.Foreground := st.Background;
+    Editor.CaretLineHighlight.Style := st.Style;
+  end;
+  if GetType(STY_PROP_SELECTION, st) then
+  begin
+    Editor.SelectionHighlight.Background := st.Background;
+    Editor.SelectionHighlight.Foreground := st.Background;
+    Editor.SelectionHighlight.Style := st.Style;
+  end;
+  if GetType(STY_PROP_BREAKPOINT, st) then
+  begin
+    Editor.BreakpointHighlight.Background := st.Background;
+    Editor.BreakpointHighlight.Foreground := st.Foreground;
+    Editor.BreakpointHighlight.Style := st.Style;
+  end;
+  if GetType(STY_PROP_EXECPOINT, st) then
+  begin
+    Editor.ExecutionPointHighlight.Background := st.Background;
+    Editor.ExecutionPointHighlight.Foreground := st.Foreground;
+    Editor.ExecutionPointHighlight.Style := st.Style;
+  end;
+  if GetType(STY_PROP_CARETCOLOR, st) then
+  begin
+    Editor.CaretColor := st.Foreground;
+  end;  
+  if GetType(STY_PROP_BRACE, st) then
+  begin
+    Editor.BracketHighlight.Foreground := st.Foreground;
+    Editor.BracketHighlight.Style := st.Style;
+  end;
+  if GetType(STY_PROP_BADBRACE, st) then
+  begin
+    Editor.BadBracketHighlight.Foreground := st.Foreground;
+    Editor.BadBracketHighlight.Style := st.Style;
+  end;
+  if GetType(STY_PROP_LINKCOLOR, st) then
+  begin
+    Editor.LinkColor := st.Foreground;
   end;
   Editor.EndUpdate;
 end;
@@ -460,30 +567,46 @@ begin
   //Notepad++
   Stx := TSintax.Create;
   Stx.Name := 'Notepad++';
-  Stx.ReadOnly := True;
+  Stx.ReadOnly := True;                     
+  Stx.AddSintaxType(STY_PROP_DEFAULT, clGray, clWhite);
   Stx.AddSintaxType(HL_Style_Character, clGray);
+  Stx.AddSintaxType(HL_Style_LineComment, clGreen);
   Stx.AddSintaxType(HL_Style_Comment, clGreen);
   Stx.AddSintaxType(HL_Style_DocComment, clTeal);
-  Stx.AddSintaxType(HL_Style_Identifier, clNone);
-  Stx.AddSintaxType(HL_Style_Number, $000080FF);
-  Stx.AddSintaxType(HL_Style_Preprocessor, $00004080);
-  Stx.AddSintaxType(HL_Style_TypeWord, $00FF0080);
+  Stx.AddSintaxType(HL_Style_LineDocComment, clGray); 
+  Stx.AddSintaxType(HL_Style_CommentKeyword, clBlue, clNone, [fsBold]);
+  Stx.AddSintaxType(HL_Style_CommentKeywordError, clRed);
+  Stx.AddSintaxType(HL_Style_Identifier, clBlack);
+  Stx.AddSintaxType(HL_Style_Number, clOrange);
+  Stx.AddSintaxType(HL_Style_Preprocessor, clMaroon);
+  Stx.AddSintaxType(HL_Style_TypeWord, clViolet);
   Stx.AddSintaxType(HL_Style_InstructionWord, clBlue, clNone, [fsBold]);
   Stx.AddSintaxType(HL_Style_Space, clNone);
   Stx.AddSintaxType(HL_Style_String, clGray);
   Stx.AddSintaxType(HL_Style_Symbol, clNavy, clNone, [fsBold]);
-  Stx.AddSintaxType('Gutter', clGray, $00E4E4E4);
-  Stx.AddSintaxType('Selection', clWindowText, clSilver);
-  Stx.AddSintaxType('Include', clBlue);
+  Stx.AddSintaxType(STY_PROP_GUTTER, clGray, $00E4E4E4);
+  Stx.AddSintaxType(STY_PROP_CARETLINE, clWindow, $00FFE8E8);
+  Stx.AddSintaxType(STY_PROP_SELECTION, clBlack, clSilver);
+  Stx.AddSintaxType(STY_PROP_BREAKPOINT, clNone, clRed);
+  Stx.AddSintaxType(STY_PROP_EXECPOINT, clNone, clNavy);
+  Stx.AddSintaxType(STY_PROP_CARETCOLOR, clViolet);  
+  Stx.AddSintaxType(STY_PROP_BRACE, clRed, clNone, [fsBold]);
+  Stx.AddSintaxType(STY_PROP_BADBRACE, clRed);
+  Stx.AddSintaxType(STY_PROP_LINKCOLOR, clBlue);
   FItemIndex := Add(Stx);
 
   //Borland
   Stx := TSintax.Create;
   Stx.Name := 'Borland';
   Stx.ReadOnly := True;
+  Stx.AddSintaxType(STY_PROP_DEFAULT, clGray, clNavy);
   Stx.AddSintaxType(HL_Style_Character, clYellow);
+  Stx.AddSintaxType(HL_Style_LineComment, clGray);
   Stx.AddSintaxType(HL_Style_Comment, clGray);
-  Stx.AddSintaxType(HL_Style_DocComment, clGray);
+  Stx.AddSintaxType(HL_Style_DocComment, clGray); 
+  Stx.AddSintaxType(HL_Style_LineDocComment, clGreen); 
+  Stx.AddSintaxType(HL_Style_CommentKeyword, clOlive, clNone, [fsBold]);
+  Stx.AddSintaxType(HL_Style_CommentKeywordError, clRed);
   Stx.AddSintaxType(HL_Style_Identifier, clYellow);
   Stx.AddSintaxType(HL_Style_Number, clYellow);
   Stx.AddSintaxType(HL_Style_Preprocessor, clYellow);
@@ -492,38 +615,60 @@ begin
   Stx.AddSintaxType(HL_Style_Space, clNone, clNavy);
   Stx.AddSintaxType(HL_Style_String, clYellow);
   Stx.AddSintaxType(HL_Style_Symbol, clYellow);
-  Stx.AddSintaxType('Gutter', clYellow, clNavy);
-  Stx.AddSintaxType('Selection', clWindowText, clGray);
-  Stx.AddSintaxType('Include', clYellow);
+  Stx.AddSintaxType(STY_PROP_GUTTER, clYellow, clNavy);
+  Stx.AddSintaxType(STY_PROP_CARETLINE, clWhite, clBlack);
+  Stx.AddSintaxType(STY_PROP_SELECTION, clBlack, clGray);
+  Stx.AddSintaxType(STY_PROP_BREAKPOINT, clNone, clRed); 
+  Stx.AddSintaxType(STY_PROP_EXECPOINT, clNone, clSkyBlue);
+  Stx.AddSintaxType(STY_PROP_CARETCOLOR, clWhite); 
+  Stx.AddSintaxType(STY_PROP_BRACE, clRed, clNone, [fsBold]);
+  Stx.AddSintaxType(STY_PROP_BADBRACE, clRed);
+  Stx.AddSintaxType(STY_PROP_LINKCOLOR, clBlue);
   Add(Stx);
 
   //Visual Studio
   Stx := TSintax.Create;
   Stx.Name := 'Visual Studio';
-  Stx.ReadOnly := True;
-  Stx.AddSintaxType(HL_Style_Character, $001515A3);
+  Stx.ReadOnly := True;                         
+  Stx.AddSintaxType(STY_PROP_DEFAULT, clGray, clWhite);
+  Stx.AddSintaxType(HL_Style_Character, $001515A3);  
+  Stx.AddSintaxType(HL_Style_LineComment, clGreen);
   Stx.AddSintaxType(HL_Style_Comment, clGreen);
-  Stx.AddSintaxType(HL_Style_DocComment, clGreen);
-  Stx.AddSintaxType(HL_Style_Identifier, clNone);
+  Stx.AddSintaxType(HL_Style_DocComment, clGreen);  
+  Stx.AddSintaxType(HL_Style_LineDocComment, clGray);
+  Stx.AddSintaxType(HL_Style_CommentKeyword, clBlue, clNone, [fsBold]);
+  Stx.AddSintaxType(HL_Style_CommentKeywordError, clRed);
+  Stx.AddSintaxType(HL_Style_Identifier, clBlack);
   Stx.AddSintaxType(HL_Style_Number, clNavy);
   Stx.AddSintaxType(HL_Style_Preprocessor, clBlue);
   Stx.AddSintaxType(HL_Style_TypeWord, clBlue);
   Stx.AddSintaxType(HL_Style_InstructionWord, clBlue);
   Stx.AddSintaxType(HL_Style_Space, clNone);
   Stx.AddSintaxType(HL_Style_String, $001515A3);
-  Stx.AddSintaxType(HL_Style_Symbol, clNone);
-  Stx.AddSintaxType('Gutter', clWindowText, clBtnFace);
-  Stx.AddSintaxType('Selection', clHighlightText, clHighlight);
-  Stx.AddSintaxType('Include', clMaroon);
+  Stx.AddSintaxType(HL_Style_Symbol, clBlack);
+  Stx.AddSintaxType(STY_PROP_GUTTER, clWindowText, clBtnFace);
+  Stx.AddSintaxType(STY_PROP_CARETLINE, clNone);
+  Stx.AddSintaxType(STY_PROP_SELECTION, clBlack, clSilver);
+  Stx.AddSintaxType(STY_PROP_BREAKPOINT, clNone, clRed);   
+  Stx.AddSintaxType(STY_PROP_EXECPOINT, clNone, clNavy);
+  Stx.AddSintaxType(STY_PROP_CARETCOLOR, clBlack);   
+  Stx.AddSintaxType(STY_PROP_BRACE, clRed, clNone, [fsBold]);
+  Stx.AddSintaxType(STY_PROP_BADBRACE, clRed); 
+  Stx.AddSintaxType(STY_PROP_LINKCOLOR, clBlue);
   Add(Stx);
 
   //Obsidian
   Stx := TSintax.Create;
   Stx.Name := 'Obsidian';
-  Stx.ReadOnly := True;
-  Stx.AddSintaxType(HL_Style_Character, $000984FF);
+  Stx.ReadOnly := True;                            
+  Stx.AddSintaxType(STY_PROP_DEFAULT, $02343129, $00343129);
+  Stx.AddSintaxType(HL_Style_Character, $000984FF); 
+  Stx.AddSintaxType(HL_Style_LineComment, $007B7466);
   Stx.AddSintaxType(HL_Style_Comment, $007B7466);
-  Stx.AddSintaxType(HL_Style_DocComment, $02BF5F3F);
+  Stx.AddSintaxType(HL_Style_DocComment, $02BF5F3F); 
+  Stx.AddSintaxType(HL_Style_LineDocComment, $02BF5F3F);
+  Stx.AddSintaxType(HL_Style_CommentKeyword, clBlue, clNone, [fsBold]);
+  Stx.AddSintaxType(HL_Style_CommentKeywordError, clRed);
   Stx.AddSintaxType(HL_Style_Identifier, $00E4E2E0);
   Stx.AddSintaxType(HL_Style_Number, $0022CDFF);
   Stx.AddSintaxType(HL_Style_Preprocessor, $00BD82A0);
@@ -532,29 +677,46 @@ begin
   Stx.AddSintaxType(HL_Style_Space, $02343129, $00343129);
   Stx.AddSintaxType(HL_Style_String, $000076EC);
   Stx.AddSintaxType(HL_Style_Symbol, $00B7E2E8);
-  Stx.AddSintaxType('Gutter', $0088806A, $003C382F);
-  Stx.AddSintaxType('Selection', $00FFFFFF, $00514E40);
-  Stx.AddSintaxType('Include', $000076EC);
+  Stx.AddSintaxType(STY_PROP_GUTTER, $0088806A, $003C382F);
+  Stx.AddSintaxType(STY_PROP_CARETLINE, clWhite, clGray);
+  Stx.AddSintaxType(STY_PROP_SELECTION, clWhite, $00514E40);
+  Stx.AddSintaxType(STY_PROP_BREAKPOINT, clNone, clRed);   
+  Stx.AddSintaxType(STY_PROP_EXECPOINT, clNone, clOlive);
+  Stx.AddSintaxType(STY_PROP_CARETCOLOR, clWhite); 
+  Stx.AddSintaxType(STY_PROP_BRACE, clRed, clNone, [fsBold]);
+  Stx.AddSintaxType(STY_PROP_BADBRACE, clRed); 
+  Stx.AddSintaxType(STY_PROP_LINKCOLOR, clBlue);
   Add(Stx);
 
   //default
   Stx := TSintax.Create;
   Stx.Name := 'Default';
-  Stx.ReadOnly := True;
-  Stx.AddSintaxType(HL_Style_Character, clGray);
+  Stx.ReadOnly := True;                       
+  Stx.AddSintaxType(STY_PROP_DEFAULT, clGray, clWhite);
+  Stx.AddSintaxType(HL_Style_Character, clGray); 
+  Stx.AddSintaxType(HL_Style_LineComment, clGreen);
   Stx.AddSintaxType(HL_Style_Comment, clGreen);
-  Stx.AddSintaxType(HL_Style_DocComment, clTeal);
-  Stx.AddSintaxType(HL_Style_Identifier, clNone);
-  Stx.AddSintaxType(HL_Style_Number, $000080FF);
-  Stx.AddSintaxType(HL_Style_Preprocessor, $00004080);
-  Stx.AddSintaxType(HL_Style_TypeWord, $00FF0080);
+  Stx.AddSintaxType(HL_Style_DocComment, clTeal); 
+  Stx.AddSintaxType(HL_Style_LineDocComment, clGray);
+  Stx.AddSintaxType(HL_Style_CommentKeyword, clBlue, clNone, [fsBold]);
+  Stx.AddSintaxType(HL_Style_CommentKeywordError, clRed);
+  Stx.AddSintaxType(HL_Style_Identifier, clBlack);
+  Stx.AddSintaxType(HL_Style_Number, clOrange);
+  Stx.AddSintaxType(HL_Style_Preprocessor, clMaroon);
+  Stx.AddSintaxType(HL_Style_TypeWord, clViolet);
   Stx.AddSintaxType(HL_Style_InstructionWord, clBlue, clNone, [fsBold]);
   Stx.AddSintaxType(HL_Style_Space, clNone);
   Stx.AddSintaxType(HL_Style_String, clBlue);
   Stx.AddSintaxType(HL_Style_Symbol, clNavy, clNone, [fsBold]);
-  Stx.AddSintaxType('Gutter', clGrayText, clBtnFace);
-  Stx.AddSintaxType('Selection', clWindowText, clSilver);
-  Stx.AddSintaxType('Include', clBlue);
+  Stx.AddSintaxType(STY_PROP_GUTTER, clGrayText, clBtnFace);
+  Stx.AddSintaxType(STY_PROP_CARETLINE, clWhite, $00FFE8E8);
+  Stx.AddSintaxType(STY_PROP_SELECTION, clBlack, clSilver);
+  Stx.AddSintaxType(STY_PROP_BREAKPOINT, clNone, clRed);
+  Stx.AddSintaxType(STY_PROP_EXECPOINT, clNone, clNavy);
+  Stx.AddSintaxType(STY_PROP_CARETCOLOR, clBlack);
+  Stx.AddSintaxType(STY_PROP_BRACE, clRed, clNone, [fsBold]);
+  Stx.AddSintaxType(STY_PROP_BADBRACE, clRed);
+  Stx.AddSintaxType(STY_PROP_LINKCOLOR, clBlue);
   FItemIndex := Add(Stx);
 end;
 

@@ -57,12 +57,15 @@ function EscapeString(const S: string): string;
 implementation
 
 function ConvertAnsiToOem(const S: string): string;
+var
+  R: AnsiString;
 begin
   Result := '';
   if Length(s) = 0 then
     Exit;
-  SetLength(Result, Length(S));
-  AnsiToOem(PChar(S), PChar(Result));
+  SetLength(R, Length(R));
+  AnsiToOem(PAnsiChar(AnsiString(S)), PAnsiChar(R));
+  Result := string(R);
 end;
 
 function EscapeString(const S: string): string;

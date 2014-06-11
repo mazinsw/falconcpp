@@ -27,6 +27,8 @@ procedure FreeTokens(First: PToken);
 function TokenMatch(const StartPtr: PChar; const S: string; Token: PToken): Boolean;
 function TokenString(const StartPtr: PChar; Token: PToken): string;
 
+function IsWordOrNumber(const StartPtr: PChar): Boolean;
+
 implementation
 
 uses SysUtils;
@@ -76,7 +78,7 @@ begin
   SaveLine := Line;
   StartPos := Ptr;
   Inc(Ptr, 2); // skip "//"
-  while not (Ptr^ in [#10, #13, #0]) do
+  while not CharInSet(Ptr^, [#10, #13, #0]) do
   begin
     if Ptr^ = '\' then
     begin
@@ -86,7 +88,7 @@ begin
         Continue;
       end;
       Inc(Ptr);
-      while Ptr^ in [' ', #9] do
+      while CharInSet(Ptr^, [' ', #9]) do
         Inc(Ptr);
       if Ptr^ = #10 then // multi line string
       begin
@@ -156,7 +158,7 @@ begin
       #10, #13, #0: Break; // unterminated string
       '\':
       begin
-        if (Ptr + 1)^ in ['>', '\'] then
+        if CharInSet((Ptr + 1)^, ['>', '\']) then
           Inc(Ptr)
         else if (Ptr + 1)^ = #10 then // multi line string
         begin
@@ -199,7 +201,7 @@ begin
       #10, #13, #0: Break; // unterminated string
       '\':
       begin
-        if (Ptr + 1)^ in ['"', '\'] then
+        if CharInSet((Ptr + 1)^, ['"', '\']) then
           Inc(Ptr)
         else if (Ptr + 1)^ = #10 then // multi line string
         begin
@@ -241,7 +243,7 @@ begin
       #10, #13, #0: Break; // unterminated string
       '\':
       begin
-        if (Ptr + 1)^ in ['''', '\'] then
+        if CharInSet((Ptr + 1)^, ['''', '\']) then
           Inc(Ptr)
         else if (Ptr + 1)^ = #10 then // multi line string
         begin
@@ -274,7 +276,7 @@ var
   StartPos: PChar;
 begin
   StartPos := Ptr;
-  while Ptr^ in ['a'..'z', 'A'..'Z', '0'..'9', '_'] do
+  while CharInSet(Ptr^, ['a'..'z', 'A'..'Z', '0'..'9', '_']) do
     Inc(Ptr);
   Result := AddToken(StartPos - StartPtr, Ptr - StartPtr, Line, tkxIdentifier, Last, First);
 end;
@@ -285,18 +287,18 @@ var
   StartPos: PChar;
 begin
   StartPos := Ptr;
-  while Ptr^ in ['0'..'9'] do
+  while CharInSet(Ptr^, ['0'..'9']) do
     Inc(Ptr);
-  if Ptr^ in ['.', 'x', 'X'] then
+  if CharInSet(Ptr^, ['.', 'x', 'X']) then
   begin
     Inc(Ptr);
-    while Ptr^ in ['0'..'9'] do
+    while CharInSet(Ptr^, ['0'..'9']) do
       Inc(Ptr);
   end;
-  if Ptr^ in ['e', 'E'] then
+  if CharInSet(Ptr^, ['e', 'E']) then
   begin
     Inc(Ptr);
-    while Ptr^ in ['0'..'9'] do
+    while CharInSet(Ptr^, ['0'..'9']) do
       Inc(Ptr);
   end;
   if Ptr^ = 'f' then
@@ -522,6 +524,23 @@ begin
     Next := Next^.Next;
     FreeMem(Save);
   end;
+end;
+
+function IsWordOrNumber(const StartPtr: PChar): Boolean;
+var
+  Ptr: PChar;
+begin
+  Result := False;
+  if StartPtr = nil then
+    Exit;
+  Ptr := StartPtr;
+  while Ptr^ <> #0 do
+  begin
+    if not CharInSet(Ptr^, ['0'..'9', '_', 'a'..'z','A'..'Z']) then
+      Exit;
+    Inc(Ptr);
+  end;
+  Result := True;
 end;
 
 end.

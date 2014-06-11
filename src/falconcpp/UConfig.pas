@@ -14,40 +14,22 @@ type
     AutoIndent: Boolean;
     InsertMode: Boolean;
     GroupUndo: Boolean;
-    KeepTrailingSpaces: Boolean;
     ShowSpaceChars: Boolean;
     AutoCloseBrackets: Boolean;
 
-    ScrollHint: Boolean;
     TabIndentUnindent: Boolean;
     SmartTabs: Boolean;
     UseTabChar: Boolean;
     EnhancedHomeKey: Boolean;
-    CursorPastEol: Boolean;
 
-    MaxUndo: Integer;
     TabWidth: Integer;
-    //------------------------------//
-    HighligthMatchBraceParentheses: Boolean;
-    NormalColor: TColor;
-    ErrorColor: TColor;
-    BgColor: TColor;
-
-    HighligthCurrentLine: Boolean;
-    CurrentLineColor: TColor;
-
-    LinkClick: Boolean;
-    LinkColor: TColor;
-
     //display
     FontName: string;
     FontSize: Integer;
     ShowRightMargin: Boolean;
     RightMargin: Integer;
     ShowGutter: Boolean;
-    GutterWidth: Integer;
     ShowLineNumber: Boolean;
-    GradientGutter: Boolean;
     //sintax
     ActiveSintax: string;
 
@@ -303,39 +285,22 @@ begin
     AutoIndent := ini.ReadBool('EditorOptions', 'AutoIndent', True);
     InsertMode := ini.ReadBool('EditorOptions', 'InsertMode', True);
     GroupUndo := ini.ReadBool('EditorOptions', 'GroupUndo', True);
-    KeepTrailingSpaces := ini.ReadBool('EditorOptions', 'KeepTrailingSpaces', True);
 
-    ScrollHint := ini.ReadBool('EditorOptions', 'ScrollHint', True);
     SmartTabs := ini.ReadBool('EditorOptions', 'SmartTabs', True);
     TabIndentUnindent := ini.ReadBool('EditorOptions', 'TabIndentUnindent', True);
     UseTabChar := ini.ReadBool('EditorOptions', 'UseTabChar', True);
     EnhancedHomeKey := ini.ReadBool('EditorOptions', 'EnhancedHomeKey', False);
-    CursorPastEol := ini.ReadBool('EditorOptions', 'CursorPastEOL', False);
     ShowSpaceChars := ini.ReadBool('EditorOptions', 'ShowSpaceChars', False);
     AutoCloseBrackets := ini.ReadBool('EditorOptions', 'AutoCloseBrackets', True);
 
-    MaxUndo := ini.ReadInteger('EditorOptions', 'MaxUndo', 1024);
     TabWidth := ini.ReadInteger('EditorOptions', 'TabWidth', 4);
-    //------------------------------//
-    HighligthMatchBraceParentheses := ini.ReadBool('EditorOptions', 'HighligthMatchBraceParentheses', True);
-    NormalColor := StringToColor(ini.ReadString('EditorOptions', 'NormalColor', 'clRed'));
-    ErrorColor := StringToColor(ini.ReadString('EditorOptions', 'ErrorColor', 'clMaroon'));
-    BgColor := StringToColor(ini.ReadString('EditorOptions', 'BgColor', 'clNone'));
-
-    HighligthCurrentLine := ini.ReadBool('EditorOptions', 'HighligthCurrentLine', True);
-    CurrentLineColor := StringToColor(ini.ReadString('EditorOptions', 'CurrentLineColor', '$FFE8E8'));
-
-    LinkClick := ini.ReadBool('EditorOptions', 'LinkClick', True);
-    LinkColor := StringToColor(ini.ReadString('EditorOptions', 'LinkColor', 'clBlue'));
     //display
     FontName := ini.ReadString('EditorOptions', 'FontName', 'Courier New');
     FontSize := ini.ReadInteger('EditorOptions', 'FontSize', 10);
     ShowRightMargin := ini.ReadBool('EditorOptions', 'ShowRightMargin', True);
     RightMargin := ini.ReadInteger('EditorOptions', 'RightMargin', 80);
     ShowGutter := ini.ReadBool('EditorOptions', 'ShowGutter', True);
-    GutterWidth := ini.ReadInteger('EditorOptions', 'GutterWidth', 30);
     ShowLineNumber := ini.ReadBool('EditorOptions', 'ShowLineNumber', True);
-    GradientGutter := ini.ReadBool('EditorOptions', 'GradientGutter', False);
     //sintax
     ActiveSintax := ini.ReadString('EditorOptions', 'ActiveSyntax', 'Default');
     //Formatter
@@ -606,40 +571,23 @@ begin
     ini.WriteBool('EditorOptions', 'AutoIndent', AutoIndent);
     ini.WriteBool('EditorOptions', 'InsertMode', InsertMode);
     ini.WriteBool('EditorOptions', 'GroupUndo', GroupUndo);
-    ini.WriteBool('EditorOptions', 'KeepTrailingSpaces', KeepTrailingSpaces);
 
-    ini.WriteBool('EditorOptions', 'ScrollHint', ScrollHint);
     ini.WriteBool('EditorOptions', 'TabIndentUnindent', TabIndentUnindent);
     ini.WriteBool('EditorOptions', 'SmartTabs', SmartTabs);
     ini.WriteBool('EditorOptions', 'UseTabChar', UseTabChar);
     ini.WriteBool('EditorOptions', 'EnhancedHomeKey', EnhancedHomeKey);
-    ini.WriteBool('EditorOptions', 'CursorPastEOL', CursorPastEol);
 
     ini.WriteBool('EditorOptions', 'ShowSpaceChars', ShowSpaceChars);
     ini.WriteBool('EditorOptions', 'AutoCloseBrackets', AutoCloseBrackets);
 
-    ini.WriteInteger('EditorOptions', 'MaxUndo', MaxUndo);
     ini.WriteInteger('EditorOptions', 'TabWidth', TabWidth);
-    //------------------------------//
-    ini.WriteBool('EditorOptions', 'HighligthMatchBraceParentheses', HighligthMatchBraceParentheses);
-    ini.WriteString('EditorOptions', 'NormalColor', ColorToString(NormalColor));
-    ini.WriteString('EditorOptions', 'ErrorColor', ColorToString(ErrorColor));
-    ini.WriteString('EditorOptions', 'BgColor', ColorToString(BgColor));
-
-    ini.WriteBool('EditorOptions', 'HighligthCurrentLine', HighligthCurrentLine);
-    ini.WriteString('EditorOptions', 'CurrentLineColor', ColorToString(CurrentLineColor));
-
-    ini.WriteBool('EditorOptions', 'LinkClick', LinkClick);
-    ini.WriteString('EditorOptions', 'LinkColor', ColorToString(LinkColor));
     //display
     ini.WriteString('EditorOptions', 'FontName', FontName);
     ini.WriteInteger('EditorOptions', 'FontSize', FontSize);
     ini.WriteBool('EditorOptions', 'ShowRightMargin', ShowRightMargin);
     ini.WriteInteger('EditorOptions', 'RightMargin', RightMargin);
     ini.WriteBool('EditorOptions', 'ShowGutter', ShowGutter);
-    ini.WriteInteger('EditorOptions', 'GutterWidth', GutterWidth);
     ini.WriteBool('EditorOptions', 'ShowLineNumber', ShowLineNumber);
-    ini.WriteBool('EditorOptions', 'GradientGutter', GradientGutter);
     //sintax
     ini.WriteString('EditorOptions', 'ActiveSyntax', ActiveSintax);
     //Formatter

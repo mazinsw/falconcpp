@@ -24,13 +24,14 @@ type
   end;
 
 function GetNumberOfOutLine(Line: string): string;
-function StringBetween(S, BeginDlm, EndDlm: string; ResAll: Boolean = True): string;
+function StringBetween(S, BeginDlm, EndDlm: string;
+  ResAll: Boolean = True): string;
 function ParseResult(Value: TStrings): TStrings;
 function ResolveUnixFileName(const Str: string): string;
 
 implementation
 
-uses StrUtils, UFrmMain, ULanguages, TokenUtils, SynRegExpr;
+uses StrUtils, UFrmMain, ULanguages, TokenUtils, PerlRegEx;
 
 constructor TMessageItem.Create;
 begin
@@ -66,46 +67,46 @@ end;
 function StringBetween(S, BeginDlm, EndDlm: string;
   ResAll: Boolean = True): string;
 var
-  i: integer;
-  str: string;
+  I: Integer;
+  Str: string;
 begin
-  str := S;
-  i := Pos(BeginDlm, str);
-  if (i > 0) or ResAll then
+  Str := S;
+  I := Pos(BeginDlm, Str);
+  if (I > 0) or ResAll then
   begin
-    if (i = 0) then
+    if (I = 0) then
       I := 1;
-    str := Copy(str, i + length(BeginDlm), length(str) - i);
-    i := Pos(EndDlm, str);
-    if (i > 0) or ResAll then
+    Str := Copy(Str, I + length(BeginDlm), length(Str) - I);
+    I := Pos(EndDlm, Str);
+    if (I > 0) or ResAll then
     begin
-      if (i = 0) then
-        i := length(str);
-      str := Copy(str, 1, i - 1);
+      if (I = 0) then
+        I := length(Str);
+      Str := Copy(Str, 1, I - 1);
     end
     else
-      str := '';
+      Str := '';
   end
   else
-    str := '';
-  Result := str;
+    Str := '';
+  Result := Str;
 end;
 
-function ExistCol(const line: string; var col: string): Boolean;
+function ExistCol(const Line: string; var Col: string): Boolean;
 var
   X, Y: Integer;
 begin
   Result := False;
-  X := Pos(':', line);
+  X := Pos(':', Line);
   if (X > 0) then
   begin
-    Y := PosEx(':', line, X + 1);
+    Y := PosEx(':', Line, X + 1);
     if X > 0 then
     begin
-      X := PosEx(':', line, Y + 1);
+      X := PosEx(':', Line, Y + 1);
       if X > 0 then
       begin
-        col := Copy(line, Y + 1, X - Y - 1);
+        Col := Copy(Line, Y + 1, X - Y - 1);
         Result := True;
       end;
     end;
@@ -122,12 +123,12 @@ begin
   begin
     Y := PosEx(':', Str, I + 2);
     Nm := Copy(Str, 1, Y - 1);
-    rest := Copy(Str, Y, Length(Str));
+    rest := Copy(Str, Y, length(Str));
     Nm := ConvertSlashes(Nm);
     Y := Pos('include', Nm);
     if Y > 0 then
     begin
-      Nm := Copy(Nm, Y, Length(Nm));
+      Nm := Copy(Nm, Y, length(Nm));
       Nm := '${COMPILER_PATH}\' + Nm;
     end
     else
@@ -138,33 +139,33 @@ begin
     Result := Str;
 end;
 
-function RemoveInfor(const str: string): string;
+function RemoveInfor(const Str: string): string;
 var
   I: Integer;
   Res: string;
 begin
-  Res := str;
-  I := Pos(': error: ', str);
+  Res := Str;
+  I := Pos(': error: ', Str);
   if I > 0 then
-    Res := Copy(str, I + 9, Length(str))
+    Res := Copy(Str, I + 9, length(Str))
   else
   begin
-    I := Pos(': warning: ', str);
+    I := Pos(': warning: ', Str);
     if I > 0 then
-      Res := Copy(str, I + 11, Length(str))
+      Res := Copy(Str, I + 11, length(Str))
     else
     begin
-      I := Pos(':', str);
+      I := Pos(':', Str);
       if (I > 0) then
       begin
-        Res := Copy(str, I + 1, Length(str));
-        I := Pos(':', res);
+        Res := Copy(Str, I + 1, length(Str));
+        I := Pos(':', Res);
         if (I > 0) then
         begin
-          Res := Copy(res, I + 1, Length(res));
-          I := Pos(':', res);
+          Res := Copy(Res, I + 1, length(Res));
+          I := Pos(':', Res);
           if (I > 0) then
-            Res := Copy(res, I + 1, Length(res));
+            Res := Copy(Res, I + 1, length(Res));
         end;
       end;
     end;
@@ -179,11 +180,11 @@ function ParseResult(Value: TStrings): TStrings;
     I, Count: Integer;
   begin
     Count := 0;
-    for I := 1 to Length(Str) do
+    for I := 1 to length(Str) do
     begin
-      if Str[I] in ['(', '[', '{'] then
+      if CharInSet(Str[I], ['(', '[', '{']) then
       begin
-        if (I > 1) and (I < Length(Str)) then
+        if (I > 1) and (I < length(Str)) then
         begin
           if (Str[I - 1] <> APS) or (Str[I + 1] <> APS) then
             Inc(Count);
@@ -191,9 +192,9 @@ function ParseResult(Value: TStrings): TStrings;
         else
           Inc(Count);
       end;
-      if Str[I] in [')', ']', '}'] then
+      if CharInSet(Str[I], [')', ']', '}']) then
       begin
-        if (I > 1) and (I < Length(Str)) then
+        if (I > 1) and (I < length(Str)) then
         begin
           if (Str[I - 1] <> APS) or (Str[I + 1] <> APS) then
             Dec(Count);
@@ -206,18 +207,18 @@ function ParseResult(Value: TStrings): TStrings;
   end;
 
 const
-  IMG_MSG: array[0..2] of Integer = (32, 33, 34);
+  IMG_MSG: array [0 .. 2] of Integer = (32, 33, 34);
 var
   Temp: TStrings;
   Msg: TMessageItem;
   SLn, order, OriMsg, Capt: string;
   I, J: Integer;
   Cont, Translated: Boolean;
-  RegEx: TRegExpr;
+  RegEx: TPerlRegEx;
 begin
   Temp := TStringList.Create;
-  RegEx := TRegExpr.Create;
-  //** parse results**//
+  RegEx := TPerlRegEx.Create;
+  // ** parse results**//
   Cont := False;
   Capt := FrmFalconMain.Caption;
   for I := 0 to Value.Count - 1 do
@@ -225,14 +226,14 @@ begin
     if FrmFalconMain.CompilationStopped then
       Break;
     if (Value.Count > 500) then
-      FrmFalconMain.Caption :=
-        Format('Falcon C++ [' + STR_FRM_MAIN[42] + ']', [I + 1, Value.Count]);
+      FrmFalconMain.Caption := Format('Falcon C++ [' + STR_FRM_MAIN[42] + ']',
+        [I + 1, Value.Count]);
     Application.ProcessMessages;
     if Cont then
     begin
-      //verify ocorrence next line
+      // verify ocorrence next line
       SLn := SLn + Copy(Value.Strings[I], Pos('error:', Value.Strings[I]) + 6,
-        Length(Value.Strings[I]));
+        length(Value.Strings[I]));
       Cont := False;
     end
     else
@@ -245,12 +246,14 @@ begin
     end;
     OriMsg := SLn;
     SLn := ResolveUnixFileName(SLn);
-    if not RegEx.Exec('mingw32-make.exe: \*\*\* \[.*\] Error [0-9]+', SLn) then
+    RegEx.RegEx := 'mingw32-make.exe: \*\*\* \[.*\] Error [0-9]+';
+    RegEx.Subject := SLn;
+    if not RegEx.Match then
     begin
       Msg := TMessageItem.Create;
       Msg.MsgType := mitCompiler;
       Msg.OriMsg := SLn;
-      //* check message type *//
+      // * check message type *//
       if (Pos(': error:', SLn) > 0) or (Pos(': undefined', SLn) > 0) then
         Msg.Icon := IMG_MSG[2]
       else if (Pos(': warning:', SLn) > 0) then
@@ -261,15 +264,18 @@ begin
       for J := 1 to MAX_CMPMSG do
       begin
         Application.ProcessMessages;
-        if RegEx.Exec(CONST_STR_CMPMSG[J].Expression, SLn) and (STR_CMPMSG[J] <> '') then
+        RegEx.RegEx := CONST_STR_CMPMSG[J].Expression;
+        RegEx.Subject := SLn;
+        if RegEx.Match and (STR_CMPMSG[J] <> '') then
         begin
           if CONST_STR_CMPMSG[J].FileName > 0 then
-            Msg.FileName := RegEx.Match[CONST_STR_CMPMSG[J].FileName];
+            Msg.FileName := RegEx.Groups[CONST_STR_CMPMSG[J].FileName];
           if CONST_STR_CMPMSG[J].Line > 0 then
-            Msg.Line := StrToInt(RegEx.Match[CONST_STR_CMPMSG[J].Line]);
+            Msg.Line := StrToInt(RegEx.Groups[CONST_STR_CMPMSG[J].Line]);
           if CONST_STR_CMPMSG[J].Column > 0 then
-            Msg.Col := StrToInt(RegEx.Match[CONST_STR_CMPMSG[J].Column]);
-          SLn := RegEx.Substitute(STR_CMPMSG[J]);
+            Msg.Col := StrToInt(RegEx.Groups[CONST_STR_CMPMSG[J].Column]);
+          RegEx.Replacement := STR_CMPMSG[J];
+          SLn := RegEx.Replace;
           Translated := True;
           Break;
         end
@@ -288,7 +294,7 @@ begin
       Temp.AddObject(Msg.Msg, Msg);
     end;
   end;
-  //******************//
+  // ******************//
   RegEx.Free;
   FrmFalconMain.Caption := Capt;
   Result := Temp;

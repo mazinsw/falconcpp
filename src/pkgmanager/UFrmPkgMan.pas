@@ -5,8 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Controls, Forms, Graphics,
   Dialogs, Menus, ComCtrls, ToolWin, ImgList, StdCtrls, PNGImage,
-  RichEditViewer, FormEffect, IniFiles, ShellApi, ExtCtrls, Clipbrd,
-  VistaAltFixUnit;
+  RichEditViewer, FormEffect, IniFiles, ShellApi, ExtCtrls, Clipbrd;
 
 const
   WM_RELOADPKG  = WM_USER + $0112;
@@ -69,7 +68,6 @@ type
     PopupMenu1: TPopupMenu;
     OpenFolder1: TMenuItem;
     CopyFileName1: TMenuItem;
-    VistaAltFix1: TVistaAltFix;
     procedure FormCreate(Sender: TObject);
     procedure PkgListProc(var Msg: TMessage);
     procedure ReloadPackages(var Message: TMessage); message WM_RELOADPKG;

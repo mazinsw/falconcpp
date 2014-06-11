@@ -5,8 +5,6 @@ interface
 uses
   Windows,
   Menus,
-  SynEdit,
-  SynEditKeyCmds,
   Classes,
   UEditor;
 
@@ -54,11 +52,6 @@ type
 implementation
 
 uses
-{$IFDEF SYN_CLX}
-  QSynEditTypes,
-{$ELSE}
-  SynEditTypes,
-{$ENDIF}
   SysUtils;
 
 { TAutoComplete }

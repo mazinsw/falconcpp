@@ -1,0 +1,60 @@
+﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+		<PropertyGroup>
+			<ProjectGuid>{36659CA1-6B3A-4AB8-9A8B-CB5280AEB5C3}</ProjectGuid>
+		</PropertyGroup>
+		<ItemGroup>
+			<Projects Include="..\updater\Updater.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="..\pkgmanager\PkgManager.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="Falcon.dproj">
+				<Dependencies/>
+			</Projects>
+		</ItemGroup>
+		<ProjectExtensions>
+			<Borland.Personality>Default.Personality.12</Borland.Personality>
+			<Borland.ProjectType/>
+			<BorlandProject>
+				<Default.Personality/>
+			</BorlandProject>
+		</ProjectExtensions>
+		<Target Name="Updater">
+			<MSBuild Projects="..\updater\Updater.dproj"/>
+		</Target>
+		<Target Name="Updater:Clean">
+			<MSBuild Targets="Clean" Projects="..\updater\Updater.dproj"/>
+		</Target>
+		<Target Name="Updater:Make">
+			<MSBuild Targets="Make" Projects="..\updater\Updater.dproj"/>
+		</Target>
+		<Target Name="PkgManager">
+			<MSBuild Projects="..\pkgmanager\PkgManager.dproj"/>
+		</Target>
+		<Target Name="PkgManager:Clean">
+			<MSBuild Targets="Clean" Projects="..\pkgmanager\PkgManager.dproj"/>
+		</Target>
+		<Target Name="PkgManager:Make">
+			<MSBuild Targets="Make" Projects="..\pkgmanager\PkgManager.dproj"/>
+		</Target>
+		<Target Name="Falcon">
+			<MSBuild Projects="Falcon.dproj"/>
+		</Target>
+		<Target Name="Falcon:Clean">
+			<MSBuild Targets="Clean" Projects="Falcon.dproj"/>
+		</Target>
+		<Target Name="Falcon:Make">
+			<MSBuild Targets="Make" Projects="Falcon.dproj"/>
+		</Target>
+		<Target Name="Build">
+			<CallTarget Targets="Updater;PkgManager;Falcon"/>
+		</Target>
+		<Target Name="Clean">
+			<CallTarget Targets="Updater:Clean;PkgManager:Clean;Falcon:Clean"/>
+		</Target>
+		<Target Name="Make">
+			<CallTarget Targets="Updater:Make;PkgManager:Make;Falcon:Make"/>
+		</Target>
+		<Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+	</Project>

@@ -4,11 +4,11 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  ComCtrls, StdCtrls, Menus, XPMan, ImgList, ExtCtrls, SynHighlighterCpp,
-  ShellApi, SynHighlighterRC, UConfig,
-  UTemplates, SendData, OutputConsole, SynEditKeyCmds, ShlObj, FormEffect,
+  ComCtrls, StdCtrls, Menus, XPMan, ImgList, ExtCtrls,
+  ShellApi, UConfig,
+  UTemplates, SendData, OutputConsole, ShlObj, FormEffect,
   PNGImage, USourceFile, Clipbrd, CompletionProposal, UUtils,
-  UFrmEditorOptions, FileDownload, SynEditTypes, SplashScreen, FormPosition,
+  UFrmEditorOptions, FileDownload, SplashScreen, FormPosition,
   TBXExtItems, TB2Item, TBX, TB2Dock, TBXSwitcher, IniFiles,
   //themes
   TBXOfficeXPTheme,
@@ -17,15 +17,15 @@ uses
   TBXProfessionalTheme,
   TBXStripesTheme,
   //end themes
-  SynEditSearch, AppEvnts, ThreadTokenFiles, CppParser, TokenConst, TokenFile,
-  TokenHint, TokenList, TokenUtils, SynEditAutoComplete, SynEditPrint,
-  SynEditRegexSearch, CommCtrl, DebugReader, SynExportRTF, CommandQueue,
-  SynEditExport, SynExportHTML, SynExportTeX, DebugConsts,
-  XMLDoc, XMLIntf, BreakPoint, HintTree, DebugWatch, 
-  UParseMsgs, SynEditMiscClasses, TBXStatusBars, XPPanels, ModernTabs,
-  VistaAltFixUnit, TB2Toolbar, ThreadFileDownload, NativeTreeView,
+  AppEvnts, ThreadTokenFiles, CppParser, TokenConst, TokenFile,
+  TokenHint, TokenList, TokenUtils,
+  CommCtrl, DebugReader, CommandQueue,
+  DebugConsts,
+  XMLDoc, XMLIntf, BreakPoint, HintTree, DebugWatch,
+  UParseMsgs, TBXStatusBars, XPPanels, ModernTabs,
+  TB2Toolbar, ThreadFileDownload, NativeTreeView,
   PluginManager, PluginServiceManager, UEditor, CppHighlighter, SintaxList,
-  AutoComplete, DScintillaTypes, SynEditHighlighter;
+  AutoComplete, DScintillaTypes;
 
 const
   crReverseArrow = TCursor(-99);
@@ -102,7 +102,6 @@ type
   TFrmFalconMain = class(TForm)
     XPManifest: TXPManifest;
     OpenDlg: TOpenDialog;
-    ResourceHighlighter: TSynRCSyn;
     SendData: TSendData;
     CompilerCmd: TOutputConsole;
     TimerStartUpdate: TTimer;
@@ -315,22 +314,15 @@ type
     TBXItem78: TTBXItem;
     TBXSeparatorItem37: TTBXSeparatorItem;
     EditIndent: TTBXItem;
-    EditorSearch: TSynEditSearch;
     TimerHintTipEvent: TTimer;
     ApplicationEvents: TApplicationEvents;
     TimerHintParams: TTimer;
     FilePrint: TTBXItem;
     TBXSeparatorItem38: TTBXSeparatorItem;
-    EditorPrint: TSynEditPrint;
-    PrintDialog: TPrintDialog;
-    EditorRegexSearch: TSynEditRegexSearch;
     FileRemove: TTBXItem;
     EditUnindent: TTBXItem;
     EditDelete: TTBXItem;
-    ExporterHTML: TSynExporterHTML;
-    ExporterRTF: TSynExporterRTF;
     FileExportTeX: TTBXItem;
-    ExporterTeX: TSynExporterTeX;
     PopEditorSwap: TTBXItem;
     TBXSeparatorItem28: TTBXSeparatorItem;
     PopupTabs: TTBXPopupMenu;
@@ -388,7 +380,6 @@ type
     PageControlMessages: TModernPageControl;
     TSMessages: TModernTabSheet;
     ListViewMsg: TListView;
-    VistaAltFix1: TVistaAltFix;
     TreeViewOutline: TNativeTreeView;
     TBXSeparatorItem14: TTBXSeparatorItem;
     PopTabsCopyDir: TTBXItem;
@@ -477,7 +468,6 @@ type
     procedure FileSaveAsClick(Sender: TObject);
     procedure TextEditorGutterClick(ASender: TObject; AModifiers: Integer;
       APosition: Integer; AMargin: Integer);
-    procedure TextEditorGutterPaint(Sender: TObject; aLine, X, Y: Integer);
     procedure TextEditorSpecialLineColors(Sender: TObject; Line: Integer;
       var Special: Boolean; var FG, BG: TColor);
     procedure TextEditorChange(Sender: TObject);
@@ -569,7 +559,7 @@ type
       var CanExecute: Boolean);
     procedure CodeCompletionCodeCompletion(Sender: TObject;
       var Value: string; Shift: TShiftState; Index: Integer;
-      var EndToken: Char);
+      var EndToken: Char; var OffsetCaret: Integer);
     procedure TimerHintParamsTimer(Sender: TObject);
     procedure ViewCompOutClick(Sender: TObject);
     procedure FilePrintClick(Sender: TObject);
@@ -624,11 +614,11 @@ type
       var Ghosted: Boolean; var ImageIndex: Integer);
     procedure TreeViewOutlineDrawText(Sender: TBaseNativeTreeView;
       TargetCanvas: TCanvas; Node: PNativeNode; Column: TColumnIndex;
-      const Text: WideString; const CellRect: TRect;
+      const Text: string; const CellRect: TRect;
       var DefaultDraw: Boolean);
     procedure TreeViewOutlineGetText(Sender: TBaseNativeTreeView;
       Node: PNativeNode; Column: TColumnIndex; TextType: TVSTTextType;
-      var CellText: WideString);
+      var CellText: string);
     procedure TreeViewOutlineFreeNode(Sender: TBaseNativeTreeView;
       Node: PNativeNode);
     procedure TreeViewOutline_DblClick(Sender: TObject);
@@ -923,8 +913,8 @@ uses
   UFrmAbout, UFrmNew, UFrmProperty, ExecWait, UTools, UFrmRemove,
   UFrmUpdate, ULanguages, UFrmEnvOptions, UFrmCompOptions, UFrmFind, AStyle,
   UFrmGotoFunction, UFrmGotoLine, TBXThemes, Makefile, CodeTemplate,
-  SynEditStrConst, StrUtils, UFrmVisualCppOptions,
-  SynEditPrintHeaderFooter, PluginConst, Math, Highlighter, DScintilla;
+  StrUtils, UFrmVisualCppOptions,
+  PluginConst, Math, Highlighter, DScintilla;
 
 {$R *.dfm}
 {$R resources.res}
@@ -938,7 +928,7 @@ begin
   case Message of
     WM_CHAR:
     begin
-      if Chr(wParam) in ['<', '>', ':', '"', '/', '\', '|', '?', '*'] then
+      if CharInSet(Chr(wParam), ['<', '>', ':', '"', '/', '\', '|', '?', '*']) then
       begin
         Beep;
         Result := 0;
@@ -1059,7 +1049,6 @@ begin
   fScanEventHandle := CreateEvent(nil, FALSE, FALSE, nil);
   if (fScanEventHandle = 0) or (fScanEventHandle = INVALID_HANDLE_VALUE) then
     raise EOutOfResources.Create('Couldn''t create WIN32 event object');
-  Resume;
 end;
 
 destructor TParserThread.Destroy;
@@ -1248,7 +1237,7 @@ var
   Proj: TProjectFile;
 begin
   IsLoading := True;
-  CppHighligher := TCppHighlighter.Create;
+  CppHighligher := TCppHighlighter.Create(Self);
   CodeCompletion := TCompletionProposal.Create(Self);
   CodeCompletion.Options := [scoLimitToMatchedText, scoUseInsertList, scoUsePrettyText, scoUseBuiltInTimer, scoEndCharCompletion, scoCompleteWithTab, scoCompleteWithEnter];
   CodeCompletion.ClSelectedText := clWindowText;
@@ -1297,6 +1286,7 @@ begin
     SplashScreen.Show;
   SplashScreen.TextOut(55, 300, STR_FRM_MAIN[45]);
   fWorkerThread := TParserThread.Create;
+  fWorkerThread.Start;
   FFilesParsed := TTokenFiles.Create; // all files
   ParseAllFiles := TTokenFiles.Create; // parse all unparsed files
 
@@ -1305,6 +1295,7 @@ begin
   ThreadTokenFiles.OnStart := ParserStart;
   ThreadTokenFiles.OnProgress := ParserProgress;
   ThreadTokenFiles.OnFinish := ParserFinish;
+  ThreadTokenFiles.Start;
 
   // load included files
   ThreadLoadTkFiles := TThreadTokenFiles.Create(FilesParsed);
@@ -1312,12 +1303,14 @@ begin
   ThreadLoadTkFiles.OnProgress := TokenParserProgress;
   ThreadLoadTkFiles.OnFinish := TokenParserFinish;
   ThreadLoadTkFiles.OnAllFinish := TokenParserAllFinish;
+  ThreadLoadTkFiles.Start;
 
   // parse all source files from projects
   ThreadFilesParsed := TThreadTokenFiles.Create(FilesParsed);
   ThreadFilesParsed.OnStart := AllParserStart;
   ThreadFilesParsed.OnProgress := AllParserProgress;
   ThreadFilesParsed.OnFinish := AllParserFinish;
+  ThreadFilesParsed.Start;
 
   ActiveEditingFile := TTokenFile.Create;
   AllParsedList := TStringList.Create;
@@ -1383,7 +1376,7 @@ begin
   //create projects directory
   if not DirectoryExists(Config.Environment.ProjectsDir) then
     CreateDir(Config.Environment.ProjectsDir);
-  ZoomEditor := 1;
+  ZoomEditor := 0;
   FrmPos.FileName := IniConfigFile;
   FrmPos.Load;
   MenuBar.Visible := not FrmPos.FullScreen;
@@ -4186,16 +4179,17 @@ begin
       Temp := StringBetween(MMsg, #39, #39, False);
       if (Length(Temp) > 0) then
       begin
-        Sheet.memo.SearchEngine := EditorSearch;
-        Sheet.memo.SearchEngine.Pattern := Temp;
-        Sheet.memo.SearchEngine.Options := [ssoMatchCase, ssoWholeWord];
-        Sheet.memo.SearchEngine.FindAll(SLine);
-        if Sheet.memo.SearchEngine.ResultCount >= 1 then
-        begin
-          ColS := Sheet.memo.SearchEngine.Results[0];
-          ColE := ColS + Sheet.memo.SearchEngine.Lengths[0];
-          GotoLineAndAlignCenter(Sheet.Memo, Line, ColS, ColE, True);
-        end;
+        // TODO: commented
+//        Sheet.memo.SearchEngine := EditorSearch;
+//        Sheet.memo.SearchEngine.Pattern := Temp;
+//        Sheet.memo.SearchEngine.Options := [ssoMatchCase, ssoWholeWord];
+//        Sheet.memo.SearchEngine.FindAll(SLine);
+//        if Sheet.memo.SearchEngine.ResultCount >= 1 then
+//        begin
+//          ColS := Sheet.memo.SearchEngine.Results[0];
+//          ColE := ColS + Sheet.memo.SearchEngine.Lengths[0];
+//          GotoLineAndAlignCenter(Sheet.Memo, Line, ColS, ColE, True);
+//        end;
       end;
       if Col > 0 then
         GotoLineAndAlignCenter(Sheet.Memo, Line, Col);
@@ -4861,10 +4855,6 @@ begin
   begin
     Memo := TEditor(Sender);
     UpdateMenuItems([rmFile, rmEdit, rmSearch, rmRun]); {rmRun for Breakpoint}
-    if Config.Editor.HighligthCurrentLine then
-      Memo.ActiveLineColor := Config.Editor.CurrentLineColor
-    else
-      Memo.ActiveLineColor := clNone;
     Sheet := TSourceFileSheet(Memo.Owner);
     FilePrp := Sheet.SourceFile;
     if FilePrp.Modified then
@@ -4902,11 +4892,6 @@ begin
         end;
       end;
     end;
-    if LastKeyPressed in ['(', '{'] then
-    begin
-      LastKeyPressed := #0;
-      ShowHintParams(Sender as TEditor);
-    end;
   end;
 end;
 
@@ -4917,6 +4902,8 @@ procedure TFrmFalconMain.TextEditorStatusChange(Sender: TObject;
 var
   LastActiveErrorLine: Integer;
 begin
+  if AUpdated > 2 then
+    Exit;
   CanShowHintTip := False;
   TimerHintTipEvent.Enabled := False;
   HintTip.Cancel;
@@ -5196,7 +5183,7 @@ var
   i, j, SpaceCount1, BracketBalacing: Integer;
   bStart, bEnd: TBufferCoord;
   prev_word: string;
-  bCoord: TBufferCoord;
+  bCoord, posStyle: TBufferCoord;
   attri: THighlighStyle;
   token: UnicodeString;
   Key: Char;
@@ -5208,16 +5195,19 @@ begin
   bCoord := sheet.Memo.CaretXY;
   LineStr := sheet.Memo.LineText;
   if (bCoord.Char > 1) and (Length(LineStr) >= bCoord.Char - 1) and
-    (LineStr[bCoord.Char - 1] in ['a'..'z', 'A'..'Z']) then
+    CharInSet(LineStr[bCoord.Char - 1], ['a'..'z', 'A'..'Z', '_']) then
     prev_word := GetLastWord(Copy(LineStr, 1, bCoord.Char))
   else
     prev_word := '';
-  if sheet.Memo.GetHighlighterAttriAtRowCol(bCoord, token, attri) then
+  posStyle := BufferCoord(bCoord.Char - 1, bCoord.Line);
+  if CharInSet(Key, ['"', '<', '}']) then
+    sheet.Memo.Colourise(sheet.Memo.GetEndStyled, sheet.Memo.GetEndStyled + 1);
+  if sheet.Memo.GetHighlighterAttriAtRowCol(posStyle, token, attri) then
   begin
     if CppHighligher.IsComment(attri) then
       Exit;
     I := CountChar(LineStr, '"');
-    if (Key in ['"', '<']) and (attri.Name = SYNS_AttrPreprocessor) and
+    if CharInSet(Key, ['"', '<']) and (attri.Name = HL_Style_Preprocessor) and
       (Pos('include', LineStr) > 0) and not ((I >= 2) and
       (CountChar(Copy(LineStr, bCoord.Char, MaxInt), '"') = 0)) then
     begin
@@ -5227,7 +5217,7 @@ begin
     end;
   end;
   // auto code completion
-  if (Key in ['a'..'z', 'A'..'Z']) and (Length(prev_word) >= 4) and
+  if CharInSet(Key, ['a'..'z', 'A'..'Z', '_']) and (Length(prev_word) >= 4) and
     not CodeCompletion.Executing and ((FEmptyLineResult <> bCoord.Line)
     or (FEmptyCharResult > bCoord.Char)) then
   begin
@@ -5244,7 +5234,7 @@ begin
     end;
     Exit;
   end
-  else if not (Key in ['a'..'z', 'A'..'Z']) or not (Length(prev_word) > 4) then
+  else if not CharInSet(Key, ['a'..'z', 'A'..'Z', '_']) or not (Length(prev_word) > 4) then
   begin
     FEmptyLineResult := 0;
     FEmptyCharResult := 0;
@@ -5256,7 +5246,7 @@ begin
   else if Key = '(' then
   begin
     if Config.Editor.AutoCloseBrackets and
-      (sheet.Memo.GetBalancingBracketEx(sheet.Memo.CaretXY, '(') <= 0) then
+      (sheet.Memo.GetBalancingBracketEx(sheet.Memo.CaretXY, '(') < 0) then
     begin
       sheet.Memo.InsertText(sheet.Memo.GetCurrentPos, ')');
     end;
@@ -5267,7 +5257,7 @@ begin
   begin
     if not Config.Editor.AutoCloseBrackets then
       Exit;
-    if sheet.Memo.GetBalancingBracketEx(sheet.Memo.CaretXY, '[') > 0 then
+    if sheet.Memo.GetBalancingBracketEx(sheet.Memo.CaretXY, '[') >= 0 then
       Exit;
     sheet.Memo.InsertText(sheet.Memo.GetCurrentPos, ']');
   end
@@ -5293,14 +5283,14 @@ begin
       p := PChar(LineStr);
       if p^ <> #0 then
         repeat
-          if not (p^ in [#9, #32]) then Break;
+          if not CharInSet(p^, [#9, #32]) then Break;
           if p^ = #9 then
             Inc(j, sheet.Memo.TabWidth)
           else
             Inc(j);
           Inc(p);
         until p^ = #0;
-      emptyLine := LineStr = '{';
+      emptyLine := Trim(LineStr) = '{';
     end;
     if emptyLine then
     begin
@@ -5313,7 +5303,7 @@ begin
         i := 0;
         if p^ <> #0 then
           repeat
-            if not (p^ in [#9, #32]) then Break;
+            if not CharInSet(p^, [#9, #32]) then Break;
             if p^ = #9 then
               Inc(i, sheet.Memo.TabWidth)
             else
@@ -5363,7 +5353,7 @@ begin
     else if Config.Editor.AutoCloseBrackets then
     begin
       BracketBalacing := sheet.Memo.GetBalancingBracketEx(sheet.Memo.CaretXY, '{');
-      if BracketBalacing <= 0 then
+      if BracketBalacing < 0 then
         sheet.Memo.InsertText(sheet.Memo.GetCurrentPos, '}');
     end;
     TimerHintParams.Enabled := False;
@@ -5385,7 +5375,6 @@ begin
     Sheet.Memo.SetLinkClick(True)
   else if ([ssCtrl] = Shift) and (Key = Ord('J')) then
   begin
-    Key := 0;
     AutoComplete.Execute(Sheet.Memo);
   // show parameters hit
   end
@@ -5411,7 +5400,7 @@ begin
   // restore zoom
   else if ([ssCtrl] = Shift) and ((Key = VK_NUMPAD0) or (Key = Ord('0'))) then
   begin
-    ZoomEditor := 1;
+    ZoomEditor := 0;
     UpdateEditorZoom;
   end
   else if ([ssCtrl] = Shift) and (Key = VK_OEM_PLUS) then
@@ -5445,11 +5434,10 @@ var
   Shift: TShiftState;
 begin
   CodeCompletion.EditorKeyPress(Sender, Key);
-  LastKeyPressed := Key;
   Shift := KeyboardStateToShiftState;
   if not GetActiveSheet(sheet) then
     Exit;
-  if (Key in [')', ']']) then
+  if CharInSet(Key, [')', ']']) then
   begin
     OpenChar := #0;
     for I := 0 to 5 do
@@ -5474,8 +5462,6 @@ begin
       end;
     end;
   end
-  else if ([ssCtrl] = Shift) and (Key = 'J') then
-    Key := #0
   else if ([ssCtrl] = Shift) and (Key = ' ') then
     Key := #0;
 end;
@@ -5553,38 +5539,6 @@ begin
     S := sheet.Memo.Lines.Strings[Line - 1];
     if not HasTODO(S) then
       ToggleBreakpoint(Line);
-  end;
-end;
-
-procedure TFrmFalconMain.TextEditorGutterPaint(Sender: TObject; aLine, X,
-  Y: Integer);
-var
-  sheet: TSourceFileSheet;
-  fprop: TSourceFile;
-  S: string;
-  RealLine: Integer;
-begin
-  if not GetActiveSheet(sheet) then
-    Exit;
-  fprop := Sheet.SourceFile;
-  RealLine := aLine;
-  if fprop.Breakpoint.HasBreakpoint(RealLine) then
-  begin
-    fprop.Breakpoint.DrawBreakpoint(sheet.Memo, RealLine, X, Y);
-  end
-  else if (sheet.Memo.Lines.Count >= aLine) and (aLine > 0) then
-  begin
-    S := sheet.Memo.Lines.Strings[aLine - 1];
-    // TODO: commented
-    //if HasTODO(S) then
-    //  ImageListGutter.Draw(sheet.Memo.Canvas, X, Y, 5);
-  end;
-  if DebugReader.Running and Assigned(DebugActiveFile) and
-    (DebugActiveFile = fprop) and (DebugActiveLine > 0) and
-    (DebugActiveLine = RealLine) then
-  begin
-    // TODO: commented
-    //ImageListGutter.Draw(sheet.Memo.Canvas, X + 12, Y, 4);
   end;
 end;
 
@@ -5715,7 +5669,7 @@ begin
   DebugBar.DockRow := 1;
 
   SelectTheme('OfficeXP');
-  ZoomEditor := 1;
+  ZoomEditor := 0;
   UpdateEditorZoom;
 end;
 
@@ -5769,7 +5723,6 @@ procedure TFrmFalconMain.FormDestroy(Sender: TObject);
 var
   I: Integer;
 begin
-  CppHighligher.Free;
   FPluginManager.Free;
   FPluginServiceManager.Free;
   for I := TreeViewProjects.Items.Count - 1 downto 0 do
@@ -6722,7 +6675,7 @@ end;
 
 procedure TFrmFalconMain.ViewZoomDecClick(Sender: TObject);
 begin
-  if ZoomEditor <= -20 then
+  if ZoomEditor <= -10 then
     Exit;
   Dec(FZoomEditor);
   UpdateEditorZoom;
@@ -6981,8 +6934,6 @@ var
   TopLine: Integer;
 begin
   Memo.SetFocus;
-  Memo.UncollapseLine(Line);
-  Line := Line;
   TopLine := Line - (Memo.LinesInWindow div 2);
   if TopLine <= 0 then
     TopLine := 1;
@@ -7007,21 +6958,17 @@ end;
 
 procedure TFrmFalconMain.SelectToken(Token: TTokenClass);
 var
-  bC, bSs, bSe: TBufferCoord;
   sheet: TSourceFileSheet;
   TopLine: Integer;
 begin
   if not GetActiveSheet(sheet) then
     Exit;
-  bC := sheet.Memo.CharIndexToRowCol(Token.SelStart);
-  bSs := bC;
-  bSe := sheet.Memo.CharIndexToRowCol(Token.SelStart + Token.SelLength);
-  sheet.Memo.UncollapseRange(bC.Line, bSe.Line);
-  bSs.Line := bC.Line;
-  sheet.Memo.SetCaretAndSelection(bC, bSs, bSe);
+  sheet.Memo.SetEmptySelection(Token.SelStart);
+  sheet.Memo.SetSelectionStart(Token.SelStart);
+  sheet.Memo.SetSelectionEnd(Token.SelStart + Token.SelLength);
   sheet.Memo.SetFocus;
-
-  TopLine := Token.SelLine - (sheet.Memo.LinesInWindow div 2);
+  TopLine := (sheet.Memo.LineFromPosition(Token.SelStart) + 1) -
+    (sheet.Memo.LinesInWindow div 2);
   if TopLine <= 0 then
     TopLine := 1;
   sheet.Memo.TopLine := TopLine;
@@ -7161,7 +7108,7 @@ begin
   QuoteChar := #0;
   if Memo.GetHighlighterAttriAtRowCol(BC, S, Attri) then
   begin
-    if StringIn(Attri.Name, [SYNS_AttrPreprocessor]) then
+    if StringIn(Attri.Name, [HL_Style_Preprocessor]) then
     begin
       HintParams.Cancel;
       Exit;
@@ -7557,10 +7504,10 @@ begin
   if Memo.GetHighlighterAttriAtRowCol(BC, S, attri) then
   begin
     //invalid attribute
-    if ((not StringIn(attri.Name, ['Identifier', SYNS_AttrPreprocessor]) or
+    if ((not StringIn(attri.Name, ['Identifier', HL_Style_Preprocessor]) or
         (Pos('include', S) > 0)) and not DebugReader.Running) or
        ((Memo.Highlighter.IsComment(attri) or Memo.Highlighter.IsString(attri) or
-       (attri.Name = SYNS_AttrPreprocessor)) and DebugReader.Running) then
+       (attri.Name = HL_Style_Preprocessor)) and DebugReader.Running) then
     begin
       HintTip.Cancel;
       DebugHint.Cancel;
@@ -7806,17 +7753,17 @@ begin
   begin
     if sheet.Memo.Highlighter.IsComment(Attri) or
        sheet.Memo.Highlighter.IsString(Attri) or
-      (Attri.Name = SYNS_AttrPreprocessor) then
+      (Attri.Name = HL_Style_Preprocessor) then
     begin
       Dec(Buffer.Char);
-      if (Attri.Name <> SYNS_AttrPreprocessor) and
+      if (Attri.Name <> HL_Style_Preprocessor) and
         sheet.Memo.GetHighlighterAttriAtRowCol(Buffer, S, Attri) then
       begin
         if sheet.Memo.Highlighter.IsComment(Attri) or
            sheet.Memo.Highlighter.IsString(Attri) or
-          (Attri.Name = SYNS_AttrPreprocessor) then
+          (Attri.Name = HL_Style_Preprocessor) then
         begin
-          if (Attri.Name = SYNS_AttrPreprocessor) and (Pos('include', LineStr) > 0) and
+          if (Attri.Name = HL_Style_Preprocessor) and (Pos('include', LineStr) > 0) and
             (Pos('>', LineStr) = 0) and (CountChar(LineStr, '"') <= 1) and
             ((Pos('<', LineStr) > 0) or (Pos('"', LineStr) > 0)) then
           begin
@@ -7832,7 +7779,7 @@ begin
       end
       else
       begin
-        if (Attri.Name = SYNS_AttrPreprocessor) and (Pos('include', LineStr) > 0) and
+        if (Attri.Name = HL_Style_Preprocessor) and (Pos('include', LineStr) > 0) and
           (Pos('>', LineStr) = 0) and (CountChar(LineStr, '"') <= 1) and
             ((Pos('<', LineStr) > 0) or (Pos('"', LineStr) > 0)) then
         begin
@@ -7853,17 +7800,17 @@ begin
     begin
       if sheet.Memo.Highlighter.IsComment(Attri) or
          sheet.Memo.Highlighter.IsString(Attri) or
-        (Attri.Name = SYNS_AttrPreprocessor) then
+        (Attri.Name = HL_Style_Preprocessor) then
       begin
         Dec(Buffer.Char);
-        if (Attri.Name <> SYNS_AttrPreprocessor) and
+        if (Attri.Name <> HL_Style_Preprocessor) and
           sheet.Memo.GetHighlighterAttriAtRowCol(Buffer, S, Attri) then
         begin
           if sheet.Memo.Highlighter.IsComment(Attri) or
              sheet.Memo.Highlighter.IsString(Attri) or
-            (Attri.Name = SYNS_AttrPreprocessor) then
+            (Attri.Name = HL_Style_Preprocessor) then
           begin
-            if (Attri.Name = SYNS_AttrPreprocessor) and (Pos('include', LineStr) > 0)
+            if (Attri.Name = HL_Style_Preprocessor) and (Pos('include', LineStr) > 0)
               and (Pos('>', LineStr) = 0) and (CountChar(LineStr, '"') <= 1) and
             ((Pos('<', LineStr) > 0) or (Pos('"', LineStr) > 0)) then
             begin
@@ -7879,7 +7826,7 @@ begin
         end
         else
         begin
-          if (Attri.Name = SYNS_AttrPreprocessor) and (Pos('include', LineStr) > 0)
+          if (Attri.Name = HL_Style_Preprocessor) and (Pos('include', LineStr) > 0)
             and (Pos('>', LineStr) = 0) and (CountChar(LineStr, '"') <= 1) and
             ((Pos('<', LineStr) > 0) or (Pos('"', LineStr) > 0)) then
           begin
@@ -8114,7 +8061,7 @@ begin
   end;
   if sheet.Memo.GetHighlighterAttriAtRowCol(bCoord, S, Attri) then
   begin
-    if (Attri.Name = SYNS_AttrPreprocessor) then
+    if (Attri.Name = HL_Style_Preprocessor) then
     begin
       WordBreakChars := '<>"';
       ScanBreakChars := '<>"';
@@ -8142,9 +8089,10 @@ begin
 end;
 
 procedure TFrmFalconMain.CodeCompletionCodeCompletion(Sender: TObject;
-  var Value: string; Shift: TShiftState; Index: Integer; var EndToken: Char);
+  var Value: string; Shift: TShiftState; Index: Integer; var EndToken: Char;
+  var OffsetCaret: Integer);
 var
-  Token, ClassToken: TTokenClass;
+  Token, Params, ClassToken: TTokenClass;
   NextChar: Char;
   LineStr, S: string;
   sheet: TSourceFileSheet;
@@ -8170,7 +8118,7 @@ begin
       LineStr := sheet.Memo.Lines[p.Line - 1];
       for I := p.Char to Length(LineStr) do
       begin
-        if LineStr[I] in LetterChars + DigitChars then
+        if CharInSet(LineStr[I], LetterChars + DigitChars) then
           Inc(AfterLen)
         else
           Break;
@@ -8195,24 +8143,32 @@ begin
     NextChar := GetNextValidChar(sheet.Memo.Lines.Text, sheet.Memo.SelStart);
     if EndToken <> '(' then
     begin
+      Params := GetTokenByName(Token, 'Params', tkParams);
       BalancingBracket := sheet.Memo.GetBalancingBracketEx(sheet.Memo.CaretXY, '(');
-      if (NextChar in LetterChars + ['{', '}']) and (EndToken <> ';') then
-        Value := Value + '();'
-      else if (NextChar in DigitChars + ArithmChars + CloseBraceChars + [';']) or
+      if CharInSet(NextChar, LetterChars + ['{', '}']) and (EndToken <> ';') then
+      begin
+        Value := Value + '();';
+        if (Params <> nil) and (Params.Count > 0) then
+          Dec(OffsetCaret, 2); // set caret at middle of () when parameters count grater than one
+      end
+      else if CharInSet(NextChar, DigitChars + ArithmChars + CloseBraceChars + [';']) or
         (EndToken = ';') then
       begin
         if BalancingBracket <= 0 then
-          Value := Value + '()'
+        begin
+          Value := Value + '()';
+          if (Params <> nil) and (Params.Count > 0) then
+            Dec(OffsetCaret); // set caret at middle of () when parameters count grater than one
+        end
         else
           Value := Value + '(';
       end
       else if NextChar <> '(' then
-        Value := Value + '(';
+        Value := Value + '('
+      else
+      //TODO: use NextChar position
+        Inc(OffsetCaret); // set caret after (
       LastKeyPressed := '(';
-    end
-    else
-    begin
-      TimerHintParams.Enabled := True;
     end;
   end
   else if Token.Token = tkInclude then
@@ -8227,7 +8183,9 @@ begin
       Value := Value + '>'
     else if (Pos('"', LineStr) > 0) and (EndToken <> '"') and
       ((NextChar <> '"') or (CountChar(LineStr, '"') = 1)) then
-      Value := Value + '"';
+      Value := Value + '"'
+    else if CharInSet(NextChar, ['"', '>']) then
+      Inc(OffsetCaret);
   end
   else if (Token.Token = tkCodeTemplate) and (Token.Flag <> '') then
   begin
@@ -8238,66 +8196,11 @@ end;
 
 procedure TFrmFalconMain.CodeCompletionAfterCodeCompletion(Sender: TObject;
   const Value: string; Shift: TShiftState; Index: Integer; var EndToken: Char);
-var
-  Token, ClassToken: TTokenClass;
-  I: Integer;
-  NextChar: Char;
-  sheet: TSourceFileSheet;     
-  BalancingBracket, SelStart: Integer;
 begin
-  if not GetActiveSheet(sheet) then
-  begin
-    CodeCompletion.ItemList.Clear;
-    CodeCompletion.InsertList.Clear;
-    Exit;
-  end;
-  Token := TTokenClass(CodeCompletion.ItemList.Objects[Index]);
-  NextChar := GetNextValidChar(sheet.Memo.Lines.Text, sheet.Memo.SelStart);
-  I := 0;
-  BalancingBracket := sheet.Memo.GetBalancingBracketEx(sheet.Memo.CaretXY, '(');
-  if EndToken = ')' then
-  begin
-    //nothing
-  end
-  else if (EndToken = '(') and ((Token.Token <> tkCodeTemplate) or (Token.Flag = '')) then
-  begin
-    if BalancingBracket <= 0 then
-    begin
-      Inc(I);
-      sheet.Memo.InsertText(sheet.Memo.GetCurrentPos, ')');
-    end;
-    if (NextChar in LetterChars) and (EndToken <> ';') then
-    begin
-      sheet.Memo.InsertText(sheet.Memo.GetCurrentPos, ')');
-      Inc(I);
-    end;
-  end
-  else if Token.Token in [tkFunction, tkPrototype] then
-  begin
-    SelStart := sheet.Memo.RowColToCharIndex(sheet.Memo.CaretXY);
-    if not ActiveEditingFile.GetScopeAt(ClassToken, SelStart) or
-      not (ClassToken.Token in [tkClass, tkStruct, tkUnion]) then
-    begin
-      if (NextChar in LetterChars + ['{', '}']) and (EndToken <> ';') then
-        Inc(I, 2);
-      if NextChar in DigitChars + ArithmChars + [';'] + (CloseBraceChars - ['{', '}']) then
-      begin
-        if (BalancingBracket < 0) or ((BalancingBracket = 0) and ((NextChar = ';') or
-          ((Length(Value) > 1) and (Copy(Value, Length(Value) - 1, 2) = '()')))) then
-          Inc(I);
-      end;
-    end;
-  end;
-  if (EndToken = '(') and (Token.Token = tkCodeTemplate) and (Token.Flag <> '') then
-    EndToken := #0
-  else if EndToken <> ';' then
-  begin
-    sheet.Memo.CaretX := sheet.Memo.CaretX - I;
-  end;
-  //for I := 0 to CodeCompletion.InsertList.Count - 1 do
-  //  TTokenClass(CodeCompletion.InsertList.Objects[I]).Free;
   CodeCompletion.ItemList.Clear;
   CodeCompletion.InsertList.Clear;
+  if LastKeyPressed = '(' then
+    TimerHintParams.Enabled := True;
 end;
 
 procedure TFrmFalconMain.CodeCompletionClose(Sender: TObject);
@@ -8489,32 +8392,32 @@ begin
   if not GetActiveSheet(sheet) then
     Exit;
   PageControlEditor.CancelDragging;
-  if PrintDialog.Execute then
-  begin
-    // TODO: commented
-    //EditorPrint.Highlighter := sheet.Memo.Highlighter;
-    //EditorPrint.SynEdit := sheet.Memo;
-    EditorPrint.DocTitle := Sheet.SourceFile.Name;
-    AFont := TFont.Create;
-    with EditorPrint.Header do
-    begin
-      Clear;
-      AFont.Assign(DefaultFont);
-      AFont.Size := 7;
-      AFont.Style := [fsBold];
-      Add(Sheet.SourceFile.FileName, AFont, taLeftJustify, 1);
-      Add(FormatDateTime(STR_FRM_MAIN[38], Now), AFont, taRightJustify, 1);
-    end;
-    with EditorPrint.Footer do
-    begin
-      Clear;
-      AFont.Assign(DefaultFont);
-      AFont.Size := 8;
-      Add('-$PAGENUM$-', AFont, taCenter, 1);
-    end;
-    EditorPrint.Print;
-    AFont.Free;
-  end;
+  // TODO: commented
+//  if PrintDialog.Execute then
+//  begin
+//    EditorPrint.Highlighter := sheet.Memo.Highlighter;
+//    EditorPrint.SynEdit := sheet.Memo;
+//    EditorPrint.DocTitle := Sheet.SourceFile.Name;
+//    AFont := TFont.Create;
+//    with EditorPrint.Header do
+//    begin
+//      Clear;
+//      AFont.Assign(DefaultFont);
+//      AFont.Size := 7;
+//      AFont.Style := [fsBold];
+//      Add(Sheet.SourceFile.FileName, AFont, taLeftJustify, 1);
+//      Add(FormatDateTime(STR_FRM_MAIN[38], Now), AFont, taRightJustify, 1);
+//    end;
+//    with EditorPrint.Footer do
+//    begin
+//      Clear;
+//      AFont.Assign(DefaultFont);
+//      AFont.Size := 8;
+//      Add('-$PAGENUM$-', AFont, taCenter, 1);
+//    end;
+//    EditorPrint.Print;
+//    AFont.Free;
+//  end;
 end;
 
 procedure TFrmFalconMain.PageControlMsgClose(Sender: TObject;
@@ -8602,23 +8505,23 @@ var
 begin
   if not GetActiveSheet(sheet) then
     Exit;
-  ExporterHTML.Clear;
   // TODO: commented
+  //  ExporterHTML.Clear;
   // ExporterHTML.Highlighter := sheet.Memo.Highlighter;
-  ExporterHTML.Title := Sheet.SourceFile.Name;
-  ExporterHTML.ExportAsText := True;
+//  ExporterHTML.Title := Sheet.SourceFile.Name;
+//  ExporterHTML.ExportAsText := True;
   // TODO: commented
   // ExporterHTML.ExportAll(sheet.Memo.Lines);
 
   with TSaveDialog.Create(Self) do
   begin
-    Filter := ExporterHTML.DefaultFilter;
+//    Filter := ExporterHTML.DefaultFilter;
     DefaultExt := '.html';
     Options := Options + [ofOverwritePrompt];
     FileName := ChangeFileExt(Sheet.SourceFile.Name, '.html');
     if Execute then
     begin
-      ExporterHTML.SaveToFile(FileName);
+//      ExporterHTML.SaveToFile(FileName);
     end;
     Free;
   end;
@@ -8632,19 +8535,19 @@ begin
     Exit;
   // TODO: commented
   // ExporterRTF.Highlighter := sheet.Memo.Highlighter;
-  ExporterRTF.Title := Sheet.SourceFile.Name;
+//  ExporterRTF.Title := Sheet.SourceFile.Name;
   // TODO: commented
   // ExporterRTF.ExportAll(sheet.Memo.Lines);
 
   with TSaveDialog.Create(Self) do
   begin
-    Filter := ExporterRTF.DefaultFilter;
+//    Filter := ExporterRTF.DefaultFilter;
     DefaultExt := '.rtf';
     Options := Options + [ofOverwritePrompt];
     FileName := ChangeFileExt(Sheet.SourceFile.Name, '.rtf');
     if Execute then
     begin
-      ExporterRTF.SaveToFile(FileName);
+//      ExporterRTF.SaveToFile(FileName);
     end;
     Free;
   end;
@@ -8658,20 +8561,20 @@ begin
     Exit;
   // TODO: commented
   //ExporterTeX.Highlighter := sheet.Memo.Highlighter;
-  ExporterTeX.Title := Sheet.SourceFile.Name;
-  ExporterTeX.TabWidth := sheet.Memo.TabWidth;
+//  ExporterTeX.Title := Sheet.SourceFile.Name;
+//  ExporterTeX.TabWidth := sheet.Memo.TabWidth;
   // TODO: commented
   // ExporterTeX.ExportAll(sheet.Memo.Lines);
 
   with TSaveDialog.Create(Self) do
   begin
-    Filter := ExporterTeX.DefaultFilter;
+//    Filter := ExporterTeX.DefaultFilter;
     DefaultExt := '.tex';
     Options := Options + [ofOverwritePrompt];
     FileName := ChangeFileExt(Sheet.SourceFile.Name, '.tex');
     if Execute then
     begin
-      ExporterTeX.SaveToFile(FileName);
+//      ExporterTeX.SaveToFile(FileName);
     end;
     Free;
   end;
@@ -9134,7 +9037,7 @@ begin
     caret := sheet.Memo.CaretXY;
     topLine := sheet.Memo.TopLine;
     sheet.Memo.SelectAll;
-    sheet.Memo.SelText := Format(sheet.Memo.Lines.Text);
+    sheet.Memo.SelText := Format(PChar(sheet.Memo.GetCharacterPointer));
     sheet.Memo.CaretXY := caret;
     sheet.Memo.TopLine := topLine;
     sheet.Memo.EndUpdate;
@@ -10017,7 +9920,6 @@ end;
 function TFrmFalconMain.AddWatchItem(ID: Integer; const Name: string;
   token: TTokenClass; watchType: TWatchType): Boolean;
 var
-  Node: PNativeNode;
   Item: TWatchVariable;
   NodeObject: TNodeObject;
 begin
@@ -10038,7 +9940,7 @@ begin
   NodeObject := TNodeObject.Create;
   NodeObject.Data := Item;
   NodeObject.Caption := Item.Name;
-  Node := TreeViewOutline.AddChild(nil, NodeObject);
+  TreeViewOutline.AddChild(nil, NodeObject);
   NodeObject.ImageIndex := 0;
   Result := True;
 end;
@@ -10566,7 +10468,7 @@ end;
 
 procedure TFrmFalconMain.TreeViewOutlineDrawText(
   Sender: TBaseNativeTreeView; TargetCanvas: TCanvas; Node: PNativeNode;
-  Column: TColumnIndex; const Text: WideString; const CellRect: TRect;
+  Column: TColumnIndex; const Text: string; const CellRect: TRect;
   var DefaultDraw: Boolean);
 var
   NodeObject: TNodeObject;
@@ -10582,7 +10484,7 @@ end;
 
 procedure TFrmFalconMain.TreeViewOutlineGetText(
   Sender: TBaseNativeTreeView; Node: PNativeNode; Column: TColumnIndex;
-  TextType: TVSTTextType; var CellText: WideString);
+  TextType: TVSTTextType; var CellText: string);
 var
   NodeObject: TNodeObject;
 begin

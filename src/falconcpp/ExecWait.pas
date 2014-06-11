@@ -42,7 +42,7 @@ type
     procedure ExecAndWait;
   public
     procedure Execute; override;
-  published
+  public
     property FileName: string read fFile write fFile;
     property Path: string read fPath write fPath;
     property Params: string read fParams write fParams;
@@ -171,7 +171,7 @@ begin
     Visible := bVisible;
     OnTerminate := TerminateEvent;
     FreeOnTerminate := True;
-    Resume;
+    Start;
   end;
 end;
 
@@ -352,11 +352,12 @@ procedure TExecWaitGetStdOut.GetStdOut;
 var
   nRead: DWORD;
   bSucess: Boolean;
-  Buffer: array[0..2048] of Char;
+  Buffer: array[0..2048] of AnsiChar;
 begin
   FOutput := '';
   repeat
-    bSucess := ReadFile(hOutputRead, Buffer, SizeOf(Buffer) - 1, nRead, nil);
+    bSucess := ReadFile(hOutputRead, Buffer, SizeOf(Buffer) - SizeOf(AnsiChar),
+      nRead, nil);
     if not bSucess or (nRead = 0) or (GetLastError() = ERROR_BROKEN_PIPE) then
       Break;
     Buffer[nRead] := #0;

@@ -23,14 +23,13 @@ const
   HL_Style_CommentKeywordError = 'Comment Keyword Error';
   HL_Style_PreprocessorComment = 'Preprocessor Comment';
   HL_Style_PreprocessorDocComment = 'Preprocessor Documentation Comment';
-  HL_Style_Default = 'Default';
   HL_Style_Space = 'Space';
 
 type
   THighlighStyle = class;
   TSetKeyWords = procedure(AKeywordSet: Integer; const AKeyWords: UnicodeString) of object;
 
-  THighlighter = class
+  THighlighter = class(TComponent)
   private
     FStyles: TStringList;
     FHookList: TList;
@@ -48,7 +47,7 @@ type
     function GetLanguageName: string; virtual; abstract;
     function GetID: Integer; virtual; abstract;
   public
-    constructor Create(); virtual;
+    constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     procedure AddHookChange(Event: TNotifyEvent);
     procedure RemoveHookChange(Event: TNotifyEvent);
@@ -69,16 +68,12 @@ type
   private
     FID: Integer;
     FName: string;
-    FFontSize: Integer;
-    FFontName: TFontName;
     FBackground: TColor;
     FForeground: TColor;
     FStyle: TFontStyles;
-    FOnChange: TNotifyEvent; 
+    FOnChange: TNotifyEvent;
     FHotspot: Boolean;
     procedure SetBackground(const Value: TColor);
-    procedure SetFontName(const Value: TFontName);
-    procedure SetFontSize(const Value: Integer);
     procedure SetForeground(const Value: TColor);
     procedure SetStyle(const Value: TFontStyles);
     procedure SetHotspot(const Value: Boolean);
@@ -87,15 +82,12 @@ type
   public
     constructor Create(ID: Integer; const Name: string);
     property ID: Integer read FID;
-    property Name: string read FName; 
-    property OnChange: TNotifyEvent read FOnChange write FOnChange;
-  published
-    property FontName: TFontName read FFontName write SetFontName;
-    property FontSize: Integer read FFontSize write SetFontSize;
+    property Name: string read FName;
     property Background: TColor read FBackground write SetBackground;
     property Foreground: TColor read FForeground write SetForeground;
     property Style: TFontStyles read FStyle write SetStyle;
     property Hotspot: Boolean read FHotspot write SetHotspot;
+    property OnChange: TNotifyEvent read FOnChange write FOnChange;
   end;
 
 implementation
@@ -115,8 +107,6 @@ constructor THighlighStyle.Create(ID: Integer; const Name: string);
 begin
   FID := ID;
   FName := Name;
-  FFontSize := 10;
-  FFontName := 'Courier New';
   FBackground := clNone;
   FForeground := clBlack;
   FStyle := [];
@@ -128,22 +118,6 @@ begin
   if Value = FBackground then
     Exit;
   FBackground := Value;
-  Changed;
-end;
-
-procedure THighlighStyle.SetFontName(const Value: TFontName);
-begin         
-  if Value = FFontName then
-    Exit;
-  FFontName := Value;
-  Changed;
-end;
-
-procedure THighlighStyle.SetFontSize(const Value: Integer);
-begin
-  if Value = FFontSize then
-    Exit;
-  FFontSize := Value;
   Changed;
 end;
 
@@ -233,8 +207,9 @@ begin
   FStyles.Clear;
 end;
 
-constructor THighlighter.Create;
+constructor THighlighter.Create(AOwner: TComponent);
 begin
+  inherited Create(AOwner);
   FStyles := TStringList.Create;
   FHookList := TList.Create;
 end;

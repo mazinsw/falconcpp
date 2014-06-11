@@ -11,9 +11,9 @@ uses
   ExecWait in 'ExecWait.pas',
   BZip2 in '..\others\bzip2\BZip2.pas',
   LibTar in '..\others\libtar\LibTar.pas',
-  SciZipFile in '..\others\scizipfile\SciZipFile.pas',
   CompressUtils in '..\others\compressutils\CompressUtils.pas',
-  StrMatch in '..\others\compressutils\StrMatch.pas';
+  StrMatch in '..\others\compressutils\StrMatch.pas',
+  KAZip in '..\others\zip\KAZip.pas';
 
 {$R resources.RES}
 

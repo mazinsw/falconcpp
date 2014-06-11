@@ -76,7 +76,7 @@ type
     constructor Create(TokenFiles: TTokenFiles);
     destructor Destroy; override;
     procedure Start(FileList: TStrings; const BaseDir, DestBaseDir,
-      Extension: string);
+      Extension: string); overload;
     procedure ParseLoad(FileList: TStrings);
     procedure ParseRecursive(FileList: TStrings);
     procedure LoadRecursive(FileList: TStrings; const BaseDir, FromBaseDir,
@@ -455,7 +455,6 @@ begin
   fRunEvent := CreateEvent(nil, FALSE, FALSE, nil);
   if (fRunEvent = 0) or (fRunEvent = INVALID_HANDLE_VALUE) then
     raise EOutOfResources.Create('Couldn''t create WIN32 event object');
-  Resume;
 end;
 
 destructor TThreadTokenFiles.Destroy;

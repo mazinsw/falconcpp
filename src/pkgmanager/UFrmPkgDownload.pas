@@ -107,7 +107,7 @@ type
       Canceled: Boolean);
     procedure TreeViewPackagesGetText(Sender: TBaseNativeTreeView;
       Node: PNativeNode; Column: TColumnIndex; TextType: TVSTTextType;
-      var CellText: WideString);
+      var CellText: string);
     procedure TreeViewPackagesChange(Sender: TBaseNativeTreeView;
       Node: PNativeNode);
     procedure BtnCancelClick(Sender: TObject);
@@ -150,7 +150,7 @@ type
     ConfigRoot, DownloadedPackagesRoot: string;
     InstallPkg: TInstallPkg;
     UninstallPkg: TUninstallPkg;
-    PkgImg: TPNGObject;
+    PkgImg: TPngImage;
     procedure DownloadPackageList;
     procedure ReloadPackages;
     procedure SearchPackage(const S: string);
@@ -668,7 +668,7 @@ end;
 
 procedure TFrmPkgDownload.TreeViewPackagesGetText(
   Sender: TBaseNativeTreeView; Node: PNativeNode; Column: TColumnIndex;
-  TextType: TVSTTextType; var CellText: WideString);
+  TextType: TVSTTextType; var CellText: string);
 var
   Data: TObject;
 begin
@@ -1305,7 +1305,7 @@ begin
   ThreadInstall.OnStart := ThreadOnStart;
   ThreadInstall.OnFinish := ThreadOnFinish;
   ThreadInstall.FReparse := Reparse;
-  ThreadInstall.Resume;
+  ThreadInstall.Start;
 end;
 
 procedure TInstallPkg.ThreadOnFinish(Sender: TObject; Sucess: Boolean);
@@ -1331,7 +1331,7 @@ begin
   ThreadUninstall := TThreadUninstallPkg.Create(FName);
   ThreadUninstall.OnStart := ThreadOnStart;
   ThreadUninstall.OnFinish := ThreadOnFinish;
-  ThreadUninstall.Resume;
+  ThreadUninstall.Start;
 end;
 
 procedure TUninstallPkg.ThreadOnFinish(Sender: TObject; Sucess: Boolean);

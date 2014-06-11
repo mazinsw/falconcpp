@@ -1078,7 +1078,7 @@ type
     function GetImageIndexByID(LangID: Word): Integer;
     property Count: Integer read GetCount;
     property Items[Index: Integer]: TLanguageProperty read GetItem;
-  published
+  public
     property LangDir: string read FLangDir write FLangDir;
     property LangDefault: Boolean read FDefault write SetLangDefault;
     property Current: TLanguageProperty read FCurrent write FCurrent;

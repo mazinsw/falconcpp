@@ -193,7 +193,6 @@ object FrmFind: TFrmFind
       Top = 86
       Width = 439
       Height = 21
-      ItemHeight = 13
       TabOrder = 1
       Visible = False
       OnEnter = CboReplaceEnter
@@ -205,7 +204,6 @@ object FrmFind: TFrmFind
       Top = 35
       Width = 439
       Height = 21
-      ItemHeight = 13
       TabOrder = 0
       OnChange = CboFindChange
       OnEnter = CboFindEnter
@@ -228,9 +226,11 @@ object FrmFind: TFrmFind
       Width = 94
       Height = 22
       Caption = 'More'
+      DoubleBuffered = True
+      Layout = blGlyphRight
+      ParentDoubleBuffered = False
       TabOrder = 5
       OnClick = BtnMoreClick
-      Layout = blGlyphRight
     end
     object BtnFind: TButton
       Left = 331

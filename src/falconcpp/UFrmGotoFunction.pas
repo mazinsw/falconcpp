@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ComCtrls, ExtCtrls, SynEdit;
+  Dialogs, StdCtrls, ComCtrls, ExtCtrls, UEditor;
 
 type
   TFormGotoFunction = class(TForm)

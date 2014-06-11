@@ -51,17 +51,20 @@ uses
   ExtCtrls,
   Menus,
   Dialogs,
-  SynEditTypes,
-  SynEditKeyCmds,
-  SynEditHighlighter,
-  SynEditKbdHandler,
   UEditor,
-  SynEdit,
   SysUtils,
   Classes,
   DScintillaTypes;
 
+const
+  TSynSpecialChars = ['À'..'Ö', 'Ø'..'ö', 'ø'..'ÿ'];
+  TSynValidStringChars = ['_', '0'..'9', 'A'..'Z', 'a'..'z'] + TSynSpecialChars;
+  TSynWordBreakChars = ['.', ',', ';', ':', '"', '''', '!', '?', '[', ']', '(',
+                        ')', '{', '}', '^', '-', '=', '+', '-', '*', '/', '\',
+                        '|'];
+
 type
+  TSynIdentChars = set of AnsiChar;
   TSynCompletionType = (ctCode, ctHint, ctParams);
   SynCompletionType = TSynCompletionType; // Keep an alias to old name for now. 
 
@@ -75,7 +78,8 @@ type
     Index: Integer; TargetCanvas: TCanvas; var ItemWidth: Integer) of object;
 
   TCodeCompletionEvent = procedure(Sender: TObject; var Value: string;
-    Shift: TShiftState; Index: Integer; var EndToken: Char) of object;
+    Shift: TShiftState; Index: Integer; var EndToken: Char;
+    var OffsetCaret: Integer) of object;
 
 //##Falcon C++ Changes
   TGetWordBreakCharsEvent = procedure(Sender: TObject;
@@ -118,7 +122,7 @@ type
 const
   DefaultProposalOptions = [scoLimitToMatchedText, scoEndCharCompletion, scoCompleteWithTab, scoCompleteWithEnter];
   DefaultEndOfTokenChr = '()[]. ';
-  DefaultIdentChars = ['0'..'9', 'a'..'z', 'A'..'Z', '_'];
+  DefaulTSynIdentChars = ['0'..'9', 'a'..'z', 'A'..'Z', '_'];
 
 type
   TProposalColumns = class;
@@ -349,9 +353,6 @@ type
   protected
     procedure SetOptions(const Value: TSynCompletionOptions); virtual;
     procedure EditorCancelMode(Sender: TObject); virtual;                       //GBN 13/11/2001
-    procedure HookedEditorCommand(Sender: TObject; AfterProcessing: Boolean;
-      var Handled: Boolean; var Command: TSynEditorCommand; var AChar: Char;
-      Data: Pointer; HandlerData: Pointer); virtual;                            //GBN 13/11/2001
   public
     constructor Create(Aowner: TComponent); override;
     procedure Execute(s: string; x, y: integer);
@@ -438,9 +439,6 @@ type
     procedure SetShortCut(Value: TShortCut);
     procedure SetOptions(const Value: TSynCompletionOptions); override;
     procedure EditorCancelMode(Sender: TObject); override; //GBN 13/11/2001
-    procedure HookedEditorCommand(Sender: TObject; AfterProcessing: Boolean;
-      var Handled: Boolean; var Command: TSynEditorCommand; var AChar: Char;
-      Data: Pointer; HandlerData: Pointer); override;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -508,10 +506,7 @@ function PrettyTextToFormattedString(const APrettyText: string;
 implementation
 
 uses
-  Math,
-  SynEditTextBuffer,
-  SynEditMiscProcs,
-  SynEditKeyConst, DScintilla;
+  Math, DScintilla;
 
 const
   TextHeightString = 'CompletionProposal';
@@ -1246,25 +1241,25 @@ begin
   if DisplayType = ctCode then
   begin
     case Key of
-      SYNEDIT_RETURN:
+      VK_RETURN:
         begin
           Key := 0;
         end;
-      SYNEDIT_TAB:
+      VK_TAB:
         if  (FCompleteWithTab) and Assigned(OnValidate) then
         begin
           C := #0;
           OnValidate(Self, Shift, C);
         end;
-      SYNEDIT_ESCAPE:
+      VK_ESCAPE:
       begin
         if Assigned(OnCancel) then
           OnCancel(Self);
       end;
-      SYNEDIT_BACK,
-      SYNEDIT_LEFT:
+      VK_BACK,
+      VK_LEFT:
         begin
-          if not (Key = SYNEDIT_BACK) or (Shift = []) then
+          if not (Key = VK_BACK) or (Shift = []) then
           begin
             if Length(FCurrentString) > 0 then
             begin
@@ -1287,7 +1282,7 @@ begin
             end;
           end;
         end;
-      SYNEDIT_RIGHT:
+      VK_RIGHT:
         begin
           if Assigned(CurrentEditor) then
             with CurrentEditor as TEditor do
@@ -1297,7 +1292,7 @@ begin
               else
                 C := #32;
 
-              if (C = #9) or (C = #32) or (((FScanChars = []) and not (C in DefaultIdentChars)) or (C in FScanChars)) then
+              if (C = #9) or (C = #32) or (((FScanChars = []) and not (C in DefaulTSynIdentChars)) or (C in FScanChars)) then
                 if Assigned(OnCancel) then
                   OnCancel(Self)
                 else
@@ -1305,15 +1300,15 @@ begin
                 CurrentString := CurrentString + C;
             end;
         end;
-      SYNEDIT_PRIOR:
+      VK_PRIOR:
         MoveLine(FLinesInWindow * -1);
-      SYNEDIT_NEXT:
+      VK_NEXT:
         MoveLine(FLinesInWindow);
-      SYNEDIT_END:
+      VK_END:
         Position := FAssignedList.Count - 1;
-      SYNEDIT_HOME:
+      VK_HOME:
         Position := 0;
-      SYNEDIT_UP:
+      VK_UP:
       begin
         if ssCtrl in Shift then
           Position := 0
@@ -1321,7 +1316,7 @@ begin
           MoveLine(-1);
         Key := 0;
       end;
-      SYNEDIT_DOWN:
+      VK_DOWN:
       begin
         if ssCtrl in Shift then
           Position := FAssignedList.Count - 1
@@ -2705,13 +2700,6 @@ begin
   //Do nothing here, used in TCompletionProposal
 end;
 
-procedure TSynBaseCompletionProposal.HookedEditorCommand(Sender: TObject;
-  AfterProcessing: Boolean; var Handled: Boolean; var Command: TSynEditorCommand;
-  var AChar: Char; Data, HandlerData: Pointer);
-begin
-  // Do nothing here, used in TCompletionProposal
-end;
-
 function TSynBaseCompletionProposal.GetOnChange: TCompletionChange;
 begin
   Result := Form.FOnChangePosition;
@@ -2749,7 +2737,7 @@ end;
 procedure TCompletionProposal.HandleOnValidate(Sender: TObject;
   Shift: TShiftState; var EndToken: Char);
 
-  procedure CopyStringToCharSet(const AStr: string; var ACharSet: TSynIdentChars);
+  procedure CopyStringToCharSet(const AStr: AnsiString; var ACharSet: TSynIdentChars);
   var
     i: Integer;
   begin
@@ -2763,7 +2751,7 @@ var
   Index: Integer; //GBN 15/11/2001
 //## Falcon C++ Changes
   Handled: Boolean;
-  WordEndPos: Integer;
+  WordEndPos, OffsetCaret: Integer;
   WordEndChars: TSynIdentChars;
   WordCharsStr, LineStr: string;
 //## End Falcon C++ Changes
@@ -2799,7 +2787,7 @@ begin
             WordEndPos := WordEnd.Char;
             while WordEndPos < Length(LineStr) do
             begin
-              if ((Form.FScanChars = []) and not (LineStr[WordEndPos] in DefaultIdentChars)) or (LineStr[WordEndPos] in Form.FScanChars) then
+              if ((Form.FScanChars = []) and not (LineStr[WordEndPos] in DefaulTSynIdentChars)) or (LineStr[WordEndPos] in Form.FScanChars) then
               begin
                 Inc(WordEndPos);
                 Break;
@@ -2846,14 +2834,14 @@ begin
         end;
         Index := Position; //GBN 15/11/2001, need to assign position to temp var since it changes later
 
+        OffsetCaret := 0;
         //GBN 15/01/2002 - Cleaned this code up a bit
         if Assigned(FOnCodeCompletion) then
           FOnCodeCompletion(Self, Value, Shift,
-            F.LogicalToPhysicalIndex(Index), EndToken); //GBN 15/11/2001
+            F.LogicalToPhysicalIndex(Index), EndToken, OffsetCaret); //GBN 15/11/2001
 
         if SelText <> Value then
           SelText := Value;
-
         with (F.CurrentEditor as TEditor) do
         begin
           //GBN 25/02/2002
@@ -2864,6 +2852,8 @@ begin
           // TODO: commented
           //EnsureCursorPosVisible; //GBN 25/02/2002
           CaretXY := BlockEnd;
+          if OffsetCaret <> 0 then
+            SetCurrentPos(GetCurrentPos + OffsetCaret);
           BlockBegin := CaretXY;
         end;
         //GBN 15/11/2001
@@ -2973,7 +2963,7 @@ begin
     if i <= Length(s) then
     begin
       FAdjustCompletionStart := False;
-      while (i > 0) and (s[i] > #32) and not (((Form.FScanChars = []) and not (s[i] in DefaultIdentChars)) or (s[i] in Form.FScanChars)) do
+      while (i > 0) and (s[i] > #32) and not (((Form.FScanChars = []) and not (s[i] in DefaulTSynIdentChars)) or (s[i] in Form.FScanChars)) do
         dec(i);
 
       FCompletionStart := i+1;
@@ -3005,7 +2995,7 @@ begin
 
   BreakChars := BreakChars + [#9, #32];
 
-  while (X > 0) and not (((Form.FScanChars = []) and not (Line[X] in DefaultIdentChars)) or (Line[X] in BreakChars)) do
+  while (X > 0) and not (((Form.FScanChars = []) and not (Line[X] in DefaulTSynIdentChars)) or (Line[X] in BreakChars)) do
   begin
     Result := Line[X] + Result;
     dec(x);
@@ -3106,7 +3096,7 @@ end;
 
 procedure TCompletionProposal.DoExecute(AEditor: TEditor);
 
-  procedure CopyStringToCharSet(const AStr: string; var ACharSet: TSynIdentChars);
+  procedure CopyStringToCharSet(const AStr: AnsiString; var ACharSet: TSynIdentChars);
   var
     i: Integer;
   begin
@@ -3193,80 +3183,6 @@ end;
 procedure TCompletionProposal.EditorCancelMode(Sender: TObject);
 begin
   if (DisplayType=ctParams) then CancelCompletion;
-end;
-
-//GBN 13/11/2001
-procedure TCompletionProposal.HookedEditorCommand(Sender: TObject;
-  AfterProcessing: Boolean; var Handled: Boolean; var Command: TSynEditorCommand;
-  var AChar: Char; Data, HandlerData: Pointer);
-begin
-  inherited;
-
-  if AfterProcessing and Form.Visible then
-  begin
-    case DisplayType of
-    ctCode:
-      begin
-        case Command of
-          ecGotFocus, ecLostFocus:
-          begin
-            if not FForm.Focused then
-              CancelCompletion;
-          end;
-        end;
-      end;
-    ctHint:
-      begin
-        CancelCompletion
-      end;
-    ctParams:
-      begin
-        case Command of
-        ecGotFocus, ecLostFocus:
-          CancelCompletion;
-        ecLineBreak:
-          DoExecute(Sender as TEditor);
-        ecChar:
-          begin
-            case AChar of
-            #27:
-              CancelCompletion;
-            #32..'z':
-              with Form do
-              begin
-{                if Pos(AChar, FTriggerChars) > 0 then
-                begin
-                  if Assigned(FParameterToken) then
-                  begin
-                    TmpIndex := CurrentIndex;
-                    TmpLevel := CurrentLevel;
-                    TmpStr := CurrentString;
-                    OnParameterToken(Self, CurrentIndex, TmpLevel, TmpIndex, AChar, TmpStr);
-                    CurrentIndex := TmpIndex;
-                    CurrentLevel := TmpLevel;
-                    CurrentString := TmpStr;
-                  end;
-                end;}
-                DoExecute(Sender as TEditor);
-              end;
-            else DoExecute(Sender as TEditor);
-            end;
-          end;
-        else DoExecute(Sender as TEditor);
-        end;
-      end;
-    end;
-  end else
-  if (not Form.Visible) and Assigned(FTimer) then
-  begin
-    if (Command = ecChar) then
-      if (Pos(AChar, TriggerChars) = 0) then
-        FTimer.Enabled := False
-      else
-    else
-      FTimer.Enabled := False;
-  end;
-
 end;
 
 procedure TCompletionProposal.ActivateCompletion(Editor: TEditor);

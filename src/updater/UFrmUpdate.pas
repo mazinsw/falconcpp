@@ -5,7 +5,7 @@ interface
 uses
   Windows, SysUtils, Classes, Controls, Forms, StdCtrls,
   ExtCtrls, FileDownload, UUtils, IniFiles, ThreadFileDownload,
-  VistaAltFixUnit, Messages;
+  Messages;
 
 type
 
@@ -21,7 +21,6 @@ type
     BtnUpdate: TButton;
     FileDownload: TFileDownload;
     PnlFra: TPanel;
-    VistaAltFix1: TVistaAltFix;
     procedure UpdateLangNow;
     procedure FormCreate(Sender: TObject);
     procedure StartUpdate;

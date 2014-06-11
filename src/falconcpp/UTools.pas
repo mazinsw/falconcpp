@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Menus, ExtCtrls, USourceFile, SynMemo, TBX, SynEditTypes;
+  Dialogs, Menus, ExtCtrls, USourceFile, TBX;
 
 type
   TToolMenuItem = class(TTBXItem)
@@ -32,7 +32,7 @@ function CreateMenuTool(RootMenu: TTBXSubmenuItem; Caption, StrCmd,
 
 implementation
 
-uses UFrmMain, SynEdit, UEditor;
+uses UFrmMain, UEditor;
 
 function GetIdent(Column: Integer): string;
 begin

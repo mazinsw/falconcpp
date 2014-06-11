@@ -1,9 +1,9 @@
 object FrmPkgMan: TFrmPkgMan
   Left = 335
   Top = 293
-  Width = 800
-  Height = 600
   Caption = 'Falcon C++ Package Manager'
+  ClientHeight = 562
+  ClientWidth = 784
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,36 +19,44 @@ object FrmPkgMan: TFrmPkgMan
   object Splitter1: TSplitter
     Left = 185
     Top = 58
-    Height = 465
+    Height = 485
     Visible = False
+    ExplicitHeight = 465
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 523
+    Top = 543
     Width = 784
     Height = 19
     Panels = <>
+    ExplicitTop = 523
   end
   object InfoPanel: TPanel
     Left = 0
     Top = 58
     Width = 185
-    Height = 465
+    Height = 485
     Align = alLeft
     BevelOuter = bvNone
     TabOrder = 1
     Visible = False
+    ExplicitHeight = 465
     object PageControl: TPageControl
       Left = 0
       Top = 0
       Width = 185
-      Height = 465
+      Height = 485
       ActivePage = TsInfo
       Align = alClient
       TabOrder = 0
+      ExplicitHeight = 465
       object TsInfo: TTabSheet
         Caption = 'Information'
         OnResize = TsInfoResize
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object PanelWsite: TPanel
           Left = 0
           Top = 110
@@ -56,7 +64,6 @@ object FrmPkgMan: TFrmPkgMan
           Height = 35
           Align = alTop
           BevelOuter = bvNone
-          ParentBackground = True
           TabOrder = 0
           object Label2: TLabel
             Left = 8
@@ -89,7 +96,6 @@ object FrmPkgMan: TFrmPkgMan
           Height = 55
           Align = alTop
           BevelOuter = bvNone
-          ParentBackground = True
           TabOrder = 1
           object Label1: TLabel
             Left = 8
@@ -114,7 +120,6 @@ object FrmPkgMan: TFrmPkgMan
           Height = 55
           Align = alTop
           BevelOuter = bvNone
-          ParentBackground = True
           TabOrder = 2
           object Label4: TLabel
             Left = 8
@@ -139,7 +144,6 @@ object FrmPkgMan: TFrmPkgMan
           Height = 26
           Align = alTop
           BevelOuter = bvNone
-          ParentBackground = True
           TabOrder = 3
           object Label5: TLabel
             Left = 0
@@ -162,11 +166,15 @@ object FrmPkgMan: TFrmPkgMan
       object TsFile: TTabSheet
         Caption = 'Files'
         ImageIndex = 1
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object FileList: TTreeView
           Left = 0
           Top = 0
           Width = 177
-          Height = 437
+          Height = 457
           Align = alClient
           Images = ImgListMenu
           Indent = 19
@@ -175,6 +183,7 @@ object FrmPkgMan: TFrmPkgMan
           TabOrder = 0
           OnChange = FileListChange
           OnContextPopup = FileListContextPopup
+          ExplicitHeight = 437
         end
       end
     end
@@ -183,11 +192,12 @@ object FrmPkgMan: TFrmPkgMan
     Left = 188
     Top = 58
     Width = 596
-    Height = 465
+    Height = 485
     Align = alClient
     BevelOuter = bvNone
     BorderWidth = 2
     TabOrder = 0
+    ExplicitHeight = 465
     object PkgList: TListView
       Left = 2
       Top = 2
@@ -384,7 +394,7 @@ object FrmPkgMan: TFrmPkgMan
     Left = 440
     Top = 16
     Bitmap = {
-      494C010109000E00240010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010109000E00380010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000003000000001002000000000000030
       0000000000000000000000000000000000000000000080808000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -814,9 +824,5 @@ object FrmPkgMan: TFrmPkgMan
       ShortCut = 16451
       OnClick = CopyFileName1Click
     end
-  end
-  object VistaAltFix1: TVistaAltFix
-    Left = 292
-    Top = 154
   end
 end

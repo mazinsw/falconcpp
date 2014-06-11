@@ -4,8 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ComCtrls, StdCtrls, ExtCtrls, SynEdit, SynMemo, Buttons,
-  SynEditHighlighter, SynHighlighterCpp, UEditor, SintaxList;
+  Dialogs, ComCtrls, StdCtrls, ExtCtrls, Buttons,
+  Highlighter, CppHighlighter, UEditor, SintaxList, DScintillaTypes;
 
 type
   TFrmEditorOptions = class(TForm)
@@ -20,30 +20,14 @@ type
     GroupBox1: TGroupBox;
     ChbAutoIndt: TCheckBox;
     ChbUseTabChar: TCheckBox;
-    ChbHighMatch: TCheckBox;
-    GroupBoxHlMatchBP: TGroupBox;
-    ClbN: TColorBox;
-    Label1: TLabel;
-    Label2: TLabel;
-    ClbE: TColorBox;
-    ClbB: TColorBox;
-    Label3: TLabel;
-    GroupBox3: TGroupBox;
-    Label4: TLabel;
-    ChbHighCurLn: TCheckBox;
-    ClbCurLn: TColorBox;
     ChbTabUnOrIndt: TCheckBox;
     ChbInsMode: TCheckBox;
     ChbGrpUnd: TCheckBox;
-    Label6: TLabel;
-    CboMaxUnd: TComboBox;
     GroupBox5: TGroupBox;
     ChbShowgtt: TCheckBox;
     ChbShowRMrgn: TCheckBox;
     Label7: TLabel;
     CboRMrg: TComboBox;
-    Label8: TLabel;
-    CboGutterWdt: TComboBox;
     PanelTest: TPanel;
     Label9: TLabel;
     CboSize: TComboBox;
@@ -64,13 +48,10 @@ type
     ClbFore: TColorBox;
     Label15: TLabel;
     ClbBack: TColorBox;
-    SynCpp: TSynCppSyn;
     Label16: TLabel;
     CboTabWdt: TComboBox;
     ChbShowLnNumb: TCheckBox;
-    ChbGrdGutt: TCheckBox;
     ChbSmartTabs: TCheckBox;
-    ChbScrollHint: TCheckBox;
     GroupBox8: TGroupBox;
     ChbCodeCompletion: TCheckBox;
     ChbCodeParameters: TCheckBox;
@@ -104,12 +85,7 @@ type
     Label25: TLabel;
     BtnEditCodeTemplate: TSpeedButton;
     BtnChooseCodeTemplate: TSpeedButton;
-    GroupBox4: TGroupBox;
-    Label5: TLabel;
-    ChbLinkClick: TCheckBox;
-    ClbLinkColor: TColorBox;
     ChbEnhHomeKey: TCheckBox;
-    ChbKeepTraiSpa: TCheckBox;
     ChbShowSpaceChars: TCheckBox;
     BtnRestDef: TButton;
     Button1: TButton;
@@ -153,9 +129,6 @@ type
     Label26: TLabel;
     ComboBoxPointerAlign: TComboBox;
     ChbAutoCloseBrackets: TCheckBox;
-    ChbCursorPastEOL: TCheckBox;
-    SynPrev: TSynEdit;
-    SynMemoSample: TSynEdit;
     procedure FormKeyPress(Sender: TObject; var Key: Char);
     procedure SynPrevMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -172,10 +145,8 @@ type
     procedure BtnCancelClick(Sender: TObject);
     procedure CboEditFontSelect(Sender: TObject);
     procedure CboSizeChange(Sender: TObject);
-    procedure SynPrevGutterClick(Sender: TObject; Button: TMouseButton; X,
-      Y, Line: Integer; Mark: TSynEditMark);
-    procedure SynPrevSpecialLineColors(Sender: TObject; Line: Integer;
-      var Special: Boolean; var FG, BG: TColor);
+    procedure SynPrevGutterClick(ASender: TObject;
+      AModifiers: Integer; APosition: Integer; AMargin: Integer);
     procedure EditorOptionsChanged(Sender: TObject);
     procedure TrackBarCodeResChange(Sender: TObject);
     procedure TimerNormalDelayTimer(Sender: TObject);
@@ -197,6 +168,9 @@ type
     ActiveSintax: TSintax;
     Last: Integer;
     Loading: Boolean;
+    EditPreview: TEditor;
+    EditFormatter: TEditor;
+    SynCpp: TCppHighlighter;
     procedure OptionsChange;
   protected
     procedure CreateParams(var Params: TCreateParams); override;
@@ -233,6 +207,61 @@ end;
 procedure TFrmEditorOptions.FormCreate(Sender: TObject);
 begin
   Loading := True;
+  SynCpp := TCppHighlighter.Create(Self);
+  EditPreview := TEditor.Create(TSSintax);
+  EditPreview.Parent := TSSintax;
+  EditPreview.Left := 6;
+  EditPreview.Top := 152;
+  EditPreview.Width := 475;
+  EditPreview.Height := 241;
+  EditPreview.TabOrder := 5;
+  EditPreview.OnMouseDown := SynPrevMouseDown;
+  EditPreview.ShowLineNumber := True;
+  EditPreview.HideSelection(False);
+  EditPreview.Highlighter := SynCpp;
+  EditPreview.ImageList := FrmFalconMain.ImageListGutter;
+  EditPreview.Lines.Text :=
+    '// Single line comment'#13 +
+    '/// Documentation line comment'#13 +
+    '#include <stdio.h>'#13 +
+    '/* Multiline comment */'#13 +
+    '/** @Keyword Documentation comment */'#13 +
+    'int main(int argc, char *argv[]) {'#13 +
+    '    int name[10] = "Falcon C++";'#13 +
+    '    // Breakpoint'#13 +
+    '    // Execution Point'#13 +   
+    '    name[0] = ''F'';'#13 +
+    '    return ''C'';'#13 +
+    '}';
+  EditPreview.ReadOnly := True;
+  EditPreview.OnMarginClick := SynPrevGutterClick;
+
+  // GroupBoxFormatterSample
+  EditFormatter := TEditor.Create(GroupBoxFormatterSample);
+  EditFormatter.Parent := GroupBoxFormatterSample;
+  EditFormatter.Left := 10;
+  EditFormatter.Top := 16;
+  EditFormatter.Width := 313;
+  EditFormatter.Height := 320;
+  EditFormatter.TabOrder := 0;
+  EditFormatter.ShowLineNumber := False;
+  EditFormatter.HideSelection(False);
+  EditFormatter.Highlighter := SynCpp;
+  EditFormatter.Lines.Text :=
+    'namespace foospace'#13 +
+    '{'#13 +
+    '    int Foo()'#13 +
+    '    {'#13 +
+    '        if (isBar)'#13 +
+    '        {'#13 +
+    '            bar();'#13 +
+    '            return 1;'#13 +
+    '        }'#13 +
+    '        else'#13 +
+    '            return 0;'#13 +
+    '    }'#13 +
+    '}';
+
   CboEditFont.Items.AddStrings(Screen.Fonts);
   ActiveSintax := TSintax.Create;
   UpdateLangNow;
@@ -263,10 +292,7 @@ begin
     ChbAutoIndt.Checked := AutoIndent;
     ChbInsMode.Checked := InsertMode;
     ChbGrpUnd.Checked := GroupUndo;
-    ChbKeepTraiSpa.Checked := KeepTrailingSpaces;
-    ChbCursorPastEOL.Checked := CursorPastEol;
 
-    ChbScrollHint.Checked := ScrollHint;
     ChbTabUnOrIndt.Checked := TabIndentUnindent;
     ChbSmartTabs.Checked := SmartTabs;
     ChbUseTabChar.Checked := UseTabChar;
@@ -274,19 +300,8 @@ begin
     ChbShowSpaceChars.Checked := ShowSpaceChars;
     ChbAutoCloseBrackets.Checked := AutoCloseBrackets;
 
-    CboMaxUnd.Text := IntToStr(MaxUndo);
     CboTabWdt.Text := IntToStr(TabWidth);
 
-    ChbHighMatch.Checked := HighligthMatchBraceParentheses;
-    ClbN.Selected := NormalColor;
-    ClbE.Selected := ErrorColor;
-    ClbB.Selected := BgColor;
-
-    ChbHighCurLn.Checked := HighligthCurrentLine;
-    ClbCurLn.Selected := CurrentLineColor;
-
-    ChbLinkClick.Checked := LinkClick;
-    ClbLinkColor.Selected := LinkColor;
     //---------------- Display -----------------//
     CboEditFont.Text := FontName;
     CboEditFontSelect(Self);
@@ -294,10 +309,8 @@ begin
     CboSizeChange(Self);
     ChbShowRMrgn.Checked := ShowRightMargin;
     CboRMrg.Text := IntToStr(RightMargin);
-    CboGutterWdt.Text := IntToStr(GutterWidth);
     ChbShowgtt.Checked := ShowGutter;
     ChbShowLnNumb.Checked := ShowLineNumber;
-    ChbGrdGutt.Checked := GradientGutter;
     //---------------- Colors ------------------//
 
     //Formatter
@@ -369,6 +382,8 @@ begin
 
     EditCodeTemplate.Text := CodeTemplateFile;
   end;
+  EditPreview.AddBreakpoint(9);
+  EditPreview.SetActiveLine(10);
   Loading := False;
 end;
 
@@ -382,10 +397,7 @@ begin
     AutoIndent := ChbAutoIndt.Checked;
     InsertMode := ChbInsMode.Checked;
     GroupUndo := ChbGrpUnd.Checked;
-    KeepTrailingSpaces := ChbKeepTraiSpa.Checked;
-    CursorPastEol := ChbCursorPastEOL.Checked;
 
-    ScrollHint := ChbScrollHint.Checked;
     TabIndentUnindent := ChbTabUnOrIndt.Checked;
     SmartTabs := ChbSmartTabs.Checked;
     UseTabChar := ChbUseTabChar.Checked;
@@ -393,28 +405,15 @@ begin
     ShowSpaceChars := ChbShowSpaceChars.Checked;
     AutoCloseBrackets := ChbAutoCloseBrackets.Checked;
 
-    MaxUndo := StrToIntDef(CboMaxUnd.Text, 1024);
     TabWidth := StrToIntDef(CboTabWdt.Text, 4);
 
-    HighligthMatchBraceParentheses := ChbHighMatch.Checked;
-    NormalColor := ClbN.Selected;
-    ErrorColor := ClbE.Selected;
-    BgColor := ClbB.Selected;
-
-    HighligthCurrentLine := ChbHighCurLn.Checked;
-    CurrentLineColor := ClbCurLn.Selected;
-
-    LinkClick := ChbLinkClick.Checked;
-    LinkColor := ClbLinkColor.Selected;
     //---------------- Display -----------------//
     FontName := CboEditFont.Text;
     FontSize := StrToIntDef(CboSize.Text, 10);
     ShowRightMargin := ChbShowRMrgn.Checked;
     RightMargin := StrToIntDef(CboRMrg.Text, 80);
-    GutterWidth := StrToIntDef(CboGutterWdt.Text, 30);
     ShowGutter := ChbShowgtt.Checked;
     ShowLineNumber := ChbShowLnNumb.Checked;
-    GradientGutter := ChbGrdGutt.Checked;
     //---------------- Colors ------------------//
     if (CbDefSin.Items.IndexOf(CbDefSin.Text) < 0) or Self.ActiveSintax.Changed then
       BtnSave.Click;
@@ -508,25 +507,13 @@ begin
   ChbAutoIndt.Caption := STR_FRM_EDITOR_OPT[4];
   ChbInsMode.Caption := STR_FRM_EDITOR_OPT[6];
   ChbGrpUnd.Caption := STR_FRM_EDITOR_OPT[7];
-  ChbKeepTraiSpa.Caption := STR_FRM_EDITOR_OPT[8];
-  ChbCursorPastEOL.Caption := STR_FRM_EDITOR_OPT[139];
   ChbShowSpaceChars.Caption := STR_FRM_EDITOR_OPT[9];
   ChbAutoCloseBrackets.Caption := STR_FRM_EDITOR_OPT[138];
-  ChbScrollHint.Caption := STR_FRM_EDITOR_OPT[10];
   ChbTabUnOrIndt.Caption := STR_FRM_EDITOR_OPT[11];
   ChbSmartTabs.Caption := STR_FRM_EDITOR_OPT[12];
   ChbUseTabChar.Caption := STR_FRM_EDITOR_OPT[13];
   ChbEnhHomeKey.Caption := STR_FRM_EDITOR_OPT[14];
-  Label6.Caption := STR_FRM_EDITOR_OPT[15];
   Label16.Caption := STR_FRM_EDITOR_OPT[16];
-  GroupBoxHlMatchBP.Caption := '      ' + STR_FRM_EDITOR_OPT[17];
-  Label1.Caption := STR_FRM_EDITOR_OPT[18];
-  Label2.Caption := STR_FRM_EDITOR_OPT[19];
-  Label3.Caption := STR_FRM_EDITOR_OPT[20];
-  GroupBox3.Caption := '      ' + STR_FRM_EDITOR_OPT[21];
-  Label4.Caption := STR_FRM_EDITOR_OPT[22];
-  GroupBox4.Caption := '      ' + STR_FRM_EDITOR_OPT[23];
-  Label5.Caption := STR_FRM_EDITOR_OPT[22];
   BtnRestDef.Caption := STR_FRM_EDITOR_OPT[24];
   //Display
   TSDisplay.Caption := STR_FRM_EDITOR_OPT[25];
@@ -537,10 +524,8 @@ begin
   ChbShowRMrgn.Caption := STR_FRM_EDITOR_OPT[30];
   ChbShowgtt.Caption := STR_FRM_EDITOR_OPT[31];
   ChbShowLnNumb.Caption := STR_FRM_EDITOR_OPT[32];
-  ChbGrdGutt.Caption := STR_FRM_EDITOR_OPT[33];
   Button1.Caption := STR_FRM_EDITOR_OPT[24];
   Label7.Caption := STR_FRM_EDITOR_OPT[34];
-  Label8.Caption := STR_FRM_EDITOR_OPT[35];
   TSSintax.Caption := STR_FRM_EDITOR_OPT[36];
   Label13.Caption := STR_FRM_EDITOR_OPT[37];
   Label12.Caption := STR_FRM_EDITOR_OPT[38];
@@ -650,13 +635,13 @@ begin
   BtnEditCodeTemplate.Hint := STR_FRM_EDITOR_OPT[137];
 end;
 
-procedure TFrmEditorOptions.SynPrevGutterClick(Sender: TObject;
-  Button: TMouseButton; X, Y, Line: Integer; Mark: TSynEditMark);
+procedure TFrmEditorOptions.SynPrevGutterClick(ASender: TObject;
+  AModifiers: Integer; APosition: Integer; AMargin: Integer);
 var
   st: TSintaxType;
   I: Integer;
 begin
-  if ActiveSintax.GetType('Gutter', st) then
+  if ActiveSintax.GetType(STY_PROP_GUTTER, st) then
   begin
     I := ActiveSintax.IndexOf(st);
     if I < 0 then
@@ -670,24 +655,26 @@ end;
 procedure TFrmEditorOptions.SynPrevMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
-  S, AttrName: string;
+  AttrName: string;
+  S: UnicodeString;
   bc: TBufferCoord;
-  attr: TSynHighlighterAttributes;
+  attr: THighlighStyle;
   st: TSintaxType;
   I: Integer;
 begin
-  bc := SynPrev.DisplayToBufferPos(SynPrev.PixelsToRowColumn(X, Y));
-  if X <= (SynPrev.Gutter.Width + SynPrev.Gutter.RightOffset -
-    SynPrev.Gutter.LeftOffset) then
-    Exit;
-  if bc.Line = SynPrev.Lines.Count then
+  bc := EditPreview.DisplayToBufferPos(EditPreview.PixelsToRowColumn(X, Y));
+  if bc.Line = 9 then
   begin
-    AttrName := 'Selection';
+    AttrName := STY_PROP_BREAKPOINT;
+  end
+  else if bc.Line = 10 then
+  begin
+    AttrName := STY_PROP_EXECPOINT;
   end
   else
   begin
-    if not SynPrev.GetHighlighterAttriAtRowCol(bc, S, attr) then
-      AttrName := 'Space'
+    if not EditPreview.GetHighlighterAttriAtRowCol(bc, S, attr) then
+      AttrName := HL_Style_Space
     else
       AttrName := attr.Name;
   end;
@@ -697,14 +684,10 @@ begin
     I := ActiveSintax.IndexOf(st);
     if I < 0 then
       Exit;
-    //SynPrev.Cursor := crIBeam;
     ListBoxType.ItemIndex := I;
     ListBoxType.Selected[I] := True;
     ListBoxTypeClick(Self);
-  end {
-  else
-    SynPrev.Cursor := crArrow};
-
+  end;
 end;
 
 procedure TFrmEditorOptions.FormDestroy(Sender: TObject);
@@ -743,10 +726,9 @@ begin
   ChbBold.Checked := (fsBold in StxTpy.Style);
   ChbItalic.Checked := (fsItalic in StxTpy.Style);
   ChbUnderl.Checked := (fsUnderline in StxTpy.Style);
-  // TODO: commented
-  //ActiveSintax.UpdateHighlight(SynPrev.Highlighter);
-  // TODO: commented
-  //ActiveSintax.UpdateEditor(SynPrev);
+  ActiveSintax.UpdateHighlight(SynCpp);
+  ActiveSintax.UpdateEditor(EditPreview);
+  ActiveSintax.UpdateEditor(EditFormatter);
   OptionsChange;
 end;
 
@@ -800,15 +782,21 @@ begin
   end;
   BtnSave.Enabled := True;
 
-  if (AttrName <> 'Gutter') and (AttrName <> 'Selection') then
+  if (AttrName <> STY_PROP_DEFAULT) and
+     (AttrName <> STY_PROP_GUTTER) and     
+     (AttrName <> STY_PROP_CARETLINE) and
+     (AttrName <> STY_PROP_SELECTION) and 
+     (AttrName <> STY_PROP_BREAKPOINT) and
+     (AttrName <> STY_PROP_EXECPOINT) and
+     (AttrName <> STY_PROP_CARETCOLOR) and 
+     (AttrName <> STY_PROP_BRACE) and
+     (AttrName <> STY_PROP_BADBRACE) and
+     (AttrName <> STY_PROP_LINKCOLOR) then
   begin
-    // TODO: commented
-    //ActiveSintax.UpdateHighlight(SynPrev.Highlighter, AttrName);
+    ActiveSintax.UpdateHighlight(EditPreview.Highlighter, AttrName);
   end
-  // TODO: commented
-  //else
-  //  ActiveSintax.UpdateEditor(SynPrev, AttrName)
-  ;
+  else
+    ActiveSintax.UpdateEditor(EditPreview, AttrName);
 
   if ActiveSintax.ReadOnly then
   begin
@@ -850,16 +838,22 @@ begin
     st.Background := ClbBack.Selected;
   end;
   BtnSave.Enabled := True;
-  if (AttrName <> 'Gutter') and (AttrName <> 'Selection') then
+  if (AttrName <> STY_PROP_DEFAULT) and
+     (AttrName <> STY_PROP_GUTTER) and
+     (AttrName <> STY_PROP_CARETLINE) and
+     (AttrName <> STY_PROP_SELECTION) and
+     (AttrName <> STY_PROP_BREAKPOINT) and
+     (AttrName <> STY_PROP_EXECPOINT) and
+     (AttrName <> STY_PROP_CARETCOLOR) and
+     (AttrName <> STY_PROP_BRACE) and
+     (AttrName <> STY_PROP_BADBRACE) and
+     (AttrName <> STY_PROP_LINKCOLOR) then
   begin
-    // TODO: commented
-    //ActiveSintax.UpdateHighlight(SynPrev.Highlighter, AttrName);
+    ActiveSintax.UpdateHighlight(EditPreview.Highlighter, AttrName);
   end
   else
   begin
-    // TODO: commented
-    // ActiveSintax.UpdateEditor(SynPrev, AttrName);
-    SynPrev.InvalidateLine(SynPrev.Lines.Count);
+    ActiveSintax.UpdateEditor(EditPreview, AttrName);
   end;
   if ActiveSintax.ReadOnly then
   begin
@@ -912,9 +906,9 @@ end;
 procedure TFrmEditorOptions.BtnDelClick(Sender: TObject);
 var
   Index: Integer;
-  Equals: Boolean;
+  Equal: Boolean;
 begin
-  Equals := False;
+  Equal := False;
   Index := CbDefSin.ItemIndex;
   if (Index < 0) or ActiveSintax.ReadOnly then
     Exit;
@@ -923,7 +917,7 @@ begin
     SintaxList.Delete(Index);
     if Index = SintaxList.ItemIndex then
     begin
-      Equals := True;
+      Equal := True;
       SintaxList.ItemIndex := SintaxList.Count - 1;
       Config.Editor.ActiveSintax := SintaxList.Selected.Name;
       UpdateOpenedSheets;
@@ -933,7 +927,7 @@ begin
   CbDefSin.Items.Delete(Index);
   if CbDefSin.Items.Count > 0 then
   begin
-    if Equals then
+    if Equal then
       CbDefSin.ItemIndex := CbDefSin.Items.Count - 1
     else
       CbDefSin.ItemIndex := 0;
@@ -967,30 +961,13 @@ begin
   CboSize.ItemIndex := CboSize.Items.IndexOf(S);
   if CboSize.ItemIndex < 0 then
     CboSize.Text := S;
-  SynPrev.Font.Name := CboEditFont.Text;
   OptionsChange;
 end;
 
 procedure TFrmEditorOptions.CboSizeChange(Sender: TObject);
 begin
   PanelTest.Font.Size := StrToIntDef(CboSize.Text, 10);
-  SynPrev.Font.Size := PanelTest.Font.Size;
   OptionsChange;
-end;
-
-procedure TFrmEditorOptions.SynPrevSpecialLineColors(Sender: TObject;
-  Line: Integer; var Special: Boolean; var FG, BG: TColor);
-var
-  st: TSintaxType;
-begin
-  if Line = SynPrev.Lines.Count then
-  begin
-    if not ActiveSintax.GetType('Selection', st) then
-      Exit;
-    Special := True;
-    FG := st.Foreground;
-    BG := st.Background;
-  end;
 end;
 
 procedure TFrmEditorOptions.EditorOptionsChanged(Sender: TObject);
@@ -1002,10 +979,7 @@ begin
   end
   else if Sender = ChbShowgtt then
   begin
-    Label8.Enabled := ChbShowgtt.Checked;
-    CboGutterWdt.Enabled := ChbShowgtt.Checked;
     ChbShowLnNumb.Enabled := ChbShowgtt.Checked;
-    ChbGrdGutt.Enabled := ChbShowgtt.Checked;
   end
   else if Sender = CheckBoxAddOneLineBrackets then
   begin
@@ -1083,9 +1057,7 @@ begin
   ChbShowRMrgn.Checked := True;
   ChbShowgtt.Checked := True;
   ChbShowLnNumb.Checked := True;
-  ChbGrdGutt.Checked := False;
   CboRMrg.ItemIndex := 0;
-  CboGutterWdt.ItemIndex := 0;
 end;
 
 procedure TFrmEditorOptions.BtnRestDefClick(Sender: TObject);
@@ -1094,34 +1066,14 @@ begin
   ChbAutoIndt.Checked := True;
   ChbInsMode.Checked := True;
   ChbGrpUnd.Checked := True;
-  ChbKeepTraiSpa.Checked := True;
-  ChbCursorPastEOL.Checked := False;
   //-------------------------
-  ChbScrollHint.Checked := True;
   ChbTabUnOrIndt.Checked := True;
   ChbSmartTabs.Checked := True;
   ChbUseTabChar.Checked := True;
   ChbEnhHomeKey.Checked := False;
   ChbShowSpaceChars.Checked := False;
   ChbAutoCloseBrackets.Checked := True;
-  CboMaxUnd.ItemIndex := 0;
   CboTabWdt.ItemIndex := 1;
-  //-----------------------------
-  ChbHighMatch.Checked := True;
-  ClbN.Selected := clRed;
-  ClbN.Invalidate;
-  ClbE.Selected := clMaroon;
-  ClbE.Invalidate;
-  ClbB.Selected := clNone;
-  ClbB.Invalidate;
-  //---------------------------
-  ChbHighCurLn.Checked := True;
-  ClbCurLn.Selected := $FFE8E8;
-  ClbCurLn.Invalidate;
-  //---------------------------
-  ChbLinkClick.Checked := True;
-  ClbLinkColor.Selected := clBlue;
-  ClbLinkColor.Invalidate;
   OptionsChange;
 end;
 
@@ -1255,12 +1207,12 @@ begin
         end;
       end;
   end;
-  caret := SynMemoSample.CaretXY;
-  topLine := SynMemoSample.TopLine;
-  SynMemoSample.SelectAll;
-  SynMemoSample.SelText := formatter.Format(SynMemoSample.Text);
-  SynMemoSample.CaretXY := caret;
-  SynMemoSample.TopLine := topLine;
+  caret := EditFormatter.CaretXY;
+  topLine := EditFormatter.TopLine;
+  EditFormatter.SelectAll;
+  EditFormatter.SelText := formatter.Format(PChar(EditFormatter.GetCharacterPointer));
+  EditFormatter.CaretXY := caret;
+  EditFormatter.TopLine := topLine;
   formatter.Free;
 end;
 

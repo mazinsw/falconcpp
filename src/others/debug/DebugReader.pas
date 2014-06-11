@@ -3,8 +3,8 @@ unit DebugReader;
 interface
 
 uses
-  Windows, SysUtils, Classes, SynRegExpr, Dialogs, NativeTreeView,
-  TokenList, TokenUtils;
+  Windows, SysUtils, Classes, Dialogs, NativeTreeView,
+  TokenList, TokenUtils, PerlRegEx;
 
 type
   TDebugCmd = (dcPrint, dcLocalize, dcNextLine, dcWatch, dcOnBreak,
@@ -77,7 +77,9 @@ type
     FPriorFileName: string;
     FLastFileName: string;
     Reader: TReaderConsole;
-    regexp: TRegExpr;
+    regexp: TPerlRegEx;
+    function ExecuteRegEx(const RegEx, Subject: string): Boolean;
+    //
     procedure DoStart;
     procedure DoOutputWriter;
     procedure DoFinish;
@@ -116,10 +118,10 @@ type
     procedure Start;
     procedure Stop;
     property Running: Boolean read FRunning;
-    function SendCommand(const Command: string;
-      const Params: string = ''): Boolean;
+    function SendCommand(const Command: AnsiString;
+      const Params: AnsiString = ''): Boolean;
     function FunctionChanged: Boolean;
-  published
+  public
     { Published declarations }
     property OnStart: TStartEvent read FOnStart write FOnStart;
     property OnCommand: TCommandEvent read FOnCommandEvent write FOnCommandEvent;
@@ -169,23 +171,24 @@ procedure TReaderConsole.Execute;
 var
   nRead: DWORD;
   bSucess: Boolean;
-  Buffer: array[0..2048] of Char;
+  Buffer: array[0..2048] of AnsiChar;
   Output: string;
   CRLFFound: Boolean;
-  ptr, ptrStart: PChar;
-  SaveChar: Char;
+  ptr, ptrStart: PAnsiChar;
+  SaveChar: AnsiChar;
 begin
   Synchronize(FDebugReader.DoStart);
   Output := '';
   repeat
-    bSucess := ReadFile(OutputRead, Buffer, SizeOf(Buffer) - 1, nRead, nil);
+    bSucess := ReadFile(OutputRead, Buffer, SizeOf(Buffer) - SizeOf(AnsiChar),
+      nRead, nil);
     if not bSucess or (nRead = 0) or (GetLastError() = ERROR_BROKEN_PIPE) then
       Break;
     Buffer[nRead] := #0;
-    ptr := PChar(@Buffer);
+    ptr := PAnsiChar(@Buffer);
     ptrStart := ptr;
     repeat
-      while not (ptr^ in [#0, CR, LF]) do
+      while not CharInSet(ptr^, [#0, CR, LF]) do
         Inc(ptr);
       CRLFFound := ptr^ <> #0;
       if (ptr^ = CR) then
@@ -212,7 +215,7 @@ end;
 constructor TDebugReader.Create;
 begin
   inherited Create;
-  regexp := TRegExpr.Create;
+  regexp := TPerlRegEx.Create;
   FExitCode := 1;
   FLastPrintID := 0;
   FLastID := 0;
@@ -230,6 +233,13 @@ begin
   if Running then
     Stop;
   Execute;
+end;
+
+function TDebugReader.ExecuteRegEx(const RegEx, Subject: string): Boolean;
+begin
+  regexp.RegEx := RegEx;
+  regexp.Subject := Subject;
+  Result := regexp.Match;
 end;
 
 procedure TDebugReader.Execute;
@@ -316,7 +326,7 @@ begin
   Reader.OutputRead := hOutputRead;
   Reader.OnTerminate := CloseDebugger;
   Reader.FreeOnTerminate := True;
-  Reader.Resume;
+  Reader.Start;
 end;
 
 procedure TDebugReader.CloseDebugger(Sender: Tobject);
@@ -355,19 +365,19 @@ begin
   CloseHandle(FProcessInfo.hThread);
 end;
 
-function TDebugReader.SendCommand(const Command, Params: string): Boolean;
+function TDebugReader.SendCommand(const Command, Params: AnsiString): Boolean;
 var
   nWrited, nSize: Cardinal;
-  Buffer: PChar;
+  Buffer: PAnsiChar;
   I, J: Integer;
 begin
   Result := False;
   if not Running then
     Exit;
-  nSize := Length(Command) + Length(Params) + 2; // \r\n
+  nSize := (Length(Command) + Length(Params) + 2) * SizeOf(AnsiChar); // \r\n
   if Length(Params) > 0 then
-    nSize := nSize + 1;
-  Buffer := AllocMem(nSize + 1); //\0
+    nSize := nSize + SizeOf(AnsiChar);
+  Buffer := AllocMem(nSize + SizeOf(AnsiChar)); //\0
   I := 0;
   while I < Length(Command) do
   begin
@@ -428,55 +438,55 @@ procedure TDebugReader.ProcessPrint;
 var
   PrintID: Integer;
 begin
-  PrintID := StrToInt(regexp.Match[1]);
+  PrintID := StrToInt(regexp.Groups[1]);
   if FLastPrintID < PrintID then
     FLastPrintID := PrintID;
   if Assigned(FOnCommandEvent) then
-    FOnCommandEvent(Self, dcPrint, regexp.Match[1], regexp.Match[2], 0);
+    FOnCommandEvent(Self, dcPrint, regexp.Groups[1], regexp.Groups[2], 0);
 end;
 
 procedure TDebugReader.ProcessLocalize;
 var
   FileName: string;
 begin
-  FileName := ConvertSlashes(regexp.Match[2]);
+  FileName := ConvertSlashes(regexp.Groups[2]);
   if Pos(':', FileName) = 0 then
     FileName := FDirectory + FileName;
   FileName := ExpandFileName(FileName);
   FPriorFileName := FLastFileName;
   FLastFileName := FileName;
   FPriorFunction := FLastFunction;
-  FLastFunction := regexp.Match[1];
+  FLastFunction := regexp.Groups[1];
   if Assigned(FOnCommandEvent) then
-    FOnCommandEvent(Self, dcLocalize, FileName, regexp.Match[1],
-      StrToInt(regexp.Match[3]));
+    FOnCommandEvent(Self, dcLocalize, FileName, regexp.Groups[1],
+      StrToInt(regexp.Groups[3]));
 end;
 
 procedure TDebugReader.ProcessNextLine;
 var
   FileName: string;
 begin
-  FileName := ConvertSlashes(regexp.Match[1] + regexp.Match[2]);
+  FileName := ConvertSlashes(regexp.Groups[1] + regexp.Groups[2]);
   if Pos(':', FileName) = 0 then
     FileName := FDirectory + FileName;
   FileName := ExpandFileName(FileName);
   FPriorFileName := FLastFileName;
   FLastFileName := FileName;
   if Assigned(FOnCommandEvent) then
-    FOnCommandEvent(Self, dcNextLine, FileName, regexp.Match[4],
-      StrToInt(regexp.Match[3]));
+    FOnCommandEvent(Self, dcNextLine, FileName, regexp.Groups[4],
+      StrToInt(regexp.Groups[3]));
 end;
 
 procedure TDebugReader.ProcessNewThread;
 begin
   if Assigned(FOnCommandEvent) then
-    FOnCommandEvent(Self, dcNewThread, '', regexp.Match[1], 0);
+    FOnCommandEvent(Self, dcNewThread, '', regexp.Groups[1], 0);
 end;
 
 {procedure TDebugReader.ProcessWatch;
 begin
   if Assigned(FOnCommandEvent) then
-    FOnCommandEvent(Self, dcWatch, '', regexp.Match[0], 0);
+    FOnCommandEvent(Self, dcWatch, '', regexp.Groups[0], 0);
 end;}
 
 procedure TDebugReader.ProcessOnBreak;
@@ -484,33 +494,33 @@ var
   ID: Integer;
   FileName: string;
 begin
-  ID := StrToInt(regexp.Match[1]);
+  ID := StrToInt(regexp.Groups[1]);
   if FLastID < ID then
     FLastID := ID;
-  FileName := ConvertSlashes(regexp.Match[3]);
+  FileName := ConvertSlashes(regexp.Groups[3]);
   if Pos(':', FileName) = 0 then
     FileName := FDirectory + FileName;
   FileName := ExpandFileName(FileName);
   FPriorFileName := FLastFileName;
   FLastFileName := FileName;
   FPriorFunction := FLastFunction;
-  FLastFunction := regexp.Match[2];
+  FLastFunction := regexp.Groups[2];
   if Assigned(FOnCommandEvent) then
-    FOnCommandEvent(Self, dcOnBreak, FileName, regexp.Match[1],
-      StrToInt(regexp.Match[4]));
+    FOnCommandEvent(Self, dcOnBreak, FileName, regexp.Groups[1],
+      StrToInt(regexp.Groups[4]));
 end;
 
 procedure TDebugReader.ProcessNoSymbol;
 begin
   if Assigned(FOnCommandEvent) then
-    FOnCommandEvent(Self, dcNoSymbol, regexp.Match[1], regexp.Match[0], 0);
+    FOnCommandEvent(Self, dcNoSymbol, regexp.Groups[1], regexp.Groups[0], 0);
 end;
 
 procedure TDebugReader.ProcessBreakpoint;
 begin
   if Assigned(FOnCommandEvent) then
-    FOnCommandEvent(Self, dcBreakpoint, regexp.Match[2], regexp.Match[1],
-      StrToInt(regexp.Match[3]));
+    FOnCommandEvent(Self, dcBreakpoint, regexp.Groups[2], regexp.Groups[1],
+      StrToInt(regexp.Groups[3]));
 end;
 
 procedure TDebugReader.ProcessTerminate;
@@ -538,13 +548,13 @@ end;
 procedure TDebugReader.ProcessTerminateCode;
 begin
   if Assigned(FOnCommandEvent) then
-    FOnCommandEvent(Self, dcTerminate, '', IntToStr(OctStrToInt(regexp.Match[1])), 0);
+    FOnCommandEvent(Self, dcTerminate, '', IntToStr(OctStrToInt(regexp.Groups[1])), 0);
 end;
 
 {procedure TDebugReader.ProcessSegmentationFault;
 begin
   if Assigned(FOnCommandEvent) then
-    FOnCommandEvent(Self, dcSegmentationFault, '', regexp.Match[0], 0);
+    FOnCommandEvent(Self, dcSegmentationFault, '', regexp.Groups[0], 0);
 end;}
 
 procedure TDebugReader.ProcessIdle;
@@ -556,52 +566,52 @@ end;
 procedure TDebugReader.ProcessLanguage;
 begin
   if Assigned(FOnCommandEvent) then
-    FOnCommandEvent(Self, dcLanguage, regexp.Match[1], regexp.Match[2], 0);
+    FOnCommandEvent(Self, dcLanguage, regexp.Groups[1], regexp.Groups[2], 0);
 end;
 
 procedure TDebugReader.ProcessExternalStep;
 begin
   if Assigned(FOnCommandEvent) then
-    FOnCommandEvent(Self, dcExternalStep, regexp.Match[1], regexp.Match[2], 0);
+    FOnCommandEvent(Self, dcExternalStep, regexp.Groups[1], regexp.Groups[2], 0);
 end;
 
 procedure TDebugReader.ProcessOnExiting;
 begin
   if Assigned(FOnCommandEvent) then
-    FOnCommandEvent(Self, dcOnExiting, regexp.Match[2], regexp.Match[1], 0);
+    FOnCommandEvent(Self, dcOnExiting, regexp.Groups[2], regexp.Groups[1], 0);
 end;
 
 procedure TDebugReader.ProcessOnAddWatch;
 var
   ID: Integer;
 begin
-  ID := StrToInt(regexp.Match[1]);
+  ID := StrToInt(regexp.Groups[1]);
   if FLastID < ID then
     FLastID := ID;
   if Assigned(FOnCommandEvent) then
-    FOnCommandEvent(Self, dcOnAddWatch, regexp.Match[2], regexp.Match[1], 0);
+    FOnCommandEvent(Self, dcOnAddWatch, regexp.Groups[2], regexp.Groups[1], 0);
 end;
 
 procedure TDebugReader.ProcessOnWatchPoint;
 var
   ID: Integer;
 begin
-  ID := StrToInt(regexp.Match[1]);
+  ID := StrToInt(regexp.Groups[1]);
   if FLastID < ID then
     FLastID := ID;
   if Assigned(FOnCommandEvent) then
-    FOnCommandEvent(Self, dcOnWatchPoint, regexp.Match[2], regexp.Match[1], 0);
+    FOnCommandEvent(Self, dcOnWatchPoint, regexp.Groups[2], regexp.Groups[1], 0);
 end;
 
 procedure TDebugReader.ProcessDisplay;
 var
   DisplayID: Integer;
 begin
-  DisplayID := StrToInt(regexp.Match[1]);
+  DisplayID := StrToInt(regexp.Groups[1]);
   if FLastDisplayID < DisplayID then
     FLastDisplayID := DisplayID;
   if Assigned(FOnCommandEvent) then
-    FOnCommandEvent(Self, dcDisplay, regexp.Match[2], regexp.Match[3], DisplayID);
+    FOnCommandEvent(Self, dcDisplay, regexp.Groups[2], regexp.Groups[3], DisplayID);
 end;
 
 procedure TDebugReader.DoOutputWriter;
@@ -625,39 +635,39 @@ begin
     end;
     if S = '' then
       Continue;
-    if regexp.Exec(REGEXP_PRINT, S) then
+    if ExecuteRegEx(REGEXP_PRINT, S) then
       ProcessPrint
-    else if regexp.Exec(REGEXP_NOSYMBOL, S) then
+    else if ExecuteRegEx(REGEXP_NOSYMBOL, S) then
       ProcessNoSymbol
-    else if regexp.Exec(REGEXP_NEXTLINE, S) then
+    else if ExecuteRegEx(REGEXP_NEXTLINE, S) then
       ProcessNextLine
-    else if regexp.Exec(REGEXP_BREAKPOINT, S) then
+    else if ExecuteRegEx(REGEXP_BREAKPOINT, S) then
       ProcessBreakpoint
-    else if regexp.Exec(REGEXP_DISPLAY, S) then
+    else if ExecuteRegEx(REGEXP_DISPLAY, S) then
       ProcessDisplay
-    else if regexp.Exec(REGEXP_ONBREAK, S) then
+    else if ExecuteRegEx(REGEXP_ONBREAK, S) then
       ProcessOnBreak
-    else if regexp.Exec(REGEXP_ONADDWATCH, S) then
+    else if ExecuteRegEx(REGEXP_ONADDWATCH, S) then
       ProcessOnAddWatch
-    else if regexp.Exec(REGEXP_ONWATCHPOINT, S) then
+    else if ExecuteRegEx(REGEXP_ONWATCHPOINT, S) then
       ProcessOnWatchPoint
-    else if regexp.Exec(REGEXP_LANGUAGE, S) then
+    else if ExecuteRegEx(REGEXP_LANGUAGE, S) then
       ProcessLanguage
-    else if regexp.Exec(REGEXP_EXTERNALSTEP, S) then
+    else if ExecuteRegEx(REGEXP_EXTERNALSTEP, S) then
       ProcessExternalStep
-    else if regexp.Exec(REGEXP_LOCALIZE, S) then
+    else if ExecuteRegEx(REGEXP_LOCALIZE, S) then
       ProcessLocalize
-    else if regexp.Exec(REGEXP_NEWTHREAD, S) then
+    else if ExecuteRegEx(REGEXP_NEWTHREAD, S) then
       ProcessNewThread
-    else if regexp.Exec(REGEXP_TERMINATE, S) then
+    else if ExecuteRegEx(REGEXP_TERMINATE, S) then
       ProcessTerminate
-    else if regexp.Exec(REGEXP_TERMINATENORM, S) then
+    else if ExecuteRegEx(REGEXP_TERMINATENORM, S) then
       ProcessTerminate
-    else if regexp.Exec(REGEXP_TERMINATECODE, S) then
+    else if ExecuteRegEx(REGEXP_TERMINATECODE, S) then
       ProcessTerminateCode
-    else if regexp.Exec(REGEXP_PROCESSEXITED, S) then
+    else if ExecuteRegEx(REGEXP_PROCESSEXITED, S) then
       ProcessTerminateCode
-    else if regexp.Exec(REGEXP_EXITING, S) then
+    else if ExecuteRegEx(REGEXP_EXITING, S) then
       ProcessOnExiting
     else
     begin

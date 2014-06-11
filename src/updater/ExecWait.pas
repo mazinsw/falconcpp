@@ -41,7 +41,7 @@ type
     procedure ExecAndWait;
   public
     procedure Execute; override;
-  published
+  public
     property FileName: string read fFile write fFile;
     property Path: string read fPath write fPath;
     property Params: string read fParams write fParams;
@@ -139,7 +139,7 @@ begin
     Visible := bVisible;
     OnTerminate := TerminateEvent;
     FreeOnTerminate := True;
-    Resume;
+    Start;
   end;
 end;
 

@@ -3,7 +3,7 @@ unit Breakpoint;
 interface
 
 uses
-  Windows, Controls, Classes, SysUtils, SynEdit, UEditor;
+  Windows, Controls, Classes, SysUtils, UEditor;
 
 type
   TBreakpoint = class
@@ -42,7 +42,6 @@ type
     procedure Assign(Value: TBreakpointList);
     function MoveBy(LineFrom, aCount: Integer): Integer;
     function HasBreakpoint(Line: Integer): Boolean;
-    procedure DrawBreakpoint(Editor: TEditor; Line, X, Y: Integer);
     function DeleteFrom(LineBegin, LineEnd: Integer): Integer;
     function ToogleBreakpoint(Line: Integer): Boolean;
     function GetBreakpoint(Line: Integer): TBreakpoint;
@@ -176,24 +175,6 @@ end;
 function TBreakpointList.HasBreakpoint(Line: Integer): Boolean;
 begin
   Result := GetBreakpointIndex(Line) <> -1;
-end;
-
-procedure TBreakpointList.DrawBreakpoint(Editor: TEditor; Line, X, Y: Integer);
-var
-  Breakpoint: TBreakpoint;
-  Index, DrawIndex: Integer;
-begin
-  Index := GetBreakpointIndex(Line);
-  if Index < 0 then
-    Exit;
-  Breakpoint := TBreakpoint(FList.Items[Index]);
-  if not Assigned(FImageList) or not Assigned(Editor) then
-    Exit;
-  DrawIndex := FImageIndex;
-  if not Breakpoint.Valid then
-    DrawIndex := FInvalidIndex;
-  // TODO: commented
-  // FImageList.Draw(Editor.Canvas, X, Y, DrawIndex, Breakpoint.Enable);
 end;
 
 function TBreakpointList.ToogleBreakpoint(Line: Integer): Boolean;

@@ -1104,113 +1104,112 @@ begin
   begin
     TSFormatterFormatting.Controls[I].Enabled := BtnPrevStyle.Visible;
   end;
-  case RadioGroupFormatterStyles.ItemIndex of
-    0: // ansi
-      begin
-        formatter.Style := fsALLMAN;
-        formatter.BracketFormat := bfBreakMode;
-        formatter.Properties[aspIndentNamespace] := True;
-        formatter.Properties[aspSingleStatements] := True;
-        formatter.Properties[aspBreakOneLineBlocks] := True;
-      end;
-    1: // K&R
-      begin
-        formatter.Style := fsKR;
-        formatter.BracketFormat := bfAtatch;
-        formatter.Properties[aspIndentNamespace] := True;
-        formatter.Properties[aspSingleStatements] := True;
-        formatter.Properties[aspBreakOneLineBlocks] := True;
-      end;
-    2: //Linux
-      begin
-        formatter.Style := fsLINUX;
-        formatter.TabWidth := 8;
-        formatter.SpaceWidth := 8;
-        formatter.BracketFormat := bfBDAC;
-        formatter.Properties[aspIndentNamespace] := True;
-        formatter.Properties[aspSingleStatements] := True;
-        formatter.Properties[aspBreakOneLineBlocks] := True;
-      end;
-    3: //GNU
-      begin
-        formatter.Style := fsGNU;
-        formatter.TabWidth := 2;
-        formatter.SpaceWidth := 2;
-        formatter.BracketFormat := bfBreakMode;
-        formatter.Properties[aspIndentBlock] := True;
-        formatter.Properties[aspIndentNamespace] := True;
-        formatter.Properties[aspSingleStatements] := True;
-        formatter.Properties[aspBreakOneLineBlocks] := True;
-      end;
-    4: //java
-      begin
-        formatter.Style := fsJAVA;
-        formatter.BracketFormat := bfAtatch;
-        formatter.Properties[aspSingleStatements] := True;
-        formatter.Properties[aspBreakOneLineBlocks] := True;
-      end;
-    5: //custom
-      begin
-        formatter.Style := fsNONE;
-        formatter.TabWidth := StrToIntDef(CboTabWdt.Text, 4);
-        formatter.SpaceWidth := StrToIntDef(CboTabWdt.Text, 4);
-
-      //Indentation
-        formatter.ForceUsingTabs := CheckBoxForceUsingTabs.Checked;
-        formatter.Properties[aspIndentClass] := CheckBoxIndentClasses.Checked;
-        formatter.Properties[aspIndentSwitch] := CheckBoxIndentSwitches.Checked;
-        formatter.Properties[aspIndentCase] := CheckBoxIndentCase.Checked;
-        formatter.Properties[aspIndentBracket] := CheckBoxIndentBrackets.Checked;
-        formatter.Properties[aspIndentBlock] := CheckBoxIndentBlocks.Checked;
-        formatter.Properties[aspIndentNamespace] := CheckBoxIndentNamespaces.Checked;
-        formatter.Properties[aspIndentLabels] := CheckBoxIndentLabels.Checked;
-        formatter.Properties[aspIndentMultLinePreprocessor] := CheckBoxIndentMultLinePreprocessor.Checked;
-        formatter.Properties[aspIndentCol1Comments] :=
-          CheckBoxIndentSingleLineComments.Checked;
-
-      //Padding
-        formatter.Properties[aspBreakBlocks] := CheckBoxPadEmptyLines.Checked;
-        formatter.Properties[aspBreakClosingHeaderBlocks] := CheckBoxBreakClosingHeaderBlocks.Checked;
-        formatter.Properties[aspOperatorPadding] := CheckBoxInsertSpacePaddingOperators.Checked;
-        formatter.Properties[aspParensOutsidePadding] := CheckBoxInsertSpacePaddingParenthesisOutside.Checked;
-        formatter.Properties[aspParensInsidePadding] := CheckBoxInsertSpacePaddingParenthesisInside.Checked;
-        formatter.Properties[aspParensHeaderPadding] := CheckBoxParenthesisHeaderPadding.Checked;
-        formatter.Properties[aspParensUnPadding] := CheckBoxRemoveExtraSpace.Checked;
-        formatter.Properties[aspDeleteEmptyLines] := CheckBoxDeleteEmptyLines.Checked;
-        formatter.Properties[aspFillEmptyLines] := CheckBoxFillEmptyLines.Checked;
-
-      //Formatting
-        case ComboBoxBracketStyle.ItemIndex of
-          1: formatter.BracketFormat := bfBreakMode; //Break
-          2: formatter.BracketFormat := bfAtatch; //Attach
-          3: formatter.BracketFormat := bfBDAC; //Linux
-        { TODO -oMazin -c : formatter.BracketFormat := bfRunIn; 24/08/2012 22:23:50 }
-        { TODO -oMazin -c : formatter.BracketFormat := bfStroustrup; 24/08/2012 22:24:27 }
-        else
-        //None
-          formatter.BracketFormat := bfNone;
-        end;
-        if (ComboBoxBracketStyle.ItemIndex < 2) then //Does not work
-          formatter.Properties[aspBreakClosingHeaderBrackets] := CheckBoxBreakClosingHeadersBrackets.Checked;
-        formatter.Properties[aspBreakElseIfs] := CheckBoxBreakElseIf.Checked;
-        formatter.Properties[aspAddBrackets] := CheckBoxAddBrackets.Checked;
-        formatter.Properties[aspAddOneLineBrackets] := CheckBoxAddOneLineBrackets.Checked;
-        formatter.Properties[aspBreakOneLineBlocks] := not CheckBoxDontBreakOneLineBlocks.Checked;
-        formatter.Properties[aspSingleStatements] := CheckBoxDontBreakComplex.Checked;
-        formatter.Properties[aspTabSpaceConversion] := CheckBoxConvToSpaces.Checked;
-        case ComboBoxPointerAlign.ItemIndex of
-          1: formatter.PointerAlign := paType;
-          2: formatter.PointerAlign := paMiddle;
-          3: formatter.PointerAlign := paName;
-        else
-          formatter.PointerAlign := paNone;
-        end;
-      end;
-  end;
+//  case RadioGroupFormatterStyles.ItemIndex of
+//    0: // ansi
+//      begin
+//        formatter.Style := fsALLMAN;
+//        formatter.BracketFormat := bfBreakMode;
+//        formatter.Properties[aspIndentNamespace] := True;
+//        formatter.Properties[aspSingleStatements] := True;
+//        formatter.Properties[aspBreakOneLineBlocks] := True;
+//      end;
+//    1: // K&R
+//      begin
+//        formatter.Style := fsKR;
+//        formatter.BracketFormat := bfAtatch;
+//        formatter.Properties[aspIndentNamespace] := True;
+//        formatter.Properties[aspSingleStatements] := True;
+//        formatter.Properties[aspBreakOneLineBlocks] := True;
+//      end;
+//    2: //Linux
+//      begin
+//        formatter.Style := fsLINUX;
+//        formatter.TabWidth := 8;
+//        formatter.SpaceWidth := 8;
+//        formatter.BracketFormat := bfBDAC;
+//        formatter.Properties[aspIndentNamespace] := True;
+//        formatter.Properties[aspSingleStatements] := True;
+//        formatter.Properties[aspBreakOneLineBlocks] := True;
+//      end;
+//    3: //GNU
+//      begin
+//        formatter.Style := fsGNU;
+//        formatter.TabWidth := 2;
+//        formatter.SpaceWidth := 2;
+//        formatter.BracketFormat := bfBreakMode;
+//        formatter.Properties[aspIndentBlock] := True;
+//        formatter.Properties[aspIndentNamespace] := True;
+//        formatter.Properties[aspSingleStatements] := True;
+//        formatter.Properties[aspBreakOneLineBlocks] := True;
+//      end;
+//    4: //java
+//      begin
+//        formatter.Style := fsJAVA;
+//        formatter.BracketFormat := bfAtatch;
+//        formatter.Properties[aspSingleStatements] := True;
+//        formatter.Properties[aspBreakOneLineBlocks] := True;
+//      end;
+//    5: //custom
+//      begin
+//        formatter.Style := fsNONE;
+//        formatter.TabWidth := StrToIntDef(CboTabWdt.Text, 4);
+//        formatter.SpaceWidth := StrToIntDef(CboTabWdt.Text, 4);
+//
+//      //Indentation
+//        formatter.ForceUsingTabs := CheckBoxForceUsingTabs.Checked;
+//        formatter.Properties[aspIndentClass] := CheckBoxIndentClasses.Checked;
+//        formatter.Properties[aspIndentSwitch] := CheckBoxIndentSwitches.Checked;
+//        formatter.Properties[aspIndentCase] := CheckBoxIndentCase.Checked;
+//        formatter.Properties[aspIndentBracket] := CheckBoxIndentBrackets.Checked;
+//        formatter.Properties[aspIndentBlock] := CheckBoxIndentBlocks.Checked;
+//        formatter.Properties[aspIndentNamespace] := CheckBoxIndentNamespaces.Checked;
+//        formatter.Properties[aspIndentLabels] := CheckBoxIndentLabels.Checked;
+//        formatter.Properties[aspIndentMultLinePreprocessor] := CheckBoxIndentMultLinePreprocessor.Checked;
+//        formatter.Properties[aspIndentCol1Comments] :=
+//          CheckBoxIndentSingleLineComments.Checked;
+//
+//      //Padding
+//        formatter.Properties[aspBreakBlocks] := CheckBoxPadEmptyLines.Checked;
+//        formatter.Properties[aspBreakClosingHeaderBlocks] := CheckBoxBreakClosingHeaderBlocks.Checked;
+//        formatter.Properties[aspOperatorPadding] := CheckBoxInsertSpacePaddingOperators.Checked;
+//        formatter.Properties[aspParensOutsidePadding] := CheckBoxInsertSpacePaddingParenthesisOutside.Checked;
+//        formatter.Properties[aspParensInsidePadding] := CheckBoxInsertSpacePaddingParenthesisInside.Checked;
+//        formatter.Properties[aspParensHeaderPadding] := CheckBoxParenthesisHeaderPadding.Checked;
+//        formatter.Properties[aspParensUnPadding] := CheckBoxRemoveExtraSpace.Checked;
+//        formatter.Properties[aspDeleteEmptyLines] := CheckBoxDeleteEmptyLines.Checked;
+//        formatter.Properties[aspFillEmptyLines] := CheckBoxFillEmptyLines.Checked;
+//
+//      //Formatting
+//        case ComboBoxBracketStyle.ItemIndex of
+//          1: formatter.BracketFormat := bfBreakMode; //Break
+//          2: formatter.BracketFormat := bfAtatch; //Attach
+//          3: formatter.BracketFormat := bfBDAC; //Linux
+//        { TODO -oMazin -c : formatter.BracketFormat := bfRunIn; 24/08/2012 22:23:50 }
+//        { TODO -oMazin -c : formatter.BracketFormat := bfStroustrup; 24/08/2012 22:24:27 }
+//        else
+//        //None
+//          formatter.BracketFormat := bfNone;
+//        end;
+//        if (ComboBoxBracketStyle.ItemIndex < 2) then //Does not work
+//          formatter.Properties[aspBreakClosingHeaderBrackets] := CheckBoxBreakClosingHeadersBrackets.Checked;
+//        formatter.Properties[aspBreakElseIfs] := CheckBoxBreakElseIf.Checked;
+//        formatter.Properties[aspAddBrackets] := CheckBoxAddBrackets.Checked;
+//        formatter.Properties[aspAddOneLineBrackets] := CheckBoxAddOneLineBrackets.Checked;
+//        formatter.Properties[aspBreakOneLineBlocks] := not CheckBoxDontBreakOneLineBlocks.Checked;
+//        formatter.Properties[aspSingleStatements] := CheckBoxDontBreakComplex.Checked;
+//        formatter.Properties[aspTabSpaceConversion] := CheckBoxConvToSpaces.Checked;
+//        case ComboBoxPointerAlign.ItemIndex of
+//          1: formatter.PointerAlign := paType;
+//          2: formatter.PointerAlign := paMiddle;
+//          3: formatter.PointerAlign := paName;
+//        else
+//          formatter.PointerAlign := paNone;
+//        end;
+//      end;
+//  end;
   caret := EditFormatter.CaretXY;
   topLine := EditFormatter.TopLine;
-  EditFormatter.SelectAll;
-  EditFormatter.SelText := formatter.Format(PChar(EditFormatter.GetCharacterPointer));
+  EditFormatter.SendEditor(SCI_SETTEXT, 0, Integer(formatter.Format(PUTF8String(EditFormatter.GetCharacterPointer))));
   EditFormatter.CaretXY := caret;
   EditFormatter.TopLine := topLine;
   formatter.Free;

@@ -61,6 +61,9 @@ const
     22, // code template
     -1  // type
     );
+
+  FILE_IMG_LIST: array[1..7] of Integer = (1, 2, 3, 4, 5, 6, 0);
+
   WM_RELOADFTM = WM_USER + $1008;
   WM_REPARSEFILES = WM_RELOADFTM + 1;
   WM_FALCONCPP_PLUGIN = WM_USER + $1221;
@@ -392,6 +395,14 @@ type
     TBXSeparatorItem45: TTBXSeparatorItem;
     EditCollapseAll: TTBXItem;
     EditUncollapseAll: TTBXItem;
+    PopupMenuLineEnding: TTBXPopupMenu;
+    TBXItem1: TTBXItem;
+    TBXItem2: TTBXItem;
+    TBXItem3: TTBXItem;
+    PopupMenuEncoding: TTBXPopupMenu;
+    TBXItem4: TTBXItem;
+    TBXItem5: TTBXItem;
+    TBXItem6: TTBXItem;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure About1Click(Sender: TObject);
@@ -647,6 +658,10 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure TreeViewProjectsEditing(Sender: TObject; Node: TTreeNode;
       var AllowEdit: Boolean);
+    procedure StatusBarContextPopup(Sender: TObject; MousePos: TPoint;
+      var Handled: Boolean);
+    procedure EncodingItemClick(Sender: TObject);
+    procedure LineEndingItemClick(Sender: TObject);
   private
     { Private declarations }
     fWorkerThread: TThread;
@@ -813,6 +828,7 @@ type
       uType: UINT; Handle: HWND = 0): Integer;
     procedure UpdateStatusbar;
     procedure LoadInternetConfiguration;
+    procedure DoTypeChangedSource(Source: TSourceBase; OldType: Integer);
   public
     { Public declarations }
     LastSearch: TSearchItem;
@@ -1043,8 +1059,6 @@ begin
   inherited Create(TRUE);
   fTokenFile := TTokenFile.Create;
   fCppParser := TCppParser.Create;
-  fCppParser.OnProgess := ParserProgress;
-  fCppParser.OnLogToken := ParserTokenLog;
 
   fScanEventHandle := CreateEvent(nil, FALSE, FALSE, nil);
   if (fScanEventHandle = 0) or (fScanEventHandle = INVALID_HANDLE_VALUE) then
@@ -2817,9 +2831,48 @@ end;
 procedure TFrmFalconMain.UpdateStatusbar;
 var
   FileProp: TSourceFile;
+  Sheet: TSourceFileSheet;
+  MenuItem: TTBCustomItem;
+  S: string;
 begin
-  GetActiveFile(FileProp);
-  if FileProp = nil then
+  if not GetActiveSheet(Sheet) then
+  begin
+    StatusBar.Panels.Items[4].Caption := '';
+    StatusBar.Panels.Items[4].Hint := '';
+    StatusBar.Panels.Items[5].Caption := '';
+    StatusBar.Panels.Items[5].Hint := '';
+  end
+  else
+  begin
+    if Sheet.SourceFile.Encoding = ENCODING_UTF8 then
+      MenuItem := PopupMenuEncoding.Items.Items[1]
+    else if Sheet.SourceFile.Encoding = ENCODING_UCS2 then
+      MenuItem := PopupMenuEncoding.Items.Items[2]
+    else // ENCODING_ANSI
+      MenuItem := PopupMenuEncoding.Items.Items[0];
+    MenuItem.Checked := True;
+    StatusBar.Panels.Items[4].Caption := MenuItem.Caption;
+    S := '';
+    if Sheet.SourceFile.WithBOM then
+      S := 'With BOM';
+    if (Sheet.SourceFile.Encoding = ENCODING_UCS2) then
+    begin
+      if Sheet.SourceFile.Endian = ENDIAN_LITTLE then
+        S := Trim('Little Endian ' + S)
+      else if Sheet.SourceFile.Endian = ENDIAN_LITTLE then
+        S := Trim('Big Endian ' + S);
+    end;
+    StatusBar.Panels.Items[4].Hint := S;
+    if Sheet.SourceFile.LineEnding = LINE_ENDING_LINUX then
+      MenuItem := PopupMenuLineEnding.Items.Items[1]
+    else if Sheet.SourceFile.LineEnding = LINE_ENDING_MAC then
+      MenuItem := PopupMenuLineEnding.Items.Items[2]
+    else // LINE_ENDING_WINDOWS
+      MenuItem := PopupMenuLineEnding.Items.Items[0];
+    MenuItem.Checked := True;
+    StatusBar.Panels.Items[5].Caption := MenuItem.Caption;
+  end;
+  if not GetActiveFile(FileProp) then
   begin
     StatusBar.Panels.Items[0].ImageIndex := -1;
     StatusBar.Panels.Items[0].Caption := '';
@@ -3155,6 +3208,20 @@ begin
 end;
 
 //stop execution or compilation
+
+procedure TFrmFalconMain.StatusBarContextPopup(Sender: TObject;
+  MousePos: TPoint; var Handled: Boolean);
+var
+  StatusPanel: TTBXStatusPanel;
+begin
+  StatusPanel := StatusBar.GetPanelAt(MousePos);
+  if StatusPanel = StatusBar.Panels.Items[4] then
+    StatusBar.PopupMenu := PopupMenuEncoding
+  else if StatusPanel = StatusBar.Panels.Items[5] then
+    StatusBar.PopupMenu := PopupMenuLineEnding
+  else
+    StatusBar.PopupMenu := nil;
+end;
 
 procedure TFrmFalconMain.StopAll;
 begin
@@ -3547,6 +3614,7 @@ begin
   Result := TProjectFile.Create(Node);
   Result.OnDeletion := DoDeleteSource;
   Result.OnRename := DoRenameSource;
+  Result.OnTypeChanged := DoTypeChangedSource;
   Result.Project := Result;
   Result.FileType := FileType;
   Node.Data := Result;
@@ -3564,6 +3632,7 @@ begin
   Result := TSourceFile.Create(Node);
   Result.OnDeletion := DoDeleteSource;
   Result.OnRename := DoRenameSource;
+  Result.OnTypeChanged := DoTypeChangedSource;
   Result.Project := TSourceFile(ParentNode.Data).Project;
   Node.Data := Result;
 
@@ -3644,6 +3713,27 @@ begin
   RemoveList.Free;
   ParseFiles(ParseList);
   ParseList.Free;
+end;
+
+// update icons and set highlighter
+procedure TFrmFalconMain.DoTypeChangedSource(Source: TSourceBase; OldType: Integer);
+var
+  Sheet: TSourceFileSheet;
+begin
+  if Assigned(Source.Node) then
+  begin
+    Source.Node.ImageIndex := FILE_IMG_LIST[Source.FileType];
+    Source.Node.SelectedIndex := FILE_IMG_LIST[Source.FileType];
+  end;
+  if TSourceFile(Source).GetSheet(Sheet) then
+  begin
+    Sheet.ImageIndex := FILE_IMG_LIST[Source.FileType];
+    case Source.FileType of
+      FILE_TYPE_C..FILE_TYPE_H: Sheet.Memo.Highlighter := CppHighligher;
+// TODO: commented
+//        FILE_TYPE_RC: Sheet.Memo.Highlighter := FrmFalconMain.ResourceHighlighter;
+    end;
+  end;
 end;
 
 procedure TFrmFalconMain.PopProjDelFromDskClick(Sender: TObject);
@@ -4844,6 +4934,26 @@ begin
 end;
 
 //event on change text in editor
+
+procedure TFrmFalconMain.EncodingItemClick(Sender: TObject);
+var
+  Sheet: TSourceFileSheet;
+begin
+  if not GetActiveSheet(Sheet) then
+    Exit;
+  Sheet.SourceFile.Encoding := TComponent(Sender).Tag;
+  UpdateStatusbar;
+end;
+
+procedure TFrmFalconMain.LineEndingItemClick(Sender: TObject);
+var
+  Sheet: TSourceFileSheet;
+begin
+  if not GetActiveSheet(Sheet) then
+    Exit;
+  Sheet.SourceFile.LineEnding := TComponent(Sender).Tag;
+  UpdateStatusbar;
+end;
 
 procedure TFrmFalconMain.TextEditorChange(Sender: TObject);
 var
@@ -8256,7 +8366,7 @@ begin
     Exit;
   end;
   ChangeTextColor := not Selected;
-  TopOffset := (DisplayRect.Bottom - DisplayRect.Top - ToCanvas.TextHeight('WTI')) div 2;
+  TopOffset := (DisplayRect.Bottom - DisplayRect.Top - ToCanvas.TextHeight('Wj[')) div 2;
   if Token.Token in [tkFunction, tkProtoType, tkConstructor, tkDestructor, tkOperator] then
   begin
     if Token.Token = tkOperator then
@@ -8332,7 +8442,7 @@ begin
     FullFlag := Copy(FullFlag, I + 1, Len - I);
     HasVector := True;
   end;
-  ToCanvas.TextOut(DisplayRect.Left, DisplayRect.Top + 2, Flag);
+  ToCanvas.TextOut(DisplayRect.Left, DisplayRect.Top + TopOffset, Flag);
   if not HasVector or (Token.Token <> tkVariable) then
     Exit;
   if ChangeTextColor then
@@ -8930,114 +9040,97 @@ begin
     Exit;
   with TAStyle.Create do
   begin
-    ForceUsingTabs := Config.Editor.UseTabChar;
-    MaxInstatementIndent := Config.Editor.RightMargin;
+    if Config.Editor.UseTabChar then
+      TabOptions := toTab
+    else
+      TabOptions := toSpaces;
+    MaxCodeLength := Config.Editor.RightMargin;
     case Config.Editor.StyleIndex of
       0: // ansi
         begin
-          Style := fsALLMAN;
-          BracketFormat := bfBreakMode;
-          Properties[aspIndentNamespace] := True;
-          Properties[aspSingleStatements] := True;
-          Properties[aspBreakOneLineBlocks] := True;
+          BracketStyle := stALLMAN;
+          Properties[aspIndentNamespaces] := True;
+          Properties[aspKeepOneLineStatements] := True;
+          Properties[aspKeepOneLineBlocks] := True;
         end;
       1: // K&R
         begin
-          Style := fsKR;
-          BracketFormat := bfAtatch;
-          Properties[aspIndentNamespace] := True;
-          Properties[aspSingleStatements] := True;
-          Properties[aspBreakOneLineBlocks] := True;
+          BracketStyle := stKR;
+          Properties[aspIndentNamespaces] := True;
+          Properties[aspKeepOneLineStatements] := True;
+          Properties[aspKeepOneLineBlocks] := True;
         end;
       2: //Linux
         begin
-          Style := fsLINUX;
+          BracketStyle := stLINUX;
           TabWidth := 8;
-          SpaceWidth := 8;
-          BracketFormat := bfBDAC;
-          Properties[aspIndentNamespace] := True;
-          Properties[aspSingleStatements] := True;
-          Properties[aspBreakOneLineBlocks] := True;
+          Properties[aspIndentNamespaces] := True;
+          Properties[aspKeepOneLineStatements] := True;
+          Properties[aspKeepOneLineBlocks] := True;
         end;
       3: //GNU
         begin
-          Style := fsGNU;
+          BracketStyle := stGNU;
           TabWidth := 2;
-          SpaceWidth := 2;
-          BracketFormat := bfBreakMode;
-          Properties[aspIndentBlock] := True;
-          Properties[aspIndentNamespace] := True;
-          Properties[aspSingleStatements] := True;
-          Properties[aspBreakOneLineBlocks] := True;
+          Properties[aspBreakBlocks] := True;
+          Properties[aspIndentNamespaces] := True;
+          Properties[aspKeepOneLineStatements] := True;
+          Properties[aspKeepOneLineBlocks] := True;
         end;
       4: //java
         begin
-          Style := fsJAVA;
-          BracketFormat := bfAtatch;
-          Properties[aspSingleStatements] := True;
-          Properties[aspBreakOneLineBlocks] := True;
+          BracketStyle := stJAVA;
+          Properties[aspKeepOneLineStatements] := True;
+          Properties[aspKeepOneLineBlocks] := True;
         end;
       5: //custom
         begin
-          Style := fsNONE;
+          BracketStyle := stNONE;
           TabWidth := Config.Editor.TabWidth;
-          SpaceWidth := Config.Editor.TabWidth;
-          ForceUsingTabs := Config.Editor.ForceUsingTabs;
-        //Indentation
-          Properties[aspIndentClass] := Config.Editor.IndentClasses;
-          Properties[aspIndentSwitch] := Config.Editor.IndentSwitches;
-          Properties[aspIndentCase] := Config.Editor.IndentCase;
-          Properties[aspIndentBracket] := Config.Editor.IndentBrackets;
-          Properties[aspIndentBlock] := Config.Editor.IndentBlocks;
-          Properties[aspIndentNamespace] := Config.Editor.IndentNamespaces;
+          //Indentation
+          Properties[aspIndentClasses] := Config.Editor.IndentClasses;
+          Properties[aspIndentSwitches] := Config.Editor.IndentSwitches;
+          Properties[aspIndentCases] := Config.Editor.IndentCase;
+          // ? Properties[aspIndentBracket] := Config.Editor.IndentBrackets;
+          // ? Properties[aspIndentBlock] := Config.Editor.IndentBlocks;
+          Properties[aspIndentNamespaces] := Config.Editor.IndentNamespaces;
           Properties[aspIndentLabels] := Config.Editor.IndentLabels;
-          Properties[aspIndentMultLinePreprocessor] := Config.Editor.IndentMultLine;
+          Properties[aspIndentPreprocDefine] := Config.Editor.IndentMultLine;
           Properties[aspIndentCol1Comments] := Config.Editor.IndentSingleLineComments;
 
         //padding
-          Properties[aspBreakBlocks] := Config.Editor.PadEmptyLines;
-          Properties[aspBreakClosingHeaderBlocks] := Config.Editor.BreakClosingHeaderBlocks;
-          Properties[aspOperatorPadding] := Config.Editor.InsertSpacePaddingOperators;
-          Properties[aspParensOutsidePadding] := Config.Editor.InsertSpacePaddingParenthesisOutside;
-          Properties[aspParensInsidePadding] := Config.Editor.InsertSpacePaddingParenthesisInside;
-          Properties[aspParensHeaderPadding] := Config.Editor.ParenthesisHeaderPadding;
-          Properties[aspParensUnPadding] := Config.Editor.RemoveExtraSpace;
+          // Properties[aspBreakBlocks] := Config.Editor.PadEmptyLines;
+          Properties[aspBreakClosingBrackets] := Config.Editor.BreakClosingHeaderBlocks;
+          Properties[aspPaddingOperator] := Config.Editor.InsertSpacePaddingOperators;
+          Properties[aspPaddingParensOutside] := Config.Editor.InsertSpacePaddingParenthesisOutside;
+          Properties[aspPaddingParensInside] := Config.Editor.InsertSpacePaddingParenthesisInside;
+          Properties[aspPaddingHeader] := Config.Editor.ParenthesisHeaderPadding;
+          Properties[aspUnpaddingParens] := Config.Editor.RemoveExtraSpace;
           Properties[aspDeleteEmptyLines] := Config.Editor.DeleteEmptyLines;
           Properties[aspFillEmptyLines] := Config.Editor.FillEmptyLines;
 
         //Formatting
-          case Config.Editor.BracketStyle of
-            1: BracketFormat := bfBreakMode; //Break
-            2: BracketFormat := bfAtatch; //Attach
-            3: BracketFormat := bfBDAC; //Linux
-          { TODO -oMazin -c : BracketFormat := bfRunIn; 24/08/2012 22:25:33 }
-          { TODO -oMazin -c : BracketFormat := bfStroustrup; 24/08/2012 22:25:51 }
-          else
-          //None
-            BracketFormat := bfNone;
-          end;
           if (Config.Editor.BracketStyle < 2) then //Does not work
-            Properties[aspBreakClosingHeaderBrackets] := Config.Editor.BreakClosingHeadersBrackets;
+            Properties[aspBreakClosingBrackets] := Config.Editor.BreakClosingHeadersBrackets;
           Properties[aspBreakElseIfs] := Config.Editor.BreakIfElse;
           Properties[aspAddBrackets] := Config.Editor.AddBrackets;
           Properties[aspAddOneLineBrackets] := Config.Editor.AddOneLineBrackets;
-          Properties[aspBreakOneLineBlocks] := not Config.Editor.DontBreakOnelineBlocks;
-          Properties[aspSingleStatements] := Config.Editor.DontBreakComplex;
-          Properties[aspTabSpaceConversion] := Config.Editor.ConvertTabToSpaces;
+          Properties[aspKeepOneLineBlocks] := not Config.Editor.DontBreakOnelineBlocks;
+          Properties[aspKeepOneLineStatements] := Config.Editor.DontBreakComplex;
+          Properties[aspConvertTabs] := Config.Editor.ConvertTabToSpaces;
           case Config.Editor.PointerAlign of
-            1: PointerAlign := paType;
-            2: PointerAlign := paMiddle;
-            3: PointerAlign := paName;
+            1: AlignPointer := apType;
+            2: AlignPointer := apMiddle;
+            3: AlignPointer := apName;
           else
-            PointerAlign := paNone;
+            AlignPointer := apNone;
           end;
         end;
     end;
     sheet.Memo.BeginUpdate;
     caret := sheet.Memo.CaretXY;
     topLine := sheet.Memo.TopLine;
-    sheet.Memo.SelectAll;
-    sheet.Memo.SelText := Format(PChar(sheet.Memo.GetCharacterPointer));
+    sheet.Memo.SendEditor(SCI_SETTEXT, 0, Integer(Format(PUTF8String(sheet.Memo.GetCharacterPointer))));
     sheet.Memo.CaretXY := caret;
     sheet.Memo.TopLine := topLine;
     sheet.Memo.EndUpdate;
@@ -9097,6 +9190,7 @@ var
   Node: TTreeNode;
   FileName: string;
   I: Integer;
+  sheet: TSourceFileSheet;
 begin
   if not IsLoading and not ShowingReloadEnquiry then
   begin
@@ -9108,9 +9202,14 @@ begin
       if FileProp.FileChangedInDisk then
       begin
         FileName := FileProp.FileName;
-        if InternalMessageBox(PChar(FileName +
-          #13#13 + STR_FRM_MAIN[49]), 'Falcon C++',
-          MB_ICONQUESTION or MB_YESNO) = IDYES then
+        if FileProp.GetSheet(sheet) and not sheet.Memo.GetModify then
+        begin
+          FileProp.Reload;
+          UpdateStatusbar;
+        end
+        else if FileProp.Editing and (InternalMessageBox(
+          PChar(FileName + #13#13 + STR_FRM_MAIN[49]), 'Falcon C++',
+          MB_ICONQUESTION or MB_YESNO) = IDYES) then
         begin
           FileProp.Reload;
           FileProp.Project.CompilePropertyChanged := True;
@@ -10530,6 +10629,11 @@ begin
       RunRevStepOverClick(Sender)
     else if Key = VK_F6 then
       RunRevStepReturnClick(Sender);
+  end
+  else if [ssCtrl] = Shift then
+  begin
+    if Key = VK_F4 then
+      FileCloseClick(Sender);
   end;
 end;
 

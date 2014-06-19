@@ -1273,11 +1273,22 @@ object FrmFalconMain: TFrmFalconMain
         Control = ProgressBarParser
         Size = 150
         Tag = 0
+      end
+      item
+        Alignment = taCenter
+        Size = 80
+        Tag = 0
+      end
+      item
+        Alignment = taCenter
+        Size = 90
+        Tag = 0
       end>
     ParentFont = False
     ParentShowHint = False
     ShowHint = True
     UseSystemFont = False
+    OnContextPopup = StatusBarContextPopup
     object ProgressBarParser: TProgressBar
       Left = 510
       Top = 2
@@ -1793,5 +1804,59 @@ object FrmFalconMain: TFrmFalconMain
   object ImageListDebug: TImageList
     Left = 340
     Top = 243
+  end
+  object PopupMenuLineEnding: TTBXPopupMenu
+    Left = 784
+    Top = 544
+    object TBXItem1: TTBXItem
+      AutoCheck = True
+      Caption = 'Windows'
+      GroupIndex = 1
+      RadioItem = True
+      OnClick = LineEndingItemClick
+    end
+    object TBXItem2: TTBXItem
+      Tag = 1
+      AutoCheck = True
+      Caption = 'Linux'
+      GroupIndex = 1
+      RadioItem = True
+      OnClick = LineEndingItemClick
+    end
+    object TBXItem3: TTBXItem
+      Tag = 2
+      AutoCheck = True
+      Caption = 'Mac'
+      GroupIndex = 1
+      RadioItem = True
+      OnClick = LineEndingItemClick
+    end
+  end
+  object PopupMenuEncoding: TTBXPopupMenu
+    Left = 744
+    Top = 544
+    object TBXItem4: TTBXItem
+      AutoCheck = True
+      Caption = 'ANSI'
+      GroupIndex = 1
+      RadioItem = True
+      OnClick = EncodingItemClick
+    end
+    object TBXItem5: TTBXItem
+      Tag = 1
+      AutoCheck = True
+      Caption = 'UTF-8'
+      GroupIndex = 1
+      RadioItem = True
+      OnClick = EncodingItemClick
+    end
+    object TBXItem6: TTBXItem
+      Tag = 2
+      AutoCheck = True
+      Caption = 'UCS-2'
+      GroupIndex = 1
+      RadioItem = True
+      OnClick = EncodingItemClick
+    end
   end
 end

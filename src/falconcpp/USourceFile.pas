@@ -20,7 +20,17 @@ const
   SHEET_TYPE_FILE = 1;
   SHEET_TYPE_DESGN = 2;
 
-  FILE_IMG_LIST: array[1..7] of Integer = (1, 2, 3, 4, 5, 6, 0);
+  ENCODING_ANSI = 0;
+  ENCODING_UTF8 = 1;
+  ENCODING_UCS2 = 2;
+
+  ENDIAN_NONE = 0;
+  ENDIAN_LITTLE = 1;
+  ENDIAN_BIG = 2;
+
+  LINE_ENDING_WINDOWS = 0;
+  LINE_ENDING_LINUX = 1;
+  LINE_ENDING_MAC = 2;
 
   USER_DEFINED = -2;
   NO_COMPILER = -1;
@@ -88,6 +98,7 @@ type
   TSourceDeletionEvent = procedure(Source: TSourceBase) of object;
   TSourceRenameEvent = procedure(Source: TSourceBase;
     const NewFileName: string) of object;
+  TTypeChangedEvent = procedure (Source: TSourceBase; OldType: Integer) of object;
 
   TSourceBase = class(TInterfacedObject)
   private
@@ -100,6 +111,7 @@ type
     FReadOnly: Boolean;
     FOnDeletion: TSourceDeletionEvent;
     FOnRename: TSourceRenameEvent;
+    FOnTypeChanged: TTypeChangedEvent;
   protected
     procedure SetProject(Value: TProjectFile); virtual;
     procedure SetFileType(Value: Integer); virtual;
@@ -126,6 +138,7 @@ type
     property ReadOnly: Boolean read FReadOnly write FReadOnly;
     property OnDeletion: TSourceDeletionEvent read FOnDeletion write FOnDeletion;
     property OnRename: TSourceRenameEvent read FOnRename write FOnRename;
+    property OnTypeChanged: TTypeChangedEvent read FOnTypeChanged write FOnTypeChanged;
   end;
 
   TSourceFile = class(TSourceBase)
@@ -133,7 +146,17 @@ type
     FFileDateTime: TDateTime;
     FSheet: TSourceFileSheet;
     FBreakpoint: TBreakpointList;
+    FEncoding: Integer;
+    FEndian: Integer;
+    FWithBOM: Boolean;
+    FLineEnding: Integer;
     function GetCaption: string;
+    procedure SetEncoding(const Value: Integer);
+    procedure SetLineEnding(const Value: Integer);
+    procedure SetEndian(const Value: Integer);
+    procedure AdjustEncoding(Encoding: TEncoding);
+    function GetEncodingProcessor: TEncoding;
+    procedure SetWithBOM(const Value: Boolean);
   protected
     procedure SetProject(Value: TProjectFile); override;
     procedure SetFileType(Value: Integer); override;
@@ -153,7 +176,8 @@ type
     function Editing: Boolean;
     function ViewPage: Boolean;
     procedure Rename(NewName: string);
-    procedure LoadFile(Text: TStrings);
+    procedure LoadFile(Text: TStrings); overload;
+    function LoadFile(Text: TStrings; var WithBOM: Boolean): TEncoding; overload;
     procedure GetSubFiles(List: TStrings);
     function GetSheet(var Sheet: TSourceFileSheet): Boolean;
     function FindFile(const Name: string; var FileProp: TSourceFile): Boolean;
@@ -165,6 +189,10 @@ type
     destructor Destroy; override;
     property Breakpoint: TBreakpointList read FBreakpoint;
     property DateOfFile: TDateTime read FFileDateTime write FFileDateTime;
+    property Encoding: Integer read FEncoding write SetEncoding;
+    property Endian: Integer read FEndian write SetEndian;
+    property WithBOM: Boolean read FWithBOM write SetWithBOM;
+    property LineEnding: Integer read FLineEnding write SetLineEnding;
   public
     property Caption: string read GetCaption;
   end;
@@ -313,7 +341,7 @@ type
 implementation
 
 uses UFrmMain, UUtils, UConfig, TokenFile, TokenList, TokenUtils, DScintillaTypes,
-  CustomColors, Highlighter;
+  CustomColors, Highlighter, chsdIntf, nsCore;
 
 const
   fileMoveError = 'Can''t move file ''%s'' to ''%s.''';
@@ -333,6 +361,7 @@ begin
   FReadOnly := Value.FReadOnly;
   FOnDeletion := Value.FOnDeletion;
   FOnRename := Value.FOnRename;
+  FOnTypeChanged := Value.FOnTypeChanged;
 end;
 
 constructor TSourceBase.Create(Node: TTreeNode);
@@ -412,9 +441,6 @@ constructor TSourceFile.Create(Node: TTreeNode);
 begin
   inherited Create(Node);
   FBreakpoint := TBreakpointList.Create;
-  FBreakpoint.ImageList := FrmFalconMain.ImageListGutter;
-  FBreakpoint.ImageIndex := 2;
-  FBreakpoint.InvalidIndex := 3;
 end;
 
 destructor TSourceFile.Destroy;
@@ -498,21 +524,57 @@ begin
   end;
 end;
 
+procedure TSourceFile.AdjustEncoding(Encoding: TEncoding);
+begin
+  if Encoding = TEncoding.UTF8 then
+  begin
+    Self.Encoding := ENCODING_UTF8;
+    Self.Endian := ENDIAN_NONE;
+  end
+  else if Encoding = TEncoding.Unicode then
+  begin
+    Self.Encoding := ENCODING_UCS2;
+    Self.Endian := ENDIAN_LITTLE;
+  end
+  else if Encoding = TEncoding.BigEndianUnicode then
+  begin
+    Self.Encoding := ENCODING_UCS2;
+    Self.Endian := ENDIAN_BIG;
+  end
+  else
+  begin
+    Self.Encoding := ENCODING_ANSI;
+    Self.Endian := ENDIAN_NONE;
+  end
+end;
+
+function TSourceFile.GetEncodingProcessor: TEncoding;
+begin
+  if Encoding = ENCODING_UTF8 then
+    Result := TEncoding.UTF8
+  else if (Encoding = ENCODING_UCS2) and (Endian = ENDIAN_BIG) then
+    Result := TEncoding.BigEndianUnicode
+  else if (Encoding = ENCODING_UCS2) then
+    Result := TEncoding.Unicode
+  else
+    Result:= TEncoding.Default;
+end;
+
 procedure TSourceFile.Reload;
 var
   sheet: TSourceFileSheet;
+  BOM: Boolean;
 begin
   if (FileType = FILE_TYPE_FOLDER) then
     Exit;
-  if FileExists(FileName) and Saved then
-  begin
-    if GetSheet(sheet) then
-    begin
-      sheet.Memo.Lines.LoadFromFile(FileName);
-      sheet.Memo.EmptyUndoBuffer;
-    end;
-    UpdateDate;
-  end;
+  if not GetSheet(sheet) then
+    Exit;
+  if not FileExists(FileName) or not Saved then
+    Exit;
+  AdjustEncoding(LoadFile(sheet.Memo.Lines, BOM));
+  WithBOM := BOM;
+  sheet.Memo.EmptyUndoBuffer;
+  UpdateDate;
 end;
 
 procedure TSourceFile.UpdateDate;
@@ -574,6 +636,29 @@ begin
     FProject := Value;
 end;
 
+procedure TSourceFile.SetWithBOM(const Value: Boolean);
+begin
+  if (FWithBOM = Value) then
+    Exit;
+  if Value and (Encoding = ENCODING_ANSI) then
+    Exit;
+  FWithBOM := Value;
+end;
+
+procedure TSourceFile.SetEncoding(const Value: Integer);
+begin
+  if FEncoding = Value then
+    Exit;
+  FEncoding := Value;
+end;
+
+procedure TSourceFile.SetEndian(const Value: Integer);
+begin
+  if FEndian = Value then
+    Exit;
+  FEndian := Value;
+end;
+
 procedure TSourceFile.SetFileName(Value: string);
 var
   Temp: string;
@@ -614,28 +699,27 @@ end;
 
 procedure TSourceFile.SetFileType(Value: Integer);
 var
-  Sheet: TSourceFileSheet;
+  OldType: Integer;
 begin
+  if FFileType = Value then
+    Exit;
+  OldType := FFileType;
   FFileType := Value;
-  if Assigned(Node) then
-  begin
-    Node.ImageIndex := FILE_IMG_LIST[FileType];
-    Node.SelectedIndex := FILE_IMG_LIST[FileType];
-    if GetSheet(Sheet) then
-    begin
-      Sheet.ImageIndex := FILE_IMG_LIST[FileType];
-      case FileType of
-        FILE_TYPE_C..FILE_TYPE_H: Sheet.Memo.Highlighter := FrmFalconMain.CppHighligher;
-        // TODO: commented
-//        FILE_TYPE_RC: Sheet.Memo.Highlighter := FrmFalconMain.ResourceHighlighter;
-      end;
-    end;
-  end;
+  if Assigned(FOnTypeChanged) then
+    FOnTypeChanged(Self, OldType);
+end;
+
+procedure TSourceFile.SetLineEnding(const Value: Integer);
+begin
+  if FLineEnding = Value then
+    Exit;
+  FLineEnding := Value;
 end;
 
 function TSourceFile.Edit(SelectTab: Boolean): TSourceFileSheet;
 var
   Sheet: TSourceFileSheet;
+  BOM: Boolean;
 begin
   if GetSheet(Sheet) then
   begin
@@ -651,8 +735,9 @@ begin
   if Saved then
   begin
     Sheet.Memo.ReadOnly := False;
-    Sheet.Memo.Lines.LoadFromFile(FileName);
-    Sheet.Memo.EmptyUndoBuffer;
+    AdjustEncoding(LoadFile(sheet.Memo.Lines, BOM));
+    WithBOM := BOM;
+    sheet.Memo.EmptyUndoBuffer;
     Sheet.Memo.ReadOnly := ReadOnly;
   end;
   FrmFalconMain.PageControlEditor.Show;
@@ -693,8 +778,58 @@ begin
 end;
 
 procedure TSourceFile.LoadFile(Text: TStrings);
+var
+  BOM: Boolean;
 begin
-  Text.LoadFromFile(FileName);
+  LoadFile(text, BOM);
+end;
+
+function TSourceFile.LoadFile(Text: TStrings; var WithBOM: Boolean): TEncoding;
+var
+  ChSInfo: rCharsetInfo;
+  Size: Integer;
+  Buffer: TBytes;
+  Stream: TStream;
+begin
+  Stream := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
+  try
+    Size := Stream.Size - Stream.Position;
+    SetLength(Buffer, Size);
+    Stream.Read(Buffer[0], Size);
+    Result := nil;
+    // detect file encoding and read it
+    chsdet_Reset;
+    chsdet_HandleData(PAnsiChar(Buffer), Size);
+    if not chsdet_Done then
+      chsdet_DataEnd;
+    WithBOM := True;
+    case chsdet_GetDetectedBOM of
+      BOM_UCS4_BE,    // 00 00 FE FF           UCS-4,    big-endian machine    (1234 order)
+      BOM_UCS4_2143,  // 00 00 FF FE           UCS-4,    unusual octet order   (2143)
+      BOM_UTF16_BE:   // FE FF ## ##           UTF-16,   big-endian
+        Result := TEncoding.BigEndianUnicode;
+      BOM_UCS4_LE,    // FF FE 00 00           UCS-4,    little-endian machine (4321 order)
+      BOM_UCS4_3412,  // FE FF 00 00           UCS-4,    unusual octet order   (3412)
+      BOM_UTF16_LE:   // FF FE ## ##           UTF-16,   little-endian
+        Result := TEncoding.Unicode;
+      BOM_UTF8:        // EF BB BF              UTF-8
+        Result := TEncoding.UTF8;
+    else
+      WithBOM := False;
+      ChSInfo := chsdet_GetDetectedCharset;
+      if ChSInfo.CodePage = 65001 then
+        Result := TEncoding.UTF8
+      else if ChSInfo.CodePage = -1 then
+        Result := TEncoding.UTF8
+      else
+        Result := TEncoding.Default;
+    end;
+    Stream.Position := 0;
+    Text.LoadFromStream(Stream, Result);
+    UpdateDate;
+  finally
+    Stream.Free;
+  end;
 end;
 
 procedure TSourceFile.GetSubFiles(List: TStrings);
@@ -836,7 +971,7 @@ begin
     Project.Compiled := False;
     if GetSheet(Sheet) then
     begin
-      Sheet.Memo.Lines.SaveToFile(FileName);
+      Sheet.Memo.Lines.SaveToFile(FileName, GetEncodingProcessor);
       if sheet.Memo.Modified and not Project.Saved and IsNew then
         Project.SomeFileChanged := True;
       sheet.Memo.SetSavePoint;
@@ -845,7 +980,7 @@ begin
     begin
       with TStringList.Create do
       begin
-        SaveToFile(FileName);
+        SaveToFile(FileName, GetEncodingProcessor);
         Free;
       end;
     end;
@@ -926,7 +1061,7 @@ begin
   begin
     if GetSheet(Sheet) then
     begin
-      Sheet.Memo.Lines.SaveToFile(ToFileName);
+      Sheet.Memo.Lines.SaveToFile(ToFileName, GetEncodingProcessor);
       if sheet.Memo.Modified and not Project.Saved and IsNew then
         Project.SomeFileChanged := True;
       sheet.Memo.SetSavePoint;
@@ -958,7 +1093,6 @@ begin
   FVersion.CharsetID := $04E4;
   FBreakpointCursor := TBreakpoint.Create;
   FBreakpointCursor.Valid := False;
-  FFileType := FILE_TYPE_PROJECT;
   FDelObjPrior := True;
   FDelObjAfter := True;
   FDelMakAfter := True;
@@ -2387,8 +2521,8 @@ begin
   FEditor := TEditor.Create(Self);
   FEditor.Parent := Self;
   FEditor.Align := alClient;
-  FEditor.ReadOnly := SourceFile.ReadOnly;
   FEditor.WantTabs := True;
+  FEditor.ReadOnly := SourceFile.ReadOnly;
   FEditor.ImageList := FrmFalconMain.ImageListGutter;
   FEditor.PopupMenu := FrmFalconMain.PopupEditor;
   // TODO: commented

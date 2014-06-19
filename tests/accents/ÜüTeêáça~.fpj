@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project>
+	<Libs Value=""/>
+	<Flags Value=""/>
+	<Target Value="ÜüTeêáça~.exe"/>
+	<CommandLine Value=""/>
+	<CompilerOptions Value="-Wall -s -O2"/>
+	<DeleteObjectsBefore Value="No"/>
+	<DeleteObjectsAfter Value="No"/>
+	<DeleteMakefileAfter Value="No"/>
+	<DeleteResourcesAfter Value="No"/>
+	<EnableTheme Value="No"/>
+	<RequiresAdmin Value="No"/>
+	<CompilerType Value="CPP"/>
+	<AppType Value="CONSOLE"/>
+	<Files>
+		<File Name="êá~98Ü¨ç.cpp"/>
+	</Files>
+</Project>

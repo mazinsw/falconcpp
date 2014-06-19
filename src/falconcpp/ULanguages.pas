@@ -1017,7 +1017,7 @@ const
     (Expression: '(.*):([0-9]+): error: variable or field ''(.*)'' declared void$'; FileName: 1; Line: 2; Column: 0),
     (Expression: '(.*):([0-9]+): error: expected primary-expression before ''(.*)''$'; FileName: 1; Line: 2; Column: 0),
     (Expression: '(.*):([0-9]+): error: redeclaration of ''(.*)'' with no linkage$'; FileName: 1; Line: 2; Column: 0),
-    (Expression: '(.*):\(\.text\+(0x[0-9A-Fa-f]+)\): undefined reference to `(.*)''$'; FileName: 1; Line: 0; Column: 0),
+    (Expression: '.*?:(.*):\(.*?\+(0x[0-9A-Fa-f]+)\): undefined reference to `(.*)''$'; FileName: 1; Line: 0; Column: 0),
     (Expression: '(.*): cannot open output file (.*): Permission denied$'; FileName: 2; Line: 0; Column: 0),
     (Expression: '(.*):([0-9]+):([0-9]+): error: too many decimal points in number$'; FileName: 1; Line: 2; Column: 3),
     (Expression: '(.*):([0-9]+):([0-9]+): warning: assignment makes integer from pointer without a cast [enabled by default]$'; FileName: 1; Line: 2; Column: 3),

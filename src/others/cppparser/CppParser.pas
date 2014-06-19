@@ -3,93 +3,83 @@ unit CppParser;
 interface
 
 uses
-  Classes, SysUtils, TokenList;
+  Classes, SysUtils, TokenList, CppTokenizer;
 
 type
-  TSetOfChars = set of Char;
+  TSetOfChars = set of AnsiChar;
+  TSetOfTkxType = set of TTkxType;
 
   TLogTokenEvent = procedure(Sender: TObject; Msg: string; Current: Integer) of object;
   TParserProgressEvent = procedure(Sender: TObject; Current, Total: Integer) of object;
 
   TCppParser = class(TObject)
   private
-    fCancel: Boolean;
+    FCancel: Boolean;
     FBusy: Boolean;
 
-    fSrc: string;
-    fptr: PChar;
-    fCurrLine: Integer;
-    fCurrPos: Integer;
-
-    fLength: Integer;
-    fLevel: Integer;
-    fVarFunc: Boolean;
-    fComment: string;
-    fRightComment: string;
-    fOpenCommentCount: Integer;
+    FStartPtr: PChar;
+    FFirst: PToken;
+    FCurrent: PToken;
+    FLevel: Integer;
+    FVarFunc: Boolean;
+    FComment: string;
+    FRightComment: string;
+    FOpenCommentCount: Integer;
     //parsed items
-    fTokenFile: Pointer;
-    //***************
-    fProgress: TParserProgressEvent;
-    fLogToken: TLogTokenEvent;
+    FTokenFile: Pointer;
     //stack manipulation
-    fStack: TList;
-    fLast: TTokenClass;
-    fPrev: TTokenClass;
+    FStack: TList;
+    FLast: TTokenClass;
+    FPrev: TTokenClass;
     function Pop: TTokenClass;
     function Top: TTokenClass;
     function Empty: Boolean;
     procedure Push(Item: TTokenClass);
     function StackLevel: Integer;
-    //set events
-    procedure DoProgress;
-//    procedure DoTokenLog(const S: string);
-    //skip
-    procedure SkipUntilFind(Chars: TSetOfChars);
-    procedure SkipSpaces;
-    procedure SkipEOL;
-    procedure SkipDoubleQuotes;
-    procedure SkipSingleQuotes;
-    procedure SkipMultLineComment;
-    procedure SkipSingleComment;
-    procedure SkipPair(cStart, cEnd: Char; BreakOn: TSetOfChars = []);
-    //count
-    function CountCharacters: Integer;
-    function CountElements(cStart, cEnd: Char): Integer;
-    //get
-    function GetWordUntilFind(Chars: TSetOfChars; SkipTemplate: Boolean = False): string;
-    function GetWordPair(cStart, cEnd: Char): string;
-    function GetWord(SpaceSepOnly: Boolean = False): string;
-    function GetEOL: string;
-    function GetArguments: string;
-    //process
+//    //count
+//    function CountCharacters: Integer;
+//    function CountElements(cStart, cEnd: Char): Integer;
+//    //process
     procedure ProcessPreprocessor;
-    procedure ProcessTypedef(StartPos, StartLine: Integer; const S: string);
-    procedure ProcessParams(StartPos, StartLine: Integer);
-    procedure ProcessVariable(StartPos, StartLine: Integer; const S: string);
-    procedure ProcessStruct(Typedef: Boolean; StartPos, StartLine: Integer;
-      const S: string);
-    procedure ProcessUnion(Typedef: Boolean; StartPos, StartLine: Integer;
-      const S: string);
-    procedure ProcessEnum(Typedef: Boolean; StartPos, StartLine: Integer;
-      const S: string);
-    procedure ProcessClass(Typedef: Boolean; StartPos, StartLine: Integer;
-      const S: string);
-    procedure ProcessNamespace(Typedef: Boolean; StartPos,
-      StartLine: Integer; const S: string);
-    procedure ProcessFunction(StartPos, StartLine: Integer;
-      const S: string; IsDestructor: Boolean = False);
+//    procedure ProcessTypedef(StartPos, StartLine: Integer; const S: string);
+//    procedure ProcessParams(StartPos, StartLine: Integer);
+//    procedure ProcessVariable(StartPos, StartLine: Integer; const S: string);
+//    procedure ProcessStruct(Typedef: Boolean; StartPos, StartLine: Integer;
+//      const S: string);
+//    procedure ProcessUnion(Typedef: Boolean; StartPos, StartLine: Integer;
+//      const S: string);
+//    procedure ProcessEnum(Typedef: Boolean; StartPos, StartLine: Integer;
+//      const S: string);
+//    procedure ProcessClass(Typedef: Boolean; StartPos, StartLine: Integer;
+//      const S: string);
+//    procedure ProcessNamespace(Typedef: Boolean; StartPos,
+//      StartLine: Integer; const S: string);
+//    procedure ProcessFunction(StartPos, StartLine: Integer;
+//      const S: string; IsDestructor: Boolean = False);
     //additional
-    function TrimAll(const S: string): string;
-
-    procedure NextValidChar;
+//    function TrimAll(const S: string): string;
     function AddToken(const S, Flag: string; TkType: TTkType; Line, Start,
       Len, Level: Integer): TTokenClass;
+    function SkipUntilFind(TypeSet: TSetOfTkxType): Boolean;
+    function GetEOL(Line: Integer): string;
+    procedure SkipEOL(Line: Integer);
+    procedure ProcessStruct(Token: TTkType);
+    function GetInheritanceNoTemplate: string;
+    function SkipTemplate: Boolean;
+    procedure ProcessFields(StopLevel: Integer);
+    procedure ProcessIdentifier(Fields: Boolean);
+    function GetTypeNoTemplate(var TokenID, TokenDestr: PToken): string;
+    procedure ProcessCloseBraces;
+    procedure ProcessVariableOrFunction;
+    function GetPointerReference: string;
+    function GetIdentifierNoTemplate(var TokenID, TokenDestr: PToken): string;
+    function SkipPair: Boolean;
+    function SkipAssign: Boolean;
+    function Next: Boolean;
+    procedure ProcessParams;
   public
     property Canceled: Boolean read fCancel;
     property Busy: Boolean read fBusy;
-    property OnProgess: TParserProgressEvent read fProgress write fProgress;
-    property OnLogToken: TLogTokenEvent read fLogToken write fLogToken;
     //******************************************
     constructor Create;
     destructor Destroy; override;
@@ -104,2543 +94,900 @@ uses TokenFile, TokenUtils, TokenConst;
 
 {TCppParser}
 
-procedure TCppParser.SkipEOL;
+function TCppParser.SkipUntilFind(TypeSet: TSetOfTkxType): Boolean;
 begin
-  repeat
-    if fptr^ in LineChars then
-      Exit;
-    Inc(fptr);
-    Inc(fCurrPos);
-    DoProgress;
-    case fptr^ of
-      #10: Inc(fCurrLine); //LF
-      '/': if (fptr + 1)^ = '/' then
-          SkipSingleComment
-        else if (fptr + 1)^ = '*' then
-        begin
-          Inc(fptr);
-          Inc(fCurrPos);
-          SkipMultLineComment;
-        end;
-      '\': if (fptr + 1)^ = #10 then
-        begin
-          Inc(fptr, 2);
-          Inc(fCurrPos, 2);
-          if fptr^ = #10 then
-            Inc(fCurrLine);
-          Inc(fCurrLine);
-        end
-        else if (fptr + 1)^ = #13 then
-        begin
-          Inc(fptr, 2);
-          Inc(fCurrPos, 2);
-          if fptr^ = #10 then
-          begin
-            Inc(fptr);
-            Inc(fCurrPos);
-            if fptr^ = #10 then
-              Inc(fCurrLine);
-            Inc(fCurrLine);
-          end;
-        end;
-    end;
-    if fCancel then
-      Exit;
-  until fptr^ in LineChars + [#0];
+  while (FCurrent <> nil) and not (FCurrent^.Token in TypeSet) do
+    Next;
+  Result := FCurrent <> nil;
 end;
 
-procedure TCppParser.SkipDoubleQuotes;
-begin
-  repeat
-    Inc(fptr);
-    Inc(fCurrPos);
-    DoProgress;
-    case fptr^ of
-      #10: Inc(fCurrLine); //LF
-      '\': if (fptr + 1)^ = '"' then
-        begin
-          Inc(fptr, 2);
-          Inc(fCurrPos, 2);
-        end;
-    end;
-    if (fptr^ = #10) and ((fptr - 1)^ <> '\') then
-      Break;
-    if fCancel then
-      Exit;
-  until fptr^ in ['"', #0, #10];
-end;
-
-procedure TCppParser.SkipSingleQuotes;
-begin
-  repeat
-    Inc(fptr);
-    Inc(fCurrPos);
-    DoProgress;
-    case fptr^ of
-      #10: Inc(fCurrLine); //LF
-      '\': //if (fptr + 1)^ = '''' then
-        begin
-          Inc(fptr, 2);
-          Inc(fCurrPos, 2);
-        end;
-    end;
-    if (fptr^ = #10) and ((fptr - 1)^ <> '\') then
-      Break;
-    if fCancel then
-      Exit;
-  until fptr^ in ['''', #0];
-end;
-
-procedure TCppParser.SkipMultLineComment;
+function TCppParser.GetEOL(Line: Integer): string;
 var
-  DocComment, RightComment: Boolean;
-  fstart, fend, fastrk: Pchar;
-  s, LF_str, Comment: string;
-begin
-  Comment := '';
-  LF_str := '';
-  RightComment := False;
-  DocComment := (fptr + 1)^ = '*';
-  if ((fptr + 1)^ = '@') and ((fptr + 2)^ = '{') then
-    Inc(fOpenCommentCount)
-  else if ((fptr + 1)^ = '@') and ((fptr + 2)^ = '}') and (fOpenCommentCount > 0) then
-  begin
-    Dec(fOpenCommentCount);
-    fComment := '';
-  end
-  else if DocComment and ((fptr + 2)^ = '<') then
-    RightComment := True;
-  fstart := nil;
-  fastrk := fptr + 2;
-  fend := fptr;
-  repeat
-    Inc(fptr);
-    Inc(fCurrPos);
-    DoProgress;
-    case fptr^ of
-      #10:
-      begin
-        Inc(fCurrLine); //LF
-        if DocComment and (fstart <> nil) then
-        begin
-          SetLength(s, fend - fstart + 1);
-          StrLCopy(PChar(s), fstart, fend - fstart + 1);
-          Comment := Comment + LF_str + s;
-          LF_str := #13;
-        end
-        else if Comment <> '' then
-          LF_str := LF_str + #13;
-        fstart := nil;
-        fastrk := fptr + 1;
-      end;
-      '*':
-      begin
-        if (fstart = nil) then
-          fastrk := fptr + 1;
-      end;
-      '<':
-      begin
-        if (fstart = nil) then
-          fastrk := fptr + 1;
-      end;
-    else
-      if not (fptr^ in SpaceChars+LineChars) then
-      begin
-        if fstart = nil then
-          fstart := fastrk;
-        fend := fptr;
-      end
-      else if (Comment = '') and (fstart = nil) then
-        fastrk := fptr + 1;
-    end;
-    if fCancel then
-      Exit;
-  until (fptr^ = #0) or ((fptr^ = '*') and ((fptr + 1)^ = '/'));
-  if DocComment then
-  begin
-    if (fstart <> nil) then
-    begin
-      SetLength(s, fend - fstart + 1);
-      StrLCopy(PChar(s), fstart, fend - fstart + 1);
-      Comment := Comment + LF_str + s;
-    end;
-    if not RightComment and (fOpenCommentCount = 0) then
-      fComment := Comment
-    else if RightComment then
-      fRightComment := Comment;
-  end;
-  if fptr^ <> #0 then
-  begin
-    Inc(fptr);
-    Inc(fCurrPos);
-  end;
-end;
-
-procedure TCppParser.SkipSpaces;
-begin
-  repeat
-    if fptr^ <> #0 then
-    begin
-      if not (fptr^ in SpaceChars) and
-        not ((fptr^ = '\') and ((fptr + 1)^ in [#10, #13])) then
-        Exit;
-    end;
-    Inc(fptr);
-    Inc(fCurrPos);
-    DoProgress;
-    case fptr^ of
-      #10: Inc(fCurrLine); //LF
-      '\': if (fptr + 1)^ = #10 then
-        begin
-          Inc(fptr, 2);
-          Inc(fCurrPos, 2);
-          Inc(fCurrLine);
-        end
-        else if (fptr + 1)^ = #13 then
-        begin
-          Inc(fptr, 2);
-          Inc(fCurrPos, 2);
-          if fptr^ = #10 then
-          begin
-            Inc(fptr);
-            Inc(fCurrPos);
-            Inc(fCurrLine);
-          end;
-        end;
-    end;
-    if fCancel then
-      Exit;
-  until not (fptr^ in SpaceChars) or (fptr^ = #0);
-end;
-
-procedure TCppParser.SkipSingleComment;
-begin
-  SkipEOL;
-end;
-
-function TCppParser.CountCharacters: Integer;
-var
-  CanExit: Boolean;
-begin
-  Result := 1;
-  CanExit := False;
-  repeat
-    Inc(fptr);
-    Inc(fCurrPos);
-    DoProgress;
-    case fptr^ of
-      #10: Inc(fCurrLine); //LF
-      '\': if (fptr + 1)^ in ['\', 'n', 'r', 't', 'b', '0', '"', ''''] then
-        begin
-          Inc(fptr);
-          Inc(fCurrPos);
-          Inc(Result);
-        end
-        else if (fptr + 1)^ = 'x' then
-        begin
-          Inc(fptr);
-          Inc(fCurrPos);
-          Inc(Result);
-          while (fptr + 1)^ in HexChars + DigitChars do
-          begin
-            Inc(fptr);
-            Inc(fCurrPos);
-          end;
-        end;
-      '"': CanExit := True; //skip
-    else
-      Inc(Result);
-    end;
-    if fCancel then
-      Exit;
-  until (fptr^ = #0) or CanExit;
-end;
-
-function TCppParser.CountElements(cStart, cEnd: Char): Integer;
-var
-  PairCount, Count: Integer;
-begin
-  Result := 0;
-  Count := 0;
-  PairCount := 0;
-  repeat
-    if fptr^ = cStart then
-      Inc(PairCount)
-    else if fptr^ = cEnd then
-      Dec(PairCount);
-    if PairCount = 0 then
-      Break;
-    Inc(fptr);
-    Inc(fCurrPos);
-    DoProgress;
-    case fptr^ of
-      #10: Inc(fCurrLine); //LF
-      '"':
-        begin
-          SkipDoubleQuotes;
-          Inc(Result);
-        end;
-      '''':
-        begin
-          SkipSingleQuotes;
-          Inc(Result);
-        end;
-      '/': if (fptr + 1)^ = '/' then
-          SkipSingleComment
-        else if (fptr + 1)^ = '*' then
-        begin
-          Inc(fptr);
-          Inc(fCurrPos);
-          SkipMultLineComment;
-        end;
-      '(':
-        begin
-          Inc(Result);
-          SkipPair('(', ')');
-          if cEnd = ')' then
-          begin
-            Inc(fptr);
-            Inc(fCurrPos);
-          end;
-        end;
-      '{':
-        begin
-          Inc(Result);
-          SkipPair('{', '}');
-          if cEnd = '}' then
-          begin
-            Inc(fptr);
-            Inc(fCurrPos);
-          end;
-        end;
-      '}': ;
-      ',': Inc(Count);
-    else
-      if not (fptr^ in SpaceChars + LineChars) and (Result = 0) then
-        Inc(Result);
-    end;
-    if fCancel then
-      Exit;
-  until (PairCount = 0) or (fptr^ = #0);
-  if (Result <> 0) and (Count > 0) then
-    Result := Count + 1;
-end;
-
-function TCppParser.GetWordPair(cStart, cEnd: Char): string;
-var
-  PairCount: Integer;
+  Space: string;
+  Prev: PToken;
 begin
   Result := '';
-  PairCount := 0;
-  repeat
-    if fptr^ = cStart then
-      Inc(PairCount)
-    else if fptr^ = cEnd then
-      Dec(PairCount);
-    if PairCount = 0 then
-      Break;
-    Inc(fptr);
-    Inc(fCurrPos);
-    DoProgress;
-    case fptr^ of
-      #10: Inc(fCurrLine); //LF
-      '"': SkipDoubleQuotes;
-      '''': SkipSingleQuotes;
-      '/': if (fptr + 1)^ = '/' then
-          SkipSingleComment
-        else if (fptr + 1)^ = '*' then
-        begin
-          Inc(fptr);
-          Inc(fCurrPos);
-          SkipMultLineComment;
-        end;
-      ';':
-        begin
-          Result := '';
-          Exit;
-        end;
-    else
-      if fptr^ = cStart then
-      begin
-        Result := Result + cStart + GetWordPair(cStart, cEnd) + cEnd;
-        if fptr^ <> cEnd then
-        begin
-          Result := '';
-          Exit;
-        end
-        else
-        begin
-          Inc(fptr);
-          Inc(fCurrPos);
-          DoProgress;
-        end;
-      end
-      else if fptr^ in SpaceChars + LineChars then
-        Result := Trim(Result) + ' '
-      else if not (fptr^ in [cStart, cEnd]) then
-        Result := Result + fptr^;
-    end;
-    if fCancel then
+  Space := '';
+  Prev := nil;
+  while (FCurrent <> nil) do
+  begin
+    if (FCurrent^.Line > Line) and ((Prev = nil) or (Prev^.Token <> tkxBackslash)) then
       Exit;
-  until (PairCount = 0) or (fptr^ = #0);
-  Result := Trim(Result);
+    Line := FCurrent^.Line;
+    Prev := FCurrent;
+    Next;
+    if Prev^.Token = tkxBackslash then
+      Continue;
+    Result := Result + Space + TokenString(FStartPtr, Prev);
+    Space := ' ';
+  end;
 end;
 
-procedure TCppParser.SkipPair(cStart, cEnd: Char; BreakOn: TSetOfChars);
-var
-  PairCount: Integer;
+function TCppParser.GetTypeNoTemplate(var TokenID, TokenDestr: PToken): string;
 begin
-  PairCount := 0;
-  repeat
-    if fptr^ = cStart then
-      Inc(PairCount)
-    else if fptr^ = cEnd then
-      Dec(PairCount);
-    if (PairCount = 0) or (fptr^ in BreakOn) then
+  Result := '';
+  TokenID := nil;
+  while (FCurrent <> nil) do
+  begin
+    if FCurrent^.Token = tkxIdentifier then
+    begin
+      if TokenID <> nil then
+        Break;
+      TokenID := FCurrent;
+    end
+    else if FCurrent^.Token in [tkxLess, tkxShiftLeft] then
+    begin
+      SkipTemplate;
+      Continue;
+    end
+    else if FCurrent^.Token = tkxGlobalScope then
+    begin
+      if TokenID <> nil then
+        Result := Result + TokenString(FStartPtr, TokenID) + '::'
+      else
+        Result := Result + '::';
+      TokenID := nil;
+    end
+    else if FCurrent^.Token = tkxBinNot then
+    begin
+      TokenDestr := FCurrent;
+    end
+    else
       Break;
-    Inc(fptr);
-    Inc(fCurrPos);
-    DoProgress;
-    case fptr^ of
-      #10: Inc(fCurrLine); //LF
-      '"': SkipDoubleQuotes;
-      '''': SkipSingleQuotes;
-      '/': if (fptr + 1)^ = '/' then
-          SkipSingleComment
-        else if (fptr + 1)^ = '*' then
-        begin
-          Inc(fptr);
-          Inc(fCurrPos);
-          SkipMultLineComment;
-        end;
-    end;
-    if fCancel then
-      Exit;
-  until (PairCount = 0) or (fptr^ = #0);
+    Next;
+  end;
+end;   
+
+function TCppParser.GetIdentifierNoTemplate(var TokenID, TokenDestr: PToken): string;
+begin
+  Result := GetTypeNoTemplate(TokenID, TokenDestr);
 end;
+
+function TCppParser.Next: Boolean;
+begin
+  FCurrent := FCurrent^.Next;
+  while (FCurrent <> nil) and (FCurrent^.Token = tkxComment) do
+    FCurrent := FCurrent^.Next;
+  Result := FCurrent = nil;
+end;
+
+function TCppParser.GetPointerReference: string;
+var
+  TokenReference: PToken;
+begin
+  Result := '';
+  TokenReference := nil;
+  while (FCurrent <> nil) do
+  begin
+    if FCurrent^.Token = tkxBinAnd then
+    begin
+      if TokenReference <> nil then
+      begin
+        // incorrect &&
+        Next;
+        Continue; // skip
+      end;
+      TokenReference := FCurrent;
+      Result := Result + '&';
+    end
+    else if FCurrent^.Token = tkxMult then
+    begin
+      if TokenReference <> nil then
+      begin
+        // incorrect & *
+        Next;
+        Continue; // skip
+      end;
+      Result := Result + '*';
+    end
+    else
+      Break;
+    Next;
+  end;
+end;
+
+function TCppParser.GetInheritanceNoTemplate: string;
+var
+  Space: string;
+  TokenID, TokenDestr: PToken;
+begin
+  Result := '';
+  Space := '';
+  while (FCurrent <> nil) and not (FCurrent^.Token in [tkxSemicolon,
+    tkxOpenBraces]) do
+  begin
+    if FCurrent^.Token = tkxIdentifier then
+    begin
+      if TokenMatch(FStartPtr, 'public', FCurrent) or
+         TokenMatch(FStartPtr, 'protected', FCurrent) or
+         TokenMatch(FStartPtr, 'private', FCurrent) then
+      begin
+        Result := Result + Space + TokenString(FStartPtr, FCurrent);
+      end
+      else
+      begin
+        Result := Result + Space + GetTypeNoTemplate(TokenID, TokenDestr);
+        Result := Result + TokenString(FStartPtr, TokenID);
+        Space := ' ';
+        Continue;
+      end;
+      Space := ' ';
+    end
+    else if FCurrent^.Token = tkxComma then
+    begin
+      Result := Result + ',';
+      Space := ' ';
+    end
+    else if FCurrent^.Token = tkxGlobalScope then
+    begin
+      Result := Result + Space + GetTypeNoTemplate(TokenID, TokenDestr);
+      Result := Result + TokenString(FStartPtr, TokenID);
+      Space := ' ';
+      Continue;
+    end;
+    Next;
+  end;
+end;
+
+procedure TCppParser.SkipEOL(Line: Integer);
+var
+  Prev: PToken;
+begin
+  Prev := nil;
+  while (FCurrent <> nil) do
+  begin
+    if (FCurrent^.Line > Line) and ((Prev = nil) or (Prev^.Token <> tkxBackslash)) then
+      Exit;
+    Line := FCurrent^.Line;
+    Prev := FCurrent;
+    Next;
+  end;
+end;
+
+function TCppParser.SkipTemplate: Boolean;
+var
+  OpenCount: Integer;
+begin
+  OpenCount := 0;
+  repeat
+    if FCurrent^.Token = tkxLess then
+      Inc(OpenCount)
+    else if FCurrent^.Token = tkxGreater then
+      Dec(OpenCount)
+    else if FCurrent^.Token = tkxShiftLeft then
+      Inc(OpenCount, 2)
+    else if FCurrent^.Token = tkxShiftRight then
+      Dec(OpenCount, 2);
+    Next;
+  until (FCurrent = nil) or (OpenCount = 0);
+  Result := OpenCount = 0;
+end;
+
+function TCppParser.SkipPair: Boolean;
+var
+  OpenCount: Integer;
+  OpenToken, CloseToken: TTkxType;
+begin
+  OpenCount := 0;
+  OpenToken := FCurrent^.Token;
+  if OpenToken = tkxOpenBrackets then
+    CloseToken := tkxCloseBrackets
+  else if OpenToken = tkxOpenParentheses then
+    CloseToken := tkxCloseParentheses
+  else
+    CloseToken := tkxCloseBraces;
+  repeat
+    if FCurrent^.Token = OpenToken then
+      Inc(OpenCount)
+    else if FCurrent^.Token = CloseToken then
+      Dec(OpenCount);
+    Next;
+  until (FCurrent = nil) or (OpenCount = 0);
+  Result := OpenCount = 0;
+end;
+
+function TCppParser.SkipAssign: Boolean;
+begin
+  repeat
+    if FCurrent^.Token in [tkxOpenParentheses, tkxOpenBraces, tkxOpenBrackets] then
+    begin
+      SkipPair;
+      Continue;
+    end;
+    Next;
+  until (FCurrent = nil) or (FCurrent^.Token in [tkxSemicolon, tkxComma]);
+  Result := (FCurrent <> nil);
+end;
+
 
 procedure TCppParser.ProcessPreprocessor;
 var
-  TokenName, TempWord, DefStr: string;
-  Len, I, Line: Integer;
-  IncludeChar: Char;
+  S, DefStr: string;
+  NameToken: PToken;
 begin
-  TokenName := '';
-  if fptr^ = '#' then
+  if not SkipUntilFind([tkxIdentifier]) then
+    Exit;
+  if TokenMatch(FStartPtr, 'include', FCurrent) then
   begin
-    Inc(fptr);
-    Inc(fCurrPos);
-  end;
-  SkipSpaces;
-  repeat
-    case fptr^ of
-      #10: Inc(fCurrLine); //LF
-      '\': Break;
+    if not SkipUntilFind([tkxString, tkxIncludePath]) then
+      Exit;
+    if TokenLength(FCurrent) < 2 then // "" or <>
+      Exit;
+    S := TokenString(FStartPtr, FCurrent);
+    if S[1] = '"' then
+    begin
+      S := Trim('"', S, '"');
+      AddToken(S, 'L', tkInclude, FCurrent^.Line,
+        FCurrent^.StartPosition + 1, Length(S), FLevel);
+    end
     else
-      if not (fptr^ in SpaceChars + LineChars) then
-        TokenName := TokenName + fptr^;
-    end;
-    Inc(fptr);
-    Inc(fCurrPos);
-    DoProgress;
-    if fCancel then
-      Exit;
-  until fptr^ in SpaceChars + LineChars + [#0, '"', '<'];
-
-  if TokenName = 'include' then
-  begin
-    SkipSpaces;
-    IncludeChar := fptr^;
-    if not (fptr^ in ['"', '<']) then
     begin
-      SkipEOL;
-      Exit;
+      S := Trim('<', S, '>');
+      AddToken(S, 'S', tkInclude, FCurrent^.Line,
+        FCurrent^.StartPosition + 1, Length(S), FLevel);
     end;
-    Inc(fptr);
-    Inc(fCurrPos);
-    SkipSpaces;
-    Line := fCurrLine;
-    I := fCurrPos - 1;
-    TempWord := GetWordUntilFind([#10, #13, ' ', '"', '>']);
-    SkipSpaces;
-    if not (fptr^ in ['"', '>']) or
-      ((IncludeChar = '<') and (fptr^ <> '>')) or
-      ((IncludeChar = '"') and (fptr^ <> '"')) then
-    begin
-      SkipEOL;
-      Exit;
-    end;
-    Len := Length(TempWord);
-    if Len > 0 then
-    begin
-      Inc(I);
-      if IncludeChar = '"' then
-        AddToken(TempWord, 'L', tkInclude, Line, I, Len, fLevel)
-      else if IncludeChar = '<' then
-        AddToken(TempWord, 'S', tkInclude, Line, I, Len, fLevel)
-    end;
+    Next;
   end
-  else if TokenName = 'define' then
+  else if TokenMatch(FStartPtr, 'define', FCurrent) then
   begin
-    SkipSpaces;
-    Line := fCurrLine;
-    I := fCurrPos;
-    TempWord := Trim(GetWord);
-    Len := Length(TempWord);
-    if Len > 0 then
-    begin
-      if not (fptr^ in LineChars + SpaceChars) then
-        DefStr := fptr^;
-      DefStr := DefStr + GetEOL;
-      if Length(DefStr) > 255 then
-        DefStr := '{...}';
-      DefStr := Trim(DefStr);
-      AddToken(TempWord, DefStr, tkDefine, Line, I, Len, fLevel);
-      if not (fptr^ in LineChars) then
-        SkipEOL;
-    end;
+    Next;
+    if not SkipUntilFind([tkxIdentifier]) then
+      Exit;
+    NameToken := FCurrent;
+    S := TokenString(FStartPtr, NameToken);
+    Next;
+    DefStr := GetEOL(FCurrent^.Line);
+    if Length(DefStr) > 255 then
+      DefStr := '{...}';
+    AddToken(S, DefStr, tkDefine, NameToken^.Line,
+      NameToken^.StartPosition, Length(S), FLevel);
   end
-  else //#ifndef #endif #ifdef ...
+  else // ifdef, ifndef, if, else, endif, error, pragma
   begin
-    SkipEOL;
+    SkipEOL(FCurrent^.Line);
   end;
 end;
 
-procedure TCppParser.ProcessTypedef(StartPos, StartLine: Integer; const S: string);
+procedure TCppParser.ProcessStruct(Token: TTkType);
 var
-  RetType, RetTypeFunc, AccessChars, AstrkFunc, TempWord, TypeName: string;
-  I, Len: Integer;
-  CanGetName, ChangedCurrPos: Boolean;
-  typeProto, aParams: TTokenClass;
-begin
-  Len := Length(S);
-  TempWord := Trim(Copy(S, 8, Len - 7)); //typedef struct name -->> struct name
-  RetType := TempWord;
-  if fptr^ <> '(' then
-  begin
-    RetType := GetPriorWord(TempWord); //struct , int ...
-    if RetType = '' then
-      RetType := TempWord;
-  end;
-  if fptr^ in ['{', ':'] then
-  begin
-    if RetType = 'struct' then
-    begin
-      ProcessStruct(True, StartPos, StartLine, TempWord);
-      Exit;
-    end
-    else if RetType = 'union' then
-    begin
-      ProcessUnion(True, StartPos, StartLine, TempWord);
-      Exit;
-    end
-    else if RetType = 'enum' then
-    begin
-      ProcessEnum(True, StartPos, StartLine, TempWord);
-      Exit;
-    end
-    else if RetType = 'class' then
-    begin
-      ProcessClass(True, StartPos, StartLine, TempWord);
-      Exit;
-    end;
-  end;
-  CanGetName := True;
-  ChangedCurrPos := False;
-  AccessChars := '';
-  I := Pos('*', RetType);
-  if I = 0 then
-    I := Pos('&', RetType);
-  if I > 0 then
-  begin
-    AccessChars := Copy(RetType, I, Length(RetType) - I + 1); //copy ** from int **
-    RetType := Copy(RetType, 1, I - 1); //copy type only ex: int
-  end;
-  AccessChars := TrimAll(AccessChars);
-  RetTypeFunc := RetType;
-  AstrkFunc := AccessChars;
-  if fptr^ <> '(' then
-    TypeName := GetLastWord(TempWord);
-  repeat
-    case fptr^ of
-      #10: Inc(fCurrLine);
-      '"': SkipDoubleQuotes;
-      '''': SkipSingleQuotes;
-      '/': if (fptr + 1)^ = '/' then
-          SkipSingleComment
-        else if (fptr + 1)^ = '*' then
-        begin
-          Inc(fptr);
-          Inc(fCurrPos);
-          SkipMultLineComment;
-        end;
-      '(':
-        begin
-          if not CanGetName then //params
-          begin
-            TypeName := Trim(TypeName);
-            TempWord := '(' + GetPriorWord(TypeName) + AccessChars + '): ' +
-              RetTypeFunc + AstrkFunc;
-            TypeName := GetLastWord(TypeName);
-            Len := Length(TypeName);
-            if Len > 0 then
-            begin
-              typeProto := AddToken(TypeName, Trim(TempWord), tkTypedefProto, StartLine,
-                StartPos, Len, fLevel);
-              Push(typeProto);
-
-              aParams := AddToken('Params', '', tkParams, fCurrLine, fCurrPos + 1,
-                1, fLevel);
-              Inc(fptr);
-              Inc(fCurrPos);
-              Inc(StartPos);
-
-              ProcessParams(StartPos, StartLine);
-              Pop; //pop Params
-              if fptr^ = ')' then
-              begin
-                aParams.SelLength := fCurrPos - aParams.SelStart;
-                Inc(fptr);
-                Inc(fCurrPos);
-                NextValidChar;
-              end;
-              Pop; //typedefproto
-            end;
-            Exit;
-          end
-          else
-          begin //(*PROTONAME)
-            RetTypeFunc := RetType + ' ' + TypeName;
-            AstrkFunc := AccessChars;
-            AccessChars := '';
-            TypeName := '';
-            ChangedCurrPos := True;
-          end;
-        end;
-      ')':
-        begin
-          if CanGetName then
-            CanGetName := False;
-        end;
-      ',', ';':
-        begin
-          TypeName := Trim(TypeName);
-          if not CanGetName then //invalid or preprocessed typedef prototype
-          begin
-            Exit;
-          end
-          else //make a new rettype to add
-            TempWord := RetType + AccessChars;
-          Len := Length(TypeName);
-          if Len > 0 then
-            AddToken(TypeName, TempWord, tkTypedef, StartLine, StartPos,
-              Len, fLevel);
-          if fptr^ = ';' then
-            Break;
-          TypeName := '';
-          AccessChars := '';
-          AstrkFunc := '';
-          RetTypeFunc := RetType;
-          ChangedCurrPos := True;
-          CanGetName := True;
-        end;
-    else
-      if (fptr^ in LetterChars + DigitChars) and CanGetName then
-      begin
-        if ChangedCurrPos then
-        begin
-          StartPos := fCurrPos;
-          StartLine := fCurrLine;
-          ChangedCurrPos := False;
-        end;
-        TypeName := TypeName + fptr^;
-      end
-      else if fptr^ in SpaceChars + LineChars + ['*', '&'] then
-      begin
-        if fptr^ = '*' then
-          AccessChars := AccessChars + '*'
-        else if fptr^ = '&' then
-          AccessChars := AccessChars + '&';
-        TypeName := Trim(TypeName) + ' ';
-        ChangedCurrPos := True;
-      end;
-    end;
-    Inc(fptr);
-    Inc(fCurrPos);
-  until fptr^ = #0;
-end;
-
-procedure TCppParser.ProcessVariable(StartPos, StartLine: Integer; const S: string);
-var
-  RetType, AccessChars, VarName, Vector, TempWord: string;
-  HasEqual, HasVector, ChangeCurrPos: Boolean;
-  I, Len: Integer;
-begin
-  HasEqual := False;
-  VarName := GetLastWord(S); //var name
-  RetType := GetPriorWord(S); //var type
-  AccessChars := '';
-  I := Pos('*', RetType);
-  if I = 0 then
-    I := Pos('&', RetType);
-  if I > 0 then
-  begin
-    AccessChars := Copy(RetType, I, Length(RetType) - I + 1);
-    RetType := Copy(RetType, 1, I - 1);
-  end;
-  Vector := '';
-  HasVector := False;
-  ChangeCurrPos := False;
-  repeat
-    case fptr^ of
-      #10: Inc(fCurrLine);
-      '"': //char name[] = "asdadadada";
-        begin
-          if HasEqual then
-          begin
-            if Vector = '[]' then
-            begin
-              Vector := '[' + IntToStr(CountCharacters) + ']';
-            end
-            else
-              SkipDoubleQuotes; //user determined, skip
-          end
-          else
-            SkipDoubleQuotes; //error, skip ""
-        end;
-      '''': SkipSingleQuotes;
-      '/': if (fptr + 1)^ = '/' then
-          SkipSingleComment //
-        else if (fptr + 1)^ = '*' then //   /*  dsadsads  */
-        begin
-          Inc(fptr);
-          Inc(fCurrPos);
-          SkipMultLineComment;
-        end;
-      '[': // int a[]
-        begin
-          Vector := Vector + '[' + GetWordPair('[', ']') + ']';
-          HasVector := True;
-        end;
-      '{': // struct point pt[?] = {{1, 2}, {3, 4}}; ? is 2
-        begin
-          if HasEqual then //count elements
-          begin
-            if Vector = '[]' then
-            begin
-              Vector := '[' + IntToStr(CountElements('{', '}')) + ']';
-            end
-            else
-              SkipPair('{', '}'); //user determined, skip
-          end
-          else
-            SkipPair('{', '}'); //error, skip
-        end;
-      '=': HasEqual := True; //int a = 3;
-      ',', ';', ':', '}', ')': //} is a error
-        begin
-          TempWord := GetFirstWord(RetType); //check for return, case, else,...
-          if (CountWords(RetType + AccessChars + ' ' + VarName) > 1) and
-            not StringIn(TempWord, ['return', 'case', 'else', 'delete', 'new', 'throw']) then
-          begin
-            Len := Length(Vector);
-            if (Len > 48) then
-              Vector := '[]';
-            Len := Length(VarName);
-            if StringIn(RetType, ['class', 'struct']) then
-            begin
-              AddToken(VarName, RetType + AccessChars + Vector, tkForward,
-                StartLine, StartPos, Len, fLevel);
-            end
-            else if StringIn(GetFirstWord(RetType), ['using']) then
-            begin
-              AddToken(VarName, RetType + AccessChars + Vector, tkUsing,
-                StartLine, StartPos, Len, fLevel);
-            end
-            else if (Len > 0) and not IsNumber(Trim(VarName)) then
-            begin
-              AddToken(VarName, RetType + AccessChars + Vector, tkVariable,
-                StartLine, StartPos, Len, fLevel);
-            end;
-          end;
-          HasEqual := False;
-          HasVector := False;
-          ChangeCurrPos := True;
-          if fptr^ = ':' then
-            HasVector := True; //struct bit separated
-          AccessChars := '';
-          VarName := '';
-          Vector := '';
-          if fptr^ in [';', '}', ')'] then
-          begin
-            if fptr^ in ['}'] then
-            begin
-              Dec(fptr);
-              Dec(fCurrPos);
-            end;
-            Break;
-          end;
-        end;
-    else
-      if not HasEqual and not HasVector then
-      begin
-        if (fptr^ in LetterChars + DigitChars) then
-        begin
-          if ChangeCurrPos then
-          begin
-            ChangeCurrPos := False;
-            StartPos := fCurrPos;
-            StartLine := fCurrLine;
-          end;
-          VarName := VarName + fptr^;
-        end
-        else if fptr^ in ['*', '&'] then
-        begin
-          AccessChars := AccessChars + fptr^;
-          ChangeCurrPos := True;
-        end;
-      end;
-    end;
-    Inc(fptr);
-    Inc(fCurrPos);
-  until fptr^ in [#0];
-end;
-
-procedure TCppParser.ProcessStruct(Typedef: Boolean; StartPos,
-  StartLine: Integer; const S: string);
-var
-  RetType, StructName, AccessChars, CurrStr, TempWord,
-    LastName, Ancestor: string;
-  I, PairCount: Integer;
-  scope: TTokenClass;
-  CanExit, ChangedCurrPos: Boolean;
-begin
-  CanExit := False;
-  ChangedCurrPos := True;
-  StructName := S;
-  CurrStr := '';
-  AccessChars := '';
-  RetType := '';
-  PairCount := 0;
-  Ancestor := '';
-  if fptr^ = ':' then
-  begin
-    Inc(fptr);
-    Inc(fCurrPos);
-    Ancestor := GetWordUntilFind(['{', ';', '}', '(', ')', '[', ']'], True);
-    if fptr^ in ['}', '(', ')', '[', ']'] then
-      Exit;
-  end;
-  I := Pos('struct', StructName);
-  if I > 0 then
-    Delete(StructName, I, 6);
-  StructName := Trim(StructName);
-  LastName := Trim(StructName);
-  repeat
-    case fptr^ of
-      #10:
-        begin
-          Inc(fCurrLine);
-          ChangedCurrPos := True;
-        end;
-      '"':
-        begin
-          SkipDoubleQuotes;
-          ChangedCurrPos := True;
-        end;
-      '''':
-        begin
-          SkipSingleQuotes;
-          ChangedCurrPos := True;
-        end;
-      '<':
-        begin
-          TempWord := GetFirstWord(CurrStr);
-          if TempWord = 'template' then
-          begin
-            SkipPair('<', '>');
-            CurrStr := '';
-            ChangedCurrPos := True;
-          end
-          else
-          begin
-            TempWord := GetFirstWord(RetType);
-            if TempWord = 'typedef' then
-            begin
-              TempWord := GetWordPair('<', '>');
-              if fptr^ = '>' then
-                CurrStr := CurrStr + '<' + TempWord + '>';
-              ChangedCurrPos := True;
-            end;
-          end;
-        end;
-      '/':
-        begin
-          if (fptr + 1)^ = '/' then
-            SkipSingleComment
-          else if (fptr + 1)^ = '*' then
-          begin
-            Inc(fptr);
-            Inc(fCurrPos);
-            SkipMultLineComment;
-          end;
-          ChangedCurrPos := True;
-        end;
-      '{':
-        begin
-          ChangedCurrPos := True;
-          if PairCount = 0 then
-          begin
-            I := Length(StructName);
-            if I = 0 then
-              StructName := '{unnamed}';
-            AddToken(StructName, Ancestor, tkStruct, StartLine, StartPos, I, fLevel);
-            AddToken('Scope', '', tkScope, fCurrLine, fCurrPos + 1, 0, fLevel);
-            Inc(fLevel);
-            Inc(PairCount);
-          end
-          else
-          begin
-            TempWord := GetFirstWord(RetType);
-            if TempWord = 'struct' then
-            begin
-              ProcessStruct(False, StartPos, StartLine, RetType);
-              RetType := '';
-              CurrStr := '';
-              AccessChars := '';
-            end
-            else if TempWord = 'union' then
-            begin
-              ProcessUnion(False, StartPos, StartLine, CurrStr);
-              RetType := '';
-              CurrStr := '';
-              AccessChars := '';
-            end
-            else
-            begin
-              SkipPair('{', '}');
-            end;
-          end;
-        end;
-      '}':
-        begin
-          if fLevel > 0 then
-            Dec(fLevel);
-          if PairCount > 0 then
-            Dec(PairCount);
-          if not Empty then
-          begin
-            if (Top.Token in [tkStruct, tkUnion, tkEnum, tkFunction, tkOperator, tkClass,
-              tkConstructor, tkDestructor, tkScopeClass]) then
-            begin
-              scope := GetTokenByName(Top, 'Scope', tkScope);
-              if Assigned(scope) then
-                scope.SelLength := fCurrPos - scope.SelStart;
-            //DoTokenLog('SelStart: ' + IntToStr(scope.SelStart) + ' - ' +
-            //  'SelLength: ' + IntToStr(scope.SelLength) + ' - ' +
-            //  'SelLine: ' + IntToStr(scope.SelLine));
-            end;
-            I := Top.Level;
-            if fLevel = I then
-              Pop;
-          end;
-          CurrStr := '';
-          ChangedCurrPos := True;
-        end;
-      '#': ProcessPreprocessor;
-      ',', '[', ':':
-        begin
-          ChangedCurrPos := True;
-          CurrStr := Trim(CurrStr);
-          if PairCount = 0 then
-          begin
-            if Typedef then
-            begin
-              I := Length(CurrStr);
-              if I > 0 then
-              begin
-                if Assigned(fLast) then
-                begin
-                  if fLast.Name = '{unnamed}' then
-                  begin
-                    fLast.Name := CurrStr;
-                    fLast.SelLine := StartLine;
-                    fLast.SelStart := StartPos;
-                    fLast.SelLength := I;
-                    fLast.Flag := fLast.Flag + AccessChars;
-                    fLast.Token := tkTypeStruct;
-                  end
-                  else
-                    AddToken(CurrStr, LastName + AccessChars, tkTypeStruct, StartLine, StartPos, I, fLevel);
-                end
-                else
-                begin
-                  AddToken(CurrStr, '', tkTypeStruct, StartLine, StartPos, I, fLevel);
-                end;
-              end;
-            end
-            else
-            begin
-              if Length(CurrStr) > 0 then
-                ProcessVariable(StartPos, StartLine, 'struct ' + StructName +
-                  AccessChars + ' ' + CurrStr);
-              CanExit := True;
-            end;
-          end
-          else
-          begin
-            ProcessVariable(StartPos, StartLine, RetType + AccessChars + ' ' +
-              CurrStr);
-          end;
-          CurrStr := '';
-          RetType := '';
-          AccessChars := '';
-        end;
-      '(':
-        begin
-          TempWord := GetFirstWord(RetType);
-          if TempWord = 'typedef' then
-            ProcessTypedef(StartPos, StartLine, RetType + AccessChars + ' ' +
-              CurrStr)
-          else
-            ProcessFunction(StartPos, StartLine, RetType + AccessChars + ' ' +
-              CurrStr);
-          CurrStr := '';
-          RetType := '';
-          AccessChars := '';
-          ChangedCurrPos := True;
-        end;
-      ';':
-        begin
-          ChangedCurrPos := True;
-          CurrStr := Trim(CurrStr);
-          if PairCount = 0 then
-          begin
-            if Typedef then
-            begin
-              I := Length(CurrStr);
-              if I > 0 then
-              begin
-                if Assigned(fLast) then
-                begin
-                  if fLast.Name = '{unnamed}' then
-                  begin
-                    fLast.Name := CurrStr;
-                    fLast.SelLine := StartLine;
-                    fLast.SelStart := StartPos;
-                    fLast.SelLength := I;
-                    fLast.Flag := AccessChars;
-                    fLast.Token := tkTypeStruct;
-                  end
-                  else
-                    AddToken(CurrStr, 'struct ' + fLast.Name + AccessChars, tkTypeStruct, StartLine, StartPos, I, fLevel);
-                end
-                else
-                  AddToken(CurrStr, '', tkTypeStruct, StartLine, StartPos, I, fLevel);
-              end;
-            end
-            else
-            begin
-              if Length(CurrStr) > 0 then //variable with struct type
-                ProcessVariable(StartPos, StartLine, 'struct ' + StructName +
-                  AccessChars + ' ' + CurrStr);
-            end;
-            CanExit := True;
-          end
-          else
-          begin
-            TempWord := GetFirstWord(RetType);
-            if TempWord = 'typedef' then
-              ProcessTypedef(StartPos, StartLine, RetType + AccessChars + ' ' +
-                CurrStr)
-            else
-              ProcessVariable(StartPos, StartLine, RetType + AccessChars + ' ' +
-                CurrStr);
-          end;
-          CurrStr := '';
-          RetType := '';
-          AccessChars := '';
-        end;
-    else
-      if fptr^ in LetterChars + DigitChars then
-      begin
-        if ChangedCurrPos then
-        begin
-          ChangedCurrPos := False;
-          StartPos := fCurrPos;
-          StartLine := fCurrLine;
-        end;
-        CurrStr := CurrStr + fptr^;
-      end
-      else if fptr^ in ['*', '&'] then
-      begin
-        AccessChars := AccessChars + fptr^;
-        ChangedCurrPos := True;
-      end
-      else if fptr^ in SpaceChars + LineChars then
-      begin
-        if PairCount <> 0 then //if is a variable  { int a;
-        begin
-          RetType := Trim(RetType + CurrStr) + ' ';
-          CurrStr := '';
-        end
-        else //} BLA, BLA;
-          CurrStr := Trim(CurrStr) + ' ';
-        ChangedCurrPos := True;
-      end;
-    end;
-    Inc(fptr);
-    Inc(fCurrPos);
-  until (fptr^ = #0) or CanExit;
-end;
-
-procedure TCppParser.ProcessUnion(Typedef: Boolean; StartPos,
-  StartLine: Integer; const S: string);
-var
-  RetType, StructName, AccessChars, CurrStr, TempWord,
-    LastName, Ancestor: string;
-  I, PairCount: Integer;
-  CanExit, ChangedCurrPos: Boolean;
-  scope: TTokenClass;
-begin
-  CanExit := False;
-  ChangedCurrPos := True;
-  StructName := S;
-  CurrStr := '';
-  AccessChars := '';
-  RetType := '';
-  PairCount := 0;
-  Ancestor := '';
-  if fptr^ = ':' then
-  begin
-    Inc(fptr);
-    Inc(fCurrPos);
-    Ancestor := GetWordUntilFind(['{', ';', '}', '(', ')', '[', ']'], True);
-    if fptr^ in ['}', '(', ')', '[', ']'] then
-      Exit;
-  end;
-  I := Pos('union', StructName);
-  if I > 0 then
-    Delete(StructName, I, 6);
-  StructName := Trim(StructName);
-  LastName := Trim(StructName);
-  repeat
-    case fptr^ of
-      #10:
-        begin
-          Inc(fCurrLine);
-          ChangedCurrPos := True;
-        end;
-      '"':
-        begin
-          SkipDoubleQuotes;
-          ChangedCurrPos := True;
-        end;
-      '''':
-        begin
-          SkipSingleQuotes;
-          ChangedCurrPos := True;
-        end;
-      '/':
-        begin
-          if (fptr + 1)^ = '/' then
-            SkipSingleComment
-          else if (fptr + 1)^ = '*' then
-          begin
-            Inc(fptr);
-            Inc(fCurrPos);
-            SkipMultLineComment;
-          end;
-          ChangedCurrPos := True;
-        end;
-      '{':
-        begin
-          ChangedCurrPos := True;
-          if PairCount = 0 then
-          begin
-            I := Length(StructName);
-            if I = 0 then
-              StructName := '{unnamed}';
-            AddToken(StructName, Ancestor, tkUnion, StartLine, StartPos, I, fLevel);
-            AddToken('Scope', '', tkScope, fCurrLine, fCurrPos + 1, 0, fLevel);
-            Inc(fLevel);
-            Inc(PairCount);
-          end
-          else
-          begin
-            TempWord := GetFirstWord(CurrStr);
-            if TempWord = 'struct' then
-              ProcessStruct(False, StartPos, StartLine, CurrStr)
-            else if TempWord = 'union' then
-              ProcessUnion(False, StartPos, StartLine, CurrStr)
-            else
-            begin
-              SkipPair('{', '}');
-            end;
-          end;
-        end;
-      '}':
-        begin
-          if fLevel > 0 then
-            Dec(fLevel);
-          if PairCount > 0 then
-            Dec(PairCount);
-          if not Empty then
-          begin
-            if (Top.Token in [tkStruct, tkUnion, tkEnum, tkFunction, tkClass,
-              tkConstructor, tkDestructor, tkOperator, tkScopeClass]) then
-            begin
-              scope := GetTokenByName(Top, 'Scope', tkScope);
-              if Assigned(scope) then
-                scope.SelLength := fCurrPos - scope.SelStart;
-            end;
-            I := Top.Level;
-            if fLevel = I then
-              Pop;
-          end;
-          CurrStr := '';
-          ChangedCurrPos := True;
-        end;
-      '#': ProcessPreprocessor;
-      ',', '[', ':':
-        begin
-          ChangedCurrPos := True;
-          CurrStr := Trim(CurrStr);
-          if PairCount = 0 then
-          begin
-            if Typedef then
-            begin
-              I := Length(CurrStr);
-              if I > 0 then
-              begin
-                if Assigned(fLast) then
-                begin
-                  if fLast.Name = '{unnamed}' then
-                  begin
-                    fLast.Name := CurrStr;
-                    fLast.SelLine := StartLine;
-                    fLast.SelStart := StartPos;
-                    fLast.SelLength := I;
-                    fLast.Flag := fLast.Flag + AccessChars;
-                    fLast.Token := tkTypeUnion;
-                  end
-                  else
-                    AddToken(CurrStr, LastName + AccessChars, tkTypeUnion, StartLine, StartPos, I, fLevel);
-                end
-                else
-                begin
-                  AddToken(CurrStr, '', tkTypeUnion, StartLine, StartPos, I, fLevel);
-                end;
-              end;
-            end
-            else
-            begin
-              if Length(CurrStr) > 0 then
-                ProcessVariable(StartPos, StartLine, 'union ' + StructName +
-                  AccessChars + ' ' + CurrStr);
-              CanExit := True;
-            end;
-          end
-          else
-          begin
-            ProcessVariable(StartPos, StartLine, RetType + AccessChars + ' ' +
-              CurrStr);
-          end;
-          CurrStr := '';
-          RetType := '';
-          AccessChars := '';
-        end;
-      '(': ProcessFunction(StartPos, StartLine, RetType + AccessChars + ' ' +
-          CurrStr);
-      ';':
-        begin
-          ChangedCurrPos := True;
-          CurrStr := Trim(CurrStr);
-          if PairCount = 0 then
-          begin
-            if Typedef then
-            begin
-              I := Length(CurrStr);
-              if I > 0 then
-              begin
-                if Assigned(fLast) then
-                begin
-                  if fLast.Name = '{unnamed}' then
-                  begin
-                    fLast.Name := CurrStr;
-                    fLast.SelLine := StartLine;
-                    fLast.SelStart := StartPos;
-                    fLast.SelLength := I;
-                    fLast.Flag := AccessChars;
-                    fLast.Token := tkTypeUnion;
-                  end
-                  else
-                    AddToken(CurrStr, 'union ' + fLast.Name + AccessChars, tkTypeUnion, StartLine, StartPos, I, fLevel);
-                end
-                else
-                  AddToken(CurrStr, '', tkTypeUnion, StartLine, StartPos, I, fLevel);
-              end;
-            end
-            else
-            begin
-              if Length(CurrStr) > 0 then //variable with struct type
-                ProcessVariable(StartPos, StartLine, 'union ' + StructName +
-                  AccessChars + ' ' + CurrStr);
-            end;
-            CanExit := True;
-          end
-          else
-          begin
-            ProcessVariable(StartPos, StartLine, RetType + AccessChars + ' ' +
-              CurrStr);
-          end;
-          CurrStr := '';
-          RetType := '';
-          AccessChars := '';
-        end;
-    else
-      if fptr^ in LetterChars + DigitChars then
-      begin
-        if ChangedCurrPos then
-        begin
-          ChangedCurrPos := False;
-          StartPos := fCurrPos;
-          StartLine := fCurrLine;
-        end;
-        CurrStr := CurrStr + fptr^;
-      end
-      else if fptr^ in ['*', '&'] then
-      begin
-        AccessChars := AccessChars + fptr^;
-        ChangedCurrPos := True;
-      end
-      else if fptr^ in SpaceChars + LineChars then
-      begin
-        if PairCount <> 0 then //if is a variable  { int a;
-        begin
-          RetType := RetType + CurrStr + ' ';
-          CurrStr := '';
-        end
-        else //} BLA, BLA;
-          CurrStr := Trim(CurrStr) + ' ';
-        ChangedCurrPos := True;
-      end;
-    end;
-    Inc(fptr);
-    Inc(fCurrPos);
-  until (fptr^ = #0) or CanExit;
-end;
-
-procedure TCppParser.ProcessEnum(Typedef: Boolean; StartPos,
-  StartLine: Integer; const S: string);
-var
-  RetType, StructName, AccessChars, CurrStr, EnumValue,
-    LastName, Ancestor: string;
-  I, PairCount: Integer;
-  CanExit, ChangedCurrPos, HasEqual: Boolean;
-  scope: TTokenClass;
-begin
-  CanExit := False;
-  ChangedCurrPos := True;
-  StructName := S;
-  CurrStr := '';
-  RetType := '';
-  EnumValue := '';
-  PairCount := 0;
-  HasEqual := False;
-  I := Pos('enum', StructName);
-  if I > 0 then
-    Delete(StructName, I, 4);
-  StructName := Trim(StructName);
-  LastName := Trim(StructName);
-  repeat
-    case fptr^ of
-      #10:
-        begin
-          Inc(fCurrLine);
-          ChangedCurrPos := True;
-        end;
-      '"':
-        begin
-          SkipDoubleQuotes;
-          ChangedCurrPos := True;
-        end;
-      '''':
-        begin
-          SkipSingleQuotes;
-          ChangedCurrPos := True;
-        end;
-      '/':
-        begin
-          if (fptr + 1)^ = '/' then
-            SkipSingleComment
-          else if (fptr + 1)^ = '*' then
-          begin
-            Inc(fptr);
-            Inc(fCurrPos);
-            SkipMultLineComment;
-          end;
-          ChangedCurrPos := True;
-        end;
-      '{':
-        begin
-          ChangedCurrPos := True;
-          I := Length(StructName);
-          if I = 0 then
-            StructName := '{unnamed}';
-          AddToken(StructName, Ancestor, tkEnum, StartLine, StartPos, I, fLevel);
-          AddToken('Scope', '', tkScope, fCurrLine, fCurrPos + 1, 0, fLevel);
-          Inc(fLevel);
-          Inc(PairCount);
-        end;
-      '}':
-        begin
-          CurrStr := Trim(CurrStr);
-          I := Length(CurrStr);
-          if I > 0 then
-            AddToken(CurrStr, EnumValue, tkEnumItem, StartLine, StartPos, I, fLevel);
-          if fLevel > 0 then
-            Dec(fLevel);
-          if PairCount > 0 then
-            Dec(PairCount);
-          if not Empty then
-          begin
-            if (Top.Token in [tkStruct, tkUnion, tkEnum, tkFunction, tkClass,
-              tkScopeClass]) then
-            begin
-              scope := GetTokenByName(Top, 'Scope', tkScope);
-              if Assigned(scope) then
-                scope.SelLength := fCurrPos - scope.SelStart;
-            end;
-            I := Top.Level;
-            if fLevel = I then
-              Pop;
-          end;
-          CurrStr := '';
-          ChangedCurrPos := True;
-          HasEqual := False;
-        end;
-      '#': ProcessPreprocessor;
-      '=':
-        begin
-          HasEqual := True;
-          EnumValue := '';
-        end;
-      ',', '[':
-        begin
-          ChangedCurrPos := True;
-          CurrStr := Trim(CurrStr);
-          I := Length(CurrStr);
-          if PairCount = 0 then
-          begin
-            if Typedef then
-            begin
-              if I > 0 then
-              begin
-                if Assigned(fLast) then
-                begin
-                  if fLast.Name = '{unnamed}' then
-                  begin
-                    fLast.Name := CurrStr;
-                    fLast.SelLine := StartLine;
-                    fLast.SelStart := StartPos;
-                    fLast.SelLength := I;
-                    fLast.Flag := fLast.Flag;
-                    fLast.Token := tkTypeEnum;
-                  end
-                  else
-                    AddToken(CurrStr, '', tkTypeEnum, StartLine, StartPos, I, fLevel);
-                end
-                else
-                begin
-                  AddToken(CurrStr, '', tkTypeEnum, StartLine, StartPos, I, fLevel);
-                end;
-              end;
-            end
-            else
-            begin
-              if Length(CurrStr) > 0 then
-                ProcessVariable(StartPos, StartLine, 'enum ' + StructName +
-                  AccessChars + ' ' + CurrStr);
-              CanExit := True;
-            end;
-          end
-          else
-          begin
-            if I > 0 then
-              AddToken(CurrStr, EnumValue, tkEnumItem, StartLine, StartPos, I, fLevel);
-          end;
-          CurrStr := '';
-          RetType := '';
-          EnumValue := '';
-          AccessChars := '';
-          HasEqual := False;
-        end;
-      ';':
-        begin
-          ChangedCurrPos := True;
-          CurrStr := Trim(CurrStr);
-          if Typedef then
-          begin
-            I := Length(CurrStr);
-            if I > 0 then
-            begin
-              if Assigned(fLast) then
-              begin
-                if fLast.Name = '{unnamed}' then
-                begin
-                  fLast.Name := CurrStr;
-                  fLast.SelLine := StartLine;
-                  fLast.SelStart := StartPos;
-                  fLast.SelLength := I;
-                  fLast.Flag := AccessChars;
-                  fLast.Token := tkTypeEnum;
-                end
-                else
-                  AddToken(CurrStr, 'enum ' + fLast.Name + AccessChars, tkTypeEnum,
-                    StartLine, StartPos, I, fLevel);
-              end
-              else
-                AddToken(CurrStr, '', tkTypeEnum, StartLine, StartPos, I, fLevel);
-            end;
-          end
-          else
-          begin
-            if Length(CurrStr) > 0 then //variable with enum type
-              ProcessVariable(StartPos, StartLine, 'enum ' + StructName +
-                AccessChars + ' ' + CurrStr);
-          end;
-          CanExit := True;
-          CurrStr := '';
-          RetType := '';
-          AccessChars := '';
-        end;
-    else
-      if not HasEqual then
-      begin
-        if fptr^ in LetterChars + DigitChars then
-        begin
-          if ChangedCurrPos then
-          begin
-            ChangedCurrPos := False;
-            StartPos := fCurrPos;
-            StartLine := fCurrLine;
-          end;
-          CurrStr := CurrStr + fptr^;
-        end
-        else if fptr^ in ['*', '&'] then
-        begin
-          AccessChars := AccessChars + fptr^;
-          ChangedCurrPos := True;
-        end
-        else if fptr^ in SpaceChars + LineChars then
-        begin
-          CurrStr := Trim(CurrStr) + ' ';
-          ChangedCurrPos := True;
-        end;
-      end
-      else if fptr^ in LetterChars + DigitChars + ['-'] then
-      begin
-        EnumValue := EnumValue + fptr^;
-      end
-    end;
-    Inc(fptr);
-    Inc(fCurrPos);
-  until (fptr^ = #0) or CanExit;
-end;
-
-procedure TCppParser.ProcessNamespace(Typedef: Boolean; StartPos,
-  StartLine: Integer; const S: string);
-var
-  fNamespace: string;
-begin
-  fNamespace := GetLastWord(S);
-  //DoTokenLog('ProcessNamespace' + fNamespace);
-  AddToken(fNamespace, '', tkNamespace, StartLine, StartPos,
-    Length(fNamespace), fLevel);
-  AddToken('Scope', '', tkScope, fCurrLine, fCurrPos + 1, 0, fLevel);
-  Inc(fLevel);
-//  Inc(fCurrPos);
-//  Inc(fptr);
-end;
-
-procedure TCppParser.ProcessClass(Typedef: Boolean; StartPos,
-  StartLine: Integer; const S: string);
-var
-  fClassName, Ancestor: string;
+  NameToken: PToken;
+  Flag, Name: string;
   Scope: TTokenClass;
 begin
-  fClassName := GetLastWord(S);
-  Ancestor := '';
-  if fptr^ = ':' then
+  NameToken := FCurrent;
+  Next;
+  if FCurrent = nil then
+    Exit;
+  Flag := '';
+  if FCurrent^.Token = tkxIdentifier then
   begin
-    Inc(fptr);
-    Inc(fCurrPos);
-    Ancestor := GetWordUntilFind(['{', ';', '}', '(', ')', '[', ']'], True);
-    if fptr^ in ['}', '(', ')', '[', ']'] then
+    NameToken := FCurrent;
+    Next;
+    if FCurrent = nil then
       Exit;
-  end;
-  //if not Empty then
-  //  DoTokenLog('ProcessClass - stack not empty ' + Top.Name);
-  AddToken(fClassName, Ancestor, tkClass, StartLine, StartPos,
-    Length(fClassName), fLevel);
-  AddToken('Scope', '', tkScope, fCurrLine, fCurrPos + 1, 0, fLevel);
-
-  Inc(fLevel);
-  Scope := AddToken('private', '', tkScopeClass, 0, 0, 0, fLevel);
-  AddToken('protected', '', tkScopeClass, 0, 0, 0, fLevel);
-  AddToken('public', '', tkScopeClass, 0, 0, 0, fLevel);
+    if FCurrent^.Token = tkxColon then
+    begin
+      Next;
+      Flag := GetInheritanceNoTemplate;
+    end
+    else if FCurrent^.Token in [tkxLess, tkxShiftLeft] then
+    begin
+      SkipTemplate;
+    end;
+    Name := TokenString(FStartPtr, NameToken);
+  end
+  else
+    Name := '{unamed}';
+  if (FCurrent = nil) or (FCurrent^.Token <> tkxOpenBraces) then
+    Exit;
+  AddToken(Name, Flag, Token, NameToken^.Line,
+    NameToken^.StartPosition, NameToken^.EndPosition - NameToken^.StartPosition,
+    FLevel);
+  // store { } range
+  AddToken('Scope', '', tkScope, FCurrent^.Line, FCurrent^.StartPosition, 0, 
+    FLevel);
+  // store fields correctly into scope
+  Scope := AddToken('private', '', tkScopeClass, 0, 0, 0, FLevel);
+  AddToken('protected', '', tkScopeClass, 0, 0, 0, FLevel);
+  AddToken('public', '', tkScopeClass, 0, 0, 0, FLevel);
   Push(Scope);
-  Inc(fCurrPos);
-  Inc(fptr);
+  ProcessFields(FLevel);
 end;
 
-procedure TCppParser.ProcessParams(StartPos, StartLine: Integer);
+procedure TCppParser.ProcessParams;
 var
-  RetType, ParamName, Vector, EqualValue: string;
-  lastLine, lastPos, I: Integer;
-  Reposition, HasEqual: Boolean;
-  Item: TTokenClass;
+  TokenID, TokenIdType, TokenOption, TokenPtrRef, TokenDestr: PToken;
+  TypeStr, PtrRefStr, VarName, VectorStr, OptionsStr: string;
 begin
-  RetType := '';
-  EqualValue := '';
-  Vector := '';
-  if fptr^ = ')' then
-    Exit;
-  lastLine := fCurrLine;
-  lastPos := fCurrPos;
-  Reposition := True;
-  HasEqual := False;
-  repeat
-    case fptr^ of
-      #10:
+  PtrRefStr := '';
+  OptionsStr := '';
+  VectorStr := ''; // TODO
+  TokenID := nil;
+  TokenOption := nil;
+  TokenPtrRef := nil;
+  TokenIdType := nil;
+  while (FCurrent <> nil) do
+  begin
+    case FCurrent^.Token of
+      tkxGlobalScope,
+      tkxIdentifier:
         begin
-          Inc(fCurrLine);
-          Reposition := True;
-        end;
-      '"': //char name[] = "asdadadada"
-        begin
-          if HasEqual then
+          if TokenIdType = nil then
           begin
-            if Vector = '[]' then
+            TypeStr := GetTypeNoTemplate(TokenIdType, TokenDestr);
+            TypeStr := TypeStr + TokenString(FStartPtr, TokenIdType);
+            PtrRefStr := '';
+            OptionsStr := '';
+            VectorStr := ''; // TODO
+            TokenID := nil;
+            TokenOption := nil;
+            TokenPtrRef := nil;
+            Continue;
+          end;
+          if TokenID <> nil then
+          begin
+            if TokenOption = nil then
             begin
-              Vector := '[' + IntToStr(CountCharacters) + ']';
+              TokenOption := TokenID;
+              OptionsStr := VarName;
             end
             else
-              SkipDoubleQuotes; //user determined, skip
+              OptionsStr := OptionsStr + ' ' + VarName;
+          end;
+          VarName := GetIdentifierNoTemplate(TokenID, TokenDestr);
+          VarName := VarName + TokenString(FStartPtr, TokenID);
+          TokenPtrRef := nil;
+          Continue;
+        end;
+      tkxComma,
+      tkxCloseParentheses,
+      tkxAssign:
+        begin
+          if TokenOption <> nil then
+            OptionsStr := ' ' + OptionsStr;
+          if (TokenID <> nil) and (TokenPtrRef = nil) and not
+            ((VarName = 'const') or
+             (VarName = 'int') or
+             (VarName = 'char') or
+             (VarName = 'long') or
+             (VarName = 'short') or
+             (VarName = 'unsigned')) then
+          begin
+            AddToken(VarName, TypeStr + OptionsStr + PtrRefStr + VectorStr,
+              tkVariable, TokenID^.Line, TokenID^.StartPosition,
+              TokenID^.EndPosition - TokenID^.StartPosition, FLevel);
           end
           else
-            SkipDoubleQuotes; //error, skip ""
-        //Reposition := True;
-        end;
-      '[': // int a[]
-        begin
-          Vector := Vector + '[' + GetWordPair('[', ']') + ']';
-        end;
-      '(': // int a = alloc()
-        begin
-          EqualValue := EqualValue + '(' + GetWordPair('(', ')') + ')';
-          if fptr^ = ')' then
           begin
-            Inc(fptr);
-            Inc(fCurrPos);
+            VarName := ' ' + VarName;
+            if (TokenID = nil) and (TokenPtrRef <> nil) then
+                TokenID := TokenPtrRef
+            else if (TokenID = nil) and (TokenPtrRef <> nil) then
+                TokenID := TokenIdType;
+            AddToken('', TypeStr + OptionsStr + VarName + PtrRefStr + VectorStr,
+              tkVariable, FCurrent^.Line, FCurrent^.StartPosition, 0, FLevel);
+          end;
+          PtrRefStr := '';
+          OptionsStr := '';
+          VectorStr := '';
+          TokenID := nil;
+          TokenOption := nil;
+          TokenPtrRef := nil;
+          TokenIdType := nil; // indepedent type
+          if FCurrent^.Token = tkxCloseParentheses then
+            Break;
+          if FCurrent^.Token = tkxAssign then
+          begin
+            SkipAssign;
             Continue;
           end;
         end;
-      '=': HasEqual := True; //int a = 3;
-      '{': // struct point pt[?] = {{1, 2}, {3, 4}}; ? is 2
+      tkxOpenParentheses:
         begin
-          if HasEqual then //count elements
+          if not SkipPair then
+            Exit;
+          Continue;
+        end;
+      tkxOpenBrackets:
+        begin
+          if SkipPair then
+            VectorStr := VectorStr + '[]';
+          Continue;
+        end;
+      tkxOpenBraces:
+        begin
+          //if HasAssign then
+            SkipPair;
+          //else
+            // error
+          Continue;
+        end;
+      tkxMult,
+      tkxBinAnd:
+        begin
+          TokenPtrRef := FCurrent;
+          PtrRefStr := GetPointerReference;
+          Continue;
+        end;
+    else
+      Break; // error ID not found
+    end;
+    Next;
+  end;
+end;
+
+procedure TCppParser.ProcessVariableOrFunction;
+var
+  TokenID, TokenIdType, TokenOption, TokenPtrRef, TokenScope,
+  SaveCurrent, TokenDestr: PToken;
+  VarToken, FuncToken: TTokenClass;
+  TokenType: TTkType;
+  TypeStr, PtrRefStr, VarName, VectorStr, OptionsStr, ScopeStr,
+  SaveTypeStr, TypeNameStr: string;
+begin
+  TokenDestr := nil;
+  TypeStr := GetTypeNoTemplate(TokenIdType, TokenDestr);
+  SaveTypeStr := TypeStr;
+  TypeNameStr := TokenString(FStartPtr, TokenIdType);
+  TypeStr := TypeStr + TypeNameStr;
+  PtrRefStr := '';
+  OptionsStr := '';
+  VectorStr := ''; // TODO
+  ScopeStr := '';
+  TokenID := nil;
+  TokenOption := nil;
+  TokenPtrRef := nil;
+  TokenScope := nil;
+  while (FCurrent <> nil) do
+  begin
+    case FCurrent^.Token of
+      tkxGlobalScope,
+      tkxIdentifier:
+        begin
+          if TokenID <> nil then
           begin
-            if Vector = '[]' then
+            if TokenOption = nil then
             begin
-              Vector := '[' + IntToStr(CountElements('{', '}')) + ']';
+              TokenOption := TokenID;
+              OptionsStr := ScopeStr + VarName;
             end
             else
-              SkipPair('{', '}'); //user determined, skip
-          end
-          else
-            SkipPair('{', '}'); //error, skip
+              OptionsStr := OptionsStr + ' ' + ScopeStr + VarName;
+          end;
+          TokenScope := FCurrent;
+          ScopeStr := GetIdentifierNoTemplate(TokenID, TokenDestr);
+          VarName := TokenString(FStartPtr, TokenID);
+          TokenPtrRef := nil;
+          Continue;
         end;
-      '''':
-        begin
-          SkipSingleQuotes;
-          Reposition := True;
+      tkxColon: // label:
+        begin      
+          Next;
+          Break;
         end;
-      '/':
-        if (fptr + 1)^ = '/' then
+      tkxComma,
+      tkxSemicolon,
+      tkxAssign:
         begin
-          SkipSingleComment;
-          Reposition := True;
-        end
-        else if (fptr + 1)^ = '*' then
-        begin
-          Inc(fptr);
-          Inc(fCurrPos);
-          SkipMultLineComment;
-          Reposition := True;
-        end;
-      ',':
-        begin
-          RetType := Trim(RetType);
-          ParamName := GetLastWord(RetType);
-          I := Length(RetType);
-          if (I > 0) and (not (RetType[I] in LetterChars + DigitChars) or
-            (CountWords(RetType) = 1) or (StringIn(RetType, ReservedTypes))) then
+          if TokenID = nil then
+            Exit; // error identifier not found
+          if TokenPtrRef <> nil then
+            Exit; // error: example: int a *;
+          if TokenOption <> nil then
+            OptionsStr := ' ' + OptionsStr;
+          VarToken := AddToken(VarName, TypeStr + OptionsStr + PtrRefStr + VectorStr, 
+            tkVariable, TokenID^.Line, TokenID^.StartPosition,
+            TokenID^.EndPosition - TokenID^.StartPosition, FLevel);
+          if (Length(ScopeStr) > 0) and (TokenScope <> nil) then
           begin
-            ParamName := '';
-          end
-          else
-            RetType := GetPriorWord(RetType);
-          Item := AddToken(ParamName, RetType + Vector, tkVariable,
-            lastLine, lastPos, Length(ParamName), fLevel);
-          if HasEqual and (Length(Trim(EqualValue)) > 0) then
-          begin
-            Push(Item);
-            AddToken(Trim(EqualValue), '', tkValue, Item.SelLine, Item.SelStart,
-              Length(Trim(EqualValue)), Item.Level);
+            Push(VarToken);
+            AddToken('Scope', Trim(#0, ScopeStr, ':'), tkScope, TokenScope^.Line,
+              TokenScope^.StartPosition, 0, FLevel);
             Pop;
           end;
-          RetType := '';
-          Vector := '';
-          HasEqual := False;
-          EqualValue:= '';
-          Reposition := True;
+          PtrRefStr := '';
+          OptionsStr := '';
+          VectorStr := '';
+          ScopeStr := '';
+          TokenID := nil;
+          TokenOption := nil;
+          TokenPtrRef := nil; 
+          TokenScope := nil;
+          TokenDestr := nil;
+          if FCurrent^.Token = tkxSemicolon then
+          begin
+            Next;
+            Break;
+          end;
+          if FCurrent^.Token = tkxAssign then
+          begin
+            SkipAssign;
+            Continue;
+          end;
         end;
-    else //std::vector<int*>    ...
-      if HasEqual then
-      begin
-        EqualValue := EqualValue + fptr^;
-      end else if fptr^ in LetterChars + DigitChars + [':', '<', '>', '*', '&', '.'] then
-      begin
-        if fptr^ in [':', '<', '>', '*', '&'] then
-          RetType := Trim(RetType) + fptr^
-        else
-          RetType := RetType + fptr^;
-        if Reposition or (fptr^ in ['*', '&']) then
+      tkxOpenParentheses:
         begin
-          lastLine := fCurrLine;
-          lastPos := fCurrPos;
-          Reposition := False;
+          SaveCurrent := FCurrent;
+          if not SkipPair then
+            Exit;
+          if (FCurrent = nil) or not (FCurrent^.Token in [tkxColon, tkxOpenBraces, 
+              tkxSemicolon, tkxAssign]) or ((TokenID = nil) and ((Top = nil) or
+             (Top.Token <> tkScopeClass) or (Top.Parent.Name <> TypeNameStr)) and
+             (GetLastWord(SaveTypeStr) <> TypeNameStr)) then
+            Continue;
+          if (FCurrent^.Token = tkxSemicolon) and (Top <> nil) and
+             (Top.Token in [tkFunction, tkConstructor, tkDestructor, tkOperator]) then
+             Continue;
+          if (TokenID = nil) or ((Top <> nil) and (Top.Token = tkScopeClass) and
+            (Top.Parent.Name = VarName)) or (GetLastWord(ScopeStr) = VarName) then
+          begin
+            if TokenDestr = nil then
+              TokenType := tkConstructor
+            else
+              TokenType := tkDestructor;
+          end
+          else if (FCurrent^.Token in [tkxColon, tkxOpenBraces]) then
+            TokenType := tkFunction
+          else
+            TokenType := tkPrototype;
+          if TokenID <> nil then
+          begin
+            FuncToken := AddToken(VarName, TypeStr + OptionsStr + PtrRefStr + VectorStr,
+              tkFunction, TokenID^.Line, TokenID^.StartPosition,
+              TokenID^.EndPosition - TokenID^.StartPosition, FLevel);
+          end
+          else // constructor | destructor
+          begin
+            FuncToken := AddToken(TypeNameStr, OptionsStr + PtrRefStr + VectorStr,
+              tkFunction, TokenIdType^.Line, TokenIdType^.StartPosition,
+              TokenIdType^.EndPosition - TokenIdType^.StartPosition, FLevel);
+            ScopeStr := SaveTypeStr;
+          end;
+          AddToken('Params', '', tkParams, SaveCurrent^.Line,
+            SaveCurrent^.StartPosition + 1, 0, FLevel);
+          FCurrent := SaveCurrent;
+          Next; // skip (
+          ProcessParams;
+          Pop;
+          Next; // skip )
+          FuncToken.Token := TokenType;
+          if (FCurrent^.Token = tkxAssign) then
+          begin
+            Next; // skip =
+            if (FCurrent = nil) or (FCurrent^.Token <> tkxNumber) then
+              Exit;
+            AddToken('Value', '0', tkValue, FCurrent^.Line, FCurrent^.StartPosition,
+              FCurrent^.EndPosition - FCurrent^.StartPosition, FLevel);
+            Pop; // pop prototype
+          end
+          else if (FCurrent^.Token <> tkxSemicolon) then
+          begin
+            while (FCurrent <> nil) and (FCurrent^.Token <> tkxOpenBraces) do
+            begin
+              if (FCurrent^.Token in [tkxOpenParentheses, tkxOpenBrackets]) then
+              begin
+                SkipPair;
+                Continue;
+              end;
+              Next;
+            end;
+            if (FCurrent = nil) then
+              Exit;
+            AddToken('Scope', Trim(#0, ScopeStr, ':'), tkScope, FCurrent^.Line,
+              FCurrent^.StartPosition + 1, 0, FLevel);
+          end
+          else
+            Pop; // pop prototype
+          Exit;
         end;
-      end
-      else if fptr^ in LineChars + SpaceChars then
+      tkxOpenBrackets:
+        begin
+          if SkipPair then
+            VectorStr := VectorStr + '[]';
+          Continue;
+        end;
+      tkxOpenBraces:
+        begin
+          //if HasAssign then
+            SkipPair;
+          //else
+            // error
+          Continue;
+        end;
+      tkxMult,
+      tkxBinAnd:
+        begin
+          TokenPtrRef := FCurrent;
+          PtrRefStr := GetPointerReference;
+          Continue;
+        end;
+      tkxBinNot:
+        begin
+          TokenDestr := FCurrent;
+        end
+    else
+      Break; // error ID not found
+    end;
+    Next;
+  end;
+end;
+
+procedure TCppParser.ProcessFields(StopLevel: Integer);
+begin
+  repeat
+    case FCurrent^.Token of
+      tkxGlobalScope,
+      tkxIdentifier:
       begin
-        RetType := RetType + ' ';
-        Reposition := True;
+        ProcessIdentifier(True);
+        Continue;
+      end;
+      tkxPreprocessor:
+      begin
+        ProcessPreprocessor;
+        Continue;
+      end;
+      tkxOpenBraces:
+      begin
+        Inc(FLevel);
+      end;
+      tkxCloseBraces:
+      begin
+        ProcessCloseBraces;
       end;
     end;
-    DoProgress;
-    Inc(fptr);
-    Inc(fCurrPos);
-  until fptr^ in [#0, ')', ';'];
-  if (fptr^ = #0) or (Trim(RetType) = '') then
-    Exit;
-  RetType := Trim(RetType);
-  ParamName := GetLastWord(RetType);
-  I := Length(RetType);
-  if (I > 0) and (not (RetType[I] in LetterChars + DigitChars) or
-    (CountWords(RetType) = 1) or (StringIn(RetType, ReservedTypes))) then
+    Next;
+  until (FCurrent = nil) or (StopLevel = FLevel);
+end;
+
+procedure TCppParser.ProcessIdentifier(Fields: Boolean);
+var
+  TokenName, TokenScope, TokenDestr: PToken;
+  ScopeToken, UsingToken: TTokenClass; 
+  UsingName, ScopeStr: string;
+begin
+  if (FCurrent^.Token = tkxGlobalScope)  then
+    ProcessVariableOrFunction
+  else if TokenMatch(FStartPtr, 'while', FCurrent) or 
+     TokenMatch(FStartPtr, 'if', FCurrent) or 
+     TokenMatch(FStartPtr, 'switch', FCurrent) then
   begin
-    ParamName := '';
+    Next; // skip current
+    if (FCurrent = nil) or (FCurrent^.Token <> tkxOpenParentheses) then
+      Exit;
+    SkipPair;
   end
-  else
-    RetType := GetPriorWord(RetType);
-  if (ParamName <> '') or ((ParamName = '') and (RetType <> 'void')) then
+  else if TokenMatch(FStartPtr, 'for', FCurrent) then
   begin
-    Item := AddToken(ParamName, RetType + Vector, tkVariable,
-      lastLine, lastPos, Length(ParamName), fLevel);
-    if HasEqual and (Length(Trim(EqualValue)) > 0) then
+    Next; // skip for
+    if (FCurrent = nil) or (FCurrent^.Token <> tkxOpenParentheses) then
+      Exit;       
+    Next; // skip (
+    if (FCurrent = nil) then
+      Exit;
+  end
+  else if TokenMatch(FStartPtr, 'else', FCurrent) then
+  begin
+    Next; // skip else
+  end
+  else if TokenMatch(FStartPtr, 'case', FCurrent) then
+  begin
+    Next; // skip ;
+  end 
+  else if TokenMatch(FStartPtr, 'default', FCurrent) then
+  begin
+    Next; // skip ;
+  end
+  else if TokenMatch(FStartPtr, 'private', FCurrent) or 
+          TokenMatch(FStartPtr, 'public', FCurrent) or 
+          TokenMatch(FStartPtr, 'protected', FCurrent) then
+  begin       
+    ScopeStr := TokenString(FStartPtr, FCurrent);
+    Next;
+    // get scope from parent struct
+    ScopeToken := nil;
+    if (Top <> nil) and Assigned(Top.Parent) and (Top.Parent.Token in [tkClass, tkStruct, tkUnion]) then
+      ScopeToken := GetTokenByName(Top.Parent, ScopeStr, tkScopeClass)
+    else if (Top.Token in [tkClass, tkStruct, tkUnion]) then
+      ScopeToken := GetTokenByName(Top, ScopeStr, tkScopeClass);
+                                { already on stack }
+    if Assigned(ScopeToken) and (Top <> ScopeToken) then
     begin
-      Push(Item);
-      AddToken(Trim(EqualValue), '', tkValue, Item.SelLine, Item.SelStart,
-        Length(Trim(EqualValue)), Item.Level);
+      // swap scope
+      Pop;
+      Push(ScopeToken);
+    end;
+    if (FCurrent <> nil) or (FCurrent^.Token = tkxColon) then
+      Next; // skip :
+  end
+  else if TokenMatch(FStartPtr, 'struct', FCurrent) then
+  begin
+    ProcessStruct(tkStruct);
+    if (FCurrent = nil) or (FCurrent^.Token <> tkxSemicolon) then
+      Exit;
+    Next; // skip ;
+  end
+  else if TokenMatch(FStartPtr, 'class', FCurrent) then
+  begin
+    ProcessStruct(tkClass);
+    if (FCurrent = nil) or (FCurrent^.Token <> tkxSemicolon) then
+      Exit;
+    Next; // skip ;
+  end
+  else if TokenMatch(FStartPtr, 'typedef', FCurrent) then
+  begin
+
+    Next; // skip
+  end
+  else if TokenMatch(FStartPtr, 'enum', FCurrent) then
+  begin
+
+    Next; // skip
+  end
+  else if TokenMatch(FStartPtr, 'template', FCurrent) then
+  begin
+    Next; // skip template
+    SkipTemplate;
+  end
+  else if not Fields and TokenMatch(FStartPtr, 'namespace', FCurrent) then
+  begin
+    Next; //< skip namespace
+    if (FCurrent <> nil) and (FCurrent^.Token <> tkxIdentifier) then
+      Exit;
+    TokenName := FCurrent;
+    Next; //< skip identifier
+    while (FCurrent <> nil) and (FCurrent^.Token <> tkxOpenBraces) do
+    begin
+      if (FCurrent^.Token in [tkxOpenParentheses, tkxOpenBrackets]) then
+      begin
+        SkipPair;
+        Continue;
+      end;
+      Next;
+    end;
+    if (FCurrent = nil) then
+      Exit;
+    AddToken(TokenString(FStartPtr, TokenName), '', tkNamespace, TokenName^.Line,
+      TokenName^.StartPosition, TokenName^.EndPosition - TokenName^.StartPosition, FLevel);
+    AddToken('Scope', '', tkScope, FCurrent^.Line, FCurrent^.StartPosition + 1, 0, FLevel);
+  end
+  else if not Fields and TokenMatch(FStartPtr, 'extern', FCurrent) then
+  begin
+
+    Next; // skip
+  end 
+  else if not Fields and TokenMatch(FStartPtr, 'delete', FCurrent) then
+  begin
+
+    Next; // skip
+  end 
+  else if not Fields and TokenMatch(FStartPtr, 'new', FCurrent) then
+  begin
+
+    Next; // skip
+  end
+  else if TokenMatch(FStartPtr, 'using', FCurrent) then
+  begin                                     
+    Next; // skip
+    TokenScope := FCurrent;
+    ScopeStr := GetIdentifierNoTemplate(TokenName, TokenDestr);
+    UsingName := TokenString(FStartPtr, TokenName);
+    if TokenName = nil then
+      Exit;
+    UsingToken := AddToken(UsingName, '', 
+      tkUsing, TokenName^.Line, TokenName^.StartPosition,
+      TokenName^.EndPosition - TokenName^.StartPosition, FLevel);
+    if (Length(ScopeStr) > 0) and (TokenScope <> nil) then
+    begin
+      Push(UsingToken);
+      AddToken('Scope', Trim(#0, ScopeStr, ':'), tkScope, TokenScope^.Line,
+        TokenScope^.StartPosition, 0, FLevel);
       Pop;
     end;
-  end;
-end;
-
-function TCppParser.GetWordUntilFind(Chars: TSetOfChars; SkipTemplate: Boolean): string;
-begin
-  Result := '';
-  repeat
-    if fptr^ in Chars then
-      Exit;
-    case fptr^ of
-      #10: Inc(fCurrLine);
-      '"': SkipDoubleQuotes;
-      '''': SkipSingleQuotes;
-      '/':
-        if (fptr + 1)^ = '/' then
-          SkipSingleComment
-        else if (fptr + 1)^ = '*' then
-        begin
-          Inc(fptr);
-          Inc(fCurrPos);
-          SkipMultLineComment;
-        end
-        else
-          Result := Result + fptr^;
-      '(': SkipPair('(', ')');
-      '{': SkipPair('{', '}');
-      '[': SkipPair('[', ']');
-    else
-      if (fptr^ = '<') and SkipTemplate then
-        SkipPair('<', '>')
-      else if fptr^ in LetterChars + DigitChars + ['*', '&', ',', '.', '-', ':', '\'] then
-        Result := Result + fptr^
-      else if fptr^ in LineChars + SpaceChars then
-        Result := Trim(Result) + ' ';
-    end;
-    DoProgress;
-    Inc(fptr);
-    Inc(fCurrPos);
-  until fptr^ in [#0] + Chars;
-end;
-
-procedure TCppParser.SkipUntilFind(Chars: TSetOfChars);
-begin
-  repeat
-    if fptr^ in Chars then
-      Exit;
-    case fptr^ of
-      #10: Inc(fCurrLine);
-      '"': SkipDoubleQuotes;
-      '''': SkipSingleQuotes;
-      '/':
-        if (fptr + 1)^ = '/' then
-          SkipSingleComment
-        else if (fptr + 1)^ = '*' then
-        begin
-          Inc(fptr);
-          Inc(fCurrPos);
-          SkipMultLineComment;
-        end;
-      '(': SkipPair('(', ')');
-      '{': SkipPair('{', '}');
-      '[': SkipPair('[', ']');
-    end;
-    Inc(fptr);
-    Inc(fCurrPos);
-  until fptr^ in [#0] + Chars;
-end;
-
-procedure TCppParser.ProcessFunction(StartPos, StartLine: Integer;
-  const S: string; IsDestructor: Boolean);
-var
-  RetType, FuncName, TreeName, ScopeName, Opr: string;
-  Len, I: Integer;
-  FuncToken, Params: TTokenClass;
-  TokenType: TTkType;
-  PureVirtual: Boolean;
-begin
-  //DoTokenLog('ProcessFunction - ' + S);
-  TokenType := tkFunction;
-  FuncName := GetLastWord(S);
-  if (FuncName = 'delete') or (FuncName = 'new') then
-  begin
-    Opr := FuncName;
-    RetType := GetPriorWord(S);
-    FuncName := GetLastWord(RetType);
-    RetType := GetPriorWord(RetType);
-  end
-  else if (FuncName = 'operator') then
-  begin
-    Opr := GetOperator(S);
-    RetType := GetPriorWord(S);
+    if (FCurrent <> nil) or (FCurrent^.Token = tkxSemicolon) then
+      Next; // skip ;
   end
   else
-    RetType := GetPriorWord(S);
-  I := Pos('::', RetType);
-  if I > 0 then
   begin
-    if '::' = Copy(RetType, Length(RetType) - 1, 2) then
-    begin
-      ScopeName := RetType;
-      RetType := SkipTemplateParams(RetType);
-      I := Pos(' ', RetType);
-      if I > 0 then
-      begin
-        RetType := GetPriorWord(RetType);
-        I := Length(RetType) + 1;
-      end
-      else
-        RetType := '';
-      ScopeName := Copy(ScopeName, I + 1, Length(ScopeName) - I - 2);
-    end
-    else
-      ScopeName := '';
-  end
-  else
-    ScopeName := '';
-  // and not HasEqual (PairCount = 0) and
-  if not Empty and (RetType = '') and (Top.Token in [tkScopeClass, tkStruct]) then
-  begin
-    TreeName := Top.Name;
-    if Top.Token = tkScopeClass then
-      TreeName := Top.Parent.Name;
-    if TreeName <> FuncName then
-    begin
-      //DoTokenLog('skip ProcessFunction - function ' + FuncName + ': ' + RetType + ' - Invalid');
-      SkipPair('(', ')');
-      Exit;
-    end;
-    if (fptr - (Length(FuncName) + 1))^ = '~' then
-      TokenType := tkDestructor
-    else
-      TokenType := tkConstructor;
-  end
-  else if (RetType = '') and ((ScopeName = '') or (GetLastWord(SkipTemplateParams(ScopeName)) <> FuncName)) then
-  begin
-    //DoTokenLog('skip ProcessFunction - function <' + ScopeName + '> ' +
-    //  FuncName + ': ' + RetType);
-    Inc(fptr);
-    Inc(fCurrPos);
-    SkipUntilFind([';', '}', ')']);
+    ProcessVariableOrFunction;
+  end;
+end;
+
+procedure TCppParser.ProcessCloseBraces;
+var
+  lastFunc, scopeClass: TTokenClass;
+begin
+  if FLevel > 0 then
+    Dec(FLevel);
+  if StackLevel <> FLevel then
     Exit;
-  end;
-  //DoTokenLog('skip ProcessFunction - function <' + ScopeName + '> ' +
-  //    FuncName + ': ' + RetType);
-  if not StringIn(FuncName, ReservedBraceWords) and
-    not StringIn(RetType, ['return', 'else']) then
-  begin
-    Len := Length(FuncName);
-    if (RetType = '') or (RetType = 'inline') then
-    begin
-      if FuncName = GetFirstWord(ScopeName) then
-      begin
-        if IsDestructor then
-          TokenType := tkDestructor
-        else
-          TokenType := tkConstructor;
-      end;
-    end
-    else if FuncName = 'operator' then
-    begin
-      FuncName := Opr;
-      TokenType := tkOperator;
-    end;
-    FuncToken := AddToken(FuncName, RetType, TokenType, StartLine, StartPos,
-      Len, fLevel);
-    Params := AddToken('Params', '', tkParams, fCurrLine, fCurrPos + 1,
-      1, fLevel);
-    Inc(fptr);
-    Inc(fCurrPos);
-    Inc(StartPos);
-
-    ProcessParams(StartPos, StartLine);
-    Pop; //pop Params
-
-    if fptr^ = ')' then
-    begin
-      Params.SelLength := fCurrPos - Params.SelStart;
-      Inc(fptr);
-      Inc(fCurrPos);
-    end;
-
-    SkipUntilFind(['=', '{', ';']);
-
-    if fptr^ in ['=', ';'] then
-    begin
-      PureVirtual := False;
-      if fptr^ = '=' then
-      begin
-        PureVirtual := Pos('virtual', FuncToken.Flag) = 1;
-        SkipUntilFind([';']);
-        if fptr^ <> ';' then
-          Exit;
-      end;
-      if Assigned(FuncToken.Parent) and (FuncToken.Parent.Token in
-        [tkFunction, tkConstructor, tkDestructor, tkOperator]) and (RetType <> '') then
-      begin
-        FuncToken.Clear;
-        FuncToken.Token := tkVariable;
-        //DoTokenLog(FuncToken.Name + ' is really a funtcion?: ' + FuncToken.Flag);
-      end
-      else
-      begin
-        if FuncToken.Token = tkFunction then
-        begin
-          FuncToken.Token := tkPrototype;
-          if PureVirtual then
-          begin
-            AddToken('Value', '0', tkValue, FuncToken.SelLine, FuncToken.SelStart,
-              FuncToken.SelLength, FuncToken.Level);
-          end;
-        end;
-      end;
-      Pop; //pop function
-    end
-    else if (fptr^ = '{') then
-    begin
-      AddToken('Scope', ScopeName, tkScope, fCurrLine, fCurrPos + 1, 0, fLevel);
-      Inc(fLevel);
-      if not fVarFunc then
-      begin
-        SkipPair('{', '}');
-        Dec(fLevel);
-      end;
-    end;
-    //else
-      //DoTokenLog('ProcessFunction - error end function');
-  end;
-end;
-
-function TCppParser.GetEOL: string;
-begin
-  repeat
-    if fptr^ in LineChars then
-      Exit;
-    Inc(fptr);
-    Inc(fCurrPos);
-    DoProgress;
-    case fptr^ of
-      #10: Inc(fCurrLine); //LF
-      '/': if (fptr + 1)^ = '/' then
-          SkipSingleComment
-        else if (fptr + 1)^ = '*' then
-        begin
-          Inc(fptr);
-          Inc(fCurrPos);
-          SkipMultLineComment;
-        end;
-      '\': if (fptr + 1)^ = #10 then
-        begin
-          Inc(fptr, 2);
-          Inc(fCurrPos, 2);
-          if fptr^ = #10 then
-            Inc(fCurrLine);
-          Inc(fCurrLine);
-        end
-        else if (fptr + 1)^ = #13 then
-        begin
-          Inc(fptr, 2);
-          Inc(fCurrPos, 2);
-          if fptr^ = #10 then
-          begin
-            Inc(fptr);
-            Inc(fCurrPos);
-            if fptr^ = #10 then
-              Inc(fCurrLine);
-            Inc(fCurrLine);
-          end;
-        end;
-    else
-      if not (fptr^ in SpaceChars + LineChars) then
-        Result := Result + fptr^
-      else
-        Result := Trim(Result) + ' ';
-    end;
-    if fCancel then
-      Exit;
-  until fptr^ in LineChars + [#0];
-end;
-
-function TCppParser.GetWord(SpaceSepOnly: Boolean = False): string;
-var
-  TokenName: string;
-begin
-  TokenName := '';
-  SkipSpaces;
-  repeat
-    case fptr^ of
-      #10: Inc(fCurrLine); //LF
-      #13: ; //skip
-    else
-      if (fptr^ in LetterChars + DigitChars) or (SpaceSepOnly and (fptr^ in SpaceChars)) then
-        TokenName := TokenName + fptr^
-      else if fptr^ in SpaceChars + ['(', ')', ','] then
-        Break;
-    end;
-    Inc(fptr);
-    Inc(fCurrPos);
-    DoProgress;
-    if fCancel then
-      Exit;
-  until fptr^ in [#0, #10];
-  if fptr^ = #10 then
-    Inc(fCurrLine);
-  Result := TokenName;
-end;
-
-function TCppParser.TrimAll(const S: string): string;
-var
-  I: Integer;
-begin
-  Result := S;
-  I := Length(Result);
-  while I > 0 do
-  begin
-    if Result[I] in SpaceChars + LineChars then
-      Delete(Result, I, 1);
-    Dec(I);
-  end;
-end;
-
-procedure TCppParser.NextValidChar;
-begin
-  if not (fptr^ in SpaceChars + LineChars) then
+  lastFunc := Pop; //remove top item
+  if not Assigned(lastFunc) then
     Exit;
-  repeat
-    Inc(fptr);
-    Inc(fCurrPos);
-    DoProgress;
-    case fptr^ of
-      #10: Inc(fCurrLine); //LF
-      '/': if (fptr + 1)^ = '/' then
-          SkipSingleComment
-        else if (fptr + 1)^ = '*' then
-        begin
-          Inc(fptr);
-          Inc(fCurrPos);
-          SkipMultLineComment;
-        end;
-      '\': if (fptr + 1)^ = #10 then
-        begin
-          Inc(fptr, 2);
-          Inc(fCurrPos, 2);
-          Inc(fCurrLine);
-        end
-        else if (fptr + 1)^ = #13 then
-        begin
-          Inc(fptr, 2);
-          Inc(fCurrPos, 2);
-          if fptr^ = #10 then
-          begin
-            Inc(fptr);
-            Inc(fCurrPos);
-            Inc(fCurrLine);
-          end;
-        end;
-    end;
-    if fCancel then
-      Exit;
-  until not (fptr^ in SpaceChars + LineChars) or (fptr^ = #0);
-end;
-
-function TCppParser.GetArguments: string;
-var
-  PairCount: Integer;
-begin
-  PairCount := 0;
-  if fptr^ = '(' then
+  if (lastFunc.Token in [tkFunction, tkConstructor, tkNamespace,
+    tkDestructor, tkOperator]) and (lastFunc.Count > 1) then
   begin
-    Inc(fptr);
-    Inc(fCurrPos);
-    Inc(PairCount);
+    scopeClass := GetTokenByName(lastFunc, 'Scope', tkScope);
+    if Assigned(scopeClass) then
+      scopeClass.SelLength := FCurrent^.StartPosition - scopeClass.SelStart;
   end;
-  Result := '';
-  repeat
-    case fptr^ of
-      '(':
-        begin
-          Inc(PairCount);
-          GetArguments;
-          Dec(PairCount);
-          Continue;
-        end;
-      ')': Dec(PairCount);
-      #10: Inc(fCurrLine); //LF
-      '"': SkipDoubleQuotes;
-      '''': SkipSingleQuotes;
-      '/': if (fptr + 1)^ = '/' then
-          SkipSingleComment
-        else if (fptr + 1)^ = '*' then
-        begin
-          Inc(fptr);
-          Inc(fCurrPos);
-          SkipMultLineComment;
-        end;
-      ' ', #9:
-        begin
-          Result := Trim(Result) + ' ';
-          SkipSpaces;
-          Continue;
-        end;
-    else
-      if (fptr^ in LetterChars + DigitChars + ArithmChars + [',', '[', ']']) then
-        Result := Result + fptr^;
-    end;
-    Inc(fptr);
-    Inc(fCurrPos);
-    DoProgress;
-    if fCancel then
-      Exit;
-  until (PairCount = 0) or (fptr^ = #0);
+  if Empty or (lastFunc.Token <> tkScopeClass) then
+    Exit;
+  lastFunc := Pop;
+  if lastFunc.Token <> tkClass then
+    Exit;
+  scopeClass := GetTokenByName(lastFunc, 'private', tkScopeClass);
+  if Assigned(scopeClass) and (scopeClass.Count = 0) then
+    lastFunc.Remove(scopeClass);
+  scopeClass := GetTokenByName(lastFunc, 'protected', tkScopeClass);
+  if Assigned(scopeClass) and (scopeClass.Count = 0) then
+  begin
+    lastFunc.Remove(scopeClass);
+  end;
+  scopeClass := GetTokenByName(lastFunc, 'public', tkScopeClass);
+  if Assigned(scopeClass) and (scopeClass.Count = 0) then
+    lastFunc.Remove(scopeClass);
+  scopeClass := GetTokenByName(lastFunc, 'Scope', tkScope);
+  if Assigned(scopeClass) then
+    scopeClass.SelLength := FCurrent^.StartPosition - scopeClass.SelStart;
 end;
 
 function TCppParser.Parse(const Src: string; TokenFile: Pointer): Boolean;
-var
-  CurrStr, TempWord, Scope, LastWord: string;
-  ChangedCurrPos, IsDestructor, Assigning: Boolean;
-  PairCount, StartPos, StartLine, PrevStartPos, PrevStartLine: Integer;
-  lastFunc, scopeClass: TTokenClass;
 begin
   fBusy := True;
-  fOpenCommentCount := 0;
   fTokenFile := TokenFile;
   Clear;
-  fSrc := Src;
-  Result := False;
-  fptr := PChar(fSrc);
-  fLength := StrLen(fptr);
-  if fptr^ <> #0 then
-    fCurrLine := 1;
-  DoProgress;
-  CurrStr := '';
-  PairCount := 0;
-  StartPos := 0;
-  StartLine := fCurrLine;
-  PrevStartPos := 0;
-  PrevStartLine := fCurrLine;
-  ChangedCurrPos := True;
-  IsDestructor := False;
-  Assigning := False;
-  Scope := '';
-  repeat
-    case fptr^ of
-      #10:
-        begin
-          Inc(fCurrLine); //LF
-          ChangedCurrPos := True;
-        end;
-      '#':
-        begin
-          ProcessPreprocessor;
-          CurrStr := '';
-          IsDestructor := False;
-        end;
-      '''': SkipSingleQuotes;
-      '"': SkipDoubleQuotes;
-      '/':
-        begin
-          if (fptr + 1)^ = '/' then
-            SkipSingleComment
-          else if (fptr + 1)^ = '*' then
+  FStartPtr := PChar(Src);
+  FFirst := StartTokenizer(FStartPtr);
+  FCurrent := FFirst;
+  if FCurrent <> nil then
+  begin
+    repeat
+      case FCurrent^.Token of
+        tkxPreprocessor:
           begin
-            Inc(fptr);
-            Inc(fCurrPos);
-            SkipMultLineComment;
-          end
-          else if (GetLastWord(CurrStr) = 'operator') then
+            ProcessPreprocessor;
+            Continue;
+          end;       
+        tkxGlobalScope,
+        tkxIdentifier:
           begin
-            CurrStr := CurrStr + fptr^;
-            Inc(fptr);
-            Inc(fCurrPos);
+            ProcessIdentifier(False);
             Continue;
           end;
-          ChangedCurrPos := True;
-        end;
-      '(': //int main( ..., typedef int (...
+        tkxOpenBraces:
         begin
-          TempWord := GetFirstWord(CurrStr);
-          LastWord := GetLastWord(CurrStr);
-          if (LastWord = 'delete') or (LastWord = 'new') then
-          begin
-            StartPos := PrevStartPos;
-            StartLine := PrevStartLine;
-          end;
-          if (LastWord = 'operator') and (GetLastChar(CurrStr) in LetterChars) then
-          begin
-            CurrStr := CurrStr + fptr^;
-            Inc(fptr);
-            Inc(fCurrPos);
-            Continue;
-          end
-          else if TempWord = 'typedef' then
-            ProcessTypedef(StartPos, StartLine, CurrStr)
-          else if TempWord = 'extern' then
-          begin
-            TempWord := GetLastWord(GetPriorWord(CurrStr));
-            if not StringIn(LastWord, ReservedTypes) and (TempWord <> 'extern') then
-            begin
-              ProcessFunction(StartPos, StartLine, GetAfterWord(CurrStr),
-                IsDestructor);
-            end
-            else
-            begin
-              StartPos := fCurrPos + 1;
-              TempWord := Copy(CurrStr, 7, Length(CurrStr) - 7);
-              CurrStr := GetWordPair('(', ')');
-              if fptr^ = ')' then
-              begin
-                Inc(fptr);
-                Inc(fCurrPos);
-              end;
-              NextValidChar;
-              if Pos('*', CurrStr) > 0 then
-                Inc(StartPos, Pos('*', CurrStr))
-              else if Pos('&', CurrStr) > 0 then
-                Inc(StartPos, Pos('&', CurrStr));
-              TempWord := Trim(TempWord + ' ' + CurrStr);
-              if fptr^ in [';', '['] then //?
-                ProcessVariable(StartPos, StartLine, TempWord)
-              else if fptr^ = '(' then
-              begin
-                ProcessFunction(StartPos, StartLine, TempWord, IsDestructor);
-              end;
-            end;
-          end
-          else if PairCount = 0 then
-          begin
-            if TempWord <> 'for' then
-              ProcessFunction(StartPos, StartLine, CurrStr, IsDestructor);
-          end
-          else
-            SkipPair('(', ')', [';', '{', '}']);
-          CurrStr := '';
-          ChangedCurrPos := True;
-          IsDestructor := False;
+          Inc(FLevel);
         end;
-      ')':
+        tkxCloseBraces:
         begin
-          LastWord := GetLastWord(CurrStr);
-          if LastWord = 'operator' then
-          begin
-            CurrStr := CurrStr + fptr^;
-            Inc(fptr);
-            Inc(fCurrPos);
-            Continue;
-          end;
-          CurrStr := '';
-          ChangedCurrPos := True;
-          IsDestructor := False;
-        end;
-      '~':
-        begin
-          if (GetLastWord(CurrStr) = 'operator') then
-          begin
-            CurrStr := CurrStr + fptr^;
-            Inc(fptr);
-            Inc(fCurrPos);
-            Continue;
-          end;
-          IsDestructor := True;
-        end;
-      '.':
-        begin
-          CurrStr := '';
-          IsDestructor := False;
-        end;
-      '=':
-        begin
-          if (GetLastWord(CurrStr) = 'operator') then
-          begin
-            CurrStr := CurrStr + fptr^;
-            Inc(fptr);
-            Inc(fCurrPos);
-            Continue;
-          end;
-          ProcessVariable(StartPos, StartLine, CurrStr);
-          CurrStr := '';
-          IsDestructor := False;
-          Assigning := fptr^ <> ';';
-        end;
-      '{':
-        begin //struct{, typedef ...{, switch(){, int main(){
-          Assigning := False;
-          TempWord := GetFirstWord(CurrStr);
-          if TempWord = 'typedef' then
-            ProcessTypedef(StartPos, StartLine, CurrStr)
-          else if TempWord = 'struct' then
-            ProcessStruct(False, StartPos, StartLine, CurrStr)
-          else if TempWord = 'union' then
-            ProcessUnion(False, StartPos, StartLine, CurrStr)
-          else if TempWord = 'enum' then
-            ProcessEnum(False, StartPos, StartLine, CurrStr)
-          else if TempWord = 'namespace' then
-            ProcessNamespace(False, StartPos, StartLine, CurrStr)
-          else if TempWord = 'extern' then //extern "?" {
-            SkipEOL
-          else
-          begin
-            if TempWord = 'class' then
-              ProcessClass(False, StartPos, StartLine, CurrStr)
-            else
-              Inc(PairCount); //function, switch, for, while, do
-            Inc(fLevel); //Level ->>
-          end;
-          CurrStr := '';
-          IsDestructor := False;
-        end;
-      '}':
-        begin
-          Assigning := False;
-          if fLevel > 0 then
-            Dec(fLevel); //Level <<-
-          if PairCount > 0 then
-            Dec(PairCount);
-          if StackLevel = fLevel then
-          begin
-            lastFunc := Pop; //remove top item
-            if Assigned(lastFunc) then
-            begin
-              if (lastFunc.Token in [tkFunction, tkConstructor, tkNamespace,
-                tkDestructor, tkOperator]) and (lastFunc.Count > 1) then
-              begin
-                scopeClass := GetTokenByName(lastFunc, 'Scope', tkScope);
-                if Assigned(scopeClass) then
-                  scopeClass.SelLength := fCurrPos - scopeClass.SelStart;
-              end;
-              if not Empty and (lastFunc.Token = tkScopeClass) then
-              begin
-                lastFunc := Pop;
-                if lastFunc.Token = tkClass then
-                begin
-                  scopeClass := GetTokenByName(lastFunc, 'private', tkScopeClass);
-                  if Assigned(scopeClass) and (scopeClass.Count = 0) then
-                    lastFunc.Remove(scopeClass);
-                  scopeClass := GetTokenByName(lastFunc, 'protected', tkScopeClass);
-                  if Assigned(scopeClass) and (scopeClass.Count = 0) then
-                  begin
-                    lastFunc.Remove(scopeClass);
-                  //DoTokenLog('Parse - ' + scopeClass.Name + ' ' + TokenNames[scopeClass.Token]);
-                  end;
-                  scopeClass := GetTokenByName(lastFunc, 'public', tkScopeClass);
-                  if Assigned(scopeClass) and (scopeClass.Count = 0) then
-                    lastFunc.Remove(scopeClass);
-                  scopeClass := GetTokenByName(lastFunc, 'Scope', tkScope);
-                  if Assigned(scopeClass) then
-                    scopeClass.SelLength := fCurrPos - scopeClass.SelStart;
-                end;
-                if fLevel > 0 then
-                  Dec(fLevel);
-              end;
-            end;
-          end;
-          CurrStr := '';
-          ChangedCurrPos := True;
-          IsDestructor := False;
-        end;
-      ',', '[', ';': //int a; int a, b; int a[];
-        begin
-          if fptr^ = ';' then
-            Assigning := False;
-          TempWord := GetFirstWord(CurrStr);
-          if TempWord = 'typedef' then
-            ProcessTypedef(StartPos, StartLine, CurrStr)
-          else if (fptr^ = '[') and (GetLastWord(CurrStr) = 'operator') then
-          begin
-            CurrStr := CurrStr + fptr^;
-            Inc(fptr);
-            Inc(fCurrPos);
-            Continue;
-          end
-          else
-          begin
-            ProcessVariable(StartPos, StartLine, CurrStr);
-          end;
-          CurrStr := '';
-          ChangedCurrPos := True;
-          IsDestructor := False;
-        end;
-      ':':
-        begin
-          TempWord := GetFirstWord(CurrStr);
-          if TempWord = 'struct' then
-          begin
-            ProcessStruct(False, StartPos, StartLine, CurrStr);
-            CurrStr := '';
-          end
-          else if TempWord = 'union' then
-          begin
-            ProcessUnion(False, StartPos, StartLine, CurrStr);
-            CurrStr := '';
-          end
-          else if (TempWord = 'typedef') and (((fptr + 1)^ <> ':') and ((fptr - 1)^ <> ':')) then
-          begin
-            ProcessTypedef(StartPos, StartLine, CurrStr);
-            CurrStr := '';
-          end
-          else if TempWord = 'class' then
-          begin
-            ProcessClass(False, StartPos, StartLine, CurrStr);
-            Inc(fLevel);
-            CurrStr := '';
-          end
-          else if StringIn(GetLastWord(CurrStr), ScopeNames) and not Empty then
-          begin
-            Scope := GetLastWord(CurrStr);
-            lastFunc := nil;
-            if Assigned(Top.Parent) and (Top.Parent.Token = tkClass) then
-              lastFunc := GetTokenByName(Top.Parent, Scope, tkScopeClass)
-            else if (Top.Token = tkClass) then
-              lastFunc := GetTokenByName(Top, Scope, tkScopeClass);
-            if Assigned(lastFunc) and (Top <> lastFunc) then
-            begin
-            //swap scope
-              Pop;
-              Push(lastFunc);
-            end;
-            CurrStr := '';
-          end
-          else
-            CurrStr := CurrStr + ':';
-        //DoTokenLog('Parse - is function: ' + CurrStr);
-          if ((fptr + 1)^ = ':') and ((fptr + 2)^ = '~') then
-            IsDestructor := True;
-          ChangedCurrPos := True;
-        end;
-      #0: Break;
-    else
-      if fptr^ in SpaceChars + LineChars then
-      begin
-        CurrStr := Trim(CurrStr) + ' ';
-        ChangedCurrPos := True;
-      end
-      else if (fptr^ = '<') and (GetFirstWord(CurrStr) = 'template') then
-      begin
-        SkipPair('<', '>');
-        CurrStr := '';
-        ChangedCurrPos := True;
-      end
-      else if (fptr^ in LetterChars + DigitChars + ['*', '&', '<'])
-        and not Assigning then
-      begin
-        LastWord := '';
-        if (fptr^ in ['*', '&', '<']) then
-         LastWord := GetLastWord(CurrStr);
-        if (fptr^ in ['<']) and (LastWord <> 'operator') then
-        begin
-          TempWord := GetWordPair('<', '>');
-          if fptr^ = '>' then
-            CurrStr := CurrStr + '<' + TempWord + '>'
-          else
-            CurrStr := '';
-        end
-        else
-          CurrStr := CurrStr + fptr^;
-        if ChangedCurrPos and (LastWord <> 'operator') then
-        begin
-          PrevStartPos := StartPos;
-          PrevStartLine := StartLine;
-          StartPos := fCurrPos;
-          StartLine := fCurrLine;
-          ChangedCurrPos := False;
-        end;
-        if (fptr^ in ['*', '&', '>']) and (LastWord <> 'operator') then
-          ChangedCurrPos := True;
-      end
-      else if (fptr^ in ['>', '^', '|', '!', '+', '-', ']']) then
-      begin
-        if (GetLastWord(CurrStr) = 'operator') then
-          CurrStr := CurrStr + fptr^
-        else
-        begin
-          CurrStr := '';
-          ChangedCurrPos := True;
+          ProcessCloseBraces;
         end;
       end;
-    end;
-    Inc(fptr);
-    Inc(fCurrPos);
-    DoProgress;
-    if fCancel then
-    begin
-      fBusy := False;
-      Exit;
-    end;
-  until (fptr^ = #0);
+      Next;
+    until (FCurrent = nil) or fCancel;
+  end;
+  FreeTokens(FFirst);
   Result := not fCancel;
   fBusy := False;
 end;
@@ -2653,69 +1000,63 @@ begin
   if not Empty and not (TkType in [tkInclude, tkDefine]) then
   begin
     TokenClass := Top;
-    Result := TTokenClass.Create(TokenClass);
-    Result.Fill(Line, Len, Start, Level, TkType, S, Flag, FComment);
-    if (fRightComment <> '') and Assigned(fPrev) then
-    begin
-      if fPrev.Comment = '' then
-        fPrev.Comment := fRightComment
-      else if (fOpenCommentCount > 0) then
-        fPrev.Comment := fPrev.Comment + #13 + fRightComment;
-      fRightComment := '';
-    end;
-    fPrev := Result;
-    if fOpenCommentCount = 0 then
-      FComment := '';
-    if TokenClass <> nil then
-    begin
-      TokenClass.Add(Result);
-    end;
-    if TkType in [tkStruct, tkUnion, tkEnum, tkFunction, tkConstructor, tkParams,
-      tkDestructor, tkOperator, tkNamespace, tkClass, tkOperator] then
-    begin
-      Push(Result);
-    end;
   end
   else
   begin
     TokenClass := nil;
     case TkType of
-      tkInclude: TokenClass := TTokenFile(fTokenFile).Includes;
-      tkDefine: TokenClass := TTokenFile(fTokenFile).Defines;
-      tkTypedef, tkTypedefProto, tkClass, tkStruct, tkTypeStruct, tkEnum,
-        tkTypeEnum, tkUnion, tkTypeUnion, tkScopeClass, tkNamespace:
+      tkInclude: 
+        TokenClass := TTokenFile(fTokenFile).Includes;
+      tkDefine: 
+        TokenClass := TTokenFile(fTokenFile).Defines;
+      tkTypedef, 
+      tkTypedefProto, 
+      tkClass, 
+      tkStruct, 
+      tkTypeStruct, 
+      tkEnum,
+      tkTypeEnum, 
+      tkUnion, 
+      tkTypeUnion, 
+      tkScopeClass, 
+      tkNamespace:
         TokenClass := TTokenFile(fTokenFile).TreeObjs;
-      tkVariable, tkUnknow, tkForward, tkUsing, tkEnumItem:
+      tkVariable, 
+      tkUnknow, 
+      tkForward, 
+      tkUsing, 
+      tkEnumItem:
         TokenClass := TTokenFile(fTokenFile).VarConsts;
-      tkPrototype, tkFunction, tkConstructor, tkDestructor, tkOperator:
+      tkPrototype, 
+      tkFunction, 
+      tkConstructor, 
+      tkDestructor, 
+      tkOperator:
         TokenClass := TTokenFile(fTokenFile).FuncObjs;
     end;
-    Result := TTokenClass.Create(TokenClass);
-    Result.Fill(Line, Len, Start, Level, TkType, S, Flag, FComment);
-    if TkType = tkDefine then
-      fPrev := Result;
-    if (fRightComment <> '') and Assigned(fPrev) then
-    begin
-      if fPrev.Comment = '' then
-        fPrev.Comment := fRightComment
-      else if (fOpenCommentCount > 0) then
-        fPrev.Comment := fPrev.Comment + #13 + fRightComment;
-      fRightComment := '';
-    end;
-    fPrev := Result;
-    if fOpenCommentCount = 0 then
-      FComment := '';
-    if TokenClass <> nil then
-    begin
-      TokenClass.Add(Result);
-    end;
-    if TkType in [tkStruct, tkUnion, tkEnum, tkFunction, tkConstructor,
-      tkDestructor, tkOperator, tkParams, tkClass, tkNamespace] then
-    begin
-      Push(Result);
-    end;
+  end;     
+  Result := TTokenClass.Create(TokenClass);
+  Result.Fill(Line, Len, Start, Level, TkType, S, Flag, FComment);
+  if TkType = tkDefine then
+    fPrev := Result; 
+  if (fRightComment <> '') and Assigned(fPrev) then
+  begin
+    if fPrev.Comment = '' then
+      fPrev.Comment := fRightComment
+    else if (fOpenCommentCount > 0) then
+      fPrev.Comment := fPrev.Comment + #13 + fRightComment;
+    fRightComment := '';
   end;
-
+  fPrev := Result;
+  if fOpenCommentCount = 0 then
+    FComment := '';
+  if TokenClass <> nil then
+    TokenClass.Add(Result);
+  if TkType in [tkStruct, tkUnion, tkEnum, tkFunction, tkConstructor, tkParams,
+    tkDestructor, tkOperator, tkNamespace, tkClass, tkOperator] then
+  begin
+    Push(Result);
+  end;
 end;
 
 constructor TCppParser.Create;
@@ -2746,25 +1087,8 @@ begin
   fStack.Clear;
   fLast := nil;
   fPrev := nil;
-  fCurrLine := 0;
-  fCurrPos := 0;
-  fLength := 0;
-  fLevel := 0;
+  FLevel := 0;
   fCancel := False;
-  fptr := '';
-  fSrc := '';
-end;
-
-{procedure TCppParser.DoTokenLog(const S: string);
-begin
-  if Assigned(fLogToken) then
-    fLogToken(Self, S, fCurrLine);
-end;}
-
-procedure TCppParser.DoProgress;
-begin
-  if Assigned(fProgress) then
-    fProgress(Self, fCurrPos, fLength);
 end;
 
 function TCppParser.Pop: TTokenClass;

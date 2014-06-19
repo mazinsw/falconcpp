@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project>
+	<VersionInfo>
+		<VersionNumbers Major="2" Minor="0" Release="4" Build="0"/>
+		<LanguageID Value="1046"/>
+		<CharsetID Value="1252"/>
+		<CompanyName Value="Jim Pattee"/>
+		<FileVersion Value="2.0.4.0"/>
+		<FileDescription Value="Artistic Style"/>
+		<InternalName Value="AStyle.dll"/>
+		<LegalCopyright Value=""/>
+		<LegalTrademarks Value=""/>
+		<OriginalFilename Value="AStyle.dll"/>
+		<ProductName Value="2.0.4.0"/>
+		<ProductVersion Value=""/>
+		<AutoIncrementBuild Value="No"/>
+	</VersionInfo>
+	<Libs Value="-shared -Wl,--kill-at"/>
+	<Flags Value="-DASTYLE_LIB -DNDEBUG"/>
+	<Target Value="../../../../bin/AStyle.dll"/>
+	<CommandLine Value=""/>
+	<CompilerOptions Value="-Wall -s -O2"/>
+	<DeleteObjectsBefore Value="Yes"/>
+	<DeleteObjectsAfter Value="Yes"/>
+	<DeleteMakefileAfter Value="Yes"/>
+	<DeleteResourcesAfter Value="Yes"/>
+	<EnableTheme Value="No"/>
+	<RequiresAdmin Value="No"/>
+	<CompilerType Value="CPP"/>
+	<AppType Value="DLL"/>
+	<Files>
+		<Folder Name="..">
+			<Folder Name="src">
+				<File Name="astyle.h"/>
+				<File Name="astyle_main.h"/>
+				<File Name="astyle_main.cpp"/>
+				<File Name="ASResource.cpp"/>
+				<File Name="ASFormatter.cpp"/>
+				<File Name="ASEnhancer.cpp"/>
+				<File Name="ASBeautifier.cpp"/>
+			</Folder>
+		</Folder>
+	</Files>
+</Project>

@@ -2,7 +2,7 @@
 		<PropertyGroup>
 			<ProjectGuid>{07250B23-828C-4B35-9F19-5E665B9ADF6D}</ProjectGuid>
 			<MainSource>Falcon.dpr</MainSource>
-			<Config Condition="'$(Config)'==''">Release</Config>
+			<Config Condition="'$(Config)'==''">Debug</Config>
 			<DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
 			<ProjectVersion>12.0</ProjectVersion>
 		</PropertyGroup>
@@ -94,7 +94,6 @@
 				<Form>FrmCodeTemplates</Form>
 			</DCCReference>
 			<DCCReference Include="Makefile.pas"/>
-			<DCCReference Include="..\others\astyle\AStyle.pas"/>
 			<DCCReference Include="..\others\bzip2\BZip2.pas"/>
 			<DCCReference Include="..\others\libtar\LibTar.pas"/>
 			<DCCReference Include="..\others\compressutils\CompressUtils.pas"/>
@@ -143,6 +142,36 @@
 			<DCCReference Include="editor\AutoComplete.pas"/>
 			<DCCReference Include="..\others\cppparser\CppTokenizer.pas"/>
 			<DCCReference Include="editor\CompletionProposal.pas"/>
+			<DCCReference Include="..\others\astyle\wrapper\AStyle.pas"/>
+			<DCCReference Include="..\others\encoding\chsdet\src\Big5Freq.pas"/>
+			<DCCReference Include="..\others\encoding\chsdet\src\CharDistribution.pas"/>
+			<DCCReference Include="..\others\encoding\chsdet\src\chsdIntf.pas"/>
+			<DCCReference Include="..\others\encoding\chsdet\src\CustomDetector.pas"/>
+			<DCCReference Include="..\others\encoding\chsdet\src\Dump.pas"/>
+			<DCCReference Include="..\others\encoding\chsdet\src\EUCKRFreq.pas"/>
+			<DCCReference Include="..\others\encoding\chsdet\src\EUCSampler.pas"/>
+			<DCCReference Include="..\others\encoding\chsdet\src\EUCTWFreq.pas"/>
+			<DCCReference Include="..\others\encoding\chsdet\src\GB2312Freq.pas"/>
+			<DCCReference Include="..\others\encoding\chsdet\src\JISFreq.pas"/>
+			<DCCReference Include="..\others\encoding\chsdet\src\JpCntx.pas"/>
+			<DCCReference Include="..\others\encoding\chsdet\src\MBUnicodeMultiProber.pas"/>
+			<DCCReference Include="..\others\encoding\chsdet\src\MultiModelProber.pas"/>
+			<DCCReference Include="..\others\encoding\chsdet\src\nsCodingStateMachine.pas"/>
+			<DCCReference Include="..\others\encoding\chsdet\src\nsCore.pas"/>
+			<DCCReference Include="..\others\encoding\chsdet\src\nsEscCharsetProber.pas"/>
+			<DCCReference Include="..\others\encoding\chsdet\src\nsGroupProber.pas"/>
+			<DCCReference Include="..\others\encoding\chsdet\src\nsHebrewProber.pas"/>
+			<DCCReference Include="..\others\encoding\chsdet\src\nsLatin1Prober.pas"/>
+			<DCCReference Include="..\others\encoding\chsdet\src\nsMBCSMultiProber.pas"/>
+			<DCCReference Include="..\others\encoding\chsdet\src\nsPkg.pas"/>
+			<DCCReference Include="..\others\encoding\chsdet\src\nsSBCharSetProber.pas"/>
+			<DCCReference Include="..\others\encoding\chsdet\src\nsSBCSGroupProber.pas"/>
+			<DCCReference Include="..\others\encoding\chsdet\src\nsUniversalDetector.pas"/>
+			<DCCReference Include="..\others\encoding\chsdet\src\sbseq\LangBulgarianModel.pas"/>
+			<DCCReference Include="..\others\encoding\chsdet\src\sbseq\LangCyrillicModel.pas"/>
+			<DCCReference Include="..\others\encoding\chsdet\src\sbseq\LangGreekModel.pas"/>
+			<DCCReference Include="..\others\encoding\chsdet\src\sbseq\LangHebrewModel.pas"/>
+			<DCCReference Include="..\others\encoding\chsdet\src\vi.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

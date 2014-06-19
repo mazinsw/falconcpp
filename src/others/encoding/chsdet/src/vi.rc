@@ -1,0 +1,47 @@
+#include "vi.pas"
+#define VER_DATE		       "23 Apr 2013"
+
+#define ICON_NAME 		       "chsdet.ico"
+#define FILE_DESCRIPTION_STR            "Charset detector"
+
+
+
+#define INTERNAL_NAME_STR		"chsdet"
+#define LEGAL_COPYRIGHT_STR		"Nick Yakowlew, ya_nick@users.sourceforge.net"
+#define ORIGINAL_FILENAME_STR	        "chsdet.dll"
+#define PRODUCT_NAME_STR		"Charset detector"
+#define LEGAL_TRADEMARKS_STR		""
+#define COMPANY_NAME_STR	        ""
+
+
+MAIN            ICON ICON_NAME
+MAINICON        ICON ICON_NAME
+
+VS_VERSIONINFO VERSIONINFO
+FILEVERSION     FILE_VERSION_MAJOR,    FILE_VERSION_MINOR,    FILE_VERSION_RELEASE,    FILE_VERSION_BUILD
+PRODUCTVERSION  PRODUCT_VERSION_MAJOR, PRODUCT_VERSION_MINOR, PRODUCT_VERSION_RELEASE, PRODUCT_VERSION_BUILD
+FILEOS          VOS__WINDOWS32
+FILETYPE        VFT_APP
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "000004b0"
+    BEGIN
+//      VALUE "CompanyName",      COMPANY_NAME_STR"\0"
+      VALUE "FileVersion",      FILE_VERSION_MAJOR_STR"."FILE_VERSION_MINOR_STR"."FILE_VERSION_RELEASE_STR"."FILE_VERSION_BUILD_STR"\0"
+      VALUE "FileDescription",  FILE_DESCRIPTION_STR"\0"
+      VALUE "InternalName",     INTERNAL_NAME_STR"\0"
+      VALUE "LegalCopyright",   LEGAL_COPYRIGHT_STR"\0"
+//      VALUE "LegalTrademarks",  LEGAL_TRADEMARKS_STR"\0"
+      VALUE "OriginalFilename", ORIGINAL_FILENAME_STR"\0"
+      VALUE "ProductName",      PRODUCT_NAME_STR"\0"
+      VALUE "ProductVersion",   PRODUCT_VERSION_MAJOR_STR"."PRODUCT_VERSION_MINOR_STR"\0"
+      VALUE "Datum",            VER_DATE"\0"
+    END
+  END
+
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0, 1200
+  END
+END

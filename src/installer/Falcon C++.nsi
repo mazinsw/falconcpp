@@ -21,6 +21,15 @@
   !define SHCNF_IDLIST 0
   !define MAJ_VERSION "3.3"
   !define APP_VERSION "${MAJ_VERSION}.0.10"
+  
+; packages
+  !define PKG_MAKE     "mingw32-make 3.82.90.fpk"
+  !define PKG_RUNTIME  "mingw-runtime 3.20.fpk"
+  !define PKG_BINUTILS "binutils 2.22.fpk"
+  !define PKG_GDB      "gdb 7.6.fpk"
+  !define PKG_WINAPI   "w32api 3.17.fpk"
+  !define PKG_CODE     "gcc-core 4.7.1.fpk"
+  !define PKG_CPP      "gcc-g++ 4.7.1.fpk"
 ;--------------------------------
 ;General
 
@@ -363,32 +372,32 @@ Section "$(NAME_SecMinGW)" SecMinGW
   SetOutPath "$INSTDIR"
   
   ;MinGW Packages
-  File "..\..\res\Packages\mingw32-make 3.82.90.fpk"
-  File "..\..\res\Packages\mingw-runtime 3.20.fpk"
-  File "..\..\res\Packages\binutils 2.23.1.fpk"
-  File "..\..\res\Packages\gdb 7.6.fpk"
-  File "..\..\res\Packages\w32api 3.17.fpk"
-  File "..\..\res\Packages\gcc-core 4.8.1.fpk"
-  File "..\..\res\Packages\gcc-g++ 4.8.1.fpk"
+  File "..\..\res\Packages\${PKG_MAKE}"
+  File "..\..\res\Packages\${PKG_RUNTIME}"
+  File "..\..\res\Packages\${PKG_BINUTILS}"
+  File "..\..\res\Packages\${PKG_GDB}"
+  File "..\..\res\Packages\${PKG_WINAPI}"
+  File "..\..\res\Packages\${PKG_CODE}"
+  File "..\..\res\Packages\${PKG_CPP}"
   
   ;Install MinGW Packages
   DetailPrint "$(DESC_InstMinGW)"
-  !insertmacro INST_PKG "mingw-runtime 3.20.fpk" "$(DESC_InstRuntime)"
-  !insertmacro INST_PKG "gcc-core 4.8.1.fpk" "$(DESC_InstGCC_Core)"
-  !insertmacro INST_PKG "gcc-g++ 4.8.1.fpk" "$(DESC_InstGCC_GPP)"
-  !insertmacro INST_PKG "gdb 7.6.fpk" "$(DESC_InstGDB)"
-  !insertmacro INST_PKG "binutils 2.23.1.fpk" "$(DESC_InstBinutils)"
-  !insertmacro INST_PKG "mingw32-make 3.82.90.fpk" "$(DESC_InstMake)"
-  !insertmacro INST_PKG "w32api 3.17.fpk" "$(DESC_InstW32API)"
+  !insertmacro INST_PKG "${PKG_RUNTIME}" "$(DESC_InstRuntime)"
+  !insertmacro INST_PKG "${PKG_CODE}" "$(DESC_InstGCC_Core)"
+  !insertmacro INST_PKG "${PKG_CPP}" "$(DESC_InstGCC_GPP)"
+  !insertmacro INST_PKG "${PKG_GDB}" "$(DESC_InstGDB)"
+  !insertmacro INST_PKG "${PKG_BINUTILS}" "$(DESC_InstBinutils)"
+  !insertmacro INST_PKG "${PKG_MAKE}" "$(DESC_InstMake)"
+  !insertmacro INST_PKG "${PKG_WINAPI}" "$(DESC_InstW32API)"
   
   ;Delete installeds packages
-  Delete "$INSTDIR\mingw32-make 3.82.90.fpk"
-  Delete "$INSTDIR\mingw-runtime 3.20.fpk"
-  Delete "$INSTDIR\binutils 2.23.1.fpk"
-  Delete "$INSTDIR\gdb 7.6.fpk"
-  Delete "$INSTDIR\w32api 3.17.fpk"
-  Delete "$INSTDIR\gcc-core 4.8.1.fpk"
-  Delete "$INSTDIR\gcc-g++ 4.8.1.fpk"
+  Delete "$INSTDIR\${PKG_MAKE}"
+  Delete "$INSTDIR\${PKG_RUNTIME}"
+  Delete "$INSTDIR\${PKG_BINUTILS}"
+  Delete "$INSTDIR\${PKG_GDB}"
+  Delete "$INSTDIR\${PKG_WINAPI}"
+  Delete "$INSTDIR\${PKG_CODE}"
+  Delete "$INSTDIR\${PKG_CPP}"
   
   ;write compiler path
   SetShellVarContext current

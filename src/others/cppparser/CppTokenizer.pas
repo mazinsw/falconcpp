@@ -4,20 +4,20 @@ interface
 
 type
   TTkxType = (tkxIdentifier, tkxNumber, tkxPreprocessor, tkxPlus, tkxInc,
-    tkxMinus, tkxDec, tkxMult, tkxDiv, tkxMod, tkxBinAnd, tkxBinOr, tkxXor,
-    tkxBinNot, tkxShiftLeft, tkxShiftRight, tkxTernary, tkxAssign, tkxEqual,
-    tkxNot, tkxAnd, tkxOr, tkxDiff, tkxLess, tkxGreater, tkxLessEqual,
+    tkxMinus, tkxDec, tkxMult, tkxDiv, tkxBackslash, tkxMod, tkxBinAnd, tkxBinOr,
+    tkxXor, tkxBinNot, tkxShiftLeft, tkxShiftRight, tkxTernary, tkxAssign,
+    tkxEqual, tkxNot, tkxAnd, tkxOr, tkxDiff, tkxLess, tkxGreater, tkxLessEqual,
     tkxGreaterEqual, tkxString, tkxComment, tkxCharacter, tkxOpenParentheses,
     tkxCloseParentheses, tkxOpenBraces, tkxCloseBraces, tkxOpenBrackets,
     tkxCloseBrackets, tkxDot, tkxInterval, tkxComma, tkxSemicolon, tkxColon,
-    tkxIncludePath);
+    tkxIncludePath, tkxGlobalScope);
     
   PToken = ^TToken;
   TToken = packed record
+    Token        : TTkxType;
     StartPosition: Integer;
     EndPosition  : Integer;
     Line         : Integer;
-    Token        : TTkxType;
     Prior        : PToken;
     Next         : PToken;
   end;
@@ -25,6 +25,7 @@ type
 function StartTokenizer(const StartPtr: PChar): PToken;
 procedure FreeTokens(First: PToken);
 function TokenMatch(const StartPtr: PChar; const S: string; Token: PToken): Boolean;
+function TokenLength(Token: PToken): Integer;
 function TokenString(const StartPtr: PChar; Token: PToken): string;
 
 function IsWordOrNumber(const StartPtr: PChar): Boolean;
@@ -39,6 +40,11 @@ begin
   Result := (Token <> nil) and (Length(S) = (Token^.EndPosition - Token^.StartPosition)) and
     (StrLComp(StartPtr + Token^.StartPosition, PChar(S),
             Token^.EndPosition - Token^.StartPosition) = 0);
+end;
+
+function TokenLength(Token: PToken): Integer;
+begin
+  Result := Token^.EndPosition - Token^.StartPosition;
 end;
 
 function TokenString(const StartPtr: PChar; Token: PToken): string;
@@ -57,10 +63,10 @@ function AddToken(StartPosition, EndPosition, Line: Integer; Token: TTkxType;
   Last: PToken; var First: PToken): PToken;
 begin
   GetMem(Result, SizeOf(TToken));
+  Result^.Token := Token;
   Result^.StartPosition := StartPosition;
   Result^.EndPosition := EndPosition;   
   Result^.Line := Line;
-  Result^.Token := Token;
   Result^.Prior := Last;
   Result^.Next := nil;
   if Last <> nil then
@@ -376,6 +382,7 @@ begin
         else
           Last := AddToken(Ptr - StartPtr, Ptr + 1 - StartPtr, Line, tkxDiv, Last, Result);
       end;
+      '\': Last := AddToken(Ptr - StartPtr, Ptr + 1 - StartPtr, Line, tkxBackslash, Last, Result);
       '%': Last := AddToken(Ptr - StartPtr, Ptr + 1 - StartPtr, Line, tkxMod, Last, Result);
       '&':
       begin
@@ -385,7 +392,7 @@ begin
           Inc(Ptr);
         end
         else
-          Last := AddToken(Ptr - StartPtr, Ptr + 1 - StartPtr, Line, tkxBinOr, Last, Result);
+          Last := AddToken(Ptr - StartPtr, Ptr + 1 - StartPtr, Line, tkxBinAnd, Last, Result);
       end;
       '|':
       begin
@@ -473,7 +480,16 @@ begin
       end;
       ',': Last := AddToken(Ptr - StartPtr, Ptr + 1 - StartPtr, Line, tkxComma, Last, Result);
       ';': Last := AddToken(Ptr - StartPtr, Ptr + 1 - StartPtr, Line, tkxSemicolon, Last, Result);
-      ':': Last := AddToken(Ptr - StartPtr, Ptr + 1 - StartPtr, Line, tkxColon, Last, Result);
+      ':':
+      begin
+        if (Ptr + 1)^ = ':' then
+        begin
+          Last := AddToken(Ptr - StartPtr, Ptr + 2 - StartPtr, Line, tkxGlobalScope, Last, Result);
+          Inc(Ptr);
+        end
+        else
+          Last := AddToken(Ptr - StartPtr, Ptr + 1 - StartPtr, Line, tkxColon, Last, Result);
+      end;
       '#':
       begin
         Last := AddToken(Ptr - StartPtr, Ptr + 1 - StartPtr, Line, tkxPreprocessor, Last, Result);

@@ -1,6 +1,6 @@
-binutils-2.23.1-1-mingw32
-gcc-4.8.1-tdm-2-core
-gcc-4.8.1-tdm-2-c++
+binutils-2.22-1-mingw32
+gcc-4.7.1-tdm-1-core
+gcc-4.7.1-tdm-1-c++
 gdb-7.6
 make-3.82.90-2-mingw32-cvs-20120902
 mingwrt-3.20-2-mingw32

@@ -1,0 +1,2 @@
+//  FILE ENCODING IS ANSI.
+//  зг

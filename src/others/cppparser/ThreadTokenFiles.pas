@@ -450,7 +450,6 @@ begin
   InitializeCriticalSection(flock);
   fTokenFiles := TokenFiles;
   fParser := TCppParser.Create;
-  fParser.OnProgess := CppParserProgress;
   fFileQueue := TQueue.Create;
   fRunEvent := CreateEvent(nil, FALSE, FALSE, nil);
   if (fRunEvent = 0) or (fRunEvent = INVALID_HANDLE_VALUE) then

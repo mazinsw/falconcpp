@@ -26,12 +26,7 @@ type
   TBreakpointList = class
   private
     FList: TList;
-    FImageList: TImageList;
-    FImageIndex: Integer;
-    FInvalidIndex: Integer;
     function GetBreakpointIndex(Line: Integer): Integer;
-    procedure SetImageList(Value: TImageList);
-    procedure SetImageIndex(Value: Integer);
     function Get(Index: Integer): TBreakpoint;
     function GetCount: Integer;
     function GetInsertIndex(Line: Integer): Integer;
@@ -47,9 +42,6 @@ type
     function GetBreakpoint(Line: Integer): TBreakpoint;
     property Count: Integer read GetCount;
     property Items[Index: integer]: TBreakpoint read Get;
-    property ImageList: TImageList read FImageList write SetImageList;
-    property ImageIndex: Integer read FImageIndex write SetImageIndex;
-    property InvalidIndex: Integer read FInvalidIndex write FInvalidIndex;
   end;
 
 implementation
@@ -130,30 +122,10 @@ begin
     Result := I;
 end;
 
-procedure TBreakpointList.SetImageList(Value: TImageList);
-begin
-  if Value <> FImageList then
-  begin
-    FImageList := Value;
-  end;
-end;
-
-procedure TBreakpointList.SetImageIndex(Value: Integer);
-begin
-  if Value <> FImageIndex then
-  begin
-    FImageIndex := Value;
-    if FInvalidIndex = -1 then
-      FInvalidIndex := FImageIndex + 1;
-  end;
-end;
-
 constructor TBreakpointList.Create;
 begin
   inherited Create;
   FList := TList.Create;
-  FImageIndex := -1;
-  FInvalidIndex := -1;
 end;
 
 destructor TBreakpointList.Destroy;
@@ -214,9 +186,6 @@ var
   I: Integer;
   bp: TBreakpoint;
 begin
-  FImageList := Value.FImageList;
-  FImageIndex := Value.FImageIndex;
-  FInvalidIndex := Value.FInvalidIndex;
   Clear;
   for I := 0 to Value.Count - 1 do
   begin

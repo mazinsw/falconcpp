@@ -664,7 +664,7 @@ end;
 function ParseVersion(Version: string): TVersion;
 
 type
-  TCharSet = set of Char;
+  TCharSet = set of AnsiChar;
 
   function Only(str: string; Chars: TCharSet): string;
   var
@@ -690,13 +690,13 @@ begin
   end;
   RegExp := TPerlRegEx.Create;
   RegExp.RegEx := '([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)';
-  RegExp.Subject := Version;
+  RegExp.Subject := UTF8Encode(Version);
   if RegExp.Match then
   begin
-    Result.Major := StrToInt(RegExp.Groups[1]);
-    Result.Minor := StrToInt(RegExp.Groups[2]);
-    Result.Release := StrToInt(RegExp.Groups[3]);
-    Result.Build := StrToInt(RegExp.Groups[4]);
+    Result.Major := StrToInt(UTF8ToString(RegExp.Groups[1]));
+    Result.Minor := StrToInt(UTF8ToString(RegExp.Groups[2]));
+    Result.Release := StrToInt(UTF8ToString(RegExp.Groups[3]));
+    Result.Build := StrToInt(UTF8ToString(RegExp.Groups[4]));
   end
   else
   begin
@@ -970,11 +970,11 @@ var
   I: Integer;
 begin
   List := TStringList.Create;
-  for I := 0 to Languages.Count - 1 do
+  for I := 0 to {$WARN SYMBOL_PLATFORM OFF} Languages.Count {$WARN SYMBOL_PLATFORM ON} - 1 do
   begin
     LangItem := TLanguageItem.Create;
-    LangItem.ID := Languages.LocaleID[I];
-    LangItem.Name := Languages.Name[I];
+    LangItem.ID := {$WARN SYMBOL_PLATFORM OFF} Languages.LocaleID[I] {$WARN SYMBOL_PLATFORM ON};
+    LangItem.Name := {$WARN SYMBOL_PLATFORM OFF} Languages.Name[I] {$WARN SYMBOL_PLATFORM ON};
     List.AddObject(LangItem.Name, LangItem);
     case LangItem.ID of
       $0409: LangItem.ImageIndex := 220;
@@ -1376,7 +1376,7 @@ end;
 
 function FileDateTime(const FileName: string): TDateTime;
 begin
-  Result := FileDateToDateTime(FileAge(FileName));
+  FileAge(FileName, Result);
 end;
 
 function ExtractRootPathName(const Path: string): string;

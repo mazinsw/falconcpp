@@ -315,12 +315,12 @@ begin
   begin
     s1 := '';
     s2 := '';
-    while ptr1^ in ['0'..'9'] do
+    while CharInSet(ptr1^, ['0'..'9']) do
     begin
       s1 := s1 + ptr1^;
       Inc(ptr1);
     end;
-    while ptr2^ in ['0'..'9'] do
+    while CharInSet(ptr2^, ['0'..'9']) do
     begin
       s2 := s2 + ptr2^;
       Inc(ptr2);

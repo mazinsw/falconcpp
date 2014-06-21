@@ -106,15 +106,15 @@ const
     'tkCodeTemplate'
     );
 
-  LetterChars: set of Char = ['A'..'Z', 'a'..'z', '_'];
-  DigitChars: set of Char = ['0'..'9'];
-  HexChars: set of Char = ['A'..'F', 'a'..'f'];
-  SpaceChars: set of Char = [' ', #9];
-  LineChars: set of Char = [#13, #10];
-  ArithmChars: set of Char = ['.', '+', '-', '*', '/', '%'];
-  OpenBraceChars: set of Char = ['(', '{', '<', '['];
-  CloseBraceChars: set of Char = [')', '}', '>', ']'];
-  BraceChars: set of Char = ['(', '{', '<', '[', ')', '}', '>', ']'];
+  LetterChars: set of AnsiChar = ['A'..'Z', 'a'..'z', '_'];
+  DigitChars: set of AnsiChar = ['0'..'9'];
+  HexChars: set of AnsiChar = ['A'..'F', 'a'..'f'];
+  SpaceChars: set of AnsiChar = [' ', #9];
+  LineChars: set of AnsiChar = [#13, #10];
+  ArithmChars: set of AnsiChar = ['.', '+', '-', '*', '/', '%'];
+  OpenBraceChars: set of AnsiChar = ['(', '{', '<', '['];
+  CloseBraceChars: set of AnsiChar = [')', '}', '>', ']'];
+  BraceChars: set of AnsiChar = ['(', '{', '<', '[', ')', '}', '>', ']'];
   ReservedBraceWords: array[0..15] of string = (
     'while', 'for', 'switch', 'sizeof', 'if', 'catch', 'return',
       //extern

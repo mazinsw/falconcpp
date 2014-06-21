@@ -28,6 +28,10 @@ object FrmProperty: TFrmProperty
     TabOrder = 0
     object TSApp: TTabSheet
       Caption = 'Application'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object GrpAppSet: TGroupBox
         Left = 8
         Top = 2
@@ -152,6 +156,10 @@ object FrmProperty: TFrmProperty
     object TSVersion: TTabSheet
       Caption = 'Version Info'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object GrbIncVer: TGroupBox
         Left = 8
         Top = 2
@@ -222,12 +230,12 @@ object FrmProperty: TFrmProperty
             Top = 40
             Width = 55
             Height = 21
+            Alignment = taRightJustify
             Enabled = False
             TabOrder = 1
             Text = '0'
             OnChange = VersionNumbersChange
             OnKeyPress = VersionNumbersKeyPress
-            Alignment = taRightJustify
           end
           object UpDownMajor: TUpDown
             Left = 63
@@ -246,12 +254,12 @@ object FrmProperty: TFrmProperty
             Top = 40
             Width = 55
             Height = 21
+            Alignment = taRightJustify
             Enabled = False
             TabOrder = 3
             Text = '0'
             OnChange = VersionNumbersChange
             OnKeyPress = VersionNumbersKeyPress
-            Alignment = taRightJustify
           end
           object UpDownMinor: TUpDown
             Left = 187
@@ -270,12 +278,12 @@ object FrmProperty: TFrmProperty
             Top = 40
             Width = 55
             Height = 21
+            Alignment = taRightJustify
             Enabled = False
             TabOrder = 5
             Text = '0'
             OnChange = VersionNumbersChange
             OnKeyPress = VersionNumbersKeyPress
-            Alignment = taRightJustify
           end
           object UpDownRelease: TUpDown
             Left = 309
@@ -294,12 +302,12 @@ object FrmProperty: TFrmProperty
             Top = 40
             Width = 55
             Height = 21
+            Alignment = taRightJustify
             Enabled = False
             TabOrder = 7
             Text = '0'
             OnChange = VersionNumbersChange
             OnKeyPress = VersionNumbersKeyPress
-            Alignment = taRightJustify
           end
           object UpDownBuild: TUpDown
             Left = 431
@@ -352,11 +360,9 @@ object FrmProperty: TFrmProperty
             ItemsEx = <>
             Style = csExDropDownList
             Enabled = False
-            ItemHeight = 16
             TabOrder = 0
             OnChange = CbbLangChange
             Images = FrmFalconMain.ImgListCountry
-            DropDownCount = 8
           end
         end
         object ListValues: TListGridView
@@ -392,6 +398,10 @@ object FrmProperty: TFrmProperty
     object TSCompiler: TTabSheet
       Caption = 'Compiler'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object PageControl1: TPageControl
         Left = 8
         Top = 177
@@ -402,6 +412,10 @@ object FrmProperty: TFrmProperty
         object GrbLibs: TTabSheet
           Caption = 'Libraries'
           ImageIndex = -1
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
           object SBtnAdd: TSpeedButton
             Left = 432
             Top = 7
@@ -737,7 +751,6 @@ object FrmProperty: TFrmProperty
             Top = 8
             Width = 417
             Height = 21
-            ItemHeight = 0
             TabOrder = 0
             OnKeyPress = CBLibsKeyPress
           end
@@ -756,6 +769,10 @@ object FrmProperty: TFrmProperty
         object GrbIncs: TTabSheet
           Caption = 'Includes'
           ImageIndex = -1
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
           object SBtnAddInc: TSpeedButton
             Left = 432
             Top = 7
@@ -1091,7 +1108,6 @@ object FrmProperty: TFrmProperty
             Top = 8
             Width = 417
             Height = 21
-            ItemHeight = 0
             TabOrder = 0
             OnKeyPress = CBIncsKeyPress
           end
@@ -1198,6 +1214,10 @@ object FrmProperty: TFrmProperty
     object TSRun: TTabSheet
       Caption = 'Run'
       ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object GrbApprun: TGroupBox
         Left = 8
         Top = 2

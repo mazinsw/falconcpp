@@ -59,11 +59,11 @@ object FormGotoLine: TFormGotoLine
     Top = 24
     Width = 295
     Height = 21
+    Alignment = taRightJustify
     TabOrder = 0
     Text = '0'
     OnChange = EditLineChange
     OnKeyPress = EditLineKeyPress
-    Alignment = taRightJustify
   end
   object UpDown: TUpDown
     Left = 303

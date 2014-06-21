@@ -35,13 +35,13 @@ const
   CR = #13;
   LF = #10;
 
-  dbgLetterChars: set of Char = ['A'..'Z', 'a'..'z', '_'];
-  dbgDigitChars: set of Char = ['0'..'9'];
-  dbgHexChars: set of Char = ['A'..'F', 'a'..'f'];
-  dbgSpaceChars: set of Char = [' ', #9];
-  dbgLineChars: set of Char = [#13, #10];
-  dbgArithmChars: set of Char = ['.', '+', '-', '*', '/', '%'];
-  dbgBraceChars: set of Char = ['(', ')', '{', '}', '<', '>', '[', ']'];
+  dbgLetterChars: set of AnsiChar = ['A'..'Z', 'a'..'z', '_'];
+  dbgDigitChars: set of AnsiChar = ['0'..'9'];
+  dbgHexChars: set of AnsiChar = ['A'..'F', 'a'..'f'];
+  dbgSpaceChars: set of AnsiChar = [' ', #9];
+  dbgLineChars: set of AnsiChar = [#13, #10];
+  dbgArithmChars: set of AnsiChar = ['.', '+', '-', '*', '/', '%'];
+  dbgBraceChars: set of AnsiChar = ['(', ')', '{', '}', '<', '>', '[', ']'];
 
   REGEXP_PROMPT = '(gdb)';
   REGEXP_PRINT = '\$([0-9]+) = (.*)';

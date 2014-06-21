@@ -166,7 +166,7 @@ begin
     Key := #0;
     SelectFunction(ListViewFunctions.ItemIndex);
   end;
-  if (Key = #27) or (showTextHint and (Key in [#8, ' '])) then
+  if (Key = #27) or (showTextHint and CharInSet(Key, [#8, ' '])) then
     Key := #0;
   if showTextHint and (Key > #0) then
   begin

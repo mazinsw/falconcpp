@@ -1,10 +1,10 @@
 object FormGotoFunction: TFormGotoFunction
   Left = 526
   Top = 402
-  Width = 478
-  Height = 276
   BorderStyle = bsSizeToolWin
   Caption = 'Goto Function'
+  ClientHeight = 242
+  ClientWidth = 462
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -54,7 +54,7 @@ object FormGotoFunction: TFormGotoFunction
     Left = 0
     Top = 37
     Width = 462
-    Height = 201
+    Height = 205
     Align = alClient
     Columns = <
       item
@@ -80,5 +80,6 @@ object FormGotoFunction: TFormGotoFunction
     TabOrder = 1
     ViewStyle = vsReport
     OnDblClick = ListViewFunctionsDblClick
+    ExplicitHeight = 201
   end
 end

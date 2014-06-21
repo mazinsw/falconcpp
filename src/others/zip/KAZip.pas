@@ -33,7 +33,7 @@ type
     Current, Total: Integer) of object;
   TOnZipOpen = procedure(Sender: TObject; Current, Total: Integer) of object;
   TOnZipChange = procedure(Sender: TObject; ChangeType: Integer) of object;
-  TOnAddItem = procedure(Sender: TObject; ItemName: string) of object;
+  TOnAddItem = procedure(Sender: TObject; const ItemName: string) of object;
   TOnRebuildZip = procedure(Sender: TObject; Current, Total: Integer) of object;
   TOnRemoveItems = procedure(Sender: TObject;
     Current, Total: Integer) of object;
@@ -142,25 +142,27 @@ type
     procedure SetSelected(const Value: Boolean);
     function GetLocalEntrySize: Cardinal;
     function GetCentralEntrySize: Cardinal;
-    procedure SetComment(const Value: AnsiString);
-    procedure SetFileName(const Value: AnsiString);
+    procedure SetComment(const Value: string);
+    procedure SetFileName(const Value: string);
+    function GetFileName: string;
+    function GetComment: string;
   protected
     { Protected declarations }
   public
     { Public declarations }
     constructor Create(Collection: TCollection); override;
     destructor Destroy; override;
-    function GetCompressedData: AnsiString; overload;
+    function GetCompressedData: TBytes; overload;
     function GetCompressedData(Stream: TStream): Integer; overload;
-    procedure ExtractToFile(FileName: string);
+    procedure ExtractToFile(const FileName: string);
     procedure ExtractToStream(Stream: TStream);
-    procedure SaveToFile(FileName: string);
+    procedure SaveToFile(const FileName: string);
     procedure SaveToStream(Stream: TStream);
     function Test: Boolean;
 
-    property FileName: AnsiString read FCentralDirectoryFile.FileName write
+    property FileName: string read GetFileName write
       SetFileName;
-    property Comment: AnsiString read FCentralDirectoryFile.FileComment write
+    property Comment: string read GetComment write
       SetComment;
     property SizeUncompressed
       : Cardinal read FCentralDirectoryFile.UncompressedSize;
@@ -195,7 +197,7 @@ type
     { Protected declarations }
     function ReadBA(MS: TStream; Sz, Poz: Integer): TBytes;
     function Adler32(adler: uLong; buf: pByte; len: uInt): uLong;
-    function CalcCRC32(const UncompressedData: string): Cardinal;
+    function CalcCRC32(const UncompressedData: TBytes): Cardinal;
     function CalculateCRCFromStream(Stream: TStream): Cardinal;
     function RemoveRootName(const FileName, RootName: string): string;
     procedure SortList(List: TList);
@@ -213,15 +215,15 @@ type
     procedure RemoveBatch(Files: TList);
     procedure InternalExtractToFile(Item: TKAZipEntriesEntry; FileName: string);
     // **************************************************************************
-    function AddStreamFast(ItemName: AnsiString; FileAttr: WORD;
+    function AddStreamFast(const AItemName: string; FileAttr: WORD;
       FileDate: TDateTime; Stream: TStream): TKAZipEntriesEntry; overload;
-    function AddStreamRebuild(ItemName: string; FileAttr: WORD;
+    function AddStreamRebuild(const AItemName: string; FileAttr: WORD;
       FileDate: TDateTime; Stream: TStream): TKAZipEntriesEntry;
-    function AddFolderChain(ItemName: string): Boolean; overload;
-    function AddFolderChain(ItemName: string; FileAttr: WORD;
+    function AddFolderChain(const ItemName: string): Boolean; overload;
+    function AddFolderChain(const ItemName: string; FileAttr: WORD;
       FileDate: TDateTime): Boolean; overload;
-    function AddFolderEx(FolderName: string; RootFolder: string;
-      WildCard: string; WithSubFolders: Boolean): Boolean;
+    function AddFolderEx(const FolderName: string; const RootFolder: string;
+      const WildCard: string; WithSubFolders: Boolean): Boolean;
     // **************************************************************************
   public
     { Public declarations }
@@ -230,48 +232,48 @@ type
     constructor Create(AOwner: TKAZip); overload;
     destructor Destroy; override;
     // **************************************************************************
-    function IndexOf(const FileName: AnsiString): Integer;
+    function IndexOf(const FileName: string): Integer;
     // **************************************************************************
-    function AddFile(FileName, NewFileName: string): TKAZipEntriesEntry;
+    function AddFile(const FileName, NewFileName: string): TKAZipEntriesEntry;
       overload;
-    function AddFile(FileName: string): TKAZipEntriesEntry; overload;
+    function AddFile(const FileName: string): TKAZipEntriesEntry; overload;
     function AddFiles(FileNames: TStrings): Boolean;
-    function AddFolder(FolderName: string; RootFolder: string;
-      WildCard: string; WithSubFolders: Boolean): Boolean;
-    function AddFilesAndFolders(FileNames: TStrings; RootFolder: string;
+    function AddFolder(const FolderName: string; const RootFolder: string;
+      const WildCard: string; WithSubFolders: Boolean): Boolean;
+    function AddFilesAndFolders(FileNames: TStrings; const RootFolder: string;
       WithSubFolders: Boolean): Boolean;
-    function AddStream(FileName: string; FileAttr: WORD; FileDate: TDateTime;
+    function AddStream(const FileName: string; FileAttr: WORD; FileDate: TDateTime;
       Stream: TStream): TKAZipEntriesEntry; overload;
-    function AddStream(FileName: string; Stream: TStream): TKAZipEntriesEntry;
+    function AddStream(const FileName: string; Stream: TStream): TKAZipEntriesEntry;
       overload;
     // **************************************************************************
     procedure Remove(ItemIndex: Integer); overload;
     procedure Remove(Item: TKAZipEntriesEntry); overload;
-    procedure Remove(FileName: string); overload;
+    procedure Remove(const FileName: string); overload;
     procedure RemoveFiles(List: TList);
     procedure RemoveSelected;
     procedure Rebuild;
     // **************************************************************************
-    procedure Select(WildCard: string);
+    procedure Select(const WildCard: string);
     procedure SelectAll;
     procedure DeSelectAll;
     procedure InvertSelection;
     // **************************************************************************
-    procedure Rename(Item: TKAZipEntriesEntry; NewFileName: string); overload;
-    procedure Rename(ItemIndex: Integer; NewFileName: string); overload;
-    procedure Rename(FileName: string; NewFileName: string); overload;
-    procedure CreateFolder(FolderName: string; FolderDate: TDateTime);
-    procedure RenameFolder(FolderName: string; NewFolderName: string);
+    procedure Rename(Item: TKAZipEntriesEntry; const NewFileName: string); overload;
+    procedure Rename(ItemIndex: Integer; const NewFileName: string); overload;
+    procedure Rename(const FileName: string; const NewFileName: string); overload;
+    procedure CreateFolder(const FolderName: string; FolderDate: TDateTime);
+    procedure RenameFolder(const FolderName: string; const NewFolderName: string);
     procedure RenameMultiple(Names: TStringList; NewNames: TStringList);
 
     // **************************************************************************
-    procedure ExtractToFile(Item: TKAZipEntriesEntry; FileName: string);
+    procedure ExtractToFile(Item: TKAZipEntriesEntry; const AFileName: string);
       overload;
-    procedure ExtractToFile(ItemIndex: Integer; FileName: string); overload;
-    procedure ExtractToFile(FileName, DestinationFileName: string); overload;
+    procedure ExtractToFile(ItemIndex: Integer; const AFileName: string); overload;
+    procedure ExtractToFile(const FileName, ADestinationFileName: string); overload;
     procedure ExtractToStream(Item: TKAZipEntriesEntry; Stream: TStream);
-    procedure ExtractAll(TargetDirectory: string);
-    procedure ExtractSelected(TargetDirectory: string);
+    procedure ExtractAll(const TargetDirectory: string);
+    procedure ExtractSelected(const TargetDirectory: string);
     // **************************************************************************
     property Items[index: Integer]
       : TKAZipEntriesEntry read GetHeaderEntry write SetHeaderEntry;
@@ -344,7 +346,7 @@ type
     { Protected declarations }
     FZipStream: TStream;
     // **************************************************************************
-    procedure LoadFromFile(FileName: string);
+    procedure LoadFromFile(const FileName: string);
     procedure LoadFromStream(MS: TStream);
     // **************************************************************************
     procedure RebuildLocalFiles(MS: TStream);
@@ -361,56 +363,56 @@ type
     destructor Destroy; override;
     // **************************************************************************
     function GetDelphiTempFileName: string;
-    function GetFileName(S: string): string;
-    function GetFilePath(S: string): string;
+    function GetFileName(const S: string): string;
+    function GetFilePath(const S: string): string;
     // **************************************************************************
     procedure CreateZip(Stream: TStream); overload;
-    procedure CreateZip(FileName: string); overload;
-    procedure Open(FileName: string); overload;
+    procedure CreateZip(const FileName: string); overload;
+    procedure Open(const FileName: string); overload;
     procedure Open(MS: TStream); overload;
     procedure SaveToStream(Stream: TStream);
     procedure Rebuild;
     procedure FixZip(MS: TStream);
     procedure Close;
     // **************************************************************************
-    function AddFile(FileName, NewFileName: string): TKAZipEntriesEntry;
+    function AddFile(const FileName, NewFileName: string): TKAZipEntriesEntry;
       overload;
-    function AddFile(FileName: string): TKAZipEntriesEntry; overload;
+    function AddFile(const FileName: string): TKAZipEntriesEntry; overload;
     function AddFiles(FileNames: TStrings): Boolean;
-    function AddFolder(FolderName: string; RootFolder: string;
-      WildCard: string; WithSubFolders: Boolean): Boolean;
-    function AddFilesAndFolders(FileNames: TStrings; RootFolder: string;
+    function AddFolder(const FolderName: string; const RootFolder: string;
+      const WildCard: string; WithSubFolders: Boolean): Boolean;
+    function AddFilesAndFolders(FileNames: TStrings; const RootFolder: string;
       WithSubFolders: Boolean): Boolean;
-    function AddStream(FileName: string; FileAttr: WORD; FileDate: TDateTime;
+    function AddStream(const FileName: string; FileAttr: WORD; FileDate: TDateTime;
       Stream: TStream): TKAZipEntriesEntry; overload;
-    function AddStream(FileName: string; Stream: TStream): TKAZipEntriesEntry;
+    function AddStream(const FileName: string; Stream: TStream): TKAZipEntriesEntry;
       overload;
     // **************************************************************************
     procedure Remove(ItemIndex: Integer); overload;
     procedure Remove(Item: TKAZipEntriesEntry); overload;
-    procedure Remove(FileName: string); overload;
+    procedure Remove(const FileName: string); overload;
     procedure RemoveFiles(List: TList);
     procedure RemoveSelected;
     // **************************************************************************
-    procedure Select(WildCard: string);
+    procedure Select(const WildCard: string);
     procedure SelectAll;
     procedure DeSelectAll;
     procedure InvertSelection;
     // **************************************************************************
-    procedure Rename(Item: TKAZipEntriesEntry; NewFileName: string); overload;
-    procedure Rename(ItemIndex: Integer; NewFileName: string); overload;
-    procedure Rename(FileName: string; NewFileName: string); overload;
-    procedure CreateFolder(FolderName: string; FolderDate: TDateTime);
-    procedure RenameFolder(FolderName: string; NewFolderName: string);
+    procedure Rename(Item: TKAZipEntriesEntry; const NewFileName: string); overload;
+    procedure Rename(ItemIndex: Integer; const NewFileName: string); overload;
+    procedure Rename(const FileName: string; const NewFileName: string); overload;
+    procedure CreateFolder(const FolderName: string; FolderDate: TDateTime);
+    procedure RenameFolder(const FolderName: string; const NewFolderName: string);
     procedure RenameMultiple(Names: TStringList; NewNames: TStringList);
     // **************************************************************************
-    procedure ExtractToFile(Item: TKAZipEntriesEntry; FileName: string);
+    procedure ExtractToFile(Item: TKAZipEntriesEntry; const FileName: string);
       overload;
-    procedure ExtractToFile(ItemIndex: Integer; FileName: string); overload;
-    procedure ExtractToFile(FileName, DestinationFileName: string); overload;
+    procedure ExtractToFile(ItemIndex: Integer; const FileName: string); overload;
+    procedure ExtractToFile(const FileName, DestinationFileName: string); overload;
     procedure ExtractToStream(Item: TKAZipEntriesEntry; Stream: TStream);
-    procedure ExtractAll(TargetDirectory: string);
-    procedure ExtractSelected(TargetDirectory: string);
+    procedure ExtractAll(const TargetDirectory: string);
+    procedure ExtractSelected(const TargetDirectory: string);
     // **************************************************************************
     property Entries: TKAZipEntries read FZipHeader;
     property HasBadEntries: Boolean read FHasBadEntries;
@@ -452,10 +454,22 @@ type
   end;
 
 procedure register;
-function ToZipName(FileName: string): string;
-function ToDosName(FileName: string): string;
+function ToZipName(const FileName: string): string;
+function ToDosName(const FileName: string): string;
 
 implementation
+
+{ File attribute constants }
+const
+  faReadOnly  = $00000001;
+  faHidden    = $00000002;
+  faSysFile   = $00000004;
+  faDirectory = $00000010;
+  faArchive   = $00000020;
+  faSymLink   = $00000040;
+  faNormal    = $00000080;
+  faTemporary = $00000100;
+  faAnyFile   = $000001FF;
 
 const
   ZL_DEF_COMPRESSIONMETHOD = $8; { Deflate }
@@ -530,7 +544,7 @@ begin
   RegisterComponents('KA', [TKAZip]);
 end;
 
-function ToZipName(FileName: string): string;
+function ToZipName(const FileName: string): string;
 var
   P: Integer;
 begin
@@ -556,7 +570,7 @@ begin
   end;
 end;
 
-function ToDosName(FileName: string): string;
+function ToDosName(const FileName: string): string;
 var
   P: Integer;
 begin
@@ -583,6 +597,13 @@ begin
   Result := StringReplace(Result, '/', '\', [rfReplaceAll]);
 end;
 
+function FileSetAttr(const FileName: string; Attr: Integer): Integer;
+begin
+  Result := 0;
+  if not SetFileAttributes(PChar(FileName), Attr) then
+    Result := GetLastError;
+end;
+
 { TKAZipEntriesEntry }
 
 constructor TKAZipEntriesEntry.Create(Collection: TCollection);
@@ -598,7 +619,7 @@ begin
   inherited Destroy;
 end;
 
-procedure TKAZipEntriesEntry.ExtractToFile(FileName: string);
+procedure TKAZipEntriesEntry.ExtractToFile(const FileName: string);
 begin
   FParent.ExtractToFile(Self, FileName);
 end;
@@ -608,7 +629,7 @@ begin
   FParent.ExtractToStream(Self, Stream);
 end;
 
-procedure TKAZipEntriesEntry.SaveToFile(FileName: string);
+procedure TKAZipEntriesEntry.SaveToFile(const FileName: string);
 begin
   ExtractToFile(FileName);
 end;
@@ -616,6 +637,11 @@ end;
 procedure TKAZipEntriesEntry.SaveToStream(Stream: TStream);
 begin
   ExtractToStream(Stream);
+end;
+
+function TKAZipEntriesEntry.GetComment: string;
+begin
+  Result := string(FCentralDirectoryFile.FileComment);
 end;
 
 function TKAZipEntriesEntry.GetCompressedData(Stream: TStream): Integer;
@@ -659,14 +685,19 @@ begin
     Result := Result + Stream.write(BA.CompressedData[1], SizeCompressed);
 end;
 
-function TKAZipEntriesEntry.GetCompressedData: AnsiString;
+function TKAZipEntriesEntry.GetFileName: string;
+begin
+  Result := string(FCentralDirectoryFile.FileName);
+end;
+
+function TKAZipEntriesEntry.GetCompressedData: TBytes;
 var
   BA: TLocalFile;
   FZLHeader: TZLibStreamHeader;
   ZLH: WORD;
   Compress: Byte;
 begin
-  Result := '';
+  SetLength(Result, 0);
   if (CompressionMethod = 0) or (CompressionMethod = 8) then
   begin
     FParent.GetLocalEntry(FParent.FParent.FZipStream, LocalOffset, False, BA);
@@ -693,10 +724,15 @@ begin
       FZLHeader.FLG := FZLHeader.FLG and not ZL_FCHECK_MASK;
       ZLH := (FZLHeader.CMF * 256) + FZLHeader.FLG;
       Inc(FZLHeader.FLG, 31 - (ZLH mod 31));
-      SetLength(Result, SizeOf(FZLHeader));
-      SetString(Result, PChar(@FZLHeader), SizeOf(FZLHeader));
+      SetLength(Result, SizeOf(FZLHeader) + Length(BA.CompressedData));
+      CopyMemory(Pointer(@Result[0]), Pointer(@FZLHeader), SizeOf(FZLHeader));
+      CopyMemory(Pointer(@Result[SizeOf(FZLHeader)]), Pointer(BA.CompressedData), Length(BA.CompressedData));
+    end
+    else
+    begin
+      SetLength(Result, Length(BA.CompressedData));
+      CopyMemory(Pointer(@Result[0]), Pointer(BA.CompressedData), Length(BA.CompressedData));
     end;
-    Result := Result + BA.CompressedData;
   end
   else
   begin
@@ -711,7 +747,7 @@ end;
 
 function TKAZipEntriesEntry.GetLocalEntrySize: Cardinal;
 begin
-  Result := SizeOf(TLocalFile) - 3 * SizeOf(string)
+  Result := SizeOf(TLocalFile) - 3 * SizeOf(AnsiString)
     + FCentralDirectoryFile.CompressedSize +
     FCentralDirectoryFile.FilenameLength +
     FCentralDirectoryFile.ExtraFieldLength;
@@ -723,7 +759,7 @@ end;
 
 function TKAZipEntriesEntry.GetCentralEntrySize: Cardinal;
 begin
-  Result := SizeOf(TCentralDirectoryFile) - 3 * SizeOf(string)
+  Result := SizeOf(TCentralDirectoryFile) - 3 * SizeOf(AnsiString)
     + FCentralDirectoryFile.FilenameLength +
     FCentralDirectoryFile.ExtraFieldLength +
     FCentralDirectoryFile.FileCommentLength;
@@ -769,9 +805,9 @@ begin
   end;
 end;
 
-procedure TKAZipEntriesEntry.SetComment(const Value: AnsiString);
+procedure TKAZipEntriesEntry.SetComment(const Value: string);
 begin
-  FCentralDirectoryFile.FileComment := Value;
+  FCentralDirectoryFile.FileComment := AnsiString(Value);
   FCentralDirectoryFile.FileCommentLength := Length
     (FCentralDirectoryFile.FileComment);
   FParent.Rebuild;
@@ -781,14 +817,14 @@ begin
   end;
 end;
 
-procedure TKAZipEntriesEntry.SetFileName(const Value: AnsiString);
+procedure TKAZipEntriesEntry.SetFileName(const Value: string);
 var
-  FN: AnsiString;
+  FN: string;
 begin
   FN := ToZipName(Value);
   if FParent.IndexOf(FN) > -1 then
     raise Exception.Create('File with same name already exists in Archive!');
-  FCentralDirectoryFile.FileName := ToZipName(Value);
+  FCentralDirectoryFile.FileName := AnsiString(ToZipName(Value));
   FCentralDirectoryFile.FilenameLength := Length
     (FCentralDirectoryFile.FileName);
   if not FParent.FParent.FBatchMode then
@@ -858,7 +894,7 @@ begin
   Adler32 := (s2 shl 16) or s1;
 end;
 
-function TKAZipEntries.CalcCRC32(const UncompressedData: string): Cardinal;
+function TKAZipEntries.CalcCRC32(const UncompressedData: TBytes): Cardinal;
 var
   X: Integer;
 begin
@@ -1470,7 +1506,7 @@ begin
   end;
 end;
 
-procedure TKAZipEntries.Remove(FileName: string);
+procedure TKAZipEntries.Remove(const FileName: string);
 var
   I: Integer;
 begin
@@ -1553,16 +1589,16 @@ begin
   end;
 end;
 
-function TKAZipEntries.IndexOf(const FileName: AnsiString): Integer;
+function TKAZipEntries.IndexOf(const FileName: string): Integer;
 var
   X: Integer;
-  FN: AnsiString;
+  FN: string;
 begin
   Result := -1;
   FN := ToZipName(FileName);
   for X := 0 to Count - 1 do
   begin
-    if AnsiCompareText(FN, ToZipName(Items[X].FCentralDirectoryFile.FileName))
+    if CompareText(FN, ToZipName(string(Items[X].FCentralDirectoryFile.FileName)))
       = 0 then
     begin
       Result := X;
@@ -1571,26 +1607,26 @@ begin
   end;
 end;
 
-function TKAZipEntries.AddStreamFast(ItemName: AnsiString; FileAttr: WORD;
+function TKAZipEntries.AddStreamFast(const AItemName: string; FileAttr: WORD;
   FileDate: TDateTime; Stream: TStream): TKAZipEntriesEntry;
 var
   Compressor: TCompressionStream;
-  CS: TStringStream;
+  MS: TMemoryStream;
   CM: WORD;
-  S: AnsiString;
+  S: TBytes;
   X: Integer;
   I: Integer;
   UL: Integer;
   CL: Integer;
   FCRC32: Cardinal;
   SizeToAppend: Integer;
-  ZipComment: string;
+  ZipComment, ItemName: string;
   Level: TCompressionLevel;
   OBM: Boolean;
 begin
   // *********************************** COMPRESS DATA
   ZipComment := FParent.Comment.Text;
-
+  ItemName := AItemName;
   if not FParent.FStoreRelativePath then
     ItemName := ExtractFileName(ItemName);
 
@@ -1608,15 +1644,15 @@ begin
     end;
   end;
 
-  CS := TStringStream.Create('');
-  CS.Position := 0;
+  MS := TStringStream.Create;
+  MS.Position := 0;
   try
     UL := Stream.Size - Stream.Position;
     SetLength(S, UL);
     CM := 0;
     if UL > 0 then
     begin
-      Stream.read(S[1], UL);
+      Stream.read(S[0], UL);
       CM := 8;
     end;
     FCRC32 := CalcCRC32(S);
@@ -1638,17 +1674,18 @@ begin
 
     if CM = 8 then
     begin
-      Compressor := TCompressionStream.Create(Level, CS);
+      Compressor := TCompressionStream.Create(Level, MS);
       try
         Compressor.OnProgress := FParent.OnCompress;
-        Compressor.write(S[1], UL);
+        Compressor.write(S[0], UL);
       finally
         Compressor.Free;
       end;
-      S := Copy(CS.DataString, 3, Length(CS.DataString) - 6);
+      SetLength(S, MS.Size - 8);
+      CopyMemory(Pointer(@S[0]), Pointer(PAnsiChar(MS.Memory) + 2), MS.Size - 6);
     end;
   finally
-    CS.Free;
+    MS.Free;
   end;
   // ***********************************
   CL := Length(S);
@@ -1666,7 +1703,7 @@ begin
     UncompressedSize := UL;
     FilenameLength := Length(ItemName);
     ExtraFieldLength := 0;
-    FileName := ItemName;
+    FileName := AnsiString(ItemName);
     ExtraField := '';
     CompressedData := '';
   end;
@@ -1690,7 +1727,7 @@ begin
     ExternalFileAttributes := FileAttr;
     RelativeOffsetOfLocalHeader :=
       FParent.FEndOfCentralDir.OffsetOfStartOfCentralDirectory;
-    FileName := ItemName;
+    FileName := AnsiString(ItemName);
     ExtraField := '';
     FileComment := '';
   end;
@@ -1785,13 +1822,13 @@ begin
   end;
 end;
 
-function TKAZipEntries.AddStreamRebuild(ItemName: string; FileAttr: WORD;
+function TKAZipEntries.AddStreamRebuild(const AItemName: string; FileAttr: WORD;
   FileDate: TDateTime; Stream: TStream): TKAZipEntriesEntry;
 var
   Compressor: TCompressionStream;
-  CS: TStringStream;
+  MS: TMemoryStream;
   CM: WORD;
-  S: AnsiString;
+  S: TBytes;
   UL: Integer;
   CL: Integer;
   I: Integer;
@@ -1802,10 +1839,11 @@ var
   ZipComment: string;
   TempStream: TFileStream;
   TempMSStream: TMemoryStream;
-  TempFileName: string;
+  TempFileName, ItemName: string;
   Level: TCompressionLevel;
   OBM: Boolean;
 begin
+  ItemName := AItemName;
   if FParent.FUseTempFiles then
   begin
     TempFileName := FParent.GetDelphiTempFileName;
@@ -1832,14 +1870,14 @@ begin
       end;
 
       CM := 0;
-      CS := TStringStream.Create('');
-      CS.Position := 0;
+      MS := TMemoryStream.Create;
+      MS.Position := 0;
       try
         UL := Stream.Size - Stream.Position;
         SetLength(S, UL);
         if UL > 0 then
         begin
-          Stream.read(S[1], UL);
+          Stream.read(S[0], UL);
           CM := 8;
         end;
         FCRC32 := CalcCRC32(S);
@@ -1861,17 +1899,18 @@ begin
 
         if CM = 8 then
         begin
-          Compressor := TCompressionStream.Create(Level, CS);
+          Compressor := TCompressionStream.Create(Level, MS);
           try
             Compressor.OnProgress := FParent.OnCompress;
-            Compressor.write(S[1], UL);
+            Compressor.write(S[0], UL);
           finally
             Compressor.Free;
           end;
-          S := Copy(CS.DataString, 3, Length(CS.DataString) - 6);
+          SetLength(S, MS.Size - 8);
+          CopyMemory(Pointer(@S[0]), Pointer(PAnsiChar(MS.Memory) + 2), MS.Size - 6);
         end;
       finally
-        CS.Free;
+        MS.Free;
       end;
       // ************************************************************************
       CL := Length(S);
@@ -1889,7 +1928,7 @@ begin
         UncompressedSize := UL;
         FilenameLength := Length(ItemName);
         ExtraFieldLength := 0;
-        FileName := ItemName;
+        FileName := AnsiString(ItemName);
         ExtraField := '';
         CompressedData := '';
       end;
@@ -1912,7 +1951,7 @@ begin
         InternalFileAttributes := 0;
         ExternalFileAttributes := FileAttr;
         RelativeOffsetOfLocalHeader := TempStream.Position;
-        FileName := ItemName;
+        FileName := AnsiString(ItemName);
         ExtraField := '';
         FileComment := '';
       end;
@@ -1982,14 +2021,14 @@ begin
       end;
 
       CM := 0;
-      CS := TStringStream.Create('');
-      CS.Position := 0;
+      MS := TMemoryStream.Create;
+      MS.Position := 0;
       try
         UL := Stream.Size - Stream.Position;
         SetLength(S, UL);
         if UL > 0 then
         begin
-          Stream.read(S[1], UL);
+          Stream.read(S[0], UL);
           CM := 8;
         end;
         FCRC32 := CalcCRC32(S);
@@ -2011,17 +2050,18 @@ begin
 
         if CM = 8 then
         begin
-          Compressor := TCompressionStream.Create(Level, CS);
+          Compressor := TCompressionStream.Create(Level, MS);
           try
             Compressor.OnProgress := FParent.OnCompress;
-            Compressor.write(S[1], UL);
+            Compressor.write(S[0], UL);
           finally
             Compressor.Free;
           end;
-          S := Copy(CS.DataString, 3, Length(CS.DataString) - 6);
+          SetLength(S, MS.Size - 8);
+          CopyMemory(Pointer(@S[0]), Pointer(PAnsiChar(MS.Memory) + 2), MS.Size - 6);
         end;
       finally
-        CS.Free;
+        MS.Free;
       end;
       // ************************************************************************
       CL := Length(S);
@@ -2039,7 +2079,7 @@ begin
         UncompressedSize := UL;
         FilenameLength := Length(ItemName);
         ExtraFieldLength := 0;
-        FileName := ItemName;
+        FileName := AnsiString(ItemName);
         ExtraField := '';
         CompressedData := '';
       end;
@@ -2062,7 +2102,7 @@ begin
         InternalFileAttributes := 0;
         ExternalFileAttributes := FileAttr;
         RelativeOffsetOfLocalHeader := TempMSStream.Position;
-        FileName := ItemName;
+        FileName := AnsiString(ItemName);
         ExtraField := '';
         FileComment := '';
       end;
@@ -2127,7 +2167,7 @@ begin
   end;
 end;
 
-function TKAZipEntries.AddFolderChain(ItemName: string; FileAttr: WORD;
+function TKAZipEntries.AddFolderChain(const ItemName: string; FileAttr: WORD;
   FileDate: TDateTime): Boolean;
 var
   FN: string;
@@ -2167,12 +2207,12 @@ begin
   end;
 end;
 
-function TKAZipEntries.AddFolderChain(ItemName: string): Boolean;
+function TKAZipEntries.AddFolderChain(const ItemName: string): Boolean;
 begin
   Result := AddFolderChain(ItemName, faDirectory, Now);
 end;
 
-function TKAZipEntries.AddStream(FileName: string; FileAttr: WORD;
+function TKAZipEntries.AddStream(const FileName: string; FileAttr: WORD;
   FileDate: TDateTime; Stream: TStream): TKAZipEntriesEntry;
 begin
   Result := nil;
@@ -2186,13 +2226,13 @@ begin
     FParent.FOnAddItem(FParent, FileName);
 end;
 
-function TKAZipEntries.AddStream(FileName: string;
+function TKAZipEntries.AddStream(const FileName: string;
   Stream: TStream): TKAZipEntriesEntry;
 begin
   Result := AddStream(FileName, faArchive, Now, Stream);
 end;
 
-function TKAZipEntries.AddFile(FileName, NewFileName: string)
+function TKAZipEntries.AddFile(const FileName, NewFileName: string)
   : TKAZipEntriesEntry;
 var
   FS: TFileStream;
@@ -2213,7 +2253,7 @@ begin
   FindClose(Dir);
 end;
 
-function TKAZipEntries.AddFile(FileName: string): TKAZipEntriesEntry;
+function TKAZipEntries.AddFile(const FileName: string): TKAZipEntriesEntry;
 begin
   Result := AddFile(FileName, FileName);
 end;
@@ -2237,8 +2277,8 @@ begin
   Result := True;
 end;
 
-function TKAZipEntries.AddFolderEx(FolderName: string; RootFolder: string;
-  WildCard: string; WithSubFolders: Boolean): Boolean;
+function TKAZipEntries.AddFolderEx(const FolderName: string; const RootFolder: string;
+  const WildCard: string; WithSubFolders: Boolean): Boolean;
 var
   Res: Integer;
   Dir: TSearchRec;
@@ -2281,8 +2321,8 @@ begin
   Result := True;
 end;
 
-function TKAZipEntries.AddFolder(FolderName: string; RootFolder: string;
-  WildCard: string; WithSubFolders: Boolean): Boolean;
+function TKAZipEntries.AddFolder(const FolderName: string; const RootFolder: string;
+  const WildCard: string; WithSubFolders: Boolean): Boolean;
 begin
   FParent.FBatchMode := True;
   try
@@ -2294,7 +2334,7 @@ begin
 end;
 
 function TKAZipEntries.AddFilesAndFolders(FileNames: TStrings;
-  RootFolder: string; WithSubFolders: Boolean): Boolean;
+  const RootFolder: string; WithSubFolders: Boolean): Boolean;
 var
   X: Integer;
   Res: Integer;
@@ -2477,13 +2517,15 @@ begin
 end;
 
 procedure TKAZipEntries.ExtractToFile(Item: TKAZipEntriesEntry;
-  FileName: string);
+  const AFileName: string);
 var
   Can: Boolean;
   OA: TOverwriteAction;
+  FileName: string;
 begin
   OA := FParent.FOverwriteAction;
   Can := True;
+  FileName := AFileName;
   if ((OA <> oaOverwriteAll) and (OA <> oaSkipAll)) and
     (Assigned(FParent.FOnOverwriteFile)) then
   begin
@@ -2510,13 +2552,15 @@ begin
     InternalExtractToFile(Item, FileName);
 end;
 
-procedure TKAZipEntries.ExtractToFile(ItemIndex: Integer; FileName: string);
+procedure TKAZipEntries.ExtractToFile(ItemIndex: Integer; const AFileName: string);
 var
   Can: Boolean;
   OA: TOverwriteAction;
+  FileName: string;
 begin
   OA := FParent.FOverwriteAction;
   Can := True;
+  FileName := AFileName;
   if ((OA <> oaOverwriteAll) and (OA <> oaSkipAll)) and
     (Assigned(FParent.FOnOverwriteFile)) then
   begin
@@ -2543,14 +2587,16 @@ begin
     InternalExtractToFile(Items[ItemIndex], FileName);
 end;
 
-procedure TKAZipEntries.ExtractToFile(FileName, DestinationFileName: string);
+procedure TKAZipEntries.ExtractToFile(const FileName, ADestinationFileName: string);
 var
   I: Integer;
   Can: Boolean;
   OA: TOverwriteAction;
+  DestinationFileName: string;
 begin
   OA := FParent.FOverwriteAction;
   Can := True;
+  DestinationFileName := ADestinationFileName;
   if ((OA <> oaOverwriteAll) and (OA <> oaSkipAll)) and
     (Assigned(FParent.FOnOverwriteFile)) then
   begin
@@ -2580,7 +2626,7 @@ begin
   end;
 end;
 
-procedure TKAZipEntries.ExtractAll(TargetDirectory: string);
+procedure TKAZipEntries.ExtractAll(const TargetDirectory: string);
 var
   FN: string;
   DN: string;
@@ -2624,7 +2670,7 @@ begin
   end;
 end;
 
-procedure TKAZipEntries.ExtractSelected(TargetDirectory: string);
+procedure TKAZipEntries.ExtractSelected(const TargetDirectory: string);
 var
   FN: string;
   DN: string;
@@ -2695,7 +2741,7 @@ begin
     Items[X].Selected := True;
 end;
 
-procedure TKAZipEntries.Select(WildCard: string);
+procedure TKAZipEntries.Select(const WildCard: string);
 var
   X: Integer;
 begin
@@ -2711,17 +2757,17 @@ begin
   FParent.Rebuild;
 end;
 
-procedure TKAZipEntries.Rename(Item: TKAZipEntriesEntry; NewFileName: string);
+procedure TKAZipEntries.Rename(Item: TKAZipEntriesEntry; const NewFileName: string);
 begin
   Item.FileName := NewFileName;
 end;
 
-procedure TKAZipEntries.Rename(ItemIndex: Integer; NewFileName: string);
+procedure TKAZipEntries.Rename(ItemIndex: Integer; const NewFileName: string);
 begin
   Rename(Items[ItemIndex], NewFileName);
 end;
 
-procedure TKAZipEntries.Rename(FileName, NewFileName: string);
+procedure TKAZipEntries.Rename(const FileName, NewFileName: string);
 var
   I: Integer;
 begin
@@ -2729,7 +2775,7 @@ begin
   Rename(I, NewFileName);
 end;
 
-procedure TKAZipEntries.CreateFolder(FolderName: string; FolderDate: TDateTime);
+procedure TKAZipEntries.CreateFolder(const FolderName: string; FolderDate: TDateTime);
 var
   FN: string;
 begin
@@ -2738,7 +2784,7 @@ begin
   FParent.FIsDirty := True;
 end;
 
-procedure TKAZipEntries.RenameFolder(FolderName: string; NewFolderName: string);
+procedure TKAZipEntries.RenameFolder(const FolderName: string; const NewFolderName: string);
 var
   FN: string;
   NFN: string;
@@ -2858,7 +2904,7 @@ begin
     FOnZipChange(Self, ChangeType);
 end;
 
-function TKAZip.GetFileName(S: string): string;
+function TKAZip.GetFileName(const S: string): string;
 var
   FN: string;
   P: Integer;
@@ -2872,7 +2918,7 @@ begin
   Result := ExtractFileName(StringReplace(FN, '/', '\', [rfReplaceAll]));
 end;
 
-function TKAZip.GetFilePath(S: string): string;
+function TKAZip.GetFilePath(const S: string): string;
 var
   FN: string;
   P: Integer;
@@ -2886,7 +2932,7 @@ begin
   Result := ExtractFilePath(StringReplace(FN, '/', '\', [rfReplaceAll]));
 end;
 
-procedure TKAZip.LoadFromFile(FileName: string);
+procedure TKAZip.LoadFromFile(const FileName: string);
 var
   Res: Integer;
   Dir: TSearchRec;
@@ -2942,7 +2988,7 @@ begin
   FFileName := Value;
 end;
 
-procedure TKAZip.Open(FileName: string);
+procedure TKAZip.Open(const FileName: string);
 begin
   Close;
   LoadFromFile(FileName);
@@ -2995,17 +3041,17 @@ begin
     FOnCompressFile(Self, CS.Position, FCurrentDFS);
 end;
 
-procedure TKAZip.ExtractToFile(Item: TKAZipEntriesEntry; FileName: string);
+procedure TKAZip.ExtractToFile(Item: TKAZipEntriesEntry; const FileName: string);
 begin
   Entries.ExtractToFile(Item, FileName);
 end;
 
-procedure TKAZip.ExtractToFile(ItemIndex: Integer; FileName: string);
+procedure TKAZip.ExtractToFile(ItemIndex: Integer; const FileName: string);
 begin
   Entries.ExtractToFile(ItemIndex, FileName);
 end;
 
-procedure TKAZip.ExtractToFile(FileName, DestinationFileName: string);
+procedure TKAZip.ExtractToFile(const FileName, DestinationFileName: string);
 begin
   Entries.ExtractToFile(FileName, DestinationFileName);
 end;
@@ -3015,22 +3061,22 @@ begin
   Entries.ExtractToStream(Item, Stream);
 end;
 
-procedure TKAZip.ExtractAll(TargetDirectory: string);
+procedure TKAZip.ExtractAll(const TargetDirectory: string);
 begin
   Entries.ExtractAll(TargetDirectory);
 end;
 
-procedure TKAZip.ExtractSelected(TargetDirectory: string);
+procedure TKAZip.ExtractSelected(const TargetDirectory: string);
 begin
   Entries.ExtractSelected(TargetDirectory);
 end;
 
-function TKAZip.AddFile(FileName, NewFileName: string): TKAZipEntriesEntry;
+function TKAZip.AddFile(const FileName, NewFileName: string): TKAZipEntriesEntry;
 begin
   Result := Entries.AddFile(FileName, NewFileName);
 end;
 
-function TKAZip.AddFile(FileName: string): TKAZipEntriesEntry;
+function TKAZip.AddFile(const FileName: string): TKAZipEntriesEntry;
 begin
   Result := Entries.AddFile(FileName);
 end;
@@ -3040,25 +3086,25 @@ begin
   Result := Entries.AddFiles(FileNames);
 end;
 
-function TKAZip.AddFolder(FolderName, RootFolder, WildCard: string;
+function TKAZip.AddFolder(const FolderName, RootFolder, WildCard: string;
   WithSubFolders: Boolean): Boolean;
 begin
   Result := Entries.AddFolder(FolderName, RootFolder, WildCard, WithSubFolders);
 end;
 
-function TKAZip.AddFilesAndFolders(FileNames: TStrings; RootFolder: string;
+function TKAZip.AddFilesAndFolders(FileNames: TStrings; const RootFolder: string;
   WithSubFolders: Boolean): Boolean;
 begin
   Result := Entries.AddFilesAndFolders(FileNames, RootFolder, WithSubFolders);
 end;
 
-function TKAZip.AddStream(FileName: string; FileAttr: WORD;
+function TKAZip.AddStream(const FileName: string; FileAttr: WORD;
   FileDate: TDateTime; Stream: TStream): TKAZipEntriesEntry;
 begin
   Result := Entries.AddStream(FileName, FileAttr, FileDate, Stream);
 end;
 
-function TKAZip.AddStream(FileName: string;
+function TKAZip.AddStream(const FileName: string;
   Stream: TStream): TKAZipEntriesEntry;
 begin
   Result := Entries.AddStream(FileName, Stream);
@@ -3074,7 +3120,7 @@ begin
   Entries.Remove(ItemIndex);
 end;
 
-procedure TKAZip.Remove(FileName: string);
+procedure TKAZip.Remove(const FileName: string);
 begin
   Entries.Remove(FileName);
 end;
@@ -3102,7 +3148,7 @@ begin
       FZipStream.Position := FZipCommentPos;
       SetLength(S, FEndOfCentralDir.ZipfileCommentLength);
       FZipStream.read(S[1], FEndOfCentralDir.ZipfileCommentLength);
-      FZipComment.Text := S;
+      FZipComment.Text := string(S);
     end;
   end;
 end;
@@ -3141,7 +3187,7 @@ begin
   Entries.DeSelectAll;
 end;
 
-procedure TKAZip.Select(WildCard: string);
+procedure TKAZip.Select(const WildCard: string);
 begin
   Entries.Select(WildCard);
 end;
@@ -3359,7 +3405,7 @@ begin
   Stream.write(ECD, SizeOf(ECD));
 end;
 
-procedure TKAZip.CreateZip(FileName: string);
+procedure TKAZip.CreateZip(const FileName: string);
 var
   FS: TFileStream;
 begin
@@ -3420,17 +3466,17 @@ begin
   FUseTempFiles := Value;
 end;
 
-procedure TKAZip.Rename(Item: TKAZipEntriesEntry; NewFileName: string);
+procedure TKAZip.Rename(Item: TKAZipEntriesEntry; const NewFileName: string);
 begin
   Entries.Rename(Item, NewFileName);
 end;
 
-procedure TKAZip.Rename(ItemIndex: Integer; NewFileName: string);
+procedure TKAZip.Rename(ItemIndex: Integer; const NewFileName: string);
 begin
   Entries.Rename(ItemIndex, NewFileName);
 end;
 
-procedure TKAZip.Rename(FileName, NewFileName: string);
+procedure TKAZip.Rename(const FileName, NewFileName: string);
 begin
   Entries.Rename(FileName, NewFileName);
 end;
@@ -3475,12 +3521,12 @@ begin
   FOnOverwriteFile := Value;
 end;
 
-procedure TKAZip.CreateFolder(FolderName: string; FolderDate: TDateTime);
+procedure TKAZip.CreateFolder(const FolderName: string; FolderDate: TDateTime);
 begin
   Entries.CreateFolder(FolderName, FolderDate);
 end;
 
-procedure TKAZip.RenameFolder(FolderName: string; NewFolderName: string);
+procedure TKAZip.RenameFolder(const FolderName: string; const NewFolderName: string);
 begin
   Entries.RenameFolder(FolderName, NewFolderName);
 end;

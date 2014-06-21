@@ -124,7 +124,7 @@ begin
     Key := #0;
     SelectLine(UpDown.Position);
   end;
-  if not (Key in ['0'..'9', #8, #27]) then
+  if not CharInSet(Key, ['0'..'9', #8, #27]) then
     Key := #0;
 end;
 

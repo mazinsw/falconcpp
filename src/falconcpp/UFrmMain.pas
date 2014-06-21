@@ -23,7 +23,7 @@ uses
   DebugConsts,
   XMLDoc, XMLIntf, BreakPoint, HintTree, DebugWatch,
   UParseMsgs, TBXStatusBars, XPPanels, ModernTabs,
-  TB2Toolbar, ThreadFileDownload, NativeTreeView,
+  TB2Toolbar, ThreadFileDownload, VirtualTrees,
   PluginManager, PluginServiceManager, UEditor, CppHighlighter, SintaxList,
   AutoComplete, DScintillaTypes;
 
@@ -383,7 +383,7 @@ type
     PageControlMessages: TModernPageControl;
     TSMessages: TModernTabSheet;
     ListViewMsg: TListView;
-    TreeViewOutline: TNativeTreeView;
+    TreeViewOutline: TVirtualStringTree;
     TBXSeparatorItem14: TTBXSeparatorItem;
     PopTabsCopyDir: TTBXItem;
     PopTabsCopyFullFileName: TTBXItem;
@@ -620,18 +620,18 @@ type
       const Value: string; Shift: TShiftState; Index: Integer;
       var EndToken: Char);
     procedure PopupProjectPopup(Sender: TObject);
-    procedure TreeViewOutlineGetImageIndex(Sender: TBaseNativeTreeView;
-      Node: PNativeNode; Kind: TVTImageKind; Column: TColumnIndex;
+    procedure TreeViewOutlineGetImageIndex(Sender: TBaseVirtualTree;
+      Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
       var Ghosted: Boolean; var ImageIndex: Integer);
-    procedure TreeViewOutlineDrawText(Sender: TBaseNativeTreeView;
-      TargetCanvas: TCanvas; Node: PNativeNode; Column: TColumnIndex;
+    procedure TreeViewOutlineDrawText(Sender: TBaseVirtualTree;
+      TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
       const Text: string; const CellRect: TRect;
       var DefaultDraw: Boolean);
-    procedure TreeViewOutlineGetText(Sender: TBaseNativeTreeView;
-      Node: PNativeNode; Column: TColumnIndex; TextType: TVSTTextType;
+    procedure TreeViewOutlineGetText(Sender: TBaseVirtualTree;
+      Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
       var CellText: string);
-    procedure TreeViewOutlineFreeNode(Sender: TBaseNativeTreeView;
-      Node: PNativeNode);
+    procedure TreeViewOutlineFreeNode(Sender: TBaseVirtualTree;
+      Node: PVirtualNode);
     procedure TreeViewOutline_DblClick(Sender: TObject);
     procedure CodeCompletionGetWordBreakChars(Sender: TObject;
       var WordBreakChars, ScanBreakChars: String);
@@ -811,8 +811,8 @@ type
       Memo: TEditor; const X, Y: Integer);
     procedure TextEditorUpdateStatusBar(Sender: TObject);
     procedure ExecutorStart(Sender: TObject);
-    function FillTreeView(Parent: PNativeNode; Token: TTokenClass;
-      DeleteNext: Boolean = False): PNativeNode;
+    function FillTreeView(Parent: PVirtualNode; Token: TTokenClass;
+      DeleteNext: Boolean = False): PVirtualNode;
     procedure PaintTokenItemV2(const ToCanvas: TCanvas; DisplayRect: TRect;
       Token: TTokenClass; Selected, Focused: Boolean; var DefaultDraw: Boolean);
     function FillIncludeList(IncludePathFilesOnly: Boolean): Boolean;
@@ -900,14 +900,8 @@ type
     fHasParsed: Boolean;
     fBusy: Boolean;
     fCppParser: TCppParser;
-    fMsg: string;
-    fCurrLine: Integer;
     procedure GetSource;
     procedure SetResults;
-    procedure ShowProgress;
-    procedure AddLogEvent;
-    procedure ParserTokenLog(Sender: TObject; Msg: string; Current: Integer);
-    procedure ParserProgress(Sender: TObject; Current, Total: Integer);
   protected
     procedure Execute; override;
   public
@@ -1073,56 +1067,6 @@ begin
   if (fScanEventHandle <> 0) and (fScanEventHandle <> INVALID_HANDLE_VALUE) then
     CloseHandle(fScanEventHandle);
   inherited Destroy;
-end;
-
-procedure TParserThread.ShowProgress;
-begin
-  if not Assigned(FrmFalconMain) then
-    Exit;
-  with FrmFalconMain do
-  begin
-    //StatusBar.Panels.Items[2].Caption := Format('%d %% done', [fLastPercent]);
-  end;
-end;
-
-procedure TParserThread.AddLogEvent;
-begin
-  if not Assigned(FrmFalconMain) then
-    Exit;
-  with FrmFalconMain do
-  begin
-    AddMessage(fTokenFile.FileName, ExtractFileName(fTokenFile.FileName), fMsg,
-      fCurrLine, 0, 0, mitGoto);
-    PanelMessages.Show;
-  end;
-end;
-
-procedure TParserThread.ParserProgress(Sender: TObject; Current,
-  Total: Integer);
-var
-  I: Integer;
-begin
-  if fSourceChanged then
-  begin
-    fCppParser.Cancel;
-    Exit;
-  end;
-  if Total = 0 then
-    Exit;
-  I := Round(Current * 100 / Total);
-  if I = fLastPercent then
-    Exit;
-  fLastPercent := I;
-  //Sleep(10);
-  Synchronize(ShowProgress);
-end;
-
-procedure TParserThread.ParserTokenLog(Sender: TObject; Msg: string;
-  Current: Integer);
-begin
-  fMsg := Msg;
-  fCurrLine := Current;
-  Synchronize(AddLogEvent);
 end;
 
 procedure TParserThread.Execute;
@@ -2105,13 +2049,13 @@ begin
   SourceFileList.Free;
 end;
 
-function TFrmFalconMain.FillTreeView(Parent: PNativeNode;
-  Token: TTokenClass; DeleteNext: Boolean): PNativeNode;
+function TFrmFalconMain.FillTreeView(Parent: PVirtualNode;
+  Token: TTokenClass; DeleteNext: Boolean): PVirtualNode;
 var
   I: Integer;
   S: string;
   NodeObject: TNodeObject;
-  Node: PNativeNode;
+  Node: PVirtualNode;
 begin
   Result := nil;
   for I := 0 to Token.Count - 1 do
@@ -2726,7 +2670,12 @@ begin
     StatusBar.Panels.Items[2].Caption := '';
     StatusBar.Panels.Items[2].ImageIndex := -1;
     if ProjectPanel.Visible then
-      TreeViewProjects.SetFocus;
+      TreeViewProjects.SetFocus; // cal UpdateStatusBar
+    // so override
+    StatusBar.Panels.Items[4].Caption := '';
+    StatusBar.Panels.Items[4].Hint := '';
+    StatusBar.Panels.Items[5].Caption := '';
+    StatusBar.Panels.Items[5].Hint := '';
   end;
   AllowClose := clAction;
 end;
@@ -2853,8 +2802,9 @@ begin
     MenuItem.Checked := True;
     StatusBar.Panels.Items[4].Caption := MenuItem.Caption;
     S := '';
-    if Sheet.SourceFile.WithBOM then
-      S := 'With BOM';
+    if not Sheet.SourceFile.WithBOM and
+      (Sheet.SourceFile.Encoding = ENCODING_UTF8) then
+      S := 'Without BOM';
     if (Sheet.SourceFile.Encoding = ENCODING_UCS2) then
     begin
       if Sheet.SourceFile.Endian = ENDIAN_LITTLE then
@@ -2863,12 +2813,14 @@ begin
         S := Trim('Big Endian ' + S);
     end;
     StatusBar.Panels.Items[4].Hint := S;
-    if Sheet.SourceFile.LineEnding = LINE_ENDING_LINUX then
-      MenuItem := PopupMenuLineEnding.Items.Items[1]
-    else if Sheet.SourceFile.LineEnding = LINE_ENDING_MAC then
-      MenuItem := PopupMenuLineEnding.Items.Items[2]
-    else // LINE_ENDING_WINDOWS
+    case Sheet.Memo.GetEOLMode of
+      SC_EOL_LF: // linux
+        MenuItem := PopupMenuLineEnding.Items.Items[1];
+      SC_EOL_CR: // mac
+        MenuItem := PopupMenuLineEnding.Items.Items[2];
+    else // windows
       MenuItem := PopupMenuLineEnding.Items.Items[0];
+    end;
     MenuItem.Checked := True;
     StatusBar.Panels.Items[5].Caption := MenuItem.Caption;
   end;
@@ -4214,7 +4166,7 @@ var
   FileProp: TSourceFile;
   Sheet: TSourceFileSheet;
   SLine, Temp, MMsg: string;
-  Line, ColS, ColE, Col: Integer;
+  Line, ColS, ColE, Col, SearchResult: Integer;
 begin
   Line := 0;
   Col := 0;
@@ -4226,7 +4178,6 @@ begin
   end;
   if not Assigned(Project) then
     Exit;
-
   Temp := ExtractFilePath(Project.FileName);
   if Assigned(Msg) then
   begin
@@ -4250,7 +4201,6 @@ begin
   end
   else
     Exit;
-
   if (Pos(MAKEFILE_MSG[2], MMsg) > 0) then
   begin
     FileProp.Node.Owner.Owner.SetFocus;
@@ -4259,34 +4209,29 @@ begin
     Exit;
   end;
   FileProp.Edit;
-  if FileProp.GetSheet(Sheet) then
+  if not FileProp.GetSheet(Sheet) or (Line <= 0) then
+    Exit;
+  Sheet.Memo.UncollapseLine(Line);
+  Sheet.Memo.GotoLineAndCenter(Line);
+  SLine := Sheet.Memo.Lines.Strings[Line - 1];
+  Temp := StringBetween(MMsg, #39, #39, False);
+  if (Length(Temp) > 0) then
   begin
-    if Line > 0 then
+    Sheet.Memo.SetSearchFlags(SCFIND_MATCHCASE or SCFIND_WHOLEWORD);
+    Sheet.Memo.SetTargetStart(Sheet.Memo.PositionFromLine(Line - 1));
+    Sheet.Memo.SetTargetEnd(Sheet.Memo.GetLineEndPosition(Line - 1));
+    SearchResult := Sheet.Memo.SearchInTarget(Temp);
+    if SearchResult <> -1 then
     begin
-      Sheet.Memo.UncollapseLine(Line);
-      Sheet.Memo.GotoLineAndCenter(Line);
-      SLine := Sheet.Memo.Lines.Strings[Line - 1];
-      Temp := StringBetween(MMsg, #39, #39, False);
-      if (Length(Temp) > 0) then
-      begin
-        // TODO: commented
-//        Sheet.memo.SearchEngine := EditorSearch;
-//        Sheet.memo.SearchEngine.Pattern := Temp;
-//        Sheet.memo.SearchEngine.Options := [ssoMatchCase, ssoWholeWord];
-//        Sheet.memo.SearchEngine.FindAll(SLine);
-//        if Sheet.memo.SearchEngine.ResultCount >= 1 then
-//        begin
-//          ColS := Sheet.memo.SearchEngine.Results[0];
-//          ColE := ColS + Sheet.memo.SearchEngine.Lengths[0];
-//          GotoLineAndAlignCenter(Sheet.Memo, Line, ColS, ColE, True);
-//        end;
-      end;
-      if Col > 0 then
-        GotoLineAndAlignCenter(Sheet.Memo, Line, Col);
-      ActiveErrorLine := Line;
-      Sheet.Memo.InvalidateLine(ActiveErrorLine);
+      ColS := Sheet.Memo.CountCharacters(Sheet.Memo.PositionFromLine(Line - 1), SearchResult);
+      ColE := ColS + Length(Temp);
+      GotoLineAndAlignCenter(Sheet.Memo, Line, ColS, ColE, True);
     end;
   end;
+  if Col > 0 then
+    GotoLineAndAlignCenter(Sheet.Memo, Line, Col);
+  ActiveErrorLine := Line;
+  Sheet.Memo.InvalidateLine(ActiveErrorLine);
 end;
 
 procedure TFrmFalconMain.ListViewMsgDblClick(Sender: TObject);
@@ -4378,9 +4323,7 @@ begin
     end;
     if not References then
     begin
-      NewFile.Edit.Memo.LockFoldUpdate;
-      NewFile.Edit.Memo.Lines.LoadFromFile(Files.Strings[I]);
-      NewFile.Edit.Memo.UnlockFoldUpdate;
+      NewFile.LoadFromFile(Files.Strings[I]);
     end
     else
     begin
@@ -4775,7 +4718,7 @@ function TFrmFalconMain.DetectScope(Memo: TEditor;
   TokenFile: TTokenFile; ShowInTreeview: Boolean): TTokenClass;
 var
   Token: TTokenClass;
-  Node, Parent: PNativeNode;
+  Node, Parent: PVirtualNode;
   SelStart: Integer;
   BC: TBufferCoord;
 begin
@@ -4802,7 +4745,7 @@ begin
     Result := Token;
     if not ShowInTreeview then
       Exit;
-    Node := PNativeNode(Token.Data);
+    Node := PVirtualNode(Token.Data);
     //unknow bug
     if not Assigned(Node) or (TreeViewOutline.GetFirst = nil) then
       Exit;
@@ -4822,7 +4765,7 @@ begin
     Result := Token;
     if not ShowInTreeview then
       Exit;
-    Node := PNativeNode(Token.Data);
+    Node := PVirtualNode(Token.Data);
     //unknow bug
     if not Assigned(Node) or (TreeViewOutline.GetFirst = nil) then
       Exit;
@@ -4948,10 +4891,19 @@ end;
 procedure TFrmFalconMain.LineEndingItemClick(Sender: TObject);
 var
   Sheet: TSourceFileSheet;
+  Eol: Integer;
 begin
   if not GetActiveSheet(Sheet) then
     Exit;
-  Sheet.SourceFile.LineEnding := TComponent(Sender).Tag;
+  case TComponent(Sender).Tag of
+    1: Eol := SC_EOL_LF; // linux
+    2: Eol := SC_EOL_CR; // mac
+  else
+    Eol := SC_EOL_CRLF; // windows
+  end;
+  if Sheet.Memo.GetEOLMode <> Eol then
+    Sheet.Memo.ConvertEOLs(Eol);
+  Sheet.Memo.SetEOLMode(Eol);
   UpdateStatusbar;
 end;
 
@@ -5012,7 +4964,7 @@ procedure TFrmFalconMain.TextEditorStatusChange(Sender: TObject;
 var
   LastActiveErrorLine: Integer;
 begin
-  if AUpdated > 2 then
+  if (AUpdated and SC_UPDATE_SELECTION) <> SC_UPDATE_SELECTION then
     Exit;
   CanShowHintTip := False;
   TimerHintTipEvent.Enabled := False;
@@ -5542,6 +5494,7 @@ var
   I: Integer;
   OpenChar: WideChar;
   Shift: TShiftState;
+  BC: TBufferCoord;
 begin
   CodeCompletion.EditorKeyPress(Sender, Key);
   Shift := KeyboardStateToShiftState;
@@ -5568,7 +5521,9 @@ begin
       if (LineStr <> '') and (LineStr[1] = Key) then
       begin
         Key := #0;
-        sheet.Memo.CaretX := sheet.Memo.CaretX + 1;
+        BC := sheet.Memo.CaretXY;
+        Inc(BC.Char);
+        sheet.Memo.CaretXY := BC;
       end;
     end;
   end
@@ -7061,23 +7016,25 @@ begin
   end
   else
   begin
-    Memo.CaretY := Line;
-    Memo.CaretX := Col;
+    Memo.CaretXY := BufferCoord(Col, Line);
   end;
 end;
 
 procedure TFrmFalconMain.SelectToken(Token: TTokenClass);
 var
   sheet: TSourceFileSheet;
-  TopLine: Integer;
+  TopLine, StartPosition, EndPosition: Integer;
 begin
   if not GetActiveSheet(sheet) then
     Exit;
-  sheet.Memo.SetEmptySelection(Token.SelStart);
-  sheet.Memo.SetSelectionStart(Token.SelStart);
-  sheet.Memo.SetSelectionEnd(Token.SelStart + Token.SelLength);
+  StartPosition := sheet.Memo.PositionRelative(0, Token.SelStart);
+  EndPosition := sheet.Memo.PositionRelative(StartPosition, Token.SelLength);
+  sheet.Memo.EnsureRangeVisible(StartPosition, EndPosition);
+  sheet.Memo.SetEmptySelection(StartPosition);
+  sheet.Memo.SetSelectionStart(StartPosition);
+  sheet.Memo.SetSelectionEnd(EndPosition);
   sheet.Memo.SetFocus;
-  TopLine := (sheet.Memo.LineFromPosition(Token.SelStart) + 1) -
+  TopLine := (sheet.Memo.LineFromPosition(StartPosition) + 1) -
     (sheet.Memo.LinesInWindow div 2);
   if TopLine <= 0 then
     TopLine := 1;
@@ -7087,7 +7044,7 @@ end;
 procedure TFrmFalconMain.UpdateActiveFileToken(NewToken: TTokenFile;
   Reload: Boolean);
 
-  procedure FillTokenList(var Sibling, Parent: PNativeNode;
+  procedure FillTokenList(var Sibling, Parent: PVirtualNode;
     TokenList: TTokenClass; TokenType: TTkType; Static, DeleteNext: Boolean);
   var
     NodeObject: TNodeObject;
@@ -7108,7 +7065,7 @@ procedure TFrmFalconMain.UpdateActiveFileToken(NewToken: TTokenFile;
       FillTreeView(Parent, TokenList);
   end;
 
-  procedure ReloadTreeView(var Sibling, Parent: PNativeNode);
+  procedure ReloadTreeView(var Sibling, Parent: PVirtualNode);
   begin
     Sibling := TreeViewOutline.GetFirst;
     FillTokenList(Sibling, Parent, ActiveEditingFile.Includes, tkIncludeList, True, False);
@@ -7157,7 +7114,7 @@ procedure TFrmFalconMain.UpdateActiveFileToken(NewToken: TTokenFile;
 var
   TokenFileItem, FindedTokenFile: TTokenFile;
   sheet: TSourceFileSheet;
-  Sibling, Parent: PNativeNode;
+  Sibling, Parent: PVirtualNode;
 begin
   FindedTokenFile := FilesParsed.ItemOfByFileName(NewToken.FileName);
   if FindedTokenFile = nil then //not parsed
@@ -8497,7 +8454,7 @@ end;
 procedure TFrmFalconMain.FilePrintClick(Sender: TObject);
 var
   sheet: TSourceFileSheet;
-  AFont: TFont;
+//  AFont: TFont;
 begin
   if not GetActiveSheet(sheet) then
     Exit;
@@ -10554,7 +10511,7 @@ begin
 end;
 
 procedure TFrmFalconMain.TreeViewOutlineGetImageIndex(
-  Sender: TBaseNativeTreeView; Node: PNativeNode; Kind: TVTImageKind;
+  Sender: TBaseVirtualTree; Node: PVirtualNode; Kind: TVTImageKind;
   Column: TColumnIndex; var Ghosted: Boolean; var ImageIndex: Integer);
 var
   NodeObject: TNodeObject;
@@ -10566,7 +10523,7 @@ begin
 end;
 
 procedure TFrmFalconMain.TreeViewOutlineDrawText(
-  Sender: TBaseNativeTreeView; TargetCanvas: TCanvas; Node: PNativeNode;
+  Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode;
   Column: TColumnIndex; const Text: string; const CellRect: TRect;
   var DefaultDraw: Boolean);
 var
@@ -10582,7 +10539,7 @@ begin
 end;
 
 procedure TFrmFalconMain.TreeViewOutlineGetText(
-  Sender: TBaseNativeTreeView; Node: PNativeNode; Column: TColumnIndex;
+  Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
   TextType: TVSTTextType; var CellText: string);
 var
   NodeObject: TNodeObject;
@@ -10592,7 +10549,7 @@ begin
 end;
 
 procedure TFrmFalconMain.TreeViewOutlineFreeNode(
-  Sender: TBaseNativeTreeView; Node: PNativeNode);
+  Sender: TBaseVirtualTree; Node: PVirtualNode);
 var
   NodeObject: TNodeObject;
 begin
@@ -10603,7 +10560,7 @@ end;
 procedure TFrmFalconMain.TreeViewOutline_DblClick(Sender: TObject);
 var
   Token: TTokenClass;
-  Node: PNativeNode;
+  Node: PVirtualNode;
 begin
   Node := TreeViewOutline.GetFirstSelected;
   if Node = nil then

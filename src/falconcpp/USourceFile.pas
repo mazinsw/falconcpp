@@ -149,10 +149,8 @@ type
     FEncoding: Integer;
     FEndian: Integer;
     FWithBOM: Boolean;
-    FLineEnding: Integer;
     function GetCaption: string;
     procedure SetEncoding(const Value: Integer);
-    procedure SetLineEnding(const Value: Integer);
     procedure SetEndian(const Value: Integer);
     procedure AdjustEncoding(Encoding: TEncoding);
     function GetEncodingProcessor: TEncoding;
@@ -177,12 +175,14 @@ type
     function ViewPage: Boolean;
     procedure Rename(NewName: string);
     procedure LoadFile(Text: TStrings); overload;
-    function LoadFile(Text: TStrings; var WithBOM: Boolean): TEncoding; overload;
+    function LoadFile(Text: TStrings; var WithBOM: Boolean;
+      var LineBreak: string): TEncoding; overload;
     procedure GetSubFiles(List: TStrings);
     function GetSheet(var Sheet: TSourceFileSheet): Boolean;
     function FindFile(const Name: string; var FileProp: TSourceFile): Boolean;
     function FileChangedInDisk: Boolean;
     procedure Reload;
+    procedure LoadFromFile(const FileName: string); overload;
     procedure UpdateDate;
     procedure Assign(Value: TSourceFile);
     constructor Create(Node: TTreeNode);
@@ -192,7 +192,6 @@ type
     property Encoding: Integer read FEncoding write SetEncoding;
     property Endian: Integer read FEndian write SetEndian;
     property WithBOM: Boolean read FWithBOM write SetWithBOM;
-    property LineEnding: Integer read FLineEnding write SetLineEnding;
   public
     property Caption: string read GetCaption;
   end;
@@ -341,7 +340,7 @@ type
 implementation
 
 uses UFrmMain, UUtils, UConfig, TokenFile, TokenList, TokenUtils, DScintillaTypes,
-  CustomColors, Highlighter, chsdIntf, nsCore;
+  CustomColors, Highlighter, UnicodeUtils;
 
 const
   fileMoveError = 'Can''t move file ''%s'' to ''%s.''';
@@ -560,10 +559,30 @@ begin
     Result:= TEncoding.Default;
 end;
 
-procedure TSourceFile.Reload;
+procedure TSourceFile.LoadFromFile(const FileName: string);
 var
   sheet: TSourceFileSheet;
   BOM: Boolean;
+  LineBreak: string;
+begin
+  if (FileType = FILE_TYPE_FOLDER) then
+    Exit;
+  if not GetSheet(sheet) then
+    Exit;
+  AdjustEncoding(LoadFile(sheet.Memo.Lines, BOM, LineBreak));
+  if LineBreak = #13 then
+    sheet.Memo.SetEOLMode(SC_EOL_CR)
+  else if LineBreak = #10 then
+    sheet.Memo.SetEOLMode(SC_EOL_LF)
+  else
+    sheet.Memo.SetEOLMode(SC_EOL_CRLF);
+  WithBOM := BOM;
+  sheet.Memo.EmptyUndoBuffer;
+end;
+
+procedure TSourceFile.Reload;
+var
+  sheet: TSourceFileSheet;
 begin
   if (FileType = FILE_TYPE_FOLDER) then
     Exit;
@@ -571,9 +590,7 @@ begin
     Exit;
   if not FileExists(FileName) or not Saved then
     Exit;
-  AdjustEncoding(LoadFile(sheet.Memo.Lines, BOM));
-  WithBOM := BOM;
-  sheet.Memo.EmptyUndoBuffer;
+  LoadFromFile(FileName);
   UpdateDate;
 end;
 
@@ -709,17 +726,11 @@ begin
     FOnTypeChanged(Self, OldType);
 end;
 
-procedure TSourceFile.SetLineEnding(const Value: Integer);
-begin
-  if FLineEnding = Value then
-    Exit;
-  FLineEnding := Value;
-end;
-
 function TSourceFile.Edit(SelectTab: Boolean): TSourceFileSheet;
 var
   Sheet: TSourceFileSheet;
   BOM: Boolean;
+  LineBreak: string;
 begin
   if GetSheet(Sheet) then
   begin
@@ -735,7 +746,13 @@ begin
   if Saved then
   begin
     Sheet.Memo.ReadOnly := False;
-    AdjustEncoding(LoadFile(sheet.Memo.Lines, BOM));
+    AdjustEncoding(LoadFile(sheet.Memo.Lines, BOM, LineBreak));
+    if LineBreak = #13 then
+      sheet.Memo.SetEOLMode(SC_EOL_CR)
+    else if LineBreak = #10 then
+      sheet.Memo.SetEOLMode(SC_EOL_LF)
+    else
+      sheet.Memo.SetEOLMode(SC_EOL_CRLF);
     WithBOM := BOM;
     sheet.Memo.EmptyUndoBuffer;
     Sheet.Memo.ReadOnly := ReadOnly;
@@ -780,56 +797,15 @@ end;
 procedure TSourceFile.LoadFile(Text: TStrings);
 var
   BOM: Boolean;
+  LineBreak: string;
 begin
-  LoadFile(text, BOM);
+  LoadFile(text, BOM, LineBreak);
 end;
 
-function TSourceFile.LoadFile(Text: TStrings; var WithBOM: Boolean): TEncoding;
-var
-  ChSInfo: rCharsetInfo;
-  Size: Integer;
-  Buffer: TBytes;
-  Stream: TStream;
+function TSourceFile.LoadFile(Text: TStrings; var WithBOM: Boolean;
+  var LineBreak: string): TEncoding;
 begin
-  Stream := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
-  try
-    Size := Stream.Size - Stream.Position;
-    SetLength(Buffer, Size);
-    Stream.Read(Buffer[0], Size);
-    Result := nil;
-    // detect file encoding and read it
-    chsdet_Reset;
-    chsdet_HandleData(PAnsiChar(Buffer), Size);
-    if not chsdet_Done then
-      chsdet_DataEnd;
-    WithBOM := True;
-    case chsdet_GetDetectedBOM of
-      BOM_UCS4_BE,    // 00 00 FE FF           UCS-4,    big-endian machine    (1234 order)
-      BOM_UCS4_2143,  // 00 00 FF FE           UCS-4,    unusual octet order   (2143)
-      BOM_UTF16_BE:   // FE FF ## ##           UTF-16,   big-endian
-        Result := TEncoding.BigEndianUnicode;
-      BOM_UCS4_LE,    // FF FE 00 00           UCS-4,    little-endian machine (4321 order)
-      BOM_UCS4_3412,  // FE FF 00 00           UCS-4,    unusual octet order   (3412)
-      BOM_UTF16_LE:   // FF FE ## ##           UTF-16,   little-endian
-        Result := TEncoding.Unicode;
-      BOM_UTF8:        // EF BB BF              UTF-8
-        Result := TEncoding.UTF8;
-    else
-      WithBOM := False;
-      ChSInfo := chsdet_GetDetectedCharset;
-      if ChSInfo.CodePage = 65001 then
-        Result := TEncoding.UTF8
-      else if ChSInfo.CodePage = -1 then
-        Result := TEncoding.UTF8
-      else
-        Result := TEncoding.Default;
-    end;
-    Stream.Position := 0;
-    Text.LoadFromStream(Stream, Result);
-    UpdateDate;
-  finally
-    Stream.Free;
-  end;
+  LoadFileEx(FileName, text, WithBOM, Result, LineBreak);
 end;
 
 procedure TSourceFile.GetSubFiles(List: TStrings);
@@ -971,7 +947,10 @@ begin
     Project.Compiled := False;
     if GetSheet(Sheet) then
     begin
-      Sheet.Memo.Lines.SaveToFile(FileName, GetEncodingProcessor);
+      if (Encoding = ENCODING_UTF8) and not WithBOM then
+        Sheet.Memo.Lines.SaveToFileUTF8(FileName)
+      else
+        Sheet.Memo.Lines.SaveToFile(FileName, GetEncodingProcessor);
       if sheet.Memo.Modified and not Project.Saved and IsNew then
         Project.SomeFileChanged := True;
       sheet.Memo.SetSavePoint;

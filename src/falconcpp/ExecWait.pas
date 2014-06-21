@@ -361,7 +361,7 @@ begin
     if not bSucess or (nRead = 0) or (GetLastError() = ERROR_BROKEN_PIPE) then
       Break;
     Buffer[nRead] := #0;
-    FOutput := FOutput + StrPas(Buffer);
+    FOutput := FOutput + string(StrPas(Buffer));
   until False;
 end;
 

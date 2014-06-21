@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, NativeTreeView, ImgList, ExtCtrls, StdCtrls, ComCtrls,
+  Dialogs, VirtualTrees, ImgList, ExtCtrls, StdCtrls, ComCtrls,
   RichEditViewer, FileDownload, XMLDoc, XMLIntf, UPkgClasses, rbtree, Contnrs,
   ThreadFileDownload, FormEffect, PNGImage;
 
@@ -71,7 +71,7 @@ type
   TFrmPkgDownload = class(TForm)
     ImageList16x16: TImageList;
     GroupBox1: TGroupBox;
-    TreeViewPackages: TNativeTreeView;
+    TreeViewPackages: TVirtualStringTree;
     Panel1: TPanel;
     Panel2: TPanel;
     ProgressBar1: TProgressBar;
@@ -105,24 +105,24 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure FileDownloadXMLFinish(Sender: TObject; State: TDownloadState;
       Canceled: Boolean);
-    procedure TreeViewPackagesGetText(Sender: TBaseNativeTreeView;
-      Node: PNativeNode; Column: TColumnIndex; TextType: TVSTTextType;
+    procedure TreeViewPackagesGetText(Sender: TBaseVirtualTree;
+      Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
       var CellText: string);
-    procedure TreeViewPackagesChange(Sender: TBaseNativeTreeView;
-      Node: PNativeNode);
+    procedure TreeViewPackagesChange(Sender: TBaseVirtualTree;
+      Node: PVirtualNode);
     procedure BtnCancelClick(Sender: TObject);
-    procedure TreeViewPackagesGetImageIndex(Sender: TBaseNativeTreeView;
-      Node: PNativeNode; Kind: TVTImageKind; Column: TColumnIndex;
+    procedure TreeViewPackagesGetImageIndex(Sender: TBaseVirtualTree;
+      Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
       var Ghosted: Boolean; var ImageIndex: Integer);
     procedure LblSiteClick(Sender: TObject);
     procedure CheckBox1Click(Sender: TObject);
-    procedure TreeViewPackagesChecked(Sender: TBaseNativeTreeView;
-      Node: PNativeNode);
+    procedure TreeViewPackagesChecked(Sender: TBaseVirtualTree;
+      Node: PVirtualNode);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FileDownloadPkgFinish(Sender: TObject; State: TDownloadState;
       Canceled: Boolean);
-    procedure TreeViewPackagesChecking(Sender: TBaseNativeTreeView;
-      Node: PNativeNode; var NewState: TCheckState; var Allowed: Boolean);
+    procedure TreeViewPackagesChecking(Sender: TBaseVirtualTree;
+      Node: PVirtualNode; var NewState: TCheckState; var Allowed: Boolean);
     procedure Button1Click(Sender: TObject);
     procedure FileDownloadPkgStart(Sender: TObject);
     procedure FileDownloadPkgProgress(Sender: TObject; ReceivedBytes,
@@ -216,7 +216,7 @@ end;
 procedure TFrmPkgDownload.SearchPackage(const S: string);
 var
   I, J, K, PkgCount, LibCount, CatCount: Integer;
-  PCategory, PLibrary, PPackage: PNativeNode;
+  PCategory, PLibrary, PPackage: PVirtualNode;
   CategoryItem: TCategory;
   LibraryItem: TLibrary;
   PackageItem: TPackage;
@@ -521,7 +521,7 @@ end;
 
 procedure TFrmPkgDownload.ChangePackageState(Sender: TObject; Pkg: TPackage);
 var
-  Node: PNativeNode;
+  Node: PVirtualNode;
 begin
   Inc(LoadingPkg);
   Node := Pkg.Data;
@@ -667,7 +667,7 @@ begin
 end;
 
 procedure TFrmPkgDownload.TreeViewPackagesGetText(
-  Sender: TBaseNativeTreeView; Node: PNativeNode; Column: TColumnIndex;
+  Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
   TextType: TVSTTextType; var CellText: string);
 var
   Data: TObject;
@@ -723,7 +723,7 @@ begin
 end;
 
 procedure TFrmPkgDownload.TreeViewPackagesChange(
-  Sender: TBaseNativeTreeView; Node: PNativeNode);
+  Sender: TBaseVirtualTree; Node: PVirtualNode);
 var
   Data: TObject;
 begin
@@ -764,7 +764,7 @@ begin
 end;
 
 procedure TFrmPkgDownload.TreeViewPackagesGetImageIndex(
-  Sender: TBaseNativeTreeView; Node: PNativeNode; Kind: TVTImageKind;
+  Sender: TBaseVirtualTree; Node: PVirtualNode; Kind: TVTImageKind;
   Column: TColumnIndex; var Ghosted: Boolean; var ImageIndex: Integer);
 var
   Data: TObject;
@@ -815,7 +815,7 @@ begin
 end;
 
 procedure TFrmPkgDownload.TreeViewPackagesChecked(
-  Sender: TBaseNativeTreeView; Node: PNativeNode);
+  Sender: TBaseVirtualTree; Node: PVirtualNode);
 var
   Data: TObject;
   State: TCheckState;
@@ -869,7 +869,7 @@ begin
 end;
 
 procedure TFrmPkgDownload.TreeViewPackagesChecking(
-  Sender: TBaseNativeTreeView; Node: PNativeNode;
+  Sender: TBaseVirtualTree; Node: PVirtualNode;
   var NewState: TCheckState; var Allowed: Boolean);
 var
   Data: TObject;

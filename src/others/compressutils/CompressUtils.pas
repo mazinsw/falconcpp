@@ -198,7 +198,7 @@ begin
     TA.Reset;
     while TA.FindNext(DirRec) do
     begin
-      S := ConvertSlashes(DirRec.Name);
+      S := ConvertSlashes(string(DirRec.Name));
       if (DirRec.FileType = ftDirectory) then
         Continue;
       if FileNameMatch(FindName, S) then
@@ -226,7 +226,7 @@ begin
     TA.Reset;
     while TA.FindNext(DirRec) do
     begin
-      S := ConvertSlashes(DirRec.Name);
+      S := ConvertSlashes(string(DirRec.Name));
       if (DirRec.FileType = ftDirectory) then
         Continue;
       if FileNameMatch(FindName, S) then
@@ -254,7 +254,7 @@ begin
     TA.Reset;
     while TA.FindNext(DirRec) do
     begin
-      S := ConvertSlashes(DirRec.Name);
+      S := ConvertSlashes(string(DirRec.Name));
       if (DirRec.FileType = ftDirectory) then
         Continue;
       if FileNameMatch(FindName, S) then

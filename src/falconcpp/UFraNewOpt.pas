@@ -98,7 +98,7 @@ end;
 
 procedure TFraPrjOpt.EditProjNameKeyPress(Sender: TObject; var Key: Char);
 begin
-  if Key in ['\', '/', ':', '*', '?', '"', '<', '>', '|'] then
+  if CharInSet(Key, ['\', '/', ':', '*', '?', '"', '<', '>', '|']) then
     Key := #0;
 end;
 

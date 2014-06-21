@@ -732,8 +732,8 @@ var
         if Command = 'STYLE' then
         begin
           if (Length(Parameter) = 2)
-            and (Parameter[1] in ['+', '-', '~'])
-            and (UpCase(Parameter[2]) in ['B', 'I', 'U', 'S']) then
+            and CharInSet(Parameter[1], ['+', '-', '~'])
+            and CharInSet(UpCase(Parameter[2]), ['B', 'I', 'U', 'S']) then
           begin
             CommandType := fcStyle;
             if not (fcStyle in StripCommands) then
@@ -990,7 +990,7 @@ Begin
         end;
       #3:
         begin
-          if UpCase(APrettyText[i+1]) in ['B', 'I', 'U'] then
+          if CharInSet(UpCase(APrettyText[i+1]), ['B', 'I', 'U']) then
           begin
             Result := Result+'\style{';
 
@@ -1292,7 +1292,7 @@ begin
               else
                 C := #32;
 
-              if (C = #9) or (C = #32) or (((FScanChars = []) and not (C in DefaulTSynIdentChars)) or (C in FScanChars)) then
+              if (C = #9) or (C = #32) or (((FScanChars = []) and not CharInSet(C, DefaulTSynIdentChars)) or CharInSet(C, FScanChars)) then
                 if Assigned(OnCancel) then
                   OnCancel(Self)
                 else
@@ -1346,7 +1346,7 @@ begin
       #27:; // These keys are already handled by KeyDown
       #32..'z':
         begin
-          if (Key in FWordBreakChars) and Assigned(OnValidate) then
+          if CharInSet(Key, FWordBreakChars) and Assigned(OnValidate) then
           begin
             if Key = #32 then
             begin
@@ -2781,13 +2781,13 @@ begin
           begin
             LineStr := '';
             WordEndChars := [];
-            CopyStringToCharSet(WordCharsStr, WordEndChars);
+            CopyStringToCharSet(AnsiString(WordCharsStr), WordEndChars);
             if CaretY <= Lines.Count then
               LineStr := Lines.Strings[CaretY - 1];
             WordEndPos := WordEnd.Char;
             while WordEndPos < Length(LineStr) do
             begin
-              if ((Form.FScanChars = []) and not (LineStr[WordEndPos] in DefaulTSynIdentChars)) or (LineStr[WordEndPos] in Form.FScanChars) then
+              if ((Form.FScanChars = []) and not CharInSet(LineStr[WordEndPos], DefaulTSynIdentChars)) or CharInSet(LineStr[WordEndPos], Form.FScanChars) then
               begin
                 Inc(WordEndPos);
                 Break;
@@ -2963,7 +2963,7 @@ begin
     if i <= Length(s) then
     begin
       FAdjustCompletionStart := False;
-      while (i > 0) and (s[i] > #32) and not (((Form.FScanChars = []) and not (s[i] in DefaulTSynIdentChars)) or (s[i] in Form.FScanChars)) do
+      while (i > 0) and (s[i] > #32) and not (((Form.FScanChars = []) and not CharInSet(s[i], DefaulTSynIdentChars)) or CharInSet(s[i], Form.FScanChars)) do
         dec(i);
 
       FCompletionStart := i+1;
@@ -2990,12 +2990,12 @@ begin
     exit;
 
   BreakChars := Form.FScanChars;
-  if Line[X] in BreakChars then
+  if CharInSet(Line[X], BreakChars) then
     dec(X);
 
   BreakChars := BreakChars + [#9, #32];
 
-  while (X > 0) and not (((Form.FScanChars = []) and not (Line[X] in DefaulTSynIdentChars)) or (Line[X] in BreakChars)) do
+  while (X > 0) and not (((Form.FScanChars = []) and not CharInSet(Line[X], DefaulTSynIdentChars)) or CharInSet(Line[X], BreakChars)) do
   begin
     Result := Line[X] + Result;
     dec(x);
@@ -3137,8 +3137,8 @@ begin
       if Assigned(OnGetWordBreakChars) then
       begin
         OnGetWordBreakChars(Self, cInput, cScan);
-        CopyStringToCharSet(cInput, Form.FWordBreakChars);
-        CopyStringToCharSet(cScan, Form.FScanChars);
+        CopyStringToCharSet(AnsiString(cInput), Form.FWordBreakChars);
+        CopyStringToCharSet(AnsiString(cScan), Form.FScanChars);
       end
       else
       begin
@@ -3146,8 +3146,8 @@ begin
           CopyWordBreakCharsToCharSet(Form.CurrentEditor as TEditor,
             Form.FWordBreakChars);
 
-        CopyStringToCharSet(EndOfTokenChr, Form.FWordBreakChars);
-        CopyStringToCharSet(EndOfTokenChr, Form.FScanChars);
+        CopyStringToCharSet(AnsiString(EndOfTokenChr), Form.FWordBreakChars);
+        CopyStringToCharSet(AnsiString(EndOfTokenChr), Form.FScanChars);
       end;
       //##End Falcon C++ Changes
       FPreviousToken := GetPreviousToken(Form.CurrentEditor as TEditor);

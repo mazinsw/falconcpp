@@ -3,7 +3,7 @@ unit DebugReader;
 interface
 
 uses
-  Windows, SysUtils, Classes, Dialogs, NativeTreeView,
+  Windows, SysUtils, Classes, Dialogs, VirtualTrees,
   TokenList, TokenUtils, PerlRegEx;
 
 type
@@ -118,8 +118,8 @@ type
     procedure Start;
     procedure Stop;
     property Running: Boolean read FRunning;
-    function SendCommand(const Command: AnsiString;
-      const Params: AnsiString = ''): Boolean;
+    function SendCommand(const ACommand: string;
+      const AParams: string = ''): Boolean;
     function FunctionChanged: Boolean;
   public
     { Published declarations }
@@ -143,16 +143,16 @@ type
   private
     FText: string;
     fptr: PChar;
-    FTreeView: TNativeTreeView;
+    FTreeView: TVirtualStringTree;
     procedure SkipPair(openPair, closePair: Char);
     procedure SkipString(commaChar: Char);
     function SearchVariable(const Name: string;
-      Parent: PNativeNode; Index: Integer): PNativeNode;
-    procedure Parse(Parent: PNativeNode; Token: TTokenClass);
+      Parent: PVirtualNode; Index: Integer): PVirtualNode;
+    procedure Parse(Parent: PVirtualNode; Token: TTokenClass);
   public
     procedure Clear;
     procedure Fill(const S: string; token: TTokenClass);
-    property TreeView: TNativeTreeView read FTreeView write FTreeView;
+    property TreeView: TVirtualStringTree read FTreeView write FTreeView;
   end;
 
 implementation
@@ -197,7 +197,7 @@ begin
         Inc(ptr);
       SaveChar := ptr^;
       ptr^ := #0;
-      Output := Output + StrPas(ptrStart);
+      Output := Output + string(StrPas(ptrStart));
       ptr^ := SaveChar;
       ptrStart := ptr;
       if CRLFFound then
@@ -237,8 +237,8 @@ end;
 
 function TDebugReader.ExecuteRegEx(const RegEx, Subject: string): Boolean;
 begin
-  regexp.RegEx := RegEx;
-  regexp.Subject := Subject;
+  regexp.RegEx := UTF8Encode(RegEx);
+  regexp.Subject := UTF8Encode(Subject);
   Result := regexp.Match;
 end;
 
@@ -365,12 +365,15 @@ begin
   CloseHandle(FProcessInfo.hThread);
 end;
 
-function TDebugReader.SendCommand(const Command, Params: AnsiString): Boolean;
+function TDebugReader.SendCommand(const ACommand, AParams: string): Boolean;
 var
   nWrited, nSize: Cardinal;
   Buffer: PAnsiChar;
   I, J: Integer;
+  Command, Params: AnsiString;
 begin
+  Command := AnsiString(ACommand);
+  Params := AnsiString(AParams);
   Result := False;
   if not Running then
     Exit;
@@ -420,17 +423,17 @@ end;
 function TDebugReader.GetLine: string;
 begin
   Result := '';
-  if fptr^ in dbgLineChars + [#0] then
+  if CharInSet(fptr^, dbgLineChars + [#0]) then
   begin
-    while fptr^ in dbgLineChars do
+    while CharInSet(fptr^, dbgLineChars) do
       Inc(fptr);
     Exit;
   end;
   repeat
     Result := Result + fptr^;
     Inc(fptr);
-  until fptr^ in dbgLineChars + [#0];
-  while fptr^ in dbgLineChars do
+  until CharInSet(fptr^, dbgLineChars + [#0]);
+  while CharInSet(fptr^, dbgLineChars) do
     Inc(fptr);
 end;
 
@@ -438,49 +441,49 @@ procedure TDebugReader.ProcessPrint;
 var
   PrintID: Integer;
 begin
-  PrintID := StrToInt(regexp.Groups[1]);
+  PrintID := StrToInt(UTF8ToString(regexp.Groups[1]));
   if FLastPrintID < PrintID then
     FLastPrintID := PrintID;
   if Assigned(FOnCommandEvent) then
-    FOnCommandEvent(Self, dcPrint, regexp.Groups[1], regexp.Groups[2], 0);
+    FOnCommandEvent(Self, dcPrint, UTF8ToString(regexp.Groups[1]), UTF8ToString(regexp.Groups[2]), 0);
 end;
 
 procedure TDebugReader.ProcessLocalize;
 var
   FileName: string;
 begin
-  FileName := ConvertSlashes(regexp.Groups[2]);
+  FileName := ConvertSlashes(UTF8ToString(regexp.Groups[2]));
   if Pos(':', FileName) = 0 then
     FileName := FDirectory + FileName;
   FileName := ExpandFileName(FileName);
   FPriorFileName := FLastFileName;
   FLastFileName := FileName;
   FPriorFunction := FLastFunction;
-  FLastFunction := regexp.Groups[1];
+  FLastFunction := UTF8ToString(regexp.Groups[1]);
   if Assigned(FOnCommandEvent) then
-    FOnCommandEvent(Self, dcLocalize, FileName, regexp.Groups[1],
-      StrToInt(regexp.Groups[3]));
+    FOnCommandEvent(Self, dcLocalize, FileName, UTF8ToString(regexp.Groups[1]),
+      StrToInt(UTF8ToString(regexp.Groups[3])));
 end;
 
 procedure TDebugReader.ProcessNextLine;
 var
   FileName: string;
 begin
-  FileName := ConvertSlashes(regexp.Groups[1] + regexp.Groups[2]);
+  FileName := ConvertSlashes(UTF8ToString(regexp.Groups[1] + regexp.Groups[2]));
   if Pos(':', FileName) = 0 then
     FileName := FDirectory + FileName;
   FileName := ExpandFileName(FileName);
   FPriorFileName := FLastFileName;
   FLastFileName := FileName;
   if Assigned(FOnCommandEvent) then
-    FOnCommandEvent(Self, dcNextLine, FileName, regexp.Groups[4],
-      StrToInt(regexp.Groups[3]));
+    FOnCommandEvent(Self, dcNextLine, FileName, UTF8ToString(regexp.Groups[4]),
+      StrToInt(UTF8ToString(regexp.Groups[3])));
 end;
 
 procedure TDebugReader.ProcessNewThread;
 begin
   if Assigned(FOnCommandEvent) then
-    FOnCommandEvent(Self, dcNewThread, '', regexp.Groups[1], 0);
+    FOnCommandEvent(Self, dcNewThread, '', UTF8ToString(regexp.Groups[1]), 0);
 end;
 
 {procedure TDebugReader.ProcessWatch;
@@ -494,33 +497,35 @@ var
   ID: Integer;
   FileName: string;
 begin
-  ID := StrToInt(regexp.Groups[1]);
+  ID := StrToInt(UTF8ToString(regexp.Groups[1]));
   if FLastID < ID then
     FLastID := ID;
-  FileName := ConvertSlashes(regexp.Groups[3]);
+  FileName := ConvertSlashes(UTF8ToString(regexp.Groups[3]));
   if Pos(':', FileName) = 0 then
     FileName := FDirectory + FileName;
   FileName := ExpandFileName(FileName);
   FPriorFileName := FLastFileName;
   FLastFileName := FileName;
   FPriorFunction := FLastFunction;
-  FLastFunction := regexp.Groups[2];
+  FLastFunction := UTF8ToString(regexp.Groups[2]);
   if Assigned(FOnCommandEvent) then
-    FOnCommandEvent(Self, dcOnBreak, FileName, regexp.Groups[1],
-      StrToInt(regexp.Groups[4]));
+    FOnCommandEvent(Self, dcOnBreak, FileName, UTF8ToString(regexp.Groups[1]),
+      StrToInt(UTF8ToString(regexp.Groups[4])));
 end;
 
 procedure TDebugReader.ProcessNoSymbol;
 begin
   if Assigned(FOnCommandEvent) then
-    FOnCommandEvent(Self, dcNoSymbol, regexp.Groups[1], regexp.Groups[0], 0);
+    FOnCommandEvent(Self, dcNoSymbol, UTF8ToString(regexp.Groups[1]),
+      UTF8ToString(regexp.Groups[0]), 0);
 end;
 
 procedure TDebugReader.ProcessBreakpoint;
 begin
   if Assigned(FOnCommandEvent) then
-    FOnCommandEvent(Self, dcBreakpoint, regexp.Groups[2], regexp.Groups[1],
-      StrToInt(regexp.Groups[3]));
+    FOnCommandEvent(Self, dcBreakpoint, UTF8ToString(regexp.Groups[2]),
+      UTF8ToString(regexp.Groups[1]),
+      StrToInt(UTF8ToString(regexp.Groups[3])));
 end;
 
 procedure TDebugReader.ProcessTerminate;
@@ -548,7 +553,7 @@ end;
 procedure TDebugReader.ProcessTerminateCode;
 begin
   if Assigned(FOnCommandEvent) then
-    FOnCommandEvent(Self, dcTerminate, '', IntToStr(OctStrToInt(regexp.Groups[1])), 0);
+    FOnCommandEvent(Self, dcTerminate, '', IntToStr(OctStrToInt(UTF8ToString(regexp.Groups[1]))), 0);
 end;
 
 {procedure TDebugReader.ProcessSegmentationFault;
@@ -566,52 +571,58 @@ end;
 procedure TDebugReader.ProcessLanguage;
 begin
   if Assigned(FOnCommandEvent) then
-    FOnCommandEvent(Self, dcLanguage, regexp.Groups[1], regexp.Groups[2], 0);
+    FOnCommandEvent(Self, dcLanguage, UTF8ToString(regexp.Groups[1]),
+      UTF8ToString(regexp.Groups[2]), 0);
 end;
 
 procedure TDebugReader.ProcessExternalStep;
 begin
   if Assigned(FOnCommandEvent) then
-    FOnCommandEvent(Self, dcExternalStep, regexp.Groups[1], regexp.Groups[2], 0);
+    FOnCommandEvent(Self, dcExternalStep, UTF8ToString(regexp.Groups[1]),
+      UTF8ToString(regexp.Groups[2]), 0);
 end;
 
 procedure TDebugReader.ProcessOnExiting;
 begin
   if Assigned(FOnCommandEvent) then
-    FOnCommandEvent(Self, dcOnExiting, regexp.Groups[2], regexp.Groups[1], 0);
+    FOnCommandEvent(Self, dcOnExiting, UTF8ToString(regexp.Groups[2]),
+      UTF8ToString(regexp.Groups[1]), 0);
 end;
 
 procedure TDebugReader.ProcessOnAddWatch;
 var
   ID: Integer;
 begin
-  ID := StrToInt(regexp.Groups[1]);
+  ID := StrToInt(UTF8ToString(regexp.Groups[1]));
   if FLastID < ID then
     FLastID := ID;
   if Assigned(FOnCommandEvent) then
-    FOnCommandEvent(Self, dcOnAddWatch, regexp.Groups[2], regexp.Groups[1], 0);
+    FOnCommandEvent(Self, dcOnAddWatch, UTF8ToString(regexp.Groups[2]),
+      UTF8ToString(regexp.Groups[1]), 0);
 end;
 
 procedure TDebugReader.ProcessOnWatchPoint;
 var
   ID: Integer;
 begin
-  ID := StrToInt(regexp.Groups[1]);
+  ID := StrToInt(UTF8ToString(regexp.Groups[1]));
   if FLastID < ID then
     FLastID := ID;
   if Assigned(FOnCommandEvent) then
-    FOnCommandEvent(Self, dcOnWatchPoint, regexp.Groups[2], regexp.Groups[1], 0);
+    FOnCommandEvent(Self, dcOnWatchPoint, UTF8ToString(regexp.Groups[2]),
+      UTF8ToString(regexp.Groups[1]), 0);
 end;
 
 procedure TDebugReader.ProcessDisplay;
 var
   DisplayID: Integer;
 begin
-  DisplayID := StrToInt(regexp.Groups[1]);
+  DisplayID := StrToInt(UTF8ToString(regexp.Groups[1]));
   if FLastDisplayID < DisplayID then
     FLastDisplayID := DisplayID;
   if Assigned(FOnCommandEvent) then
-    FOnCommandEvent(Self, dcDisplay, regexp.Groups[2], regexp.Groups[3], DisplayID);
+    FOnCommandEvent(Self, dcDisplay, UTF8ToString(regexp.Groups[2]),
+      UTF8ToString(regexp.Groups[3]), DisplayID);
 end;
 
 procedure TDebugReader.DoOutputWriter;
@@ -725,7 +736,7 @@ begin
   if fptr^ = #0 then
     Exit;
   repeat
-    if (fptr^ in [openPair, closePair]) and ((fptr - 1)^ <> '\') then
+    if CharInSet(fptr^, [openPair, closePair]) and ((fptr - 1)^ <> '\') then
     begin
       if fptr^ = openPair then
         Inc(pairCount)
@@ -739,11 +750,11 @@ begin
 end;
 
 function TDebugParser.SearchVariable(const Name: string;
-  Parent: PNativeNode; Index: Integer): PNativeNode;
+  Parent: PVirtualNode; Index: Integer): PVirtualNode;
 
-  function GetChild(Node: PNativeNode; Index: Integer): PNativeNode;
+  function GetChild(Node: PVirtualNode; Index: Integer): PVirtualNode;
   var
-    Child: PNativeNode;
+    Child: PVirtualNode;
     I: Integer;
   begin
     Child := TreeView.GetFirstChild(Node);
@@ -758,7 +769,7 @@ function TDebugParser.SearchVariable(const Name: string;
 
 var
   Item: TWatchVariable;
-  Node, Child: PNativeNode;
+  Node, Child: PVirtualNode;
 begin
   Result := nil;
   if Assigned(Parent) then
@@ -790,10 +801,10 @@ begin
   end;
 end;
 
-procedure TDebugParser.Parse(Parent: PNativeNode; Token: TTokenClass);
+procedure TDebugParser.Parse(Parent: PVirtualNode; Token: TTokenClass);
 
   function AddVar(const Name, Value: string; var childToken: TTokenClass;
-    Index: Integer): PNativeNode;
+    Index: Integer): PVirtualNode;
   var
     tempToken: TTokenClass;
     watchVar: TWatchVariable;
@@ -849,7 +860,7 @@ var
   VarName, VarValue: string;
   EqFind: Boolean;
   closePair: Char;
-  Item: PNativeNode;
+  Item: PVirtualNode;
   childToken: TTokenClass;
   IVector, Len, Index: Integer;
   ptrB, ptrE: PChar;
@@ -872,7 +883,7 @@ begin
             StrLCopy(PChar(VarName), ptrB, Len);
           //PChar(VarName)[Len] := #0;
           Inc(fptr);
-          while fptr^ in [' ', #10, #13] do
+          while CharInSet(fptr^, [' ', #10, #13]) do
             Inc(fptr);
           ptrB := fptr;
           ptrE := ptrB;
@@ -924,7 +935,7 @@ begin
             Break;
           // ,
           Inc(fptr);
-          while fptr^ in [' ', #10, #13] do
+          while CharInSet(fptr^, [' ', #10, #13]) do
             Inc(fptr);
           ptrB := fptr;
           ptrE := ptrB;
@@ -946,7 +957,7 @@ end;
 
 procedure TDebugParser.Clear;
 var
-  Node: PNativeNode;
+  Node: PVirtualNode;
 begin
   Node := TreeView.GetFirst;
   while Node <> nil do

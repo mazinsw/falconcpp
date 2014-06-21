@@ -413,7 +413,7 @@ begin
     ln := AEditor.Lines[p.Line - 1];
     for I := p.Char to Length(ln) do
     begin
-      if ln[I] in LetterChars + DigitChars then
+      if CharInSet(ln[I], LetterChars + DigitChars) then
         Inc(AfterLen)
       else
         Break;
@@ -436,10 +436,10 @@ begin
         begin
           if K = 0 then
             K := I;
-          while (J <= Length(s)) and (s[J] in [#9, ' ']) do
+          while (J <= Length(s)) and CharInSet(s[J], [#9, ' ']) do
             Inc(J);
           // can exceed input
-          while (I <= (p.Char - Len) - 1) and (ln[I] in [#9, ' ']) do
+          while (I <= (p.Char - Len) - 1) and CharInSet(ln[I], [#9, ' ']) do
             Inc(I);
           if I >= (p.Char - Len) - 1 then
             Break
@@ -466,7 +466,7 @@ begin
     ptr := PChar(ln);
     if Assigned(ptr) and (ptr^ <> #0) then
       repeat
-        if not (ptr^ in [#9, #32]) then Break;
+        if not CharInSet(ptr^, [#9, #32]) then Break;
         if ptr^ = #9 then
           Inc(IndentLen, AEditor.TabWidth)
         else
@@ -496,7 +496,7 @@ begin
         iptr := ptr;
         if Assigned(ptr) and (ptr^ <> #0) then
           repeat
-            if not (ptr^ in [#9, #32]) then Break;
+            if not CharInSet(ptr^, [#9, #32]) then Break;
             if ptr^ = #9 then
               Inc(IndentLen, AEditor.TabWidth)
             else

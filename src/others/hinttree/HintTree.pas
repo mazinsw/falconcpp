@@ -4,13 +4,13 @@ interface
 
 uses
   Windows, Messages, Classes, Forms, Controls, Graphics, SysUtils, ComCtrls,
-  ExtCtrls, TokenList, TokenHint, DebugReader, NativeTreeView, StdCtrls;
+  ExtCtrls, TokenList, TokenHint, DebugReader, VirtualTrees, StdCtrls;
 
 type
   THintTreeTip = class(TTokenHintTip);
   THintTree = class(TCustomControl)
   private
-    TreeView: TNativeTreeView;
+    TreeView: TVirtualStringTree;
     DebugParser: TDebugParser;
     FFocusDelay: Integer;
     fptr: PChar;
@@ -28,11 +28,11 @@ type
     procedure ActivateHint(Rect: TRect);
     procedure SetImageList(Value: TImageList);
     procedure TreeViewKeyPress(Sender: TObject; var Key: Char);
-    procedure TreeViewGetText(Sender: TBaseNativeTreeView; Node: PNativeNode; Column: TColumnIndex;
+    procedure TreeViewGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
       TextType: TVSTTextType; var CellText: UnicodeString);
-    procedure TreeViewGetImageIndex(Sender: TBaseNativeTreeView; Node: PNativeNode; Kind: TVTImageKind; Column: TColumnIndex;
+    procedure TreeViewGetImageIndex(Sender: TBaseVirtualTree; Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
       var Ghosted: Boolean; var ImageIndex: Integer);
-    procedure TreeViewFreeNode(Sender: TBaseNativeTreeView; Node: PNativeNode);
+    procedure TreeViewFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure HintMouseMove(Sender: TObject; Shift: TShiftState;
       X, Y: Integer);
     procedure TimerEvent(Sender: TObject);
@@ -65,7 +65,7 @@ begin
   Color := $E1FFFF;
   Canvas.Font := Screen.HintFont;
   Canvas.Brush.Style := bsClear;
-  TreeView := TNativeTreeView.Create(Self);
+  TreeView := TVirtualStringTree.Create(Self);
   DebugParser.TreeView := TreeView;
   TreeView.Parent := Self;
   //TreeView.AutoExpand := True;
@@ -251,7 +251,7 @@ procedure THintTree.UpdateHint(const S: string; X, Y: Integer;
 var
   R, ItemRect: TRect;
   newWidth, newHeight, I, MultIdent: Integer;
-  Item, Child: PNativeNode;
+  Item, Child: PVirtualNode;
 begin
   if S <> FValue then
   begin
@@ -363,8 +363,8 @@ begin
   end;
 end;
 
-procedure THintTree.TreeViewGetText(Sender: TBaseNativeTreeView;
-  Node: PNativeNode; Column: TColumnIndex; TextType: TVSTTextType;
+procedure THintTree.TreeViewGetText(Sender: TBaseVirtualTree;
+  Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
   var CellText: UnicodeString);
 var
   NodeObject: TNodeObject;
@@ -373,8 +373,8 @@ begin
   CellText := NodeObject.Caption;
 end;
 
-procedure THintTree.TreeViewGetImageIndex(Sender: TBaseNativeTreeView;
-  Node: PNativeNode; Kind: TVTImageKind; Column: TColumnIndex;
+procedure THintTree.TreeViewGetImageIndex(Sender: TBaseVirtualTree;
+  Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
   var Ghosted: Boolean; var ImageIndex: Integer);
 var
   NodeObject: TNodeObject;
@@ -383,8 +383,8 @@ begin
   ImageIndex := NodeObject.ImageIndex;
 end;
 
-procedure THintTree.TreeViewFreeNode(Sender: TBaseNativeTreeView;
-  Node: PNativeNode);
+procedure THintTree.TreeViewFreeNode(Sender: TBaseVirtualTree;
+  Node: PVirtualNode);
 var
   NodeObject: TNodeObject;
 begin

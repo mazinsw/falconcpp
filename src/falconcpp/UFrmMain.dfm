@@ -1396,7 +1396,7 @@ object FrmFalconMain: TFrmFalconMain
         Caption = 'Outline'
         ImageIndex = 56
         PageControl = PageControlOutline
-        object TreeViewOutline: TNativeTreeView
+        object TreeViewOutline: TVirtualStringTree
           Left = 0
           Top = 0
           Width = 175

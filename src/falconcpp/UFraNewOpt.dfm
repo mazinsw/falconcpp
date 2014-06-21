@@ -22,7 +22,7 @@ object FraPrjOpt: TFraPrjOpt
       object LblName: TLabel
         Left = 8
         Top = 16
-        Width = 28
+        Width = 27
         Height = 13
         Caption = 'Name'
       end
@@ -116,8 +116,8 @@ object FraPrjOpt: TFraPrjOpt
         object ImgIcon: TImage
           Left = 1
           Top = 1
-          Width = 49
-          Height = 49
+          Width = 32
+          Height = 32
           Hint = 'Double click to change application icon'
           Align = alClient
           AutoSize = True
@@ -161,6 +161,8 @@ object FraPrjOpt: TFraPrjOpt
           PopupMenu = PUMIcon
           ShowHint = True
           OnDblClick = BtnChgIconClick
+          ExplicitWidth = 49
+          ExplicitHeight = 49
         end
       end
       object BtnChgIcon: TButton
@@ -192,7 +194,7 @@ object FraPrjOpt: TFraPrjOpt
         object LblCompa: TLabel
           Left = 8
           Top = 8
-          Width = 44
+          Width = 45
           Height = 13
           Caption = 'Company'
         end
@@ -213,7 +215,7 @@ object FraPrjOpt: TFraPrjOpt
         object LblProdName: TLabel
           Left = 184
           Top = 55
-          Width = 68
+          Width = 67
           Height = 13
           Caption = 'Product Name'
         end

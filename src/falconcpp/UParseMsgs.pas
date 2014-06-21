@@ -247,7 +247,7 @@ begin
     OriMsg := SLn;
     SLn := ResolveUnixFileName(SLn);
     RegEx.RegEx := 'mingw32-make.exe: \*\*\* \[.*\] Error [0-9]+';
-    RegEx.Subject := SLn;
+    RegEx.Subject := UTF8Encode(SLn);
     if not RegEx.Match then
     begin
       Msg := TMessageItem.Create;
@@ -264,18 +264,18 @@ begin
       for J := 1 to MAX_CMPMSG do
       begin
         Application.ProcessMessages;
-        RegEx.RegEx := CONST_STR_CMPMSG[J].Expression;
-        RegEx.Subject := SLn;
+        RegEx.RegEx := UTF8Encode(CONST_STR_CMPMSG[J].Expression);
+        RegEx.Subject := UTF8Encode(SLn);
         if RegEx.Match and (STR_CMPMSG[J] <> '') then
         begin
           if CONST_STR_CMPMSG[J].FileName > 0 then
-            Msg.FileName := RegEx.Groups[CONST_STR_CMPMSG[J].FileName];
+            Msg.FileName := UTF8ToString(RegEx.Groups[CONST_STR_CMPMSG[J].FileName]);
           if CONST_STR_CMPMSG[J].Line > 0 then
-            Msg.Line := StrToInt(RegEx.Groups[CONST_STR_CMPMSG[J].Line]);
+            Msg.Line := StrToInt(UTF8ToString(RegEx.Groups[CONST_STR_CMPMSG[J].Line]));
           if CONST_STR_CMPMSG[J].Column > 0 then
-            Msg.Col := StrToInt(RegEx.Groups[CONST_STR_CMPMSG[J].Column]);
-          RegEx.Replacement := STR_CMPMSG[J];
-          SLn := RegEx.Replace;
+            Msg.Col := StrToInt(UTF8ToString(RegEx.Groups[CONST_STR_CMPMSG[J].Column]));
+          RegEx.Replacement := UTF8Encode(STR_CMPMSG[J]);
+          SLn := UTF8ToString(RegEx.Replace);
           Translated := True;
           Break;
         end

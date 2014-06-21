@@ -86,7 +86,7 @@ implementation
 
 function FileDateTime(const FileName: string): TDateTime;
 begin
-  Result := FileDateToDateTime(FileAge(FileName));
+  FileAge(FileName, Result);
 end;
 
 function GeneratePrototype(func: TTokenClass; TabWidth: Integer; WantTabs,
@@ -627,12 +627,12 @@ var
 begin
   Result := False;
   ptr := PChar(S);
-  while ptr^ in SpaceChars do
+  while CharInSet(ptr^, SpaceChars) do
     Inc(ptr);
   if (ptr^ = '/') and ((ptr + 1)^ = '/') then
   begin
     Inc(ptr, 2);
-    while ptr^ in SpaceChars do
+    while CharInSet(ptr^, SpaceChars) do
       Inc(ptr);
     I := 1;
     while (ptr^ <> #0) and (I < 5) and (ptr^ = TodoStr[I]) do
@@ -939,7 +939,7 @@ begin
   Field := '';
   if IgnoreFirst then
   begin
-    while not (ptr^ in [#0, '.', '-', '>', ':']) do
+    while not CharInSet(ptr^, [#0, '.', '-', '>', ':']) do
     begin
       Field := Field + ptr^;
       Inc(ptr);
@@ -956,11 +956,11 @@ begin
   Field := '';
   while ptr^ <> #0 do
   begin
-    if (ptr^ in ['.', '~', '-']) or (ptr^ = ':') and ((ptr + 1)^ = ':') then
+    if CharInSet(ptr^, ['.', '~', '-']) or (ptr^ = ':') and ((ptr + 1)^ = ':') then
     begin
       if Length(Field) > 0 then
         List.Add(Field);
-      if ptr^ in ['.', '~'] then
+      if CharInSet(ptr^, ['.', '~']) then
         Inc(ptr)
       else if ((ptr^ = '-') and ((ptr + 1)^ = '>')) or
         ((ptr^ = ':') and ((ptr + 1)^ = ':')) then
@@ -1130,7 +1130,7 @@ begin
             repeat
               Inc(ptr);
               Inc(Current);
-            until (ptr^ in [#0, #10]) or (Current >= Init);
+            until CharInSet(ptr^, [#0, #10]) or (Current >= Init);
           end;
         end;
       '"':
@@ -1244,9 +1244,9 @@ begin
   Len := Length(S);
   while (I <= Len) do
   begin
-    if (RLen > 0) and not (S[I] in LetterChars + DigitChars) then
+    if (RLen > 0) and not CharInSet(S[I], LetterChars + DigitChars) then
       Break
-    else if (S[I] in LetterChars + DigitChars) then
+    else if CharInSet(S[I], LetterChars + DigitChars) then
     begin
       Result := Result + S[I];
       Inc(RLen);
@@ -1265,9 +1265,9 @@ begin
   Len := Length(S);
   while (I <= Len) do
   begin
-    if (RLen > 0) and not (S[I] in LetterChars + DigitChars) then
+    if (RLen > 0) and not CharInSet(S[I], LetterChars + DigitChars) then
       Break
-    else if (S[I] in LetterChars + DigitChars) then
+    else if CharInSet(S[I], LetterChars + DigitChars) then
       Inc(RLen);
     Inc(I);
   end;
@@ -1315,7 +1315,7 @@ end;
 function GetLastWord(const S: string; AllowScope: Boolean): string;
 var
   Len, RLen: Integer;
-  Chars: set of Char;
+  Chars: set of AnsiChar;
 begin
   Result := '';
   RLen := 0;
@@ -1325,9 +1325,9 @@ begin
     Chars := Chars + [':'];
   while (Len > 0) do
   begin
-    if (RLen > 0) and not (S[Len] in Chars) then
+    if (RLen > 0) and not CharInSet(S[Len], Chars) then
       Break
-    else if (S[Len] in Chars) then
+    else if CharInSet(S[Len], Chars) then
     begin
       Result := S[Len] + Result;
       Inc(RLen);
@@ -1362,9 +1362,9 @@ begin
   Len := Length(S);
   while (Len > 0) do
   begin
-    if (RLen > 0) and not (S[Len] in LetterChars + DigitChars) then
+    if (RLen > 0) and not CharInSet(S[Len], LetterChars + DigitChars) then
       Break
-    else if (S[Len] in LetterChars + DigitChars) then
+    else if CharInSet(S[Len], LetterChars + DigitChars) then
       Inc(RLen);
     Dec(Len);
   end;
@@ -1379,7 +1379,7 @@ begin
   Len := Length(S);
   while (Len > 0) do
   begin
-    if not (S[Len] in SpaceChars + LineChars) then
+    if not CharInSet(S[Len], SpaceChars + LineChars) then
     begin
       Result := S[Len];
       Break;
@@ -1398,7 +1398,7 @@ begin
   begin
     if (Result <> '') and (S[Len] = 'r') then
       Break
-    else if not (S[Len] in SpaceChars + LineChars) then
+    else if not CharInSet(S[Len], SpaceChars + LineChars) then
       Result := S[Len] + Result;
     Dec(Len);
   end;
@@ -1413,7 +1413,7 @@ begin
   ptr := init + Length(ret) - 1;
   while(ptr >= init) do
   begin
-    if ptr^ in LetterChars+DigitChars then
+    if CharInSet(ptr^, LetterChars+DigitChars) then
       Break;
     // skip params
     if ptr^ = '>' then
@@ -1518,18 +1518,18 @@ begin
   Len := Length(S);
   while (I <= Len) do
   begin
-    if (RLen > 0) and not (S[I] in LetterChars + DigitChars) then
+    if (RLen > 0) and not CharInSet(S[I], LetterChars + DigitChars) then
     begin
       RLen := 0;
       Inc(Result);
     end
-    else if (S[I] in LetterChars + DigitChars) then
+    else if CharInSet(S[I], LetterChars + DigitChars) then
     begin
       Inc(RLen);
     end;
     Inc(I);
   end;
-  if (Len > 0) and (S[Len] in LetterChars + DigitChars) then
+  if (Len > 0) and CharInSet(S[Len], LetterChars + DigitChars) then
     Inc(Result);
 end;
 
@@ -1555,13 +1555,13 @@ var
 begin
   ptr := PChar(S);
   Result := False;
-  if not (ptr^ in DigitChars + ['b']) then
+  if not CharInSet(ptr^, DigitChars + ['b']) then
     Exit;
-  Result := (ptr^ in DigitChars);
+  Result := CharInSet(ptr^, DigitChars);
   Inc(ptr);
-  if ptr^ in ['x', 'X'] then
+  if CharInSet(ptr^, ['x', 'X']) then
     Inc(ptr);
-  while (ptr^ <> #0) and (ptr^ in DigitChars + HexChars + ['L']) do
+  while (ptr^ <> #0) and CharInSet(ptr^, DigitChars + HexChars + ['L']) do
   begin
     Result := True;
     Inc(ptr);
@@ -1576,9 +1576,9 @@ var
 begin
   ptr := PChar(S);
   Result := False;
-  if not (ptr^ in LetterChars) then
+  if not CharInSet(ptr^, LetterChars) then
     Exit;
-  while (ptr^ <> #0) and (ptr^ in LetterChars + DigitChars) do
+  while (ptr^ <> #0) and CharInSet(ptr^, LetterChars + DigitChars) do
     Inc(ptr);
   Result := ptr^ = #0;
 end;
@@ -1591,7 +1591,7 @@ begin
   Result := ptr;
   cmmptr := ptr - 1;
   // back one line
-  while (cmmptr >= init) and not (cmmptr^ in LineChars) do
+  while (cmmptr >= init) and not CharInSet(cmmptr^, LineChars) do
     Dec(cmmptr);
   // check for line comment
   while (cmmptr < ptr) do
@@ -1635,9 +1635,9 @@ begin
   while (ptr >= init) and (ptr^ <> #10) and ((ptr^ <> '"') or ((ptr - 1)^ = '\')) do
   begin
     // jump sigle line comment
-    if ptr^ in LineChars then
+    if CharInSet(ptr^, LineChars) then
     begin
-      if (ptr > init) and ((ptr - 1)^ in LineChars) then
+      if (ptr > init) and CharInSet((ptr - 1)^, LineChars) then
         Dec(ptr);
       ptr := StartOfCommentInv(init, ptr);
     end;
@@ -1653,9 +1653,9 @@ begin
   while (ptr >= init) and ((ptr^ <> '''') or ((ptr - 1)^ = '\')) do
   begin
     // jump sigle line comment
-    if ptr^ in LineChars then
+    if CharInSet(ptr^, LineChars) then
     begin
-      if (ptr > init) and ((ptr - 1)^ in LineChars) then
+      if (ptr > init) and CharInSet((ptr - 1)^, LineChars) then
         Dec(ptr);
       ptr := StartOfCommentInv(init, ptr);
     end;
@@ -1671,9 +1671,9 @@ begin
   repeat
     Dec(ptr);
     // jump sigle line comment
-    if ptr^ in LineChars then
+    if CharInSet(ptr^, LineChars) then
     begin
-      if (ptr > init) and ((ptr - 1)^ in LineChars) then
+      if (ptr > init) and CharInSet((ptr - 1)^, LineChars) then
         Dec(ptr);
       ptr := StartOfCommentInv(init, ptr);
     end;
@@ -1711,9 +1711,9 @@ begin
           Break;
       end
       // jump sigle line comment
-      else if ptr^ in LineChars then
+      else if CharInSet(ptr^, LineChars) then
       begin
-        if (ptr > init) and ((ptr - 1)^ in LineChars) then
+        if (ptr > init) and CharInSet((ptr - 1)^, LineChars) then
           Dec(ptr);
         ptr := StartOfCommentInv(init, ptr);
       end;
@@ -1759,12 +1759,12 @@ begin
         if pair_count = 0 then
           Break;
       end
-      else if ptr^ in LetterChars + DigitChars then
+      else if CharInSet(ptr^, LetterChars + DigitChars) then
         Cast := ptr^ + Cast
       // jump sigle line comment
-      else if ptr^ in LineChars then
+      else if CharInSet(ptr^, LineChars) then
       begin
-        if (ptr > init) and ((ptr - 1)^ in LineChars) then
+        if (ptr > init) and CharInSet((ptr - 1)^, LineChars) then
           Dec(ptr);
         ptr := StartOfCommentInv(init, ptr);
       end;
@@ -1781,7 +1781,7 @@ var
 begin
   init := PChar(Text);
   ptr := init + SelStart;
-  while (ptr^ <> #0) and (ptr^ in LetterChars + DigitChars) do
+  while (ptr^ <> #0) and CharInSet(ptr^, LetterChars + DigitChars) do
     Inc(ptr);
   repeat
     case ptr^ of
@@ -1796,17 +1796,17 @@ begin
         end
         else if ((ptr + 1)^ = '/') then
         begin
-          while not (ptr^ in [#0] + LineChars) do
+          while not CharInSet(ptr^, [#0] + LineChars) do
             Inc(ptr);
         end
         else
           Break;
     else
-      if not (ptr^ in LineChars + SpaceChars) then
+      if not CharInSet(ptr^, LineChars + SpaceChars) then
         Break;
     end;
     Inc(ptr);
-  until (ptr^ = #0) or not (ptr^ in ['/'] + LineChars + SpaceChars);
+  until (ptr^ = #0) or not CharInSet(ptr^, ['/'] + LineChars + SpaceChars);
   Result := ptr^;
 end;
 
@@ -1825,34 +1825,34 @@ begin
   str := '';
   cast := '';
   skipSpace := False;
-  if (ptr^ in LetterChars + DigitChars) then
+  if CharInSet(ptr^, LetterChars + DigitChars) then
   begin
     skipSpace := True;
     //get string after selstart
     repeat
       str := str + ptr^;
       Inc(ptr);
-    until (ptr^ = #0) or not (ptr^ in LetterChars + DigitChars);
+    until (ptr^ = #0) or not CharInSet(ptr^, LetterChars + DigitChars);
   end;
   ptr := init + SelStart - 1;
   //get string before selstart
-  while not skipSpace and (ptr >= init) and (ptr^ in LineChars + SpaceChars) do
+  while not skipSpace and (ptr >= init) and CharInSet(ptr^, LineChars + SpaceChars) do
   begin
     // jump sigle line comment
-    if ptr^ in LineChars then
+    if CharInSet(ptr^, LineChars) then
     begin
-      if (ptr > init) and ((ptr - 1)^ in LineChars) then
+      if (ptr > init) and CharInSet((ptr - 1)^, LineChars) then
         Dec(ptr);
       ptr := StartOfCommentInv(init, ptr);
     end;
     Dec(ptr);
   end;
-  if (ptr^ in LetterChars + DigitChars) then
+  if CharInSet(ptr^, LetterChars + DigitChars) then
   begin
     repeat
       str := ptr^ + str;
       Dec(ptr);
-    until (ptr < init) or not (ptr^ in LetterChars + DigitChars);
+    until (ptr < init) or not CharInSet(ptr^, LetterChars + DigitChars);
   end;
   if (ptr < init) then
   begin
@@ -1909,12 +1909,12 @@ begin
           else
             Exit; // syntax error ex:  blabla./ or bla.bla/
       else
-        if not (ptr^ in LineChars + SpaceChars) then
+        if not CharInSet(ptr^, LineChars + SpaceChars) then
           Break
         // jump sigle line comment
-        else if ptr^ in LineChars then
+        else if CharInSet(ptr^, LineChars) then
         begin
-          if (ptr > init) and ((ptr - 1)^ in LineChars) then
+          if (ptr > init) and CharInSet((ptr - 1)^, LineChars) then
             Dec(ptr);
           ptr := StartOfCommentInv(init, ptr);
         end;
@@ -1930,12 +1930,12 @@ begin
     while True do
     begin
       //skipspace
-      while (ptr >= init) and (ptr^ in LineChars + SpaceChars) do
+      while (ptr >= init) and CharInSet(ptr^, LineChars + SpaceChars) do
       begin
         // jump sigle line comment
-        if ptr^ in LineChars then
+        if CharInSet(ptr^, LineChars) then
         begin
-          if (ptr > init) and ((ptr - 1)^ in LineChars) then
+          if (ptr > init) and CharInSet((ptr - 1)^, LineChars) then
             Dec(ptr);
           ptr := StartOfCommentInv(init, ptr);
         end;
@@ -1950,7 +1950,7 @@ begin
       else
         Break;
     end;
-    if not (ptr^ in LetterChars + DigitChars + [')', ']', '/']) then
+    if not CharInSet(ptr^, LetterChars + DigitChars + [')', ']', '/']) then
     begin
       if sep <> '' then
       begin
@@ -1989,9 +1989,9 @@ begin
           end;
       else
         // jump sigle line comment
-        if ptr^ in LineChars then
+        if CharInSet(ptr^, LineChars) then
         begin
-          if (ptr > init) and ((ptr - 1)^ in LineChars) then
+          if (ptr > init) and CharInSet((ptr - 1)^, LineChars) then
             Dec(ptr);
           ptr := StartOfCommentInv(init, ptr);
         end
@@ -2003,19 +2003,19 @@ begin
       begin
         skipSpace := False;
         //skipspace
-        while (ptr >= init) and (ptr^ in LineChars + SpaceChars) do
+        while (ptr >= init) and CharInSet(ptr^, LineChars + SpaceChars) do
         begin
           // jump sigle line comment
-          if ptr^ in LineChars then
+          if CharInSet(ptr^, LineChars) then
           begin
-            if (ptr > init) and ((ptr - 1)^ in LineChars) then
+            if (ptr > init) and CharInSet((ptr - 1)^, LineChars) then
               Dec(ptr);
             ptr := StartOfCommentInv(init, ptr);
           end;
           Dec(ptr);
         end;
       end;
-    until (ptr < init) or not (ptr^ in LetterChars + DigitChars + [')', ']', '/']);
+    until (ptr < init) or not CharInSet(ptr^, LetterChars + DigitChars + [')', ']', '/']);
     if field <> '' then
       _fields := field + sep + _fields;
   until false;
@@ -2036,7 +2036,7 @@ begin
   Result := False;
   init := PChar(S);
   ptr := init + SelStart;
-  if (ptr^ in ['(', ')', ';', '{', '}']) and (QuoteChar = #0) then
+  if CharInSet(ptr^, ['(', ')', ';', '{', '}']) and (QuoteChar = #0) then
     Dec(ptr);
   if QuoteChar = '"' then
   begin
@@ -2061,9 +2061,9 @@ begin
         ';', '{', '}': Exit;
       else
         // jump sigle line comment
-        if ptr^ in LineChars then
+        if CharInSet(ptr^, LineChars) then
         begin
-          if (ptr > init) and ((ptr - 1)^ in LineChars) then
+          if (ptr > init) and CharInSet((ptr - 1)^, LineChars) then
             Dec(ptr);
           ptr := StartOfCommentInv(init, ptr);
         end;
@@ -2074,7 +2074,7 @@ begin
     if ptr^ <> '(' then
       Exit;
     Dec(skip);
-    while (skip >= init) and (skip^ in LineChars + SpaceChars) do
+    while (skip >= init) and CharInSet(skip^, LineChars + SpaceChars) do
     begin
       case skip^ of
         '/':
@@ -2084,16 +2084,16 @@ begin
         '''': SkipSingleQuotesInv(init, skip);
       else
         // jump sigle line comment
-        if skip^ in LineChars then
+        if CharInSet(skip^, LineChars) then
         begin
-          if (skip > init) and ((skip - 1)^ in LineChars) then
+          if (skip > init) and CharInSet((skip - 1)^, LineChars) then
             Dec(skip);
           skip := StartOfCommentInv(init, skip);
         end;
       end;
       Dec(skip);
     end;
-    if skip^ in LetterChars + DigitChars then
+    if CharInSet(skip^, LetterChars + DigitChars) then
       Break;
     ptr := skip;
   until ptr <= init;
@@ -2116,7 +2116,7 @@ begin
   last := nil;
   first := nil;
   params := '';
-  if (ptr^ in ['{', '}', ';', '(', ')', ',']) and (QuoteChar = #0) then
+  if CharInSet(ptr^, ['{', '}', ';', '(', ')', ',']) and (QuoteChar = #0) then
     Dec(ptr);
   if QuoteChar = '"' then
   begin
@@ -2153,13 +2153,13 @@ begin
       ')': SkipInvPair(init, ptr, '(', ')');
     else
       // jump sigle line comment
-      if ptr^ in LineChars then
+      if CharInSet(ptr^, LineChars) then
       begin
-        if (ptr > init) and ((ptr - 1)^ in LineChars) then
+        if (ptr > init) and CharInSet((ptr - 1)^, LineChars) then
           Dec(ptr);
         ptr := StartOfCommentInv(init, ptr);
       end
-      else if not (ptr^ in SpaceChars) and (last <> nil) then
+      else if not CharInSet(ptr^, SpaceChars) and (last <> nil) then
         last := nil;
     end;
     Dec(ptr);
@@ -2168,7 +2168,7 @@ begin
     Exit;
   Dec(ptr);
   // get end of variable
-  while (ptr >= init) and (ptr^ in SpaceChars + LineChars + [']']) do
+  while (ptr >= init) and CharInSet(ptr^, SpaceChars + LineChars + [']']) do
   begin
     case ptr^ of
       '/':
@@ -2179,9 +2179,9 @@ begin
       ']': SkipInvPair(init, ptr, '[', ']');
     else
       // jump sigle line comment
-      if ptr^ in LineChars then
+      if CharInSet(ptr^, LineChars) then
       begin
-        if (ptr > init) and ((ptr - 1)^ in LineChars) then
+        if (ptr > init) and CharInSet((ptr - 1)^, LineChars) then
           Dec(ptr);
         ptr := StartOfCommentInv(init, ptr);
       end;

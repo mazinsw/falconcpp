@@ -315,7 +315,8 @@ begin
       Continue;
     end;
     Next;
-  until (FCurrent = nil) or (FCurrent^.Token in [tkxSemicolon, tkxComma]);
+  until (FCurrent = nil) or (FCurrent^.Token in [tkxSemicolon, tkxComma,
+    tkxCloseParentheses, tkxCloseBraces, tkxCloseBrackets]);
   Result := (FCurrent <> nil);
 end;
 
@@ -356,7 +357,7 @@ begin
     NameToken := FCurrent;
     S := TokenString(FStartPtr, NameToken);
     Next;
-    DefStr := GetEOL(FCurrent^.Line);
+    DefStr := GetEOL(NameToken^.Line);
     if Length(DefStr) > 255 then
       DefStr := '{...}';
     AddToken(S, DefStr, tkDefine, NameToken^.Line,
@@ -501,6 +502,12 @@ begin
             SkipAssign;
             Continue;
           end;
+        end;
+      tkxInterval:
+        begin
+          TypeStr := '';
+          TokenID := FCurrent;
+          VarName := '...';
         end;
       tkxOpenParentheses:
         begin
@@ -652,6 +659,8 @@ begin
             TokenType := tkPrototype;
           if TokenID <> nil then
           begin
+            if OptionsStr <> '' then
+              OptionsStr := ' ' + OptionsStr;
             FuncToken := AddToken(VarName, TypeStr + OptionsStr + PtrRefStr + VectorStr,
               tkFunction, TokenID^.Line, TokenID^.StartPosition,
               TokenID^.EndPosition - TokenID^.StartPosition, FLevel);
@@ -808,7 +817,7 @@ begin
     ScopeToken := nil;
     if (Top <> nil) and Assigned(Top.Parent) and (Top.Parent.Token in [tkClass, tkStruct, tkUnion]) then
       ScopeToken := GetTokenByName(Top.Parent, ScopeStr, tkScopeClass)
-    else if (Top.Token in [tkClass, tkStruct, tkUnion]) then
+    else if (Top <> nil) and (Top.Token in [tkClass, tkStruct, tkUnion]) then
       ScopeToken := GetTokenByName(Top, ScopeStr, tkScopeClass);
                                 { already on stack }
     if Assigned(ScopeToken) and (Top <> ScopeToken) then

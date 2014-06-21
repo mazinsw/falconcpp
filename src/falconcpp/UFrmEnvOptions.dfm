@@ -30,6 +30,10 @@ object FrmEnvOptions: TFrmEnvOptions
     TabOrder = 0
     object TSGeneral: TTabSheet
       Caption = 'General'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object RadioGroupAutoOpen: TRadioGroup
         Left = 4
         Top = 229
@@ -122,6 +126,10 @@ object FrmEnvOptions: TFrmEnvOptions
     object TSInterface: TTabSheet
       Caption = 'Interface'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LabelMaxFileReopenMenu: TLabel
         Left = 4
         Top = 16
@@ -143,11 +151,9 @@ object FrmEnvOptions: TFrmEnvOptions
         Height = 22
         ItemsEx = <>
         Style = csExDropDownList
-        ItemHeight = 16
         TabOrder = 0
         OnChange = EditorOptionsChanged
         Images = FrmFalconMain.ImgListCountry
-        DropDownCount = 8
       end
       object CheckBoxShowSplashScreen: TCheckBox
         Left = 4
@@ -179,11 +185,11 @@ object FrmEnvOptions: TFrmEnvOptions
         Top = 32
         Width = 69
         Height = 21
+        Alignment = taRightJustify
         TabOrder = 3
         Text = '0'
         OnChange = EditmaxFilesInReopenChange
         OnKeyPress = EditmaxFilesInReopenKeyPress
-        Alignment = taRightJustify
       end
       object UpDownMaxFiles: TUpDown
         Left = 73
@@ -197,6 +203,10 @@ object FrmEnvOptions: TFrmEnvOptions
     object TSFilesandDir: TTabSheet
       Caption = 'Files and Directories'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LabelTemplatesDir: TLabel
         Left = 4
         Top = 124

@@ -2,7 +2,7 @@
 		<PropertyGroup>
 			<ProjectGuid>{0573BD19-9743-48DB-9F10-39DCA1830FA0}</ProjectGuid>
 			<MainSource>PkgManager.dpr</MainSource>
-			<Config Condition="'$(Config)'==''">Release</Config>
+			<Config Condition="'$(Config)'==''">Debug</Config>
 			<DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
 			<ProjectVersion>12.0</ProjectVersion>
 		</PropertyGroup>

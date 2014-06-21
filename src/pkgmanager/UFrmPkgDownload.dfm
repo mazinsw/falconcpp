@@ -56,7 +56,7 @@ object FrmPkgDownload: TFrmPkgDownload
       Height = 13
       Caption = 'Search package:'
     end
-    object TreeViewPackages: TNativeTreeView
+    object TreeViewPackages: TVirtualStringTree
       Left = 8
       Top = 20
       Width = 497

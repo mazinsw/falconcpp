@@ -442,9 +442,7 @@ begin
         OwnerFile,
         False, False);
       FileText := TemFiles.SourceFile[I];
-      NewFile.Edit.Memo.LockFoldUpdate;
       NewFile.Edit.Memo.Lines.Assign(FileText);
-      NewFile.Edit.Memo.UnlockFoldUpdate;
       NewFile.Edit.Memo.EmptyUndoBuffer;
       NewFile.IsNew := True;
       FileText.Free;

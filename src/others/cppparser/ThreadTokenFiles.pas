@@ -55,7 +55,6 @@ type
     procedure DoFinish;
     procedure DoAllFinish;
 
-    procedure CppParserProgress(Sender: TObject; Current, Total: Integer);
     procedure ParserProgress(TokenFile: TTokenFile;
       const FileName: string; Current: Integer; Parsed: Boolean);
 
@@ -103,7 +102,7 @@ type
 implementation
 
 uses
-  TokenUtils, TokenList;
+  TokenUtils, TokenList, UnicodeUtils;
 
 { TThreadTokenFiles }
 
@@ -138,7 +137,7 @@ begin
         TokenFile.FileName := S;
         TokenFile.Data := FileObj.ID;
         FileObj.Free;
-        Text.LoadFromFile(S);
+        LoadFileEx(S, Text);
         fParser.Parse(Text.Text, TokenFile);
         if fCancel then
         begin
@@ -197,7 +196,7 @@ begin
   Text := TStringList.Create;
   TokenFile := TTokenFile.Create(fTokenFiles);
   TokenFile.FileName := FileName;
-  Text.LoadFromFile(FileName);
+  LoadFileEx(FileName, Text);
   fParser.Parse(Text.Text, TokenFile);
   Text.Free;
   if fCancel then
@@ -372,7 +371,7 @@ begin
       if CanParse then
       begin
         TokenFile.FileName := FileName;
-        Text.LoadFromFile(FileName);
+        LoadFileEx(FileName, Text);
         fParser.Parse(Text.Text, TokenFile);
         if fCancel then
         begin
@@ -390,12 +389,6 @@ begin
   Text.Free;
   Synchronize(DoFinish);
   fBusy := False;
-end;
-
-procedure TThreadTokenFiles.CppParserProgress(Sender: TObject; Current, Total: Integer);
-begin
-  if fCancel then
-    fParser.Cancel;
 end;
 
 procedure TThreadTokenFiles.Execute;

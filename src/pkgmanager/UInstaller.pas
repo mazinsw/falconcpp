@@ -449,7 +449,7 @@ begin
     begin
       if (DirRec.FileType <> ftDirectory) then
       begin
-        FileName := ConvertSlashes(DirRec.Name);
+        FileName := ConvertSlashes(string(DirRec.Name));
         Ext := ExtractFileExt(FileName);
         if (UpperCase(Ext) = EntryExt[FPkgType]) then
         begin
@@ -579,7 +579,7 @@ var
   DirRec    : TTarDirRec;
   Curr, Size : Int64;
   FileName, Rs, Ps, ConfigRoot, Tmp: String;
-  I, Overrided, PkgIni: Integer;
+  I, PkgIni: Integer;
   ExtractedFile: TFileStream;
   ini: TIniFile;
   FalconHandle, PkgHandle: THandle;
@@ -592,10 +592,9 @@ begin
   try
     TA := TTarArchive.Create(FTarFile);
     TA.Reset;
-    Overrided := 0;
     while TA.FindNext(DirRec) do
     begin
-      FileName := ConvertSlashes(DirRec.Name);
+      FileName := ConvertSlashes(string(DirRec.Name));
       for I := 0 to Pred(FSource.Count) do
       begin
         TA.GetFilePos(Curr, Size);
@@ -665,8 +664,6 @@ begin
           end;
           if not DirectoryExists(ExtractFilePath(FileName)) then
             ForceDirectories(ExtractFilePath(FileName));
-          if FileExists(FileName) then
-            Inc(Overrided);
           repeat
             try
               ExtractedFile := TFileStream.Create(FileName, fmCreate);

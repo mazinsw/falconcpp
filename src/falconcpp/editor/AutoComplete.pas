@@ -173,7 +173,7 @@ begin
         ptr := PChar(s);
         if Assigned(ptr) and (ptr^ <> #0) then
           repeat
-            if not (ptr^ in [#9, #32]) then Break;
+            if not CharInSet(ptr^, [#9, #32]) then Break;
             if ptr^ = #9 then
               Inc(IndentLen, AEditor.TabWidth)
             else
@@ -205,7 +205,7 @@ begin
             iptr := ptr;
             if Assigned(ptr) and (ptr^ <> #0) then
               repeat
-                if not (ptr^ in [#9, #32]) then Break;
+                if not CharInSet(ptr^, [#9, #32]) then Break;
                 if ptr^ = #9 then
                   Inc(IndentLen, AEditor.TabWidth)
                 else

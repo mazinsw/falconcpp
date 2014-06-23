@@ -382,8 +382,8 @@ begin
 
     EditCodeTemplate.Text := CodeTemplateFile;
   end;
-  EditPreview.AddBreakpoint(9);
-  EditPreview.SetActiveLine(10);
+  EditPreview.AddBreakpoint(8);
+  EditPreview.SetActiveLine(9);
   Loading := False;
 end;
 
@@ -657,28 +657,27 @@ procedure TFrmEditorOptions.SynPrevMouseDown(Sender: TObject;
 var
   AttrName: string;
   S: UnicodeString;
-  bc: TBufferCoord;
   attr: THighlighStyle;
   st: TSintaxType;
-  I: Integer;
+  I, Position, Line: Integer;
 begin
-  bc := EditPreview.DisplayToBufferPos(EditPreview.PixelsToRowColumn(X, Y));
-  if bc.Line = 9 then
+  Position := EditPreview.PositionFromPoint(X, Y);
+  Line := EditPreview.LineFromPosition(Position) + 1;
+  if Line = 8 then
   begin
     AttrName := STY_PROP_BREAKPOINT;
   end
-  else if bc.Line = 10 then
+  else if Line = 9 then
   begin
     AttrName := STY_PROP_EXECPOINT;
   end
   else
   begin
-    if not EditPreview.GetHighlighterAttriAtRowCol(bc, S, attr) then
+    if not EditPreview.GetHighlighterAttriAt(Position, S, attr) then
       AttrName := HL_Style_Space
     else
       AttrName := attr.Name;
   end;
-
   if ActiveSintax.GetType(AttrName, st) then
   begin
     I := ActiveSintax.IndexOf(st);
@@ -791,7 +790,8 @@ begin
      (AttrName <> STY_PROP_CARETCOLOR) and 
      (AttrName <> STY_PROP_BRACE) and
      (AttrName <> STY_PROP_BADBRACE) and
-     (AttrName <> STY_PROP_LINKCOLOR) then
+     (AttrName <> STY_PROP_LINKCOLOR) and
+     (AttrName <> STY_PROP_SELWORD) then
   begin
     ActiveSintax.UpdateHighlight(EditPreview.Highlighter, AttrName);
   end
@@ -847,7 +847,8 @@ begin
      (AttrName <> STY_PROP_CARETCOLOR) and
      (AttrName <> STY_PROP_BRACE) and
      (AttrName <> STY_PROP_BADBRACE) and
-     (AttrName <> STY_PROP_LINKCOLOR) then
+     (AttrName <> STY_PROP_LINKCOLOR) and
+     (AttrName <> STY_PROP_SELWORD) then
   begin
     ActiveSintax.UpdateHighlight(EditPreview.Highlighter, AttrName);
   end

@@ -193,6 +193,7 @@ object FrmFind: TFrmFind
       Top = 86
       Width = 439
       Height = 21
+      AutoComplete = False
       TabOrder = 1
       Visible = False
       OnEnter = CboReplaceEnter
@@ -204,6 +205,7 @@ object FrmFind: TFrmFind
       Top = 35
       Width = 439
       Height = 21
+      AutoComplete = False
       TabOrder = 0
       OnChange = CboFindChange
       OnEnter = CboFindEnter

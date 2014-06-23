@@ -111,7 +111,7 @@ var
 begin
   if not FrmFalconMain.GetActiveSheet(sheet) then
     Exit;
-  FrmFalconMain.GotoLineAndAlignCenter(sheet.Memo, Line);
+  FrmFalconMain.GotoLineAndAlignCenter(sheet.Editor, Line);
   Close;
 end;
 

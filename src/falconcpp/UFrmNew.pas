@@ -442,8 +442,8 @@ begin
         OwnerFile,
         False, False);
       FileText := TemFiles.SourceFile[I];
-      NewFile.Edit.Memo.Lines.Assign(FileText);
-      NewFile.Edit.Memo.EmptyUndoBuffer;
+      NewFile.Edit.Editor.Lines.Assign(FileText);
+      NewFile.Edit.Editor.EmptyUndoBuffer;
       NewFile.IsNew := True;
       FileText.Free;
     end;

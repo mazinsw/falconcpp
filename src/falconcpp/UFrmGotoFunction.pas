@@ -291,8 +291,8 @@ begin
   begin
     fileprop := TSourceFile(TTokenFile(Token.Owner).Data);
     sheet := fileprop.Edit;
-    Buffer := sheet.Memo.CharIndexToRowCol(Token.SelStart);
-    FrmFalconMain.GotoLineAndAlignCenter(sheet.Memo, Buffer.Line, Buffer.Char);
+    Buffer := sheet.Editor.CharIndexToRowCol(Token.SelStart);
+    FrmFalconMain.GotoLineAndAlignCenter(sheet.Editor, Buffer.Line, Buffer.Char);
   end;
   Close;
 end;

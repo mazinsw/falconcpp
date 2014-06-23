@@ -331,7 +331,7 @@ type
     constructor CreateEditor(SourceFile: TSourceFile; PageCtrl: TModernPageControl;
       SelectTab: Boolean = True);
     destructor Destroy; override;
-    property Memo: TEditor read FEditor;
+    property Editor: TEditor read FEditor;
     property SourceFile: TSourceFile read FSourceFile;
   end;
 
@@ -569,15 +569,15 @@ begin
     Exit;
   if not GetSheet(sheet) then
     Exit;
-  AdjustEncoding(LoadFile(sheet.Memo.Lines, BOM, LineBreak));
+  AdjustEncoding(LoadFile(sheet.Editor.Lines, BOM, LineBreak));
   if LineBreak = #13 then
-    sheet.Memo.SetEOLMode(SC_EOL_CR)
+    sheet.Editor.SetEOLMode(SC_EOL_CR)
   else if LineBreak = #10 then
-    sheet.Memo.SetEOLMode(SC_EOL_LF)
+    sheet.Editor.SetEOLMode(SC_EOL_LF)
   else
-    sheet.Memo.SetEOLMode(SC_EOL_CRLF);
+    sheet.Editor.SetEOLMode(SC_EOL_CRLF);
   WithBOM := BOM;
-  sheet.Memo.EmptyUndoBuffer;
+  sheet.Editor.EmptyUndoBuffer;
 end;
 
 procedure TSourceFile.Reload;
@@ -736,8 +736,8 @@ begin
   begin
     Result := Sheet;
     ViewPage;
-    if Sheet.Memo.Showing then
-      Sheet.Memo.SetFocus;
+    if Sheet.Editor.Showing then
+      Sheet.Editor.SetFocus;
     Exit;
   end;
   Sheet := TSourceFileSheet.CreateEditor(Self, FrmFalconMain.PageControlEditor, SelectTab);
@@ -745,24 +745,24 @@ begin
   Sheet.ImageIndex := FILE_IMG_LIST[FileType];
   if Saved then
   begin
-    Sheet.Memo.ReadOnly := False;
-    AdjustEncoding(LoadFile(sheet.Memo.Lines, BOM, LineBreak));
+    Sheet.Editor.ReadOnly := False;
+    AdjustEncoding(LoadFile(sheet.Editor.Lines, BOM, LineBreak));
     if LineBreak = #13 then
-      sheet.Memo.SetEOLMode(SC_EOL_CR)
+      sheet.Editor.SetEOLMode(SC_EOL_CR)
     else if LineBreak = #10 then
-      sheet.Memo.SetEOLMode(SC_EOL_LF)
+      sheet.Editor.SetEOLMode(SC_EOL_LF)
     else
-      sheet.Memo.SetEOLMode(SC_EOL_CRLF);
+      sheet.Editor.SetEOLMode(SC_EOL_CRLF);
     WithBOM := BOM;
-    sheet.Memo.EmptyUndoBuffer;
-    Sheet.Memo.ReadOnly := ReadOnly;
+    sheet.Editor.EmptyUndoBuffer;
+    Sheet.Editor.ReadOnly := ReadOnly;
   end;
   FrmFalconMain.PageControlEditor.Show;
-  if FrmFalconMain.Showing and Sheet.Memo.Showing then
-    Sheet.Memo.SetFocus;
+  if FrmFalconMain.Showing and Sheet.Editor.Showing then
+    Sheet.Editor.SetFocus;
   FrmFalconMain.PageControlEditorChange(FrmFalconMain.PageControlEditor);
   FrmFalconMain.EditorBeforeCreate(Self);
-  Sheet.Memo.OnChange(Sheet.Memo);
+  Sheet.Editor.OnChange(Sheet.Editor);
   Result := Sheet;
 end;
 
@@ -877,7 +877,7 @@ begin
   end;
   //modification in text
   if GetSheet(Sheet) then
-    FModified := Sheet.Memo.Modified
+    FModified := Sheet.Editor.Modified
   else
     FModified := False;
   //don't need more verify
@@ -948,12 +948,12 @@ begin
     if GetSheet(Sheet) then
     begin
       if (Encoding = ENCODING_UTF8) and not WithBOM then
-        Sheet.Memo.Lines.SaveToFileUTF8(FileName)
+        Sheet.Editor.Lines.SaveToFileUTF8(FileName)
       else
-        Sheet.Memo.Lines.SaveToFile(FileName, GetEncodingProcessor);
-      if sheet.Memo.Modified and not Project.Saved and IsNew then
+        Sheet.Editor.Lines.SaveToFile(FileName, GetEncodingProcessor);
+      if sheet.Editor.Modified and not Project.Saved and IsNew then
         Project.SomeFileChanged := True;
-      sheet.Memo.SetSavePoint;
+      sheet.Editor.SetSavePoint;
     end // create empty file
     else if not FileExists(FileName) then
     begin
@@ -1040,10 +1040,10 @@ begin
   begin
     if GetSheet(Sheet) then
     begin
-      Sheet.Memo.Lines.SaveToFile(ToFileName, GetEncodingProcessor);
-      if sheet.Memo.Modified and not Project.Saved and IsNew then
+      Sheet.Editor.Lines.SaveToFile(ToFileName, GetEncodingProcessor);
+      if sheet.Editor.Modified and not Project.Saved and IsNew then
         Project.SomeFileChanged := True;
-      sheet.Memo.SetSavePoint;
+      sheet.Editor.SetSavePoint;
       if not FSaved then
         FSaved := True;
       FFileDateTime := FileDateTime(ToFileName);
@@ -1671,7 +1671,7 @@ begin
         CaretXY.Char := StrToIntDef(Temp, 1);
         if CaretXY.Char < 1 then
           CaretXY.Char := 1;
-        sheet.Memo.CaretXY := CaretXY;
+        sheet.Editor.CaretXY := CaretXY;
         if Node.ChildNodes.FindNode('Selection') <> nil then
         begin
           Temp := GetTagProperty(Node, 'Selection', 'Line', '1');
@@ -1685,20 +1685,20 @@ begin
           if (BlockS_or_E.Line > CaretXY.Line) or ((BlockS_or_E.Line = CaretXY.Line)
             and (BlockS_or_E.Char > CaretXY.Char)) then
           begin
-            sheet.Memo.BlockBegin := CaretXY;
-            sheet.Memo.BlockEnd := BlockS_or_E;
+            sheet.Editor.BlockBegin := CaretXY;
+            sheet.Editor.BlockEnd := BlockS_or_E;
           end
           else
           begin
-            sheet.Memo.BlockBegin := BlockS_or_E;
-            sheet.Memo.BlockEnd := CaretXY;
+            sheet.Editor.BlockBegin := BlockS_or_E;
+            sheet.Editor.BlockEnd := CaretXY;
           end;
         end;
         Temp := Node.Attributes['TopLine'];
         TopLine := StrToIntDef(Temp, 1);
         if TopLine < 1 then
           TopLine := 1;
-        sheet.Memo.TopLine := TopLine;
+        sheet.Editor.TopLine := TopLine;
       end;
       Node := Node.NextSibling;
     end;
@@ -1735,7 +1735,7 @@ begin
   end;
   if FrmFalconMain.Visible then
     if FrmFalconMain.GetActiveSheet(sheet) then
-      sheet.Memo.SetFocus;
+      sheet.Editor.SetFocus;
   //XMLDoc.Free;
 end;
 
@@ -1838,21 +1838,21 @@ begin
       BoolStr := BoolToHuman(pageIndex = sheet.PageIndex);
       Temp.Attributes['Top'] := BoolStr;
       Temp.Attributes['Tabpos'] := IntToStr(sheet.PageIndex + 1);
-      Temp.Attributes['TopLine'] := IntToStr(sheet.Memo.TopLine);
-      SetTagProperty(Temp, 'Cursor', 'Line', IntToStr(sheet.Memo.CaretY));
-      SetTagProperty(Temp, 'Cursor', 'Column', IntToStr(sheet.Memo.CaretX));
-      if sheet.Memo.SelAvail then
+      Temp.Attributes['TopLine'] := IntToStr(sheet.Editor.TopLine);
+      SetTagProperty(Temp, 'Cursor', 'Line', IntToStr(sheet.Editor.CaretY));
+      SetTagProperty(Temp, 'Cursor', 'Column', IntToStr(sheet.Editor.CaretX));
+      if sheet.Editor.SelAvail then
       begin
-        if (sheet.Memo.BlockBegin.Line = sheet.Memo.CaretXY.Line) and
-          (sheet.Memo.BlockBegin.Char = sheet.Memo.CaretXY.Char) then
+        if (sheet.Editor.BlockBegin.Line = sheet.Editor.CaretXY.Line) and
+          (sheet.Editor.BlockBegin.Char = sheet.Editor.CaretXY.Char) then
         begin
-          SetTagProperty(Temp, 'Selection', 'Line', IntToStr(sheet.Memo.BlockEnd.Line));
-          SetTagProperty(Temp, 'Selection', 'Column', IntToStr(sheet.Memo.BlockEnd.Char));
+          SetTagProperty(Temp, 'Selection', 'Line', IntToStr(sheet.Editor.BlockEnd.Line));
+          SetTagProperty(Temp, 'Selection', 'Column', IntToStr(sheet.Editor.BlockEnd.Char));
         end
         else
         begin
-          SetTagProperty(Temp, 'Selection', 'Line', IntToStr(sheet.Memo.BlockBegin.Line));
-          SetTagProperty(Temp, 'Selection', 'Column', IntToStr(sheet.Memo.BlockBegin.Char));
+          SetTagProperty(Temp, 'Selection', 'Line', IntToStr(sheet.Editor.BlockBegin.Line));
+          SetTagProperty(Temp, 'Selection', 'Column', IntToStr(sheet.Editor.BlockBegin.Char));
         end;
       end;
     end;
@@ -2206,7 +2206,7 @@ begin
         ExecFileName := 'gcc'
       else
         ExecFileName := 'g++';
-      ExecParams := CompilerOptions;
+      ExecParams := Trim(CompilerOptions + ' -fno-diagnostics-show-option');
       if Debugging then
       begin
         ExecParams := RemoveOption('-s', ExecParams);
@@ -2239,7 +2239,7 @@ begin
       mk.CompilerIsCpp := (CompilerType = COMPILER_CPP);
       mk.CreateLibrary := (AppType = APPTYPE_LIB);
       mk.CompilerPath := FCompilerPath;
-      mk.CompilerOptions := CompilerOptions;
+      mk.CompilerOptions := Trim(CompilerOptions + ' -fno-diagnostics-show-option');
       if not OldDebuggingState and Debugging then
         ForceClean := True;
       mk.ForceClean := ForceClean;
@@ -2509,7 +2509,7 @@ begin
   case SourceFile.FileType of
     FILE_TYPE_C..FILE_TYPE_H, FILE_TYPE_UNKNOW: FEditor.Highlighter := FrmFalconMain.CppHighligher;
   // TODO: commented
-//    FILE_TYPE_RC: Sheet.Memo.Highlighter := FrmFalconMain.ResourceHighlighter;
+//    FILE_TYPE_RC: Sheet.Editor.Highlighter := FrmFalconMain.ResourceHighlighter;
   end;
   UpdateEditor(FEditor);
   PageControl := PageCtrl;
@@ -2542,12 +2542,12 @@ var
 begin
   if (Button = mbMiddle) then
   begin
-    P := Memo.DisplayToBufferPos(Memo.PixelsToRowColumn(X, Y));
-    if (P.Char > 0) and (P.Line > 0) and (Memo.CanPaste) then
+    P := Editor.DisplayToBufferPos(Editor.PixelsToRowColumn(X, Y));
+    if (P.Char > 0) and (P.Line > 0) and (Editor.CanPaste) then
     begin
       // TODO: commented
-      // Memo.ExecuteCommand(ecGotoXY, #0, @P);
-      Memo.PasteFromClipboard;
+      // Editor.ExecuteCommand(ecGotoXY, #0, @P);
+      Editor.PasteFromClipboard;
     end;
   end;
   FrmFalconMain.TextEditorMouseDown(Sender, Button, Shift, X, Y);

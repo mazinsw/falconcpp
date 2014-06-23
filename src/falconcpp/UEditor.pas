@@ -34,6 +34,8 @@ type
     Column: integer;
     Row: integer;
   end;
+
+  TSearchDirection = (sdUp, sdDown);
   
   TEditor = class(TDScintilla)
   private
@@ -48,6 +50,7 @@ type
     FSelectionHighlight: THighlighStyle;
     FBreakpointHighlight: THighlighStyle;
     FExecutionPointHighlight: THighlighStyle;
+    FMatchWordHighlight: THighlighStyle;
     FOnScroll: TNotifyEvent;
     fOnMouseEnter: TMouseMoveEvent;
     fOnMouseLeave: TMouseMoveEvent;
@@ -134,6 +137,7 @@ type
     procedure SetCaretColor(const Value: TColor);
     procedure BreakpointHighlightChanged(Sender: TObject);
     procedure ExecutionPointHighlightChanged(Sender: TObject);
+    procedure MatchWordHighlightChanged(Sender: TObject);
     procedure UpdateMarginIcons;
     procedure SetLinkColor(const Value: TColor);
     procedure DoSelectionChanged;
@@ -159,8 +163,13 @@ type
     procedure GotoLineAndCenter(Line: Integer);
     function PixelsToRowColumn(x, y: Integer): TDisplayCoord;
     function IsPointInSelection(const rowcol: TBufferCoord): Boolean;
+    function GetWordAt(APosition: Integer): UnicodeString;
     function GetWordAtRowCol(const rowcol: TBufferCoord): UnicodeString;
     function PrevWordPos: TBufferCoord;
+    function SearchTextEx(const Search: string; SearchFlags, StartPosition,
+      EndPosition: Integer; Research: Boolean; Direction: TSearchDirection;
+      var SelectionStart, SelectionEnd: Integer; var UsingResearch: Boolean;
+      DocStartPosition: Integer = 0; DocEndPosition: Integer = -1): Integer;
     function SelAvail: Boolean;
     function RowColToCharIndex(const rowcol: TBufferCoord): Integer;
     function RowColumnToPixels(const Display: TDisplayCoord): TPoint;
@@ -189,6 +198,8 @@ type
     function GetMatchingBracketEx(const rowcol: TBufferCoord): TBufferCoord;
     function GetBalancingBracketEx(const APoint: TBufferCoord;
       Bracket: WideChar): Integer;
+    function GetHighlighterAttriAt(APosition: Integer; var S: UnicodeString;
+      var Style: THighlighStyle): Boolean;
     function GetHighlighterAttriAtRowCol(const rowcol: TBufferCoord;
       var S: UnicodeString; var Style: THighlighStyle): Boolean;
     procedure ProcessCloseBracketChar;
@@ -235,6 +246,7 @@ type
     property SelectionHighlight: THighlighStyle read FSelectionHighlight;
     property BreakpointHighlight: THighlighStyle read FBreakpointHighlight;
     property ExecutionPointHighlight: THighlighStyle read FExecutionPointHighlight;
+    property MatchWordHighlight: THighlighStyle read FMatchWordHighlight;
     property ImageList: TCustomImageList read FImageList write SetImageList;
     property OnScroll: TNotifyEvent read FOnScroll write FOnScroll;
     property OnMouseEnter: TMouseMoveEvent read fOnMouseEnter write fOnMouseEnter;
@@ -287,14 +299,17 @@ begin
   FBreakpointHighlight.OnChange := BreakpointHighlightChanged;
   FExecutionPointHighlight := THighlighStyle.Create(0, 'Execution Point');
   FExecutionPointHighlight.OnChange := ExecutionPointHighlightChanged;
+  FMatchWordHighlight := THighlighStyle.Create(0, 'Match Word');
+  FMatchWordHighlight.OnChange := MatchWordHighlightChanged;
   SetLength(FBookmarks, 10);
 end;              
 
 destructor TEditor.Destroy;
 begin
   SetHighlighter(nil); // remove hook from highlighter change list
-  FBreakpointHighlight.Free;
+  FMatchWordHighlight.Free;
   FExecutionPointHighlight.Free;
+  FBreakpointHighlight.Free;
   FSelectionHighlight.Free;
   FCaretLineHighlight.Free;
   FDefaultHighlight.Free;
@@ -490,7 +505,7 @@ end;
 function TEditor.DisplayToBufferPos(
   const Display: TDisplayCoord): TBufferCoord;
 begin
-  Result := CharIndexToRowCol(FindColumn(Display.Row - 1, Display.Column - 1));
+  Result := CharIndexToRowCol(RelativePosition(FindColumn(Display.Row - 1, Display.Column - 1)));
 end;
 
 procedure TEditor.DoMarginClick(AModifiers, APosition, AMargin: Integer);
@@ -629,11 +644,18 @@ end;
 
 function TEditor.GetWordAtRowCol(const rowcol: TBufferCoord): UnicodeString;
 var
-  I, StartPos, EndPos: Integer;
+  I: Integer;
 begin
   I := PositionFromLine(rowcol.Line - 1) + rowcol.Char - 1;
-  StartPos := WordStartPosition(I, True);
-  EndPos := WordEndPosition(I, True);
+  Result := GetWordAt(I);
+end;
+
+function TEditor.GetWordAt(APosition: Integer): UnicodeString;
+var
+  StartPos, EndPos: Integer;
+begin
+  StartPos := WordStartPosition(APosition, True);
+  EndPos := WordEndPosition(APosition, True);
   Result := GetTextRange(StartPos, EndPos);
 end;
 
@@ -655,6 +677,91 @@ begin
   SetCaretXY(BufferCoord(1, Line));
   EnsureVisible(Line);
   SetTopLine(Line - (LinesInWindow div 2));
+end;
+
+function TEditor.SearchTextEx(const Search: string; SearchFlags: Integer;
+  StartPosition, EndPosition: Integer; Research: Boolean;
+  Direction: TSearchDirection; var SelectionStart, SelectionEnd: Integer;
+  var UsingResearch: Boolean; DocStartPosition, DocEndPosition: Integer): Integer;
+var
+  SearchResult, SearchResultEnd, ResearchResult,
+  PrevSearchResult, PrevSearchResultEnd: Integer;
+begin
+  SetSearchFlags(SearchFlags);
+  if DocEndPosition = -1 then
+    DocEndPosition := GetLength;
+  if Direction = sdUp then // search first text before current position
+  begin
+    SetTargetStart(DocStartPosition);
+    SetTargetEnd(StartPosition);
+  end
+  else
+  begin // select next text after position end
+    SetTargetStart(EndPosition);
+    SetTargetEnd(DocEndPosition);
+  end;
+  SearchResult := SearchInTarget(Search);
+  SearchResultEnd := GetTargetEnd;
+  if Direction = sdUp then // search last text ocurrency from begining before current
+  begin
+    PrevSearchResult := SearchResult;
+    PrevSearchResultEnd := SearchResultEnd;
+    while SearchResult <> -1 do
+    begin
+      PrevSearchResult := SearchResult;
+      PrevSearchResultEnd := SearchResultEnd;
+      SetTargetStart(SearchResultEnd);
+      SetTargetEnd(StartPosition);
+      SearchResult := SearchInTarget(Search);
+      SearchResultEnd := GetTargetEnd;
+    end;
+    SearchResult := PrevSearchResult;
+    SearchResultEnd := PrevSearchResultEnd;
+  end;
+  ResearchResult := -1;
+  if (SearchResult = -1) and Research then
+  begin
+    if Direction = sdUp then
+    begin
+      // try from end
+      SetTargetStart(StartPosition);
+      SetTargetEnd(DocEndPosition);
+    end
+    else
+    begin
+      // try from begining
+      SetTargetStart(DocStartPosition);
+      SetTargetEnd(EndPosition);
+    end;
+    SearchResult := SearchInTarget(Search);
+    SearchResultEnd := GetTargetEnd;
+    if Direction = sdUp then // search last text ocurrency after current position
+    begin
+      PrevSearchResult := SearchResult;
+      PrevSearchResultEnd := SearchResultEnd;
+      while SearchResult <> -1 do
+      begin
+        PrevSearchResult := SearchResult;
+        PrevSearchResultEnd := SearchResultEnd;
+        SetTargetStart(SearchResultEnd);
+        SetTargetEnd(DocEndPosition);
+        SearchResult := SearchInTarget(Search);
+        SearchResultEnd := GetTargetEnd;
+      end;
+      SearchResult := PrevSearchResult;
+      SearchResultEnd := PrevSearchResultEnd;
+    end;
+    ResearchResult := SearchResult;
+  end;
+  if SearchResult <> -1 then
+  begin
+    SelectionStart := SearchResult;
+    SelectionEnd := SearchResultEnd;
+    UsingResearch := ResearchResult <> -1;
+    Result := 1;
+  end
+  else
+    Result := 0;
 end;
 
 procedure TEditor.InvalidateLine(Line: Integer);
@@ -1239,6 +1346,11 @@ begin
   MarkerSetBack(MARK_CURRENTLINE, DSColor(FExecutionPointHighlight.Background));
 end;
 
+procedure TEditor.MatchWordHighlightChanged(Sender: TObject);
+begin
+  IndicSetFore(INDIC_MATCHSEL, DSColor(FMatchWordHighlight.Foreground));
+end;
+
 procedure TEditor.SetLinkClick(Enabled: Boolean);
 var
   Style: THighlighStyle;
@@ -1373,11 +1485,19 @@ end;
 function TEditor.GetHighlighterAttriAtRowCol(const rowcol: TBufferCoord;
   var S: UnicodeString; var Style: THighlighStyle): Boolean;
 var
-  APosition, StyleID: Integer;
+  APosition: Integer;
+begin
+  APosition := PositionRelative(0, RowColToCharIndex(rowcol));
+  Result := GetHighlighterAttriAt(APosition, S, Style);
+end;
+
+function TEditor.GetHighlighterAttriAt(APosition: Integer;
+  var S: UnicodeString; var Style: THighlighStyle): Boolean;
+var
+  StyleID: Integer;
   AStyle: THighlighStyle;
 begin
   Result := False;
-  APosition := PositionRelative(0, RowColToCharIndex(rowcol));
   StyleID := GetStyleAt(APosition);
   if (StyleID = 0) or (Highlighter = nil) then
     Exit;
@@ -1386,7 +1506,7 @@ begin
   if Result then
   begin
     Style := AStyle;
-    S := GetWordAtRowCol(rowcol);
+    S := GetWordAt(APosition);
   end;
 end;
 

@@ -115,7 +115,7 @@ begin
   Sheet := TSourceFileSheet(FrmFalconMain.PageControlEditor.ActivePage);
   FileProp := Sheet.SourceFile;
   //ProjProp := FileProp.Project;
-  Memo := Sheet.Memo;
+  Memo := Sheet.Editor;
   if Memo.ReadOnly then
     Exit;
   Line := Memo.DisplayY;

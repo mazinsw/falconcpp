@@ -1,3 +1,5 @@
+test_typedef.cpp:4:27: error: declaration of 'integerv' as array of references
+collect2.exe: error: ld returned 1 exit status
 test_function.cpp:18:5: note: declared here
 test_function.cpp:5:24: warning: no return statement in function returning non-void [-Wreturn-type]
 test_using.cpp:9:28: error: expected namespace-name before ';' token

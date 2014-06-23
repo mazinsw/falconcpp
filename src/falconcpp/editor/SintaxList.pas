@@ -20,6 +20,7 @@ const
   STY_PROP_BRACE = 'Brace';
   STY_PROP_BADBRACE = 'Bad Brace';
   STY_PROP_LINKCOLOR = 'Link Color';
+  STY_PROP_SELWORD = 'Selected Word';
 
 type
   TSintaxType = class;
@@ -408,10 +409,14 @@ begin
       begin
         Editor.BadBracketHighlight.Foreground := st.Foreground;
         Editor.BadBracketHighlight.Style := st.Style;
-      end; 
+      end;
       if st.Name = STY_PROP_LINKCOLOR then
       begin
         Editor.LinkColor := st.Foreground;
+      end;
+      if st.Name = STY_PROP_SELWORD then
+      begin
+        Editor.MatchWordHighlight.Foreground := st.Foreground;
       end;
       Editor.EndUpdate;
     end;
@@ -471,6 +476,10 @@ begin
   if GetType(STY_PROP_LINKCOLOR, st) then
   begin
     Editor.LinkColor := st.Foreground;
+  end;
+  if GetType(STY_PROP_SELWORD, st) then
+  begin
+    Editor.MatchWordHighlight.Foreground := st.Foreground;
   end;
   Editor.EndUpdate;
 end;
@@ -593,6 +602,7 @@ begin
   Stx.AddSintaxType(STY_PROP_BRACE, clRed, clNone, [fsBold]);
   Stx.AddSintaxType(STY_PROP_BADBRACE, clRed);
   Stx.AddSintaxType(STY_PROP_LINKCOLOR, clBlue);
+  Stx.AddSintaxType(STY_PROP_SELWORD, clLime);
   FItemIndex := Add(Stx);
 
   //Borland
@@ -616,14 +626,15 @@ begin
   Stx.AddSintaxType(HL_Style_String, clYellow);
   Stx.AddSintaxType(HL_Style_Symbol, clYellow);
   Stx.AddSintaxType(STY_PROP_GUTTER, clYellow, clNavy);
-  Stx.AddSintaxType(STY_PROP_CARETLINE, clWhite, clBlack);
+  Stx.AddSintaxType(STY_PROP_CARETLINE, clNone, clNone);
   Stx.AddSintaxType(STY_PROP_SELECTION, clBlack, clGray);
-  Stx.AddSintaxType(STY_PROP_BREAKPOINT, clNone, clRed); 
+  Stx.AddSintaxType(STY_PROP_BREAKPOINT, clNone, clRed);
   Stx.AddSintaxType(STY_PROP_EXECPOINT, clNone, clSkyBlue);
-  Stx.AddSintaxType(STY_PROP_CARETCOLOR, clWhite); 
+  Stx.AddSintaxType(STY_PROP_CARETCOLOR, clWhite);
   Stx.AddSintaxType(STY_PROP_BRACE, clRed, clNone, [fsBold]);
   Stx.AddSintaxType(STY_PROP_BADBRACE, clRed);
-  Stx.AddSintaxType(STY_PROP_LINKCOLOR, clBlue);
+  Stx.AddSintaxType(STY_PROP_LINKCOLOR, clOrange);
+  Stx.AddSintaxType(STY_PROP_SELWORD, clWhite);
   Add(Stx);
 
   //Visual Studio
@@ -655,6 +666,7 @@ begin
   Stx.AddSintaxType(STY_PROP_BRACE, clRed, clNone, [fsBold]);
   Stx.AddSintaxType(STY_PROP_BADBRACE, clRed); 
   Stx.AddSintaxType(STY_PROP_LINKCOLOR, clBlue);
+  Stx.AddSintaxType(STY_PROP_SELWORD, clBlue);
   Add(Stx);
 
   //Obsidian
@@ -686,6 +698,7 @@ begin
   Stx.AddSintaxType(STY_PROP_BRACE, clRed, clNone, [fsBold]);
   Stx.AddSintaxType(STY_PROP_BADBRACE, clRed); 
   Stx.AddSintaxType(STY_PROP_LINKCOLOR, clBlue);
+  Stx.AddSintaxType(STY_PROP_SELWORD, clAqua);
   Add(Stx);
 
   //default
@@ -717,6 +730,7 @@ begin
   Stx.AddSintaxType(STY_PROP_BRACE, clRed, clNone, [fsBold]);
   Stx.AddSintaxType(STY_PROP_BADBRACE, clRed);
   Stx.AddSintaxType(STY_PROP_LINKCOLOR, clBlue);
+  Stx.AddSintaxType(STY_PROP_SELWORD, clBlue);
   FItemIndex := Add(Stx);
 end;
 

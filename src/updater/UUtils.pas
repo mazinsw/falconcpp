@@ -396,7 +396,7 @@ begin
     BringUpApp('TFrmUpdate') then
     Exit;
   params := '';
-  for I := 1 to ParamCount - 1 do
+  for I := 1 to ParamCount do
   begin
     if Pos(' ', ParamStr(I)) > 0 then
       params := params + ' "' + ParamStr(I) + '"'

@@ -1289,6 +1289,7 @@ object FrmFalconMain: TFrmFalconMain
     ShowHint = True
     UseSystemFont = False
     OnContextPopup = StatusBarContextPopup
+    OnPanelClick = StatusBarPanelClick
     object ProgressBarParser: TProgressBar
       Left = 510
       Top = 2
@@ -1402,6 +1403,7 @@ object FrmFalconMain: TFrmFalconMain
           Width = 175
           Height = 502
           Align = alClient
+          Colors.UnfocusedColor = clMedGray
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -12
@@ -1806,7 +1808,7 @@ object FrmFalconMain: TFrmFalconMain
     Top = 243
   end
   object PopupMenuLineEnding: TTBXPopupMenu
-    Left = 784
+    Left = 808
     Top = 544
     object TBXItem1: TTBXItem
       AutoCheck = True
@@ -1833,16 +1835,16 @@ object FrmFalconMain: TFrmFalconMain
     end
   end
   object PopupMenuEncoding: TTBXPopupMenu
-    Left = 744
+    Left = 688
     Top = 544
-    object TBXItem4: TTBXItem
+    object PopEncANSI: TTBXItem
       AutoCheck = True
       Caption = 'ANSI'
       GroupIndex = 1
       RadioItem = True
       OnClick = EncodingItemClick
     end
-    object TBXItem5: TTBXItem
+    object PopEncUTF8: TTBXItem
       Tag = 1
       AutoCheck = True
       Caption = 'UTF-8'
@@ -1850,13 +1852,21 @@ object FrmFalconMain: TFrmFalconMain
       RadioItem = True
       OnClick = EncodingItemClick
     end
-    object TBXItem6: TTBXItem
+    object PopEncUCS2: TTBXItem
       Tag = 2
       AutoCheck = True
       Caption = 'UCS-2'
       GroupIndex = 1
       RadioItem = True
       OnClick = EncodingItemClick
+    end
+    object TBXSeparatorItem46: TTBXSeparatorItem
+    end
+    object PopEncWithBOM: TTBXItem
+      AutoCheck = True
+      Caption = 'With BOM'
+      Enabled = False
+      OnClick = PopEncWithBOMClick
     end
   end
 end

@@ -20,7 +20,7 @@
   !define SHCNE_ASSOCCHANGED 0x08000000
   !define SHCNF_IDLIST 0
   !define MAJ_VERSION "3.3"
-  !define APP_VERSION "${MAJ_VERSION}.0.10"
+  !define APP_VERSION "${MAJ_VERSION}.2.0"
   
 ; packages
   !define PKG_MAKE     "mingw32-make 3.82.90.fpk"
@@ -234,7 +234,7 @@ SectionGroup "${PROJECT_NAME}" GroupFalcon
     File "..\..\bin\Falcon.exe"
     File "..\..\bin\SciLexer.dll"
     File "..\..\bin\Updater.exe"
-    File "..\..\bin\astyle.dll"
+    File "..\..\bin\AStyle.dll"
     File "..\..\bin\ConsoleRunner.exe"
     
     StrCmp "$INSTDIR" "$PROGRAMFILES\Falcon" 0 noadm

@@ -145,7 +145,7 @@ end;
 procedure TFrmUpdate.BtnUpdateClick(Sender: TObject);
 begin
   ShellExecute(Handle, 'open', PChar(FrmFalconMain.AppRoot + 'Updater.exe'),
-    PChar(XMLFile), PChar(FrmFalconMain.AppRoot), SW_SHOW);
+    PChar('"' + XMLFile + '"'), PChar(FrmFalconMain.AppRoot), SW_SHOW);
   Close;
 end;
 

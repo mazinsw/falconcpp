@@ -2,7 +2,7 @@
 		<PropertyGroup>
 			<ProjectGuid>{1DA74BDB-2546-43BE-9073-189C8A91C99E}</ProjectGuid>
 			<MainSource>Updater.dpr</MainSource>
-			<Config Condition="'$(Config)'==''">Release</Config>
+			<Config Condition="'$(Config)'==''">Debug</Config>
 			<DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
 			<ProjectVersion>12.0</ProjectVersion>
 		</PropertyGroup>

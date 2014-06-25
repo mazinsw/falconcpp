@@ -38,7 +38,7 @@ type
     procedure Assign(AObject: TObject);
     procedure AssignProperty(AObject: TObject);
     procedure Clear;
-
+    procedure GetUsingNames(List: TStrings; UntilPosition: Integer = 0);
     procedure GetFunctions(List: TStrings; const ScopeFlag: string;
       UseScope: Boolean = False; MakeCopy: Boolean = True;
       OnlyPrototype: Boolean = False);
@@ -593,7 +593,8 @@ begin
     //fields = namespace1::namespace2::myclass
     for I := 1 to List.Count - 1 do
     begin
-      if not Token.SearchToken(List.Strings[I], '', Token, SelStart, False, Mode) then
+      if not Token.SearchToken(List.Strings[I], '', Token, SelStart, False,
+        Mode+[tkTypedef]) then
       begin
         Result := False;
         Break;
@@ -628,6 +629,11 @@ begin
   if Result then
     Exit;
   Result := Includes.GetTokenAt(scopeToken, SelStart, SelLine);
+end;
+
+procedure TTokenFile.GetUsingNames(List: TStrings; UntilPosition: Integer);
+begin
+  VarConsts.GetUsingNames(List, UntilPosition);
 end;
 
 procedure TTokenFile.GetFunctions(List: TStrings; const ScopeFlag: string;
@@ -813,14 +819,14 @@ begin
   { TODO -oMazin -c : while parent is not nil fill objects 24/08/2012 22:32:19 }
   //get parent of Token
   if Assigned(Token.Parent) and
-    (Token.Parent.Token in [tkClass, tkStruct, tkScopeClass]) then
+    (Token.Parent.Token in [tkClass, tkStruct, tkUnion, tkScopeClass]) then
   begin
     Token := Token.Parent;
     AllScope := True;
   end;
   //tree parent object?
   if Assigned(Token.Parent) and
-    (Token.Parent.Token in [tkClass, tkStruct]) then
+    (Token.Parent.Token in [tkClass, tkStruct, tkUnion]) then
   begin
     Token := Token.Parent;
   end;
@@ -836,11 +842,11 @@ begin
       Fields := Token.Name + '::' + Fields;
     end;
     AllScope := SearchTreeToken(Fields, TokenFile,
-      TokenFile, Token, [tkClass, tkNamespace], Token.SelStart);
+      TokenFile, Token, [tkClass, tkStruct, tkUnion, tkNamespace], Token.SelStart);
   end;
   if AllScope then
   begin
-    if Token.Token = tkClass then
+    if Token.Token in [tkClass, tkStruct, tkUnion] then
       thisToken := Token;
     //List.AddObject('', token);
   end;
@@ -994,14 +1000,14 @@ begin
     { TODO -oMazin -c : while parent is not nil fill objects 24/08/2012 22:32:35 }
     //get parent of Token
     if Assigned(Token.Parent) and
-      (Token.Parent.Token in [tkClass, tkStruct, tkScopeClass]) then
+      (Token.Parent.Token in [tkClass, tkStruct, tkUnion, tkScopeClass]) then
     begin
       Token := Token.Parent;
       AllScope := True;
     end;
     //tree parent object?
     if Assigned(Token.Parent) and
-      (Token.Parent.Token in [tkClass, tkStruct]) then
+      (Token.Parent.Token in [tkClass, tkStruct, tkUnion]) then
     begin
       Token := Token.Parent;
     end;
@@ -1010,13 +1016,13 @@ begin
     if not AllScope and Assigned(Scope) and (Scope.Flag <> '') then
     begin
       Fields := Scope.Flag;
-      while Assigned(Token.Parent) and (Token.Parent.Token in [tkNamespace, tkClass]) do
+      while Assigned(Token.Parent) and (Token.Parent.Token in [tkNamespace, tkClass, tkStruct, tkUnion]) do
       begin
         Token := Token.Parent;
         Fields := Token.Name + '::' + Fields;
       end;
       AllScope := SearchTreeToken(Fields, TokenFile,
-        TokenFileItem, Token, [tkClass, tkNamespace], Token.SelStart);
+        TokenFileItem, Token, [tkClass, tkStruct, tkUnion, tkNamespace], Token.SelStart);
     end;
     //search on class, struct
     if AllScope then
@@ -1211,7 +1217,7 @@ function TTokenFiles.FindDeclaration(const Input, Fields: string; TokenFile: TTo
   begin
     Result := False;
     if CurrentTokenFile.SearchTreeToken(AllFields, ClassToken,
-      [tkClass, tkNamespace], ScopeSelStart) then
+      [tkClass, tkStruct, tkUnion, tkNamespace], ScopeSelStart) then
     begin
       AllowScope := [];
       // for implementation out of class, ret_type my_class::function
@@ -1252,17 +1258,24 @@ function TTokenFiles.FindDeclaration(const Input, Fields: string; TokenFile: TTo
   end;
 
 var
-  AllFields, FirstInput, ScopeFlag: string;
+  AllFields, FirstInput, ScopeFlag, UsingAllFields: string;
   Scope, ParentScope, SaveScope: TTokenClass;
   ClassToken: TTokenClass;
   FindedTokenFile: TTokenFile;
   AllScope: Boolean;
   AllowScope: TScopeClassState;
   FindedList: TRBTree;
-  ScopeSelStart: Integer;
+  ScopeSelStart, I: Integer;
+  UsingList: TStrings;
 begin
   Result := False;
   AllFields := Fields;
+  UsingList := TStringList.Create;
+  TStringList(UsingList).Duplicates := dupIgnore;
+  TStringList(UsingList).CaseSensitive := True;
+  UsingList.Add('');
+  TokenFile.GetUsingNames(UsingList);
+
   if TokenFile.GetScopeAt(SaveScope, SelStart) then
   begin
     Scope := SaveScope;
@@ -1292,53 +1305,76 @@ begin
       ParentScope := ParentScope.Parent;
     if not (ParentScope.Token in [tkClass, tkStruct, tkUnion]) then
       ParentScope := nil;
-    // only scope, ex: std::string
-    if (AllFields <> '') and (Input <> '') and (Pos('.', AllFields) = 0) then
+    for I := 0 to UsingList.Count - 1 do
     begin
-      FindedList := TRBTree.Create;
-      Result := SearchTreeTokenClass(ParentScope, Scope, AllFields, TokenFile,
-        ScopeSelStart, FindedList);
-      FindedList.Free;
-      if Result then
-        Exit;
+      if UsingList[I] = '' then
+        UsingAllFields := AllFields
+      else
+        UsingAllFields := UsingList[I] + '::' + AllFields;
+      // only scope, ex: std::string
+      if (UsingAllFields <> '') and (Input <> '') and (Pos('.', UsingAllFields) = 0) then
+      begin
+        FindedList := TRBTree.Create;
+        Result := SearchTreeTokenClass(ParentScope, Scope, UsingAllFields, TokenFile,
+          ScopeSelStart, FindedList);
+        FindedList.Free;
+        if Result then
+        begin
+          UsingList.Free;
+          Exit;
+        end;
+      end;
     end;
   end
   else
     SaveScope := nil;
-  FirstInput := GetFirstWord(AllFields); //enum fields and functions class
   //search base type and list fields and functions of struct, union or class
-  if (AllFields <> '') and GetFieldsBaseType(FirstInput, AllFields, SelStart, TokenFile,
-    FindedTokenFile, ClassToken) then
+  if (AllFields <> '') then
   begin
-    AllowScope := [];
-    if SaveScope <> nil then
+    for I := 0 to UsingList.Count - 1 do
     begin
-      Scope := SaveScope; // current level
-      ParentScope := Scope.Parent;
-      Scope := GetTokenByName(Scope, 'Scope', tkScope);
-      // get parent class, struct or union
-      if Assigned(ParentScope) and (ParentScope.Token = tkScopeClass) then
-        ParentScope := ParentScope.Parent;
-      if not (ParentScope.Token in [tkClass, tkStruct, tkUnion]) then
-        ParentScope := nil;
-      // for implementation out of class, ret_type my_class::function
-      // teste if class my_class is equal to my_class::
-      AllScope := Assigned(Scope) and (Scope.Flag = ClassToken.Name);
-      // test if in same scope
-      if not AllScope and Assigned(ParentScope) and (ParentScope.Name = ClassToken.Name) then
-          AllScope := True;
-    end
-    else
-      AllScope := Pos('::', Fields) > 0;
-    // allow only public statement
-    if not AllScope then
-      AllowScope := AllowScope + [scPublic];
-    Result := SearchClassSource(Input, ClassToken, FindedTokenFile,
-      TokenFileItem, Item, nil, False, AllowScope);
+      if UsingList[I] = '' then
+        UsingAllFields := AllFields
+      else
+        UsingAllFields := UsingList[I] + '::' + AllFields;
+      FirstInput := GetFirstWord(UsingAllFields); //enum fields and functions class
+      if GetFieldsBaseType(FirstInput, UsingAllFields, SelStart, TokenFile,
+        FindedTokenFile, ClassToken) then
+      begin
+        AllowScope := [];
+        if SaveScope <> nil then
+        begin
+          Scope := SaveScope; // current level
+          ParentScope := Scope.Parent;
+          Scope := GetTokenByName(Scope, 'Scope', tkScope);
+          // get parent class, struct or union
+          if Assigned(ParentScope) and (ParentScope.Token = tkScopeClass) then
+            ParentScope := ParentScope.Parent;
+          if not (ParentScope.Token in [tkClass, tkStruct, tkUnion]) then
+            ParentScope := nil;
+          // for implementation out of class, ret_type my_class::function
+          // teste if class my_class is equal to my_class::
+          AllScope := Assigned(Scope) and (Scope.Flag = ClassToken.Name);
+          // test if in same scope
+          if not AllScope and Assigned(ParentScope) and (ParentScope.Name = ClassToken.Name) then
+              AllScope := True;
+        end
+        else
+          AllScope := Pos('::', Fields) > 0;
+        // allow only public statement
+        if not AllScope then
+          AllowScope := AllowScope + [scPublic];
+        Result := SearchClassSource(Input, ClassToken, FindedTokenFile,
+          TokenFileItem, Item, nil, False, AllowScope);
+        if Result then
+          Break;
+      end;
+    end;
   end
   // search global declaration
   else if AllFields = '' then
     Result := SearchSource(GetFirstWord(Input), TokenFile, TokenFileItem, Item, SelStart);
+  UsingList.Free;
 end;
 
 function TTokenFiles.GetBaseTypeRecursive(const S: string;
@@ -1361,7 +1397,7 @@ begin
       TokenFileItem := TokenFile;
       if (Token.Token in [tkClass, tkStruct, tkUnion]) then
         Exit;
-      LastWord := GetVarType(Token.Flag);
+      LastWord := GetVarType(Token);
       if (Token.Token = tkDefine) then
         if IsNumber(LastWord) then
           Exit;
@@ -1388,7 +1424,7 @@ begin
     if InvalidOrFinded(FindedTokenFile, FilePath, TokenFile.Includes.Items[I],
       FindedList) then
       Continue;
-    LastWord := GetVarType(Token.Flag);
+    LastWord := GetVarType(Token);
     if GetBaseTypeRecursive(LastWord, 0, FindedTokenFile, TokenFileItem, Token,
       FindedList, ListAll, AllFunctions) then
     begin
@@ -1407,7 +1443,7 @@ var
   FindedList: TRBTree;
 begin
   if SearchTreeToken(S, TokenFile, TokenFileItem, Token,
-    [tkClass, tkNamespace], SelStart) then
+    [tkClass, tkStruct, tkUnion, tkNamespace], SelStart) then
   begin
     if Token.Name = GetLastWord(S) then
     begin
@@ -1509,29 +1545,49 @@ function TTokenFiles.GetFieldsBaseType(const S, Fields: string;
 var
   List: TStrings;
   I: Integer;
-  Temp: string;
+  Temp, AllFields, UsingAllFields: string;
   ScopeClass: TScopeClassState;
-  S_nostd, F_nostd: string;
+  UsingList: TStrings;
+  SaveTokenFileItem: TTokenFile;
+  SaveToken: TTokenClass;
+  Finded: Boolean;
 begin
-  S_nostd := S;
-  F_nostd := Fields;
-  if (Pos('std::', F_nostd) = 1) and (Length(F_nostd) > 5) then
-  begin
-    F_nostd := Copy(F_nostd, 6, Length(F_nostd) - 5);
-    S_nostd := GetFirstWord(F_nostd);
-  end;
   //search var->
-  Result := SearchSource(S_nostd, TokenFile, TokenFileItem, Token, SelStart);
+  Result := SearchSource(S, TokenFile, TokenFileItem, Token, SelStart);
   if not Result then
     Exit;
   List := TStringList.Create;
-  GetStringsFields(F_nostd, List);
+  GetStringsFields(Fields, List);
   if (S <> 'this') then
   begin //'prototype var()->' or var.bla or func()->bla
     if (Token.Token in RetTypeTokens + [tkDefine]) then
     begin
-      if not GetBaseType(GetVarType(Token.Flag), Token.SelStart,
-        TokenFileItem, TokenFileItem, Token) then
+      UsingList := TStringList.Create;
+      TStringList(UsingList).Duplicates := dupIgnore;
+      TStringList(UsingList).CaseSensitive := True;
+      UsingList.Add('');
+      TokenFileItem.GetUsingNames(UsingList, Token.SelStart);
+      AllFields := GetVarType(Token);
+      Finded := False;
+      for I := 0 to UsingList.Count - 1 do
+      begin
+        if UsingList[I] = '' then
+          UsingAllFields := AllFields
+        else
+          UsingAllFields := UsingList[I] + '::' + AllFields;
+        SaveTokenFileItem := TokenFileItem;
+        SaveToken := Token;
+        if GetBaseType(UsingAllFields, Token.SelStart,
+          TokenFileItem, TokenFileItem, Token) then
+        begin
+          Finded := True;
+          Break;
+        end;
+        TokenFileItem := SaveTokenFileItem;
+        Token := SaveToken;
+      end;
+      UsingList.Free;
+      if not Finded then
       begin
         Result := List.Count = 0;
         List.Free;
@@ -1539,15 +1595,15 @@ begin
       end;
     end;
   end;
-  if (Token.Token in [tkTypedef]) and (Pos('struct', Token.Flag) > 0) then
-    GetBaseType(GetVarType(Token.Flag), 0, TokenFile, TokenFileItem, Token);
+  if (Token.Token in [tkTypedef]) then
+    GetBaseType(GetVarType(Token), 0, TokenFile, TokenFileItem, Token);
   { TODO -oMazin -c : Consider Scope::Function() 04/05/2013 21:33:01 }
   for I := 0 to List.Count - 1 do
   begin
     ScopeClass := [scPublic];
     if Token.Token in RetTypeTokens then
     begin
-      Temp := GetVarType(Token.Flag);
+      Temp := GetVarType(Token);
       //get var.field    note: field can be an function
       if StringIn(Temp, ReservedTypes) or not
         GetBaseType(Temp, 0, TokenFileItem, TokenFileItem, Token) then
@@ -1568,7 +1624,6 @@ begin
         List.Free;
         Exit;
       end;
-      Continue;
     end
     else if not (Token.Token in TreeTokens) then
     begin
@@ -1588,7 +1643,7 @@ begin
       List.Free;
       Exit;
     end;
-    Temp := GetVarType(Token.Flag);
+    Temp := GetVarType(Token);
     //last parameter and get tree for completion
     // var.function()->
     if (Token.Token in RetTypeTokens) and not StringIn(Temp, ReservedTypes)
@@ -1600,7 +1655,7 @@ begin
     end;
     // for linked lists
     if (Token.Token in [tkTypedef]) and (Pos('struct', Token.Flag) > 0) then
-      GetBaseType(GetVarType(Token.Flag), 0, TokenFile, TokenFileItem, Token);
+      GetBaseType(GetVarType(Token), 0, TokenFile, TokenFileItem, Token);
   end;
   List.Free;
   Result := True;
@@ -1613,6 +1668,11 @@ var
   I: Integer;
   TokenFileItem: TTokenFile;
   Token: TTokenClass;
+  AllFields, UsingAllFields: string;
+  UsingList: TStrings;
+  SaveTokenFileItem: TTokenFile;
+  SaveToken: TTokenClass;
+  Finded: Boolean;
 begin
   List := TStringList.Create;
   GetStringsFields(Fields, List);
@@ -1653,17 +1713,43 @@ begin
     if ((Token.Token in [tkVariable, tkFunction, tkDefine]) and (List.Count > 0))
       or ((Token.Token in [tkVariable, tkDefine]) and (List.Count = 0)) then
     begin
-      //search for variable or return type
-      if not GetBaseType(GetVarType(Token.Flag), Token.SelStart,
-        TokenFileItem, TokenFileItem, Token, ParamsList, List.Count = 0) then
+      UsingList := TStringList.Create;
+      TStringList(UsingList).Duplicates := dupIgnore;
+      TStringList(UsingList).CaseSensitive := True;
+      UsingList.Add('');
+      TokenFileItem.GetUsingNames(UsingList, Token.SelStart);
+      AllFields := GetVarType(Token);
+      Finded := False;
+      for I := 0 to UsingList.Count - 1 do
+      begin
+        if UsingList[I] = '' then
+          UsingAllFields := AllFields
+        else
+          UsingAllFields := UsingList[I] + '::' + AllFields;
+        SaveTokenFileItem := TokenFileItem;
+        SaveToken := Token;
+        //search for variable or return type
+        if GetBaseType(UsingAllFields, Token.SelStart,
+          TokenFileItem, TokenFileItem, Token, ParamsList, List.Count = 0) then
+        begin
+          Finded := True;
+          Break;
+        end;
+        TokenFileItem := SaveTokenFileItem;
+        Token := SaveToken;
+      end;
+      UsingList.Free;
+      if not Finded then
       begin
         List.Free;
         Exit;
-      end
-      else if (List.Count = 0) and (Token.Token in [tkTypedefProto]) then
+      end;
+      if (List.Count = 0) and (Token.Token in [tkTypedefProto]) then
         ParamsList.AddObject('', Token);
     end;
   end;
+  if (Token.Token in [tkTypedef]) then
+    GetBaseType(GetVarType(Token), 0, TokenFile, TokenFileItem, Token);
   { TODO -oMazin -c : Consider Scope::Function() 04/05/2013 21:33:01 }
   for I := 0 to List.Count - 1 do
   begin
@@ -1697,14 +1783,14 @@ begin
       if (Token.Token in [tkVariable]) then
       begin
         // int a, char b, ...
-        if StringIn(GetVarType(Token.Flag), ReservedTypes) then
+        if StringIn(GetVarType(Token), ReservedTypes) then
         begin
           Result := False;
           List.Free;
           Exit;
         end
         //class var, prototype var;
-        else if not GetBaseType(GetVarType(Token.Flag), 0, TokenFileItem,
+        else if not GetBaseType(GetVarType(Token), 0, TokenFileItem,
           TokenFileItem, Token) then
         begin
           Result := False;
@@ -1728,14 +1814,14 @@ begin
     else if (Token.Token in [tkFunction, tkPrototype, tkOperator, tkVariable]) then
     begin
       //int a, char b, ...
-      if StringIn(GetVarType(Token.Flag), ReservedTypes) then
+      if StringIn(GetVarType(Token), ReservedTypes) then
       begin
         Result := False;
         List.Free;
         Exit;
       end
       //class var, struct var, class function, struct function
-      else if not GetBaseType(GetVarType(Token.Flag), 0, TokenFileItem,
+      else if not GetBaseType(GetVarType(Token), 0, TokenFileItem,
         TokenFileItem, Token) then
       begin
         Result := False;

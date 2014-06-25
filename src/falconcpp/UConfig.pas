@@ -2,10 +2,10 @@ unit UConfig;
 
 interface
 
+{$I Falcon.inc}
+
 uses
-  Windows, SysUtils, IniFiles, Forms, Graphics, Classes, Dialogs,
-  Menus, Controls, 
-  TBX, ULanguages, ModernTabs;
+  Forms, Graphics, Classes, ULanguages;
 
 type
 
@@ -146,7 +146,8 @@ function ReadIniFile(Section, Ident, Default: string): string;
 
 implementation
 
-uses UFrmMain, UUtils;
+uses UFrmMain, UUtils, SystemUtils, Windows, SysUtils, IniFiles, Dialogs,
+  Menus, Controls, TBX, ModernTabs;
 
 procedure WriteIniFile(const Section, Ident, Value: string);
 var
@@ -236,6 +237,7 @@ begin
       'AlternativeConfFile', False);
     ConfigurationFile := ini.ReadString('EnvironmentOptions',
       'ConfigurationFile', '');
+    ConfigurationFile := ExpandRelativeFileName(TFrmFalconMain(Form).AppRoot, ConfigurationFile);
     if not AlternativeConfFileLoaded and AlternativeConfFile and
       FileExists(ConfigurationFile) then
     begin
@@ -270,14 +272,35 @@ begin
     //Files and Directories
     UsersDefDir := ini.ReadString('EnvironmentOptions', 'UsersDefDir',
       TFrmFalconMain(Form).AppRoot);
+    UsersDefDir := ExpandRelativePath(TFrmFalconMain(Form).AppRoot, UsersDefDir);
+    if not DirectoryExists(UsersDefDir) then
+      UsersDefDir := TFrmFalconMain(Form).AppRoot;
     ProjectsDir := ini.ReadString('EnvironmentOptions', 'ProjectsDir',
-      GetUserFolderPath + 'Projects\');
+{$IFDEF FALCON_PORTABLE}
+       TFrmFalconMain(Form).AppRoot
+{$ELSE}
+       GetSpecialFolderPath
+{$ENDIF}
+       + 'Projects\');
+    ProjectsDir := ExpandRelativePath(TFrmFalconMain(Form).AppRoot, ProjectsDir);
+    if not DirectoryExists(ProjectsDir) then
+      ProjectsDir :=
+{$IFDEF FALCON_PORTABLE}
+        TFrmFalconMain(Form).AppRoot
+{$ELSE}
+        GetSpecialFolderPath
+{$ENDIF}
+        + 'Projects\';
     TemplatesDir := ini.ReadString('EnvironmentOptions', 'TemplatesDir',
       UsersDefDir + 'Templates\');
-    TemplatesDir := ExpandFileName(TemplatesDir);
+    TemplatesDir := ExpandRelativePath(UsersDefDir, TemplatesDir);
+    if not DirectoryExists(TemplatesDir) then
+      TemplatesDir := UsersDefDir + 'Templates\';
     LanguageDir := ini.ReadString('EnvironmentOptions', 'LanguageDir',
       UsersDefDir + 'Lang\');
-    LanguageDir := ExpandFileName(LanguageDir);
+    LanguageDir := ExpandRelativePath(UsersDefDir, LanguageDir);
+    if not DirectoryExists(LanguageDir) then
+      LanguageDir := UsersDefDir + 'Lang\';
   end;
   with Editor do
   begin
@@ -368,11 +391,18 @@ begin
 
     CodeTemplateFile := ini.ReadString('EditorOptions', 'CodeTemplateFile',
       TFrmFalconMain(Form).ConfigRoot + 'CustomAutoComplete.txt');
+    CodeTemplateFile := ExpandRelativeFileName(TFrmFalconMain(Form).AppRoot, CodeTemplateFile);
+    if not FileExists(CodeTemplateFile) then
+      CodeTemplateFile := TFrmFalconMain(Form).ConfigRoot + 'CustomAutoComplete.txt';
   end;
 
   with Compiler do
   begin
-    Path := ini.ReadString('CompilerOptions', 'Path', '');
+    Path := ini.ReadString('CompilerOptions', 'Path', TFrmFalconMain(Form).AppRoot + 'MinGW');
+    Path := ExpandRelativePath(TFrmFalconMain(Form).AppRoot, Path);
+    if not DirectoryExists(Path) then
+      Path := TFrmFalconMain(Form).AppRoot + 'MinGW';
+    Path := ExcludeTrailingPathDelimiter(Path);
     Version := ini.ReadString('CompilerOptions', 'Version', '');
     ReverseDebugging := ini.ReadBool('CompilerOptions', 'ReverseDebugging', False);
   end;
@@ -649,7 +679,8 @@ begin
     ini.WriteString('EditorOptions', 'CompListSel', ColorToString(CompListSel));
     ini.WriteString('EditorOptions', 'CompListBg', ColorToString(CompListBg));
 
-    ini.WriteString('EditorOptions', 'CodeTemplateFile', CodeTemplateFile);
+    ini.WriteString('EditorOptions', 'CodeTemplateFile',
+      ExtractRelativePath(TFrmFalconMain(Form).AppRoot, CodeTemplateFile));
   end;
   with Environment do
   begin
@@ -675,7 +706,7 @@ begin
     if not AlternativeConfFileLoaded then
     begin
       ini.WriteBool('EnvironmentOptions', 'AlternativeConfFile', AlternativeConfFile);
-      ini.WriteString('EnvironmentOptions', 'ConfigurationFile', ConfigurationFile);
+      ini.WriteString('EnvironmentOptions', 'ConfigurationFile', ExtractRelativePath(TFrmFalconMain(Form).AppRoot, ConfigurationFile));
     end
     else
     begin
@@ -688,14 +719,14 @@ begin
         oriini.Free;
       end;
     end;
-    ini.WriteString('EnvironmentOptions', 'UsersDefDir', UsersDefDir);
-    ini.WriteString('EnvironmentOptions', 'ProjectsDir', ProjectsDir);
-    ini.WriteString('EnvironmentOptions', 'TemplatesDir', TemplatesDir);
-    ini.WriteString('EnvironmentOptions', 'LanguageDir', LanguageDir);
+    ini.WriteString('EnvironmentOptions', 'UsersDefDir', ExtractRelativePath(TFrmFalconMain(Form).AppRoot, UsersDefDir));
+    ini.WriteString('EnvironmentOptions', 'ProjectsDir', ExtractRelativePath(TFrmFalconMain(Form).AppRoot, ProjectsDir));
+    ini.WriteString('EnvironmentOptions', 'TemplatesDir', ExtractRelativePath(UsersDefDir, TemplatesDir));
+    ini.WriteString('EnvironmentOptions', 'LanguageDir', ExtractRelativePath(UsersDefDir, LanguageDir));
   end;
   with Compiler do
   begin
-    ini.WriteString('CompilerOptions', 'Path', Path);
+    ini.WriteString('CompilerOptions', 'Path', ExtractRelativePath(TFrmFalconMain(Form).AppRoot, Path));
     ini.WriteString('CompilerOptions', 'Version', Version);
     ini.WriteBool('CompilerOptions', 'ReverseDebugging', ReverseDebugging);
   end;

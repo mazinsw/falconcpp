@@ -2,6 +2,8 @@ unit UFrmUpdate;
 
 interface
 
+{$I Falcon.inc}
+
 uses
   Windows, SysUtils, Classes, Controls, Forms, StdCtrls,
   ExtCtrls, FileDownload, UUtils, IniFiles, ThreadFileDownload,
@@ -54,7 +56,8 @@ var
 
 implementation
 
-uses UFraGetVer, UFraUpdate, CompressUtils, ExecWait;
+uses UFraGetVer, UFraUpdate, CompressUtils, ExecWait, SystemUtils,
+  ThreadExtract;
 
 {$R *.dfm}
 
@@ -102,7 +105,7 @@ begin
   LoadInternetConfiguration;
   { TODO -oMazin -c : resolve flik:FraGetVer.PrgsUpdate.DoubleBuffered := True; 17/02/2013 22:39:53 }
   UpdateLangNow;
-  Install := (ParamCount = 1);//has URL as parameter
+  Install := (ParamCount >= 1) and FileExists(ParamStr(1));//has URL as parameter
   if Install then
   begin
     NewVersion(ParamStr(1));
@@ -190,16 +193,8 @@ begin
   Stage := uwCancel;
   UpdateDownload.Stop;
   FileDownload.Stop;
-//  if not UpdateDownload.IsBusy and not FileDownload.IsBusy then
-//  begin
-    if Assigned(FrmUpdate) then
-    begin
-      Action := caFree;
-//      FrmUpdate := nil;
-    end;
-//  end
-//  else
-//    Action := caNone;
+  if Assigned(FrmUpdate) then
+    Action := caFree;
 end;
 
 procedure TFrmUpdate.ExecutorInstallFinish(Sender: TObject);
@@ -233,8 +228,11 @@ end;
 procedure TFrmUpdate.FileDownloadFinish(Sender: TObject;
   State: TDownloadState; Canceled: Boolean);
 var
+{$IFNDEF FALCON_PORTABLE}
   Extracted: Boolean;
-  ExtractedFileName, DownloadedFileName: String;
+  ExtractedFileName,
+{$ENDIF}
+  DownloadedFileName: String;
   I: Integer;
 begin
   if Stage = uwCancel then
@@ -243,69 +241,75 @@ begin
     Exit;
   end;
   FraUpdate.PrgsUpdate.Hide;
-  if not Canceled and (State <> dsError) then
+  if Canceled or (State = dsError) then
+    Exit;
+  DownloadedFileName := FileDownload.URL;
+  DownloadedFileName := ExtractFileName(ConvertSlashes(DownloadedFileName));
+  DownloadedFileName := GetTempDirectory + DownloadedFileName;
+  if (State = dsDownloaded) and FileExists(FileDownload.FileName) and FileExists(DownloadedFileName) and (FileDownload.PartExt <> '') then
+    DeleteFile(DownloadedFileName); // delete old version
+  if (State <> dsAlreadyExist) and
+    ((State <> dsDownloaded) or
+     (FileExists(FileDownload.FileName) and not
+      RenameFile(FileDownload.FileName, DownloadedFileName))) then
   begin
-    DownloadedFileName := FileDownload.URL;
-    DownloadedFileName := ExtractFileName(ConvertSlashes(DownloadedFileName));
-    DownloadedFileName := GetTempDirectory + DownloadedFileName;
-    if (State = dsDownloaded) and FileExists(FileDownload.FileName) and FileExists(DownloadedFileName) and (FileDownload.PartExt <> '') then
-      DeleteFile(DownloadedFileName); // delete old version
-    if (State = dsAlreadyExist) or ((State = dsDownloaded) and (not FileExists(FileDownload.FileName) or RenameFile(FileDownload.FileName, DownloadedFileName))) then
+    LblAction.Caption := STR_FRM_UPD[5];
+    FraUpdate.PrgsUpdate.Hide;
+    FraUpdate.MemoChanges.Hide;
+    FraUpdate.LblChanges.Hide;
+    FraUpdate.LblDesc.Caption := STR_FRM_UPD[6];
+    BtnCancel.Caption := STR_FRM_UPD[22];
+    Exit;
+  end;
+
+{$IFNDEF FALCON_PORTABLE}
+  // extract installer
+  ExtractedFileName := GetTempDirectory + FileName;
+  Extracted := ExtractFile(DownloadedFileName, ExtractedFileName);
+  if not Extracted then
+  begin
+    FraUpdate.LblDesc.Caption := STR_FRM_UPD[9];
+    LblAction.Caption := STR_FRM_UPD[10];
+    BtnUpdate.Caption := STR_FRM_UPD[3];
+    BtnUpdate.Show;
+    BtnCancel.Caption := STR_FRM_UPD[22];
+    Stage := uwDownload;
+  end;
+{$ENDIF}
+
+  FalconVersion := FraUpdate.SiteVersion;
+  Stage := uwInstall;
+  FraUpdate.LblDesc.Caption := STR_FRM_UPD[25];
+  LblAction.Caption := STR_FRM_UPD[25];
+  while IsAppOpen('TFrmFalconMain') do
+  begin
+    I := MessageBox(Handle, PChar(STR_FRM_UPD[4]),
+      PChar(STR_FRM_UPD[1]), MB_YESNOCANCEL+MB_ICONWARNING);
+    if I <> IDYES then
     begin
-      //extract
-      ExtractedFileName := GetTempDirectory + FileName;
-      Extracted := ExtractFile(DownloadedFileName, ExtractedFileName);
-      if Extracted then
-      begin
-        FalconVersion := FraUpdate.SiteVersion;
-        Stage := uwInstall;
-        FraUpdate.LblDesc.Caption := STR_FRM_UPD[25];
-        LblAction.Caption := STR_FRM_UPD[25];
-        while IsAppOpen('TFrmFalconMain') do
-        begin
-          I := MessageBox(Handle, PChar(STR_FRM_UPD[4]),
-            PChar(STR_FRM_UPD[1]), MB_YESNOCANCEL+MB_ICONWARNING);
-          if I <> IDYES then
-          begin
-            FraUpdate.LblDesc.Caption := STR_FRM_UPD[5];
-            LblAction.Caption := STR_FRM_UPD[5];
-            BtnCancel.Caption := STR_FRM_UPD[22];
-            Exit;
-          end
-          else
-          begin
-            BringUpApp('TFrmFalconMain');
-            SendMessage(FindWindow(PChar('TFrmFalconMain'), nil), WM_CLOSE, 0, 0);
-            Sleep(500);
-            Application.ProcessMessages;
-          end;
-        end;
-        //install zip file
-        DeleteFile(DownloadedFileName);
-        Executor.ExecuteAndWatch(ExtractedFileName, '/S',
-          ExtractFilePath(ExtractedFileName), False, INFINITE,
-          ExecutorInstallFinish);
-      end
-      else
-      begin
-        FraUpdate.LblDesc.Caption := STR_FRM_UPD[9];
-        LblAction.Caption := STR_FRM_UPD[10];
-        BtnUpdate.Caption := STR_FRM_UPD[3];
-        BtnUpdate.Show;
-        BtnCancel.Caption := STR_FRM_UPD[22];
-        Stage := uwDownload;
-      end;
+      FraUpdate.LblDesc.Caption := STR_FRM_UPD[5];
+      LblAction.Caption := STR_FRM_UPD[5];
+      BtnCancel.Caption := STR_FRM_UPD[22];
+      Exit;
     end
     else
     begin
-      LblAction.Caption := STR_FRM_UPD[5];
-      FraUpdate.PrgsUpdate.Hide;
-      FraUpdate.MemoChanges.Hide;
-      FraUpdate.LblChanges.Hide;
-      FraUpdate.LblDesc.Caption := STR_FRM_UPD[6];
-      BtnCancel.Caption := STR_FRM_UPD[22];
+      BringUpApp('TFrmFalconMain');
+      SendMessage(FindWindow(PChar('TFrmFalconMain'), nil), WM_CLOSE, 0, 0);
+      Sleep(500);
+      Application.ProcessMessages;
     end;
   end;
+{$IFNDEF FALCON_PORTABLE}
+  //delete zip file and install
+  DeleteFile(DownloadedFileName);
+  Executor.ExecuteAndWatch(ExtractedFileName, '/S',
+    ExtractFilePath(ExtractedFileName), False, INFINITE,
+    nil, ExecutorInstallFinish);
+{$ELSE}
+  // extract all files from zip
+  ExtractAndWatch(DownloadedFileName, AppRoot, nil, ExecutorInstallFinish);
+{$ENDIF}
 end;
 
 procedure TFrmUpdate.FileDownloadProgress(Sender: TObject; ReceivedBytes,

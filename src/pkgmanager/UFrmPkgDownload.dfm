@@ -61,6 +61,7 @@ object FrmPkgDownload: TFrmPkgDownload
       Top = 20
       Width = 497
       Height = 277
+      Colors.UnfocusedColor = clMedGray
       Header.AutoSizeIndex = 0
       Header.Font.Charset = DEFAULT_CHARSET
       Header.Font.Color = clWindowText
@@ -69,7 +70,7 @@ object FrmPkgDownload: TFrmPkgDownload
       Header.Font.Style = []
       Header.Height = 25
       Header.Images = ImageList16x16
-      Header.Options = [hoColumnResize, hoHotTrack, hoShowSortGlyphs, hoVisible]
+      Header.Options = [hoColumnResize, hoHotTrack, hoShowImages, hoShowSortGlyphs, hoVisible]
       Images = ImageList16x16
       LineStyle = lsSolid
       NodeDataSize = 4

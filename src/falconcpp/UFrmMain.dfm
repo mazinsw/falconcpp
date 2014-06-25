@@ -1210,6 +1210,10 @@ object FrmFalconMain: TFrmFalconMain
           Caption = 'Messages'
           ImageIndex = 0
           PageControl = PageControlMessages
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
           object ListViewMsg: TListView
             Left = 0
             Top = 0
@@ -1331,6 +1335,10 @@ object FrmFalconMain: TFrmFalconMain
         Caption = 'Projects'
         ImageIndex = 1
         PageControl = PageControlProjects
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object TreeViewProjects: TTreeView
           Left = 0
           Top = 0
@@ -1397,6 +1405,10 @@ object FrmFalconMain: TFrmFalconMain
         Caption = 'Outline'
         ImageIndex = 56
         PageControl = PageControlOutline
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object TreeViewOutline: TVirtualStringTree
           Left = 0
           Top = 0

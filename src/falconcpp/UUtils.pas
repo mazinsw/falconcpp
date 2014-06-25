@@ -17,7 +17,6 @@ const
   OSCurrentKey: array[Boolean] of string =
   ('Software\Microsoft\Windows\CurrentVersion',
     'Software\Microsoft\Windows NT\CurrentVersion');
-  CSIDL_COMMON_APPDATA = $0023;
   Ident = #9#9;
   NewLine = #13 + #10;
   TwoParms = NewLine + Ident;
@@ -47,27 +46,6 @@ type
   pRGBALine = ^TRGBALine;
   TRGBALine = array[Word] of TRGBQuad;
 
-type
-  TExecuteFileOption = (
-    eoHide,
-    eoWait,
-    eoElevate
-    );
-  TExecuteFileOptions = set of TExecuteFileOption;
-
-{$EXTERNALSYM SwitchToThisWindow}
-procedure SwitchToThisWindow(hWnd: HWND; fAltTab: BOOL); stdcall;
-{$IFDEF UNICODE}
-function ILCreateFromPath(pszPath: PChar): PItemIDList stdcall; external shell32
-  name 'ILCreateFromPathW';
-{$ELSE}
-function ILCreateFromPath(pszPath: PChar): PItemIDList stdcall; external shell32
-  name 'ILCreateFromPathA';
-{$ENDIF}
-procedure ILFree(pidl: PItemIDList) stdcall; external shell32;
-function SHOpenFolderAndSelectItems(pidlFolder: PItemIDList; cidl: Cardinal;
-  apidl: pointer; dwFlags: DWORD): HRESULT; stdcall; external shell32;
-
 function GetTickTime(ticks: Cardinal; fmt: string): string;
 procedure GetNameAndVersion(const S: string; var aName, aVersion: string);
 procedure SearchCompilers(List: TStrings; var PathCompiler: string);
@@ -78,8 +56,6 @@ procedure GetIncludeDirs(const ProjectDir, Flags: string; IncludeList: TStrings;
   Expand: Boolean = False);
 procedure GetLibraryDirs(const ProjectDir, Libs: string; PathLibList: TStrings;
   Expand: Boolean = False);
-function ExecuteFile(Handle: HWND; const Filename, Paramaters,
-  Directory: string; Options: TExecuteFileOptions): Integer;
 procedure LoadFontNames(List: TStrings);
 procedure LoadFontSize(FontName: string; List: TStrings);
 procedure BitmapToAlpha(bmp: TBitmap; Color: TColor = clFuchsia);
@@ -92,12 +68,7 @@ function ParseVersion(Version: string): TVersion;
 function CompareVersion(Ver1, Ver2: TVersion): Integer;
 function VersionToStr(Version: TVersion): string;
 function CanUpdate(UpdateXML: string): Boolean;
-function OpenFolderAndSelectFile(const FileName: string): boolean;
-function GetUserFolderPath(nFolder: Integer = CSIDL_PERSONAL): string;
-function GetTempDirectory: string;
 procedure SetProgsType(PrgsBar: TProgressBar; Infinity: Boolean);
-function UserIsAdmin: Boolean;
-function ForceForegroundWindow(hwnd: THandle): Boolean;
 function GetCompiler(FileType: Integer): Integer;
 function GetFileType(AFileName: string): Integer;
 function Divide64(HEXText: string): string;
@@ -107,7 +78,6 @@ function StringToStream(Text: string; Value: TStream): Integer;
 function FileDateTime(const FileName: string): TDateTime;
 function ExtractRootPathName(const Path: string): string;
 function ExcludeRootPathName(const Path: string): string;
-procedure ListDir(Dir, Regex: string; List: TStrings; IncludeSubDir: Boolean = False);
 function CreateSourceFolder(const Name: string;
   Parent: TSourceFile): TSourceFile;
 function NewSourceFile(FileType, Compiler: Integer; FirstName, BaseName,
@@ -125,19 +95,13 @@ function SearchSourceFile(FileName: string;
 function OpenFile(FileName: string): TProjectFile;
 function RemoveOption(const S, Options: string): string;
 function DeleteResourceFiles(List: TStrings): Boolean;
-function IsNT: Boolean;
 function GetAppTypeByName(AppType: string): Integer;
 function GetCurrentUserName: string;
 function GetCompanyName: string;
 function GetLanguagesList: TStrings;
-function GetLanguageName(LangID: Word): string;
-function IsForeground(Handle: HWND): Boolean;
-function BringUpApp(const ClassName: string): Boolean;
 function GetReverseArrowCursor: HCURSOR;
 function IsSubMenu(Value: string): Boolean;
 function GetSubMenu(Value: string): string;
-function FindFiles(Search: string; Finded: TStrings): Boolean; overload;
-function FindFiles(const PathName, FileName: string; List: TStrings): Boolean; overload;
 procedure GetRowColFromCharIndex(SelStart: Integer; Lines: TStrings;
   var Line, Column: Integer);
 function DOSFileName(FileName: string): string;
@@ -155,7 +119,7 @@ function StartsWith(const S, Token: string): Boolean;
 implementation
 
 uses UFrmMain, ULanguages, UConfig, TokenUtils, StrUtils,
-  UxTheme, icoformat, PerlRegEx;
+  UxTheme, icoformat, PerlRegEx, SystemUtils;
 
 { ---------- Font Methods ---------- }
 
@@ -623,7 +587,6 @@ begin
   Result := PAnsiChar(DestPtr);
 end;
 
-procedure SwitchToThisWindow; external user32 name 'SwitchToThisWindow';
 
 function GetFileVersionA(FileName: string): TVersion;
 type
@@ -781,41 +744,6 @@ begin
     Result := True;
 end;
 
-function OpenFolderAndSelectFile(const FileName: string): boolean;
-var
-  IIDL: PItemIDList;
-begin
-  result := false;
-  IIDL := ILCreateFromPath(PChar(FileName));
-  if IIDL <> nil then
-    try
-      result := SHOpenFolderAndSelectItems(IIDL, 0, nil, 0) = S_OK;
-    finally
-      ILFree(IIDL);
-    end;
-end;
-
-function GetUserFolderPath(nFolder: Integer = CSIDL_PERSONAL): string;
-var
-  Buf: PChar;
-begin
-  Result := '';
-  Buf := StrAlloc(MAX_PATH);
-  SHGetSpecialFolderPath(HInstance, Buf, nFolder, False);
-  Result := StrPas(Buf);
-  StrDispose(Buf);
-  if Result <> '' then
-    Result := IncludeTrailingPathDelimiter(Result);
-end;
-
-function GetTempDirectory: string;
-var
-  TempDir: array[0..255] of Char;
-begin
-  GetTempPath(255, @TempDir);
-  Result := StrPas(TempDir);
-end;
-
 procedure SetProgsType(PrgsBar: TProgressBar; Infinity: Boolean);
 begin
   if Infinity then
@@ -845,124 +773,6 @@ begin
     end;
 end;
 
-function UserIsAdmin: Boolean;
-var
-  hAccessToken: THandle;
-  ptgGroups: PTokenGroups;
-  dwInfoBufferSize: DWORD;
-  psidAdministrators: PSID;
-  x: Integer;
-  bSuccess: BOOL;
-const
-  SECURITY_NT_AUTHORITY: TSIDIdentifierAuthority =
-  (Value: (0, 0, 0, 0, 0, 5));
-  SECURITY_BUILTIN_DOMAIN_RID = $00000020;
-  DOMAIN_ALIAS_RID_ADMINS = $00000220;
-begin
-  Result := False;
-  bSuccess := OpenThreadToken(GetCurrentThread, TOKEN_QUERY, True,
-    hAccessToken);
-  if not bSuccess then
-  begin
-    if GetLastError = ERROR_NO_TOKEN then
-      bSuccess := OpenProcessToken(GetCurrentProcess, TOKEN_QUERY,
-        hAccessToken);
-  end;
-  if bSuccess then
-  begin
-    GetMem(ptgGroups, 1024);
-    bSuccess := GetTokenInformation(hAccessToken, TokenGroups,
-      ptgGroups, 1024, dwInfoBufferSize);
-    CloseHandle(hAccessToken);
-    if bSuccess then
-    begin
-      AllocateAndInitializeSid(SECURITY_NT_AUTHORITY, 2,
-        SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS,
-        0, 0, 0, 0, 0, 0, psidAdministrators);
-{$R-}
-      for x := 0 to ptgGroups.GroupCount - 1 do
-        if EqualSid(psidAdministrators, ptgGroups.Groups[x].Sid) then
-        begin
-          Result := True;
-          Break;
-        end;
-{$R+}
-      FreeSid(psidAdministrators);
-    end;
-    FreeMem(ptgGroups);
-  end;
-end;
-
-function ForceForegroundWindow(hwnd: THandle): Boolean;
-const
-  SPI_GETFOREGROUNDLOCKTIMEOUT = $2000;
-  SPI_SETFOREGROUNDLOCKTIMEOUT = $2001;
-var
-  ForegroundThreadID: DWORD;
-  ThisThreadID: DWORD;
-  timeout: DWORD;
-begin
-  if IsIconic(hwnd) then
-    ShowWindow(hwnd, SW_RESTORE);
-
-  if GetForegroundWindow = hwnd then
-    Result := True
-  else
-  begin
-    // Windows 98/2000 doesn't want to foreground a window when some other
-    // window has keyboard focus
-
-    if ((Win32Platform = VER_PLATFORM_WIN32_NT) and (Win32MajorVersion > 4)) or
-      ((Win32Platform = VER_PLATFORM_WIN32_WINDOWS) and
-      ((Win32MajorVersion > 4) or ((Win32MajorVersion = 4) and
-      (Win32MinorVersion > 0)))) then
-    begin
-      // Code from Karl E. Peterson, www.mvps.org/vb/sample.htm
-      // Converted to Delphi by Ray Lischner
-      // Published in The Delphi Magazine 55, page 16
-
-      Result := False;
-      ForegroundThreadID := GetWindowThreadProcessID(GetForegroundWindow, nil);
-      ThisThreadID := GetWindowThreadPRocessId(hwnd, nil);
-      if AttachThreadInput(ThisThreadID, ForegroundThreadID, True) then
-      begin
-        BringWindowToTop(hwnd); // IE 5.5 related hack
-        SetForegroundWindow(hwnd);
-        AttachThreadInput(ThisThreadID, ForegroundThreadID, False);
-        Result := (GetForegroundWindow = hwnd);
-      end;
-      if not Result then
-      begin
-        // Code by Daniel P. Stasinski
-        SystemParametersInfo(SPI_GETFOREGROUNDLOCKTIMEOUT, 0, @timeout, 0);
-        SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, TObject(0),
-          SPIF_SENDCHANGE);
-        BringWindowToTop(hwnd); // IE 5.5 related hack
-        SetForegroundWindow(hWnd);
-        SystemParametersInfo(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, TObject(timeout), SPIF_SENDCHANGE);
-      end;
-    end
-    else
-    begin
-      BringWindowToTop(hwnd); // IE 5.5 related hack
-      SetForegroundWindow(hwnd);
-    end;
-
-    Result := (GetForegroundWindow = hwnd);
-  end;
-end; { ForceForegroundWindow }
-
-function GetLanguageName(LangID: Word): string;
-var
-  Name: array[0..255] of char;
-begin
-  if (LangID = 0) then
-    VerLanguageName(GetSystemDefaultLangID, Name, 255)
-  else
-    VerLanguageName(LangID, Name, 255);
-  Result := Name;
-end;
-
 function GetLanguagesList: TStrings;
 var
   List: TStrings;
@@ -985,11 +795,6 @@ begin
   end;
   TStringList(List).Sort;
   Result := List;
-end;
-
-function IsNT: Boolean;
-begin
-  Result := Win32Platform = VER_PLATFORM_WIN32_NT;
 end;
 
 function GetAppTypeByName(AppType: string): Integer;
@@ -1031,100 +836,6 @@ begin
   reg.OpenKey(OSCurrentKey[IsNT], False);
   Result := reg.ReadString('RegisteredOrganization');
   reg.free;
-end;
-
-function IsUACActive: Boolean;
-var
-  Reg: TRegistry;
-begin
-  Result := FALSE;
-
-  // There's a chance it's active as we're on Vista or Windows 7. Now check the registry
-  if CheckWin32Version(6, 0) then
-  begin
-    Reg := TRegistry.Create;
-    try
-      Reg.RootKey := HKEY_LOCAL_MACHINE;
-
-      if Reg.OpenKeyReadOnly('SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System') then
-      begin
-        if (Reg.ValueExists('EnableLUA')) and (Reg.ReadBool('EnableLUA')) then
-          Result := TRUE;
-      end;
-    finally
-      Reg.Free;
-    end;
-  end;
-end;
-
-function ExecuteFile(Handle: HWND; const Filename, Paramaters,
-  Directory: string; Options: TExecuteFileOptions): Integer;
-var
-  ShellExecuteInfo: TShellExecuteInfo;
-  ExitCode: DWORD;
-begin
-  Result := -1;
-
-  ZeroMemory(@ShellExecuteInfo, SizeOf(ShellExecuteInfo));
-  ShellExecuteInfo.cbSize := SizeOf(TShellExecuteInfo);
-  ShellExecuteInfo.Wnd := Handle;
-  ShellExecuteInfo.fMask := SEE_MASK_NOCLOSEPROCESS;
-
-  if (eoElevate in Options) and (IsUACActive) then
-    ShellExecuteInfo.lpVerb := PChar('runas');
-
-  ShellExecuteInfo.lpFile := PChar(Filename);
-
-  if Paramaters <> '' then
-    ShellExecuteInfo.lpParameters := PChar(Paramaters);
-
-  if Directory <> '' then
-    ShellExecuteInfo.lpDirectory := PChar(Directory);
-
-  // Show or hide the window
-  if eoHide in Options then
-    ShellExecuteInfo.nShow := SW_HIDE
-  else
-    ShellExecuteInfo.nShow := SW_SHOWNORMAL;
-
-  if ShellExecuteEx(@ShellExecuteInfo) then
-    Result := 0;
-
-  if (Result = 0) and (eoWait in Options) then
-  begin
-    GetExitCodeProcess(ShellExecuteInfo.hProcess, ExitCode);
-
-    while (ExitCode = STILL_ACTIVE) and
-      (not Application.Terminated) do
-    begin
-      sleep(50);
-
-      GetExitCodeProcess(ShellExecuteInfo.hProcess, ExitCode);
-    end;
-
-    Result := ExitCode;
-  end;
-end;
-
-function IsForeground(Handle: HWND): Boolean;
-begin
-  Result := GetForegroundWindow = Handle;
-end;
-
-function BringUpApp(const ClassName: string): Boolean;
-var
-  Handle, AppHandle: HWND;
-begin
-  Result := False;
-  AppHandle := FindWindow(PChar(ClassName), nil);
-  if AppHandle <> 0 then
-  begin
-    Handle := GetWindowLong(AppHandle, GWL_HWNDPARENT);
-    ForceForegroundWindow(AppHandle);
-    if IsIconic(Handle) then
-      ShowWindow(Handle, SW_RESTORE);
-    Result := True;
-  end;
 end;
 
 procedure FlipBitmap(bitmap: HBITMAP; width: Integer; height: Integer);
@@ -1184,49 +895,6 @@ begin
   Value := Trim(Value);
   I := Pos('SubMenu(', Value) + Length('SubMenu(');
   Result := Copy(Value, I, Pos(')', Value) - I);
-end;
-
-function FindFiles(Search: string; Finded: TStrings): Boolean;
-var
-  searchResult: TSearchRec;
-begin
-  Result := false;
-  if FindFirst(Search, faAnyFile, searchResult) = 0 then
-  begin
-    Result := True;
-    repeat
-      Finded.add(searchResult.Name);
-    until FindNext(searchResult) <> 0;
-    FindClose(searchResult);
-  end;
-end;
-
-function FindFiles(const PathName, FileName: string; List: TStrings): Boolean;
-var
-  SearchRec: TSearchRec;
-  Path: string;
-begin
-  Result := False;
-  Path := IncludeTrailingPathDelimiter(PathName);
-  if FindFirst(Path + FileName, faAnyFile - faDirectory, SearchRec) = 0 then
-  begin
-    repeat
-      Result := True;
-      List.add(Path + SearchRec.Name);
-    until FindNext(SearchRec) <> 0;
-    FindClose(SearchRec);
-  end;
-  if FindFirst(Path + '*', faDirectory, SearchRec) = 0 then
-  begin
-    repeat
-      if ((SearchRec.Attr and faDirectory) <> 0) and
-        (SearchRec.Name <> '..') and (SearchRec.Name <> '.') then
-      begin
-        Result := FindFiles(Path + SearchRec.Name, FileName, List) or Result;
-      end;
-    until FindNext(SearchRec) <> 0;
-    FindClose(SearchRec);
-  end;
 end;
 
 function InStrCmp(const S: string; Strings: array of string;
@@ -1437,34 +1105,6 @@ begin
   Parent.Node.Expanded := True;
 end;
 
-procedure ListDir(Dir, Regex: string; List: TStrings; IncludeSubDir: Boolean);
-var
-  F: TSearchRec;
-  NormalDir: string;
-begin
-  NormalDir := IncludeTrailingPathDelimiter(Dir);
-  if FindFirst(NormalDir + Regex, faAnyFile, F) = 0 then
-  begin
-    repeat
-      if (F.Attr and faDirectory) = 0 then
-        List.Add(NormalDir + F.Name);
-    until FindNext(F) <> 0;
-    FindClose(F);
-  end;
-  if not IncludeSubDir then
-    Exit;
-  if FindFirst(NormalDir + '*.*', faAnyFile, F) = 0 then
-  begin
-    repeat
-      if ((F.Attr and faDirectory) <> 0) and (F.Name <> '.') and (F.Name <> '..') then
-      begin
-        ListDir(NormalDir + F.Name + '\', Regex, List, IncludeSubDir);
-      end;
-    until FindNext(F) <> 0;
-    FindClose(F);
-  end;
-end;
-
 function NewSourceFile(FileType, Compiler: Integer; FirstName, BaseName,
   Ext, FileName: string; OwnerFile: TSourceFile; UseFileName,
   Expand: Boolean): TSourceFile;
@@ -1598,7 +1238,7 @@ end;
 
 function HumanToBool(Resp: string): Boolean;
 begin
-  if (CompareText(Resp, 'YES') = 0) or (Resp = '1') then
+  if (CompareText(Resp, 'Yes') = 0) or (Resp = '1') then
     Result := True
   else
     Result := False;
@@ -1620,8 +1260,7 @@ begin
   DisplayCoord.Column := X;
   DisplayCoord.Row := Y;
   BufferCoord := Memo.DisplayToBufferPos(DisplayCoord);
-  // TODO: commented
-  //Memo.ExecuteCommand(ecGotoXY, #0, @BufferCoord);
+  Memo.CaretXY := BufferCoord;
   Result := (Memo.DisplayX = X) and (Memo.DisplayY = Y);
 end;
 

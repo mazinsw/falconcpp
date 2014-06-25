@@ -57,7 +57,7 @@ function UninstallPackage(const PkgName: String; Parent: HWND;
 
 implementation
 
-uses SysUtils, StrMatch, PkgUtils, ULanguages;
+uses SysUtils, StrMatch, PkgUtils, ULanguages, SystemUtils;
 
 function UninstallPackage(const PkgName: String; Parent: HWND;
   Silent: Boolean = False): Boolean;

@@ -2,6 +2,8 @@ unit UFrmMain;
 
 interface
 
+{$I Falcon.inc}
+
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ComCtrls, StdCtrls, Menus, XPMan, ImgList, ExtCtrls,
@@ -932,10 +934,9 @@ uses
   UFrmUpdate, ULanguages, UFrmEnvOptions, UFrmCompOptions, UFrmFind, AStyle,
   UFrmGotoFunction, UFrmGotoLine, TBXThemes, Makefile, CodeTemplate,
   StrUtils, UFrmVisualCppOptions,
-  PluginConst, Math, Highlighter, DScintilla;
+  PluginConst, Math, Highlighter, DScintilla, SystemUtils;
 
 {$R *.dfm}
-{$R resources.res}
 
 var
   g_OrigEditProc: Pointer = nil;
@@ -1239,7 +1240,11 @@ begin
   FProjectIncludePathList := TStringList.Create;
   FConfig := TConfig.Create;
   FAppRoot := ExtractFilePath(Application.ExeName);
-  FConfigRoot := GetUserFolderPath(CSIDL_APPDATA) + 'Falcon\';
+{$IFDEF FALCON_PORTABLE}
+  FConfigRoot := FAppRoot + 'Config\';
+{$ELSE}
+  FConfigRoot := GetSpecialFolderPath(CSIDL_APPDATA) + 'Falcon\';
+{$ENDIF}
   //create config root directory
   if not DirectoryExists(ConfigRoot) then
     CreateDir(ConfigRoot);
@@ -1368,9 +1373,9 @@ begin
     AutoCompleteList.Append('int v[|];'#13#10);
     try
       AutoCompleteList.SaveToFile(Config.Editor.CodeTemplateFile);
-    finally
-      AutoCompleteList.Free;
+    except
     end;
+    AutoCompleteList.Free;
   end;
 
   TimerHintParams.Interval := Config.Editor.CodeDelay * 100;
@@ -3602,14 +3607,17 @@ var
   Node: TTreeNode;
 begin
   Node := TreeViewProjects.Items.AddChild(nil, NodeText);
+  Node.ImageIndex := FILE_IMG_LIST[FILE_TYPE_UNKNOW];
+  Node.SelectedIndex := FILE_IMG_LIST[FILE_TYPE_UNKNOW];
+
   Result := TProjectFile.Create(Node);
   Result.OnDeletion := DoDeleteSource;
   Result.OnRename := DoRenameSource;
   Result.OnTypeChanged := DoTypeChangedSource;
   Result.Project := Result;
   Result.FileType := FileType;
-  Node.Data := Result;
 
+  Node.Data := Result;
   if FileType <> FILE_TYPE_PROJECT then
     FLastPathInclude := '';
 end;
@@ -3620,13 +3628,16 @@ var
   Node: TTreeNode;
 begin
   Node := TreeViewProjects.Items.AddChild(ParentNode, NodeText);
+  Node.ImageIndex := FILE_IMG_LIST[FILE_TYPE_UNKNOW];
+  Node.SelectedIndex := FILE_IMG_LIST[FILE_TYPE_UNKNOW];
+
   Result := TSourceFile.Create(Node);
   Result.OnDeletion := DoDeleteSource;
   Result.OnRename := DoRenameSource;
   Result.OnTypeChanged := DoTypeChangedSource;
   Result.Project := TSourceFile(ParentNode.Data).Project;
-  Node.Data := Result;
 
+  Node.Data := Result;
   FLastPathInclude := '';
 end;
 
@@ -5454,8 +5465,13 @@ procedure TFrmFalconMain.TextEditorKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 var
   Sheet: TSourceFileSheet;
-begin                   
-  CodeCompletion.EditorKeyDown(Sender, Key, Shift);
+  SaveKey: Word;
+begin
+  SaveKey := Key;
+  CodeCompletion.EditorKeyDown(Sender, SaveKey, Shift);
+  if (Key = VK_ESCAPE) and (SaveKey = 0) then
+    Exit;
+  Key := SaveKey;
   CanShowHintTip := False;
   TimerHintTipEvent.Enabled := False;
   Sheet := TSourceFileSheet(TComponent(Sender).Owner);
@@ -5507,7 +5523,7 @@ begin
   begin
     HintTip.Cancel;
     DebugHint.Cancel;
-    //HintParams.Cancel; no cancel
+    HintParams.Cancel;
   end;
 end;
 
@@ -7307,7 +7323,7 @@ begin
           Token := Token.Items[I];
           if Token.Token = tkVariable then
           begin
-            Input := GetVarType(Token.Flag);
+            Input := GetVarType(Token);
             if StringIn(Input, ReservedTypes) or
               (not scope.SearchToken(Input, '', Token, 0, False, [tkStruct,
                 tkTypeStruct, tkUnion, tkTypeUnion]) and
@@ -7375,7 +7391,7 @@ begin
       end;
       if (SaveInput <> '') and (SaveFields <> '') and
         FilesParsed.SearchTreeToken(SaveFields, TokenFileItem, TokenFileItem,
-        Token, [tkClass, tkNamespace], Token.SelStart) then
+        Token, [tkClass, tkStruct, tkUnion, tkNamespace], Token.SelStart) then
       begin
         scope := GetTokenByName(Token, 'Scope', tkScope);
         if Assigned(scope) and not FilesParsed.SearchSource(SaveInput,
@@ -8020,7 +8036,7 @@ begin
         end;
       end;
       if (Fields <> '') and FilesParsed.SearchTreeToken(Fields, ActiveEditingFile,
-        TokenItem, Token, [tkClass, tkNamespace], Token.SelStart) then
+        TokenItem, Token, [tkClass, tkStruct, tkUnion, tkNamespace], Token.SelStart) then
       begin
         AllowScope := [];
         FilesParsed.FillCompletionClass(CodeCompletion.InsertList,
@@ -8080,7 +8096,7 @@ begin
     { TODO -oMazin -c : while parent is not nil fill objects 24/08/2012 22:27:26 }
     //get parent of Token
     if Assigned(Token.Parent) and
-      (Token.Parent.Token in [tkClass, tkStruct, tkScopeClass]) then
+      (Token.Parent.Token in [tkClass, tkStruct, tkUnion, tkScopeClass]) then
     begin
       Token := Token.Parent;
       TokenItem := ActiveEditingFile;
@@ -8088,7 +8104,7 @@ begin
     end;
     //tree parent object?
     if Assigned(Token.Parent) and
-      (Token.Parent.Token in [tkClass, tkStruct]) then
+      (Token.Parent.Token in [tkClass, tkStruct, tkUnion]) then
     begin
       Token := Token.Parent;
     end;
@@ -8105,7 +8121,7 @@ begin
         Fields := Token.Name + '::' + Fields;
       end;
       AllScope := FilesParsed.SearchTreeToken(Fields, ActiveEditingFile,
-        TokenItem, Token, [tkClass, tkNamespace], Token.SelStart);
+        TokenItem, Token, [tkClass, tkStruct, tkUnion, tkNamespace], Token.SelStart);
     end
     else if not AllScope and (SaveScope.Token in [tkClass, tkStruct, tkUnion]) then
     begin
@@ -8124,7 +8140,7 @@ begin
         Fields := Token.Name + '::' + Fields;
       end;
       AllScope := FilesParsed.SearchTreeToken(Fields, ActiveEditingFile,
-        TokenItem, Token, [tkClass, tkNamespace], Token.SelStart);
+        TokenItem, Token, [tkClass, tkStruct, tkUnion, tkNamespace], Token.SelStart);
     end;
     //show all objects from class, struct or scope
     if AllScope then
@@ -8797,7 +8813,7 @@ begin
     if Assigned(ParentToken) and (ParentToken.Token = tkScopeClass) then
     begin
       ParentToken := ParentToken.Parent;
-      if ParentToken.Token = tkClass then
+      if ParentToken.Token in [tkClass, tkStruct, tkUnion] then
       begin
         FuncScope := ParentToken.Name;
         ParentToken := ParentToken.Parent;
@@ -10631,7 +10647,10 @@ begin
   else if [ssCtrl] = Shift then
   begin
     if Key = VK_F4 then
+    begin
+      Key := 0;
       FileCloseClick(Sender);
+    end;
   end;
 end;
 

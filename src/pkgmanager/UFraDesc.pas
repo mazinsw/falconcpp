@@ -38,7 +38,7 @@ var
 
 implementation
 
-uses UInstaller, UFraSteps, PkgUtils, ULanguages;
+uses UInstaller, UFraSteps, PkgUtils, ULanguages, SystemUtils;
 
 {$R *.dfm}
 

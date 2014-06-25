@@ -1,5 +1,12 @@
 program Falcon;
 
+{$I Falcon.inc}
+
+{ Reduce EXE size by disabling as much of RTTI as possible (delphi 2009/2010) }
+{$IF CompilerVersion >= 21.0}
+{$WEAKLINKRTTI ON}
+{$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
+{$IFEND}
 uses
   FastMM4 in '..\others\fastmm\FastMM4.pas',
   FastMM4Messages in '..\others\fastmm\FastMM4Messages.pas',
@@ -16,7 +23,7 @@ uses
   UFraProjs in 'UFraProjs.pas' {FraProjs: TFrame},
   UFraNewOpt in 'UFraNewOpt.pas' {FraPrjOpt: TFrame},
   UUtils in 'UUtils.pas',
-  ExecWait in 'ExecWait.pas',
+  ExecWait in '..\others\utils\ExecWait.pas',
   UTemplates in 'UTemplates.pas',
   ULanguages in 'ULanguages.pas',
   UTools in 'UTools.pas',
@@ -102,7 +109,8 @@ uses
   LangCyrillicModel in '..\others\encoding\chsdet\src\sbseq\LangCyrillicModel.pas',
   LangGreekModel in '..\others\encoding\chsdet\src\sbseq\LangGreekModel.pas',
   LangHebrewModel in '..\others\encoding\chsdet\src\sbseq\LangHebrewModel.pas',
-  vi in '..\others\encoding\chsdet\src\vi.pas';
+  vi in '..\others\encoding\chsdet\src\vi.pas',
+  SystemUtils in '..\others\utils\SystemUtils.pas';
 
 function OpenWithOther: Boolean;
 var
@@ -130,6 +138,12 @@ begin
   SendDT.Free;
   Result := True;
 end;
+
+{$IFDEF FALCON_PORTABLE}
+  {$R resources_portable.RES}
+{$ELSE}
+  {$R resources.RES}
+{$ENDIF}
 
 begin
   if OpenWithOther then

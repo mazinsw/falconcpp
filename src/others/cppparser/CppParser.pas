@@ -136,7 +136,8 @@ begin
         Break;
       TokenID := FCurrent;
     end
-    else if FCurrent^.Token in [tkxLess, tkxShiftLeft] then
+    else if (FCurrent^.Token in [tkxLess, tkxShiftLeft]) and 
+      ((TokenID = nil) or not TokenMatch(FStartPtr, 'operator', TokenID)) then
     begin
       SkipTemplate;
       Continue;
@@ -149,7 +150,8 @@ begin
         Result := Result + '::';
       TokenID := nil;
     end
-    else if FCurrent^.Token = tkxBinNot then
+    else if (FCurrent^.Token = tkxBinNot) and 
+      ((TokenID = nil) or not TokenMatch(FStartPtr, 'operator', TokenID)) then
     begin
       TokenDestr := FCurrent;
     end
@@ -372,7 +374,7 @@ end;
 
 function TCppParser.ProcessStruct(Token: TTkType): TTokenClass;
 var
-  NameToken, SaveCurrent: PToken;
+  NameToken, SaveCurrent, TokenDestr: PToken;
   Flag, Name: string;
   Scope: TTokenClass;
 begin
@@ -406,9 +408,9 @@ begin
     Exit;
   Flag := '';
   if FCurrent^.Token = tkxIdentifier then // name or export flag
-  begin
-    NameToken := FCurrent;
-    Next;
+  begin                   
+    Name := GetIdentifierNoTemplate(NameToken, TokenDestr);
+    Name := Name + TokenString(FStartPtr, NameToken);
     if FCurrent = nil then
       Exit;
     if FCurrent^.Token = tkxColon then
@@ -420,7 +422,6 @@ begin
     begin
       SkipTemplate;
     end;
-    Name := TokenString(FStartPtr, NameToken);
   end
   else
     Name := '';
@@ -580,6 +581,7 @@ var
   TypeStr, PtrRefStr, VarName, VectorStr, OptionsStr, ScopeStr,
   SaveTypeStr, TypeNameStr: string;
   ParensCount: Integer;
+  IsOperator, IsThrow: Boolean;
 begin
   TokenDestr := nil;
   TypeStr := GetTypeNoTemplate(TokenIdType, TokenDestr);
@@ -594,12 +596,47 @@ begin
   TokenOption := nil;
   TokenPtrRef := nil;
   TokenScope := nil;
+  IsOperator := False;
   while (FCurrent <> nil) do
   begin
     case FCurrent^.Token of
       tkxGlobalScope,
       tkxIdentifier:
         begin
+          if (FCurrent^.Token = tkxIdentifier) and
+           (TokenMatch(FStartPtr, 'private', FCurrent) or
+            TokenMatch(FStartPtr, 'public', FCurrent) or
+            TokenMatch(FStartPtr, 'protected', FCurrent) or
+            TokenMatch(FStartPtr, 'struct', FCurrent) or
+            TokenMatch(FStartPtr, 'class', FCurrent) or
+            TokenMatch(FStartPtr, 'union', FCurrent) or
+            TokenMatch(FStartPtr, 'enum', FCurrent) or
+            TokenMatch(FStartPtr, 'typedef', FCurrent) or
+            TokenMatch(FStartPtr, 'template', FCurrent) or
+            TokenMatch(FStartPtr, 'namespace', FCurrent) or
+            TokenMatch(FStartPtr, 'extern', FCurrent) or
+            TokenMatch(FStartPtr, 'return', FCurrent) or
+            TokenMatch(FStartPtr, 'using', FCurrent)) then
+          begin
+            Exit;
+          end;
+          if (FCurrent^.Token = tkxIdentifier) then
+          begin
+            if TokenMatch(FStartPtr, 'new', FCurrent) or
+               TokenMatch(FStartPtr, 'delete', FCurrent) then
+            begin
+              if IsOperator then
+                VarName := TokenString(FStartPtr, FCurrent);
+              Next;
+              Continue;
+            end
+            else if IsOperator and TokenMatch(FStartPtr, 'bool', FCurrent) then
+            begin
+              VarName := TokenString(FStartPtr, FCurrent);
+              Next;
+              Continue;
+            end;
+          end;
           if TokenID <> nil then
           begin
             if TokenOption = nil then
@@ -613,6 +650,7 @@ begin
           TokenScope := FCurrent;
           ScopeStr := GetIdentifierNoTemplate(TokenID, TokenDestr);
           VarName := TokenString(FStartPtr, TokenID);
+          IsOperator := VarName = 'operator';
           TokenPtrRef := nil;
           Continue;
         end;
@@ -626,6 +664,12 @@ begin
       tkxSemicolon,
       tkxAssign:
         begin
+          if (FCurrent^.Token = tkxAssign) and IsOperator then
+          begin
+            VarName:= '=';
+            Next;
+            Continue;
+          end;
           if TokenID = nil then
             Exit; // error identifier not found
           if TokenPtrRef <> nil then
@@ -651,6 +695,7 @@ begin
           TokenPtrRef := nil; 
           TokenScope := nil;
           TokenDestr := nil;
+          IsOperator := True;
           if FCurrent^.Token = tkxSemicolon then
           begin
             Next;
@@ -669,7 +714,17 @@ begin
             Exit;
           SaveSkip := FCurrent;
           if (FCurrent <> nil) and (FCurrent^.Token = tkxIdentifier) then
+          begin
+            IsThrow := TokenMatch(FStartPtr, 'throw', FCurrent);
             Next; // skip const or attribute
+            if (FCurrent <> nil) and (FCurrent^.Token = tkxIdentifier) then
+            begin
+              IsThrow := IsThrow or TokenMatch(FStartPtr, 'throw', FCurrent);
+              Next; // skip exception         
+            end;
+            if IsThrow and (FCurrent <> nil) and (FCurrent^.Token = tkxOpenParentheses) then
+              SkipPair;
+          end;
           if (FCurrent = nil) or not
              (FCurrent^.Token in [tkxColon, tkxOpenBraces, tkxSemicolon, tkxAssign,
               tkxOpenParentheses, tkxOpenBrackets]) then
@@ -718,6 +773,8 @@ begin
               FCurrent := SaveCurrent; // DEF(foo, bar)()?
               Exit;
             end;
+            if IsOperator then
+              VarName := '()';
             Continue;
           end;
           if (TokenID = nil) and ((Top = nil) or (Top.Token <> tkScopeClass) or
@@ -736,8 +793,10 @@ begin
           end
           else if (FCurrent^.Token in [tkxColon, tkxOpenBraces]) then
             TokenType := tkFunction
-          else
+          else 
             TokenType := tkPrototype;
+          if IsOperator then
+            TokenType := tkOperator;
           if TokenID <> nil then
           begin
             if OptionsStr <> '' then
@@ -760,9 +819,18 @@ begin
           ProcessParams;
           Pop;
           Next; // skip )
-          if (FCurrent^.Token = tkxIdentifier) and
-              TokenMatch(FStartPtr, 'const', FCurrent) then
-            Next; // skip const
+          if (FCurrent <> nil) and (FCurrent^.Token = tkxIdentifier) then
+          begin
+            IsThrow := TokenMatch(FStartPtr, 'throw', FCurrent);
+            Next; // skip const or attribute
+            if (FCurrent <> nil) and (FCurrent^.Token = tkxIdentifier) then
+            begin
+              IsThrow := IsThrow or TokenMatch(FStartPtr, 'throw', FCurrent);
+              Next; // skip exception         
+            end;
+            if IsThrow and (FCurrent <> nil) and (FCurrent^.Token = tkxOpenParentheses) then
+              SkipPair;
+          end;
           FuncToken.Token := TokenType;
           if (FCurrent^.Token = tkxAssign) then
           begin
@@ -796,7 +864,12 @@ begin
       tkxOpenBrackets:
         begin
           if SkipPair then
-            VectorStr := VectorStr + '[]';
+          begin
+            if IsOperator then
+              VarName := '[]'
+            else
+              VectorStr := VectorStr + '[]';
+          end;
           Continue;
         end;
       tkxOpenBraces:
@@ -807,16 +880,51 @@ begin
             // error
           Continue;
         end;
+      tkxMinus,
+      tkxDiv,
+      tkxBinOr,
+      tkxXor,
+      tkxPlus,
+      tkxShiftLeft,
+      tkxShiftRight,
+      
+      tkxDec,
+      tkxInc,
+      tkxLess,
+      tkxLessEqual,
+      tkxGreater,
+      tkxGreaterEqual,
+      tkxOr,
+      tkxAnd,
+      tkxDiff,
+      tkxEqual:
+        begin
+          if IsOperator then
+            VarName := TokenString(FStartPtr, FCurrent)
+          else
+            Break;
+        end;
       tkxMult,
       tkxBinAnd:
         begin
-          TokenPtrRef := FCurrent;
-          PtrRefStr := GetPointerReference;
+          if IsOperator then
+          begin
+            VarName := TokenString(FStartPtr, FCurrent);
+            Next;
+          end
+          else
+          begin
+            TokenPtrRef := FCurrent;
+            PtrRefStr := GetPointerReference;
+          end;
           Continue;
         end;
       tkxBinNot:
         begin
-          TokenDestr := FCurrent;
+          if IsOperator then
+            VarName := TokenString(FStartPtr, FCurrent)
+          else
+            TokenDestr := FCurrent;
         end
     else
       Break; // error ID not found
@@ -1134,7 +1242,7 @@ begin
     Next; // skip template
     SkipTemplate;
   end
-  else if not Fields and TokenMatch(FStartPtr, 'namespace', FCurrent) then
+  else if TokenMatch(FStartPtr, 'namespace', FCurrent) then
   begin
     Next; //< skip namespace
     if (FCurrent <> nil) and (FCurrent^.Token <> tkxIdentifier) then
@@ -1173,16 +1281,22 @@ begin
   end
   else if TokenMatch(FStartPtr, 'using', FCurrent) then
   begin                                     
-    Next; // skip
+    Next; // skip using
+    if FCurrent = nil then
+      Exit;
+    if TokenMatch(FStartPtr, 'namespace', FCurrent) then
+      Next; // skip namespace
+    if FCurrent = nil then
+      Exit;
     TokenScope := FCurrent;
     ScopeStr := GetIdentifierNoTemplate(TokenName, TokenDestr);
     UsingName := TokenString(FStartPtr, TokenName);
     if TokenName = nil then
       Exit;
-    UsingToken := AddToken(UsingName, '', 
+    UsingToken := AddToken(UsingName, '',
       tkUsing, TokenName^.Line, TokenName^.StartPosition,
       TokenName^.EndPosition - TokenName^.StartPosition, FLevel);
-    if (Length(ScopeStr) > 0) and (TokenScope <> nil) then
+    if (Length(ScopeStr) > 0) then
     begin
       Push(UsingToken);
       AddToken('Scope', Trim(#0, ScopeStr, ':'), tkScope, TokenScope^.Line,

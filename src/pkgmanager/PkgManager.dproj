@@ -101,6 +101,7 @@
 			<DCCReference Include="ULanguages.pas"/>
 			<DCCReference Include="PkgUtils.pas"/>
 			<DCCReference Include="..\others\zip\KAZip.pas"/>
+			<DCCReference Include="..\others\utils\SystemUtils.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

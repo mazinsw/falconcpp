@@ -1,4 +1,4 @@
-compiled in delphi 7
+compiled with delphi 2010
 install components in folder 'res/components'
 install NSIS found on 'http://nsis.sourceforge.net/Download'
     compile 'res/plugin/NSIS_EnvSet/NSIS_EnvSet.dpr'
@@ -12,7 +12,7 @@ compile projects
     'src\pkgeditor\PkgEditor.dpr'
     'src\pkgmanager\PkgManager.dpr'
     'src\updater\Updater.dpr'
-    'src\others\astyle\astyle_dll.fpj'
+    'src\others\astyle\build\astyle.fpj'
     'src\others\console\ConsoleRunner.fpj'
 
 run 'bin/make_installer.bat'

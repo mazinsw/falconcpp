@@ -44,7 +44,7 @@ function MyExitWindows(RebootParam: Longword): Boolean;
 implementation
 
 uses UFraWelcome, UFraSteps, UFraAgrmt, UFraFnsh, UFraDesc, UFraPrgs,
-  UFraReadMe, PkgUtils, ULanguages;
+  UFraReadMe, PkgUtils, ULanguages, SystemUtils;
 
 {$R *.dfm}
 

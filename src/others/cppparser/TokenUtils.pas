@@ -11,7 +11,8 @@ function GetStructProto(Token: TTokenClass; GenName: Boolean = False): string;
 function GetFuncProtoTypes(Token: TTokenClass): string;
 procedure GetStringsFields(const S: string; List: TStrings;
   IgnoreFirst: Boolean = True);
-function GetTreeHierarchy(Token: TTokenClass; AddScope: Boolean = True): string;
+function GetTreeHierarchy(Token: TTokenClass; AddScope: Boolean = True;
+  Recursive: Boolean = False): string;
 //make hint
 function MakeTokenHint(Token: TTokenClass; const FileName: string): string;
 function MakeTokenParamsHint(Token: TTokenClass): string;
@@ -45,7 +46,7 @@ function GetPriorWord(const S: string): string;
 function GetLastChar(const S: string): Char;
 function GetOperator(const S: string): string;
 function SkipTemplateParams(const ret: string): string;
-function GetVarType(const S: string): string;
+function GetVarType(Token: TTokenClass): string;
 function Trim(Left: Char; const S: string; Rigth: Char): string; overload;
 function StringToScopeClass(const S: string): TScopeClass;
 function StringIn(const S: string; List: array of string): Boolean;
@@ -157,7 +158,7 @@ begin
   Source.Insert(StartLine, IndentStr + GetLeftSpacing(TabWidth, TabWidth, WantTabs) +
     '//TODO Generated function');
   Inc(StartLine);
-  S := GetVarType(func.Flag);
+  S := GetVarType(func);
   if (S <> '') and ((S <> 'void') or (Pos('*', func.Flag) > 0)) then
   begin
     RetValue := '0';
@@ -896,23 +897,25 @@ begin
   end;
 end;
 
-function GetTreeHierarchy(Token: TTokenClass; AddScope: Boolean): string;
+function GetTreeHierarchy(Token: TTokenClass; AddScope, Recursive: Boolean): string;
 var
   Next: TTokenClass;
   Separator: string;
+  Entered: Boolean;
 begin
   Result := '';
   Separator := '';
   if AddScope then
     Separator := '.';
   Next := Token;
+  Entered := False;
   if (Next.Token = tkClass) and AddScope then
       Separator := '::';
-  {while}if Assigned(Next.Parent) and not (Next.Parent.Token in [tkIncludeList,
+  while Assigned(Next.Parent) and not (Next.Parent.Token in [tkIncludeList,
     tkDefineList, tkTreeObjList,
       tkVarConsList, tkFuncProList,
       tkFunction, tkConstructor, tkDestructor, tkOperator,
-      tkRoot, tkParams, tkScope {?}]) {do} then
+      tkRoot, tkParams, tkScope {?}]) do
   begin
     Next := Next.Parent;
     if (Next.Token = tkScopeClass) and Assigned(Next.Parent) then
@@ -924,8 +927,11 @@ begin
     else if (Next.Token = tkNamespace) and AddScope then
       Separator := '::';
     Result := Next.Name + Separator + Result;
-  end
-  else if (Token.Token = tkCodeTemplate) and not AddScope then
+    Entered := True;
+    if not Recursive then
+      Break;
+  end;
+  if not Entered and (Token.Token = tkCodeTemplate) and not AddScope then
     Result := Token.Flag;
 end;
 
@@ -1443,13 +1449,13 @@ begin
   StrMove(PChar(Result), init, ptr - init + 1);
 end;
 
-function GetVarType(const S: string): string;
+function GetVarType(Token: TTokenClass): string;
 var
   I: Integer;
   Temp, lower: string;
   ContinueFlag: Boolean;
 begin
-  Temp := S;
+  Temp := token.Flag;
   I := Pos('[', Temp);
   if I > 0 then
     Temp := Copy(Temp, 1, I - 1);
@@ -1457,8 +1463,6 @@ begin
   while Temp <> '' do
   begin
     Temp := SkipTemplateParams(Temp);
-    if Pos('std::', Temp) = 1 then
-      Temp := Copy(Temp, 6, Length(Temp) - 5);
     Result := GetLastWord(Temp, True);
     Temp := GetPriorWord(Temp);
     lower := LowerCase(Result);
@@ -1486,6 +1490,7 @@ begin
     end;
     Break;
   end;
+  Result := GetTreeHierarchy(Token, True, True) + Result;
 end;
 
 function StringToScopeClass(const S: string): TScopeClass;

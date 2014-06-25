@@ -180,7 +180,7 @@ function InstallPackages(ParentWindow: HWND): Integer;
 implementation
 
 uses UInstaller, UFrmPkgMan, ShlObj, UUninstaller, PkgUtils, ULanguages,
-  IniFiles;
+  IniFiles, SystemUtils;
 
 {$R *.dfm}
 
@@ -568,7 +568,7 @@ var
   ini: TIniFile;
 begin
   FalconDir := GetFalconDir;
-  ConfigPath := GetSpecialFolderPath(CSIDL_APPDATA) + 'Falcon\';
+  ConfigPath := GetConfigDir(FalconDir);
   ini := TIniFile.Create(ConfigPath + 'Config.ini');
   AlterConfIni := ini.ReadString('EnvironmentOptions', 'ConfigurationFile', '');
   if ini.ReadBool('EnvironmentOptions', 'AlternativeConfFile', False) and
@@ -595,8 +595,7 @@ begin
   PkgImg := GetPNGResource('PKGIMG');
   ConvertTo32BitImageList(ImageList16x16);
   AddImages(ImageList16x16, 'IMAGES_16x16');
-  ConfigRoot := IncludeTrailingPathDelimiter(GetSpecialFolderPath(CSIDL_APPDATA))
-                     + 'Falcon\';
+  ConfigRoot := GetConfigDir(GetFalconDir);
   DownloadedPackagesRoot := ConfigRoot + 'Downloaded packages\';
   if not DirectoryExists(DownloadedPackagesRoot) then
     ForceDirectories(DownloadedPackagesRoot);

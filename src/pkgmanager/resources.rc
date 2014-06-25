@@ -1,16 +1,3 @@
-#include "version.rc"
-
-GPL RCDATA "../../res/gpl-3.0.txt"
-LGPL RCDATA "../../res/lgpl-3.0.txt"
-AGPL RCDATA "../../res/agpl-3.0.txt"
-FDL RCDATA "../../res/fdl-1.3.txt"
-NORIMG RCDATA "../../res/images/pkm/Images.png"
-HOTIMG RCDATA "../../res/images/pkm/HotImages.png"
-PKGIMG RCDATA "../../res/images/pkm/package.png"
-PKGLOGO RCDATA "../../res/images/pkm/package_logo.png"
-LOGOPKG RCDATA "../../res/images/pkm/Logo.png"
-IMAGES_16x16 RCDATA "../../res/images/pkm/pkg_download_16x16.png"
-
-MAINICON ICON "../../res/images/pkm/Icon.ico"
+#include "common.rc"
 
 1 24 "../../res/theme.manifest"

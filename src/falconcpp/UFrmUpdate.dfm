@@ -75,7 +75,7 @@ object FrmUpdate: TFrmUpdate
       Width = 75
       Height = 25
       Caption = '&Close'
-      TabOrder = 0
+      TabOrder = 1
       OnClick = BtnCancelClick
     end
     object BtnUpdate: TButton
@@ -84,7 +84,7 @@ object FrmUpdate: TFrmUpdate
       Width = 75
       Height = 25
       Caption = '&Update'
-      TabOrder = 1
+      TabOrder = 0
       Visible = False
       OnClick = BtnUpdateClick
     end

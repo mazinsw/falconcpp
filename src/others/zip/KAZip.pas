@@ -272,7 +272,8 @@ type
     procedure ExtractToFile(ItemIndex: Integer; const AFileName: string); overload;
     procedure ExtractToFile(const FileName, ADestinationFileName: string); overload;
     procedure ExtractToStream(Item: TKAZipEntriesEntry; Stream: TStream);
-    procedure ExtractAll(const TargetDirectory: string);
+    procedure ExtractAll(const TargetDirectory: string); overload;
+    procedure ExtractAll(const TargetDirectory, SubFolder: string); overload;
     procedure ExtractSelected(const TargetDirectory: string);
     // **************************************************************************
     property Items[index: Integer]
@@ -2626,10 +2627,17 @@ begin
   end;
 end;
 
+
 procedure TKAZipEntries.ExtractAll(const TargetDirectory: string);
+begin
+  ExtractAll(TargetDirectory, '');
+end;
+
+procedure TKAZipEntries.ExtractAll(const TargetDirectory, SubFolder: string);
 var
   FN: string;
   DN: string;
+  TD, SF: string;
   X: Integer;
   Can: Boolean;
   OA: TOverwriteAction;
@@ -2637,14 +2645,22 @@ var
 begin
   OA := FParent.FOverwriteAction;
   Can := True;
+  TD := IncludeTrailingPathDelimiter(TargetDirectory);
+  SF := IncludeTrailingPathDelimiter(SubFolder);
   try
     for X := 0 to Count - 1 do
     begin
       FN := FParent.GetFileName(Items[X].FileName);
       DN := FParent.GetFilePath(Items[X].FileName);
+      if (SF <> PathDelim) and (Pos(SF, DN) = 0) then
+        Continue;
+      if (SF <> PathDelim) then
+        FileName := TD + ExtractRelativePath(SF, DN)
+      else
+        FileName := TD + DN;
       if DN <> '' then
-        ForceDirectories(TargetDirectory + '\' + DN);
-      FileName := TargetDirectory + '\' + DN + FN;
+        ForceDirectories(FileName);
+      FileName := FileName + FN;
       if ((OA <> oaOverwriteAll) and (OA <> oaSkipAll)) and
         (Assigned(FParent.FOnOverwriteFile)) then
       begin
@@ -2664,7 +2680,12 @@ begin
           Can := True;
       end;
       if Can then
-        InternalExtractToFile(Items[X], FileName);
+      begin
+        try
+          InternalExtractToFile(Items[X], FileName);
+        except
+        end;
+      end;
     end;
   finally
   end;

@@ -9,7 +9,11 @@ BLOCK "StringFileInfo"
 	BLOCK "041604E4"
 	{
 		VALUE "CompanyName", "MZSW\0"
+#ifndef FALCON_PORTABLE
 		VALUE "FileDescription", "C++ IDE easy and complete\0"
+#else
+		VALUE "FileDescription", "C++ IDE easy and complete - Portable\0"
+#endif
 		VALUE "FileVersion", "3.3.2.0\0"
 		VALUE "InternalName", "Falcon.exe\0"
 		VALUE "LegalCopyright", "\0"

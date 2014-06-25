@@ -22,14 +22,14 @@ object FraDesc: TFraDesc
     object LblEspDisp: TLabel
       Left = 24
       Top = 216
-      Width = 110
+      Width = 108
       Height = 13
       Caption = 'Space available: 0.0kB'
     end
     object Label1: TLabel
       Left = 24
       Top = 168
-      Width = 161
+      Width = 169
       Height = 13
       Caption = 'Click Install to start the installation.'
     end
@@ -43,21 +43,21 @@ object FraDesc: TFraDesc
       object TextDesc: TLabel
         Left = 8
         Top = 68
-        Width = 56
+        Width = 57
         Height = 13
         Caption = 'Description:'
       end
       object Label2: TLabel
         Left = 8
         Top = 52
-        Width = 42
+        Width = 43
         Height = 13
         Caption = 'Website:'
       end
       object Label3: TLabel
         Left = 8
         Top = 36
-        Width = 38
+        Width = 39
         Height = 13
         Caption = 'Version:'
       end
@@ -88,14 +88,14 @@ object FraDesc: TFraDesc
       object LblVer: TLabel
         Left = 52
         Top = 36
-        Width = 13
+        Width = 16
         Height = 13
         Caption = '%s'
       end
       object LblName: TLabel
         Left = 52
         Top = 20
-        Width = 13
+        Width = 16
         Height = 13
         Caption = '%s'
       end

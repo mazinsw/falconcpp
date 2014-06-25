@@ -340,7 +340,7 @@ type
 implementation
 
 uses UFrmMain, UUtils, UConfig, TokenFile, TokenList, TokenUtils, DScintillaTypes,
-  CustomColors, Highlighter, UnicodeUtils;
+  CustomColors, Highlighter, UnicodeUtils, SystemUtils;
 
 const
   fileMoveError = 'Can''t move file ''%s'' to ''%s.''';
@@ -2235,11 +2235,11 @@ begin
       mk.FileName := Makefile;
       mk.Target := Target;
       mk.Libs := Libs;
-      mk.Flags := Flags;
+      mk.Flags := Trim(Flags + ' -fno-diagnostics-show-option');
       mk.CompilerIsCpp := (CompilerType = COMPILER_CPP);
       mk.CreateLibrary := (AppType = APPTYPE_LIB);
       mk.CompilerPath := FCompilerPath;
-      mk.CompilerOptions := Trim(CompilerOptions + ' -fno-diagnostics-show-option');
+      mk.CompilerOptions := CompilerOptions;
       if not OldDebuggingState and Debugging then
         ForceClean := True;
       mk.ForceClean := ForceClean;
@@ -2504,6 +2504,7 @@ begin
   FEditor.ReadOnly := SourceFile.ReadOnly;
   FEditor.ImageList := FrmFalconMain.ImageListGutter;
   FEditor.PopupMenu := FrmFalconMain.PopupEditor;
+  FEditor.AssignCmdKey(MAKELONG(Ord('S'), LEFT_CTRL_PRESSED), SCI_NULL);
   // TODO: commented
   // FEditor.SearchEngine := FrmFalconMain.EditorSearch;
   case SourceFile.FileType of

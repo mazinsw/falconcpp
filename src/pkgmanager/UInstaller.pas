@@ -108,7 +108,7 @@ function LoadPackageFile(ParentWindow: HWND; FileName: String; Silent: Boolean =
 
 implementation
 
-uses UFrmLoad, SysUtils, UFrmWizard, ShlObj, Controls, ULanguages;
+uses UFrmLoad, SysUtils, UFrmWizard, ShlObj, Controls, ULanguages, SystemUtils;
 
 function LoadPackageFile(ParentWindow: HWND; FileName: String; Silent, Reparse: Boolean): Boolean;
 begin
@@ -291,7 +291,7 @@ begin
   I := 0;
   //creating temp directory
   repeat
-    FTempDir := GetUserTemp + 'PkgMng_232' + IntToStr(I) + '\';
+    FTempDir := GetTempDirectory + 'PkgMng_232' + IntToStr(I) + '\';
     Inc(I);
   until(not DirectoryExists(FTempDir));
   CreateDir(FTempDir);
@@ -470,7 +470,7 @@ begin
       end;
     end;
     TA.Free;
-  finally
+  except
   end;
 end;
 
@@ -728,8 +728,7 @@ begin
   if Assigned(PrgsEvent) then
     PrgsEvent(Self, Curr, Size, True, not FAborted, '', '', Action);
 
-  ConfigRoot := IncludeTrailingPathDelimiter(GetSpecialFolderPath(CSIDL_APPDATA))
-                     + 'Falcon\';
+  ConfigRoot := GetConfigDir(FFalconDir);
   ini := TIniFile.Create(ConfigRoot + 'Config.ini');
   PkgIni := ini.ReadInteger('Packages', 'NewInstalled', 0);
   if PkgIni < 0 then PkgIni := 0;

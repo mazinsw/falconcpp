@@ -43,7 +43,7 @@ var
   Src: TFileStream;
   Dest: TFileStream;
   Zp: TKAZip;
-  Ft: array[0..2] of Char;
+  Ft: array[0..2] of AnsiChar;
 begin
   Result := False;
   try

@@ -122,7 +122,7 @@ var
 implementation
 
 uses UInstaller, UFrmWizard, UFraFnsh, UUninstaller, UFrmPkgDownload,
-  UFrmHelp, PkgUtils, ULanguages;
+  UFrmHelp, PkgUtils, ULanguages, SystemUtils;
 
 {$R *.dfm}
 

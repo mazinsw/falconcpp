@@ -1,5 +1,10 @@
 program PkgManager;
 
+{$I Falcon.inc}
+{$IF CompilerVersion >= 21.0}
+{$WEAKLINKRTTI ON}
+{$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
+{$IFEND}
 uses
   FastMM4 in '..\others\fastmm\FastMM4.pas',
   FastMM4Messages in '..\others\fastmm\FastMM4Messages.pas',
@@ -32,13 +37,18 @@ uses
   NativeHintWindow in '..\others\nativehint\NativeHintWindow.pas',
   ULanguages in 'ULanguages.pas',
   PkgUtils in 'PkgUtils.pas',
-  KAZip in '..\others\zip\KAZip.pas';
+  KAZip in '..\others\zip\KAZip.pas',
+  SystemUtils in '..\others\utils\SystemUtils.pas';
 
 //{$DEFINE PKGMAN_RUNAS}
-{$IFDEF PKGMAN_RUNAS}
-{$R resources_runas.RES}
+{$IFDEF FALCON_PORTABLE}
+    {$R resources_portable.RES}
 {$ELSE}
-{$R resources.RES}
+  {$IFDEF PKGMAN_RUNAS}
+    {$R resources_runas.RES}
+  {$ELSE}
+    {$R resources.RES}
+  {$ENDIF}
 {$ENDIF}
 
 var

@@ -2,6 +2,8 @@ unit UUtils;
 
 interface
 
+{$I Falcon.inc}
+
 uses
   Windows, Forms, SysUtils, Messages, Classes, XMLDoc, XMLIntf, ComCtrls,
   ShlObj, IniFiles;
@@ -53,21 +55,18 @@ type
     Build: Word;
   end;
 
-function ConvertSlashes(const Path: String): String;
 function GetFileVersionA(FileName: String): TVersion;
 function ParseVersion(Version: String): TVersion;
 function CompareVersion(Ver1, Ver2: TVersion): Integer;
 function VersionToStr(Version: TVersion): String;
 procedure LoadLang;
+function IsSecureUpdate: Boolean;
 function CanUpdate(UpdateXML: String): Boolean;
 function BringUpApp(const ClassName: string): Boolean;
 procedure RunSecureUpdater;
-function GetTempDirectory: String;
 function ForceForegroundWindow(hwnd: THandle): Boolean;
 procedure SetProgsType(PrgsBar: TProgressBar; Infinity: Boolean);
-function GetUserFolderPath(nFolder: Integer = CSIDL_PERSONAL): String;
 function GetLangFileName: String;
-function FindFiles(Search: String; Finded:TStrings): Boolean;
 procedure WriteIniFile(Const Section, Ident, Value: String);
 function ReadIniFile(Section, Ident, Default: String): String;
 function GetFalconDir: String;
@@ -79,17 +78,7 @@ var
 
 implementation
 
-uses UFrmUpdate, Registry, ShellAPI;
-
-function ConvertSlashes(const Path: String): String;
-var
-  i: Integer;
-begin
-  Result := Path;
-  for i := 1 to Length(Result) do
-      if Result[i] = '/' then
-          Result[i] := '\';
-end;
+uses UFrmUpdate, Registry, ShellAPI, SystemUtils;
 
 Function GetFileVersionA(FileName: String): TVersion;
 type
@@ -403,16 +392,9 @@ begin
     else
       params := params + ' ' + ParamStr(I);
   end;
+  params := params + ' --path "' + AppRoot + '"';
   ShellExecute(0, 'open', PChar(ExeRunUpdater), PChar(params),
       PChar(ExtractFilePath(RunTempDir)), SW_SHOW);
-end;
-
-function GetTempDirectory: String;
-var
-  TempDir: array[0..255] of Char;
-begin
-  GetTempPath(255, @TempDir);
-  Result := IncludeTrailingPathDelimiter(StrPas(TempDir));
 end;
 
 function ForceForegroundWindow(hwnd: THandle): Boolean;
@@ -497,20 +479,38 @@ begin
     ProgressbarSetNormal(PrgsBar);
 end;
 
-function GetUserFolderPath(nFolder: Integer = CSIDL_PERSONAL): String;
+function GetFalconDirFromParams: String;
 var
-  Buf: PChar;
+  I, FoundIndex: Integer;
 begin
   Result := '';
-  Buf := StrAlloc(MAX_PATH);
-  SHGetSpecialFolderPath(HInstance, Buf, nFolder, False);
-  Result := StrPas(Buf);
-  StrDispose(Buf);
-  if Result <> '' then
-    Result := IncludeTrailingPathDelimiter(Result);
+  FoundIndex := -1;
+  for I := 1 to ParamCount do
+  begin
+    if CompareText('--path', ParamStr(I)) = 0 then
+    begin
+      FoundIndex := I;
+      Break;
+    end;
+  end;
+  if FoundIndex < 0 then
+    Exit;
+  for I := (FoundIndex + 1) to ParamCount do
+  begin
+    if DirectoryExists(ParamStr(I)) then
+    begin
+      Result := IncludeTrailingPathDelimiter(ParamStr(I));
+      Break;
+    end;
+  end;
 end;
 
-function GetFalconDir: String;
+function IsSecureUpdate: Boolean;
+begin
+  Result := GetFalconDirFromParams <> '';
+end;
+
+function GetFalconInstallDir: String;
 var
   Reg: TRegistry;
 begin
@@ -532,12 +532,14 @@ begin
       Result := Reg.ReadString('UninstallString');
     Result := ExtractFilePath(Result);
   end;
-  Reg.Free;
+end;
+
+function GetFalconDir: String;
+begin
+  Result := GetFalconDirFromParams;
   if DirectoryExists(Result) then
     Exit;
   Result := ExtractFilePath(Application.ExeName);
-  if not FileExists(Result + 'Falcon.exe') then
-    Result := GetUserFolderPath(CSIDL_PROGRAM_FILES) + 'Falcon\';
 end;
 
 procedure WriteIniFile(Const Section, Ident, Value: String);
@@ -558,42 +560,34 @@ begin
   ini.Free;
 end;
 
-function FindFiles(Search: String; Finded:TStrings): Boolean;
-var
-  searchResult : TSearchRec;
-begin
-  Result := false;
-  if FindFirst(Search, faAnyFile, searchResult) = 0 then
-  begin
-    Result := True;
-    repeat
-        Finded.add(searchResult.Name);
-    until FindNext(searchResult) <> 0;
-    FindClose(searchResult);
-  end;
-end;
-
 function GetLangFileName: String;
 var
   I: Integer;
   Files: TStrings;
   ID, UserLangID: Integer;
-  LangFileName, AlterConfIni, LangDir: String;
+  LangFileName, AlterConfIni, LangDir, UsersDefDir: String;
   ini: TIniFile;
 begin
   Result := '';
   ini := TIniFile.Create(ConfigPath + 'Config.ini');
   AlterConfIni := ini.ReadString('EnvironmentOptions', 'ConfigurationFile', '');
-  UserLangID := ini.ReadInteger('EnvironmentOptions', 'LanguageID', GetSystemDefaultLangID);
-  LangDir := ini.ReadString('EnvironmentOptions', 'LanguageDir', AppRoot + 'Lang\');
+  AlterConfIni := ExpandRelativeFileName(AppRoot, AlterConfIni);
   if ini.ReadBool('EnvironmentOptions', 'AlternativeConfFile', False) and
     FileExists(AlterConfIni) then
   begin
     ini.Free;
-    ini := TIniFile.Create(ConfigPath + 'Config.ini');
-    UserLangID := ini.ReadInteger('EnvironmentOptions', 'LanguageID', UserLangID);
-    LangDir := ini.ReadString('EnvironmentOptions', 'LanguageDir', AppRoot + 'Lang\');
+    ini := TIniFile.Create(AlterConfIni);
   end;
+  UserLangID := ini.ReadInteger('EnvironmentOptions', 'LanguageID', GetSystemDefaultLangID);
+  UsersDefDir := ini.ReadString('EnvironmentOptions', 'UsersDefDir',
+    AppRoot);
+  UsersDefDir := ExpandRelativePath(AppRoot, UsersDefDir);
+  if not DirectoryExists(UsersDefDir) then
+    UsersDefDir := AppRoot;
+  LangDir := ini.ReadString('EnvironmentOptions', 'LanguageDir', UsersDefDir + 'Lang\');
+  LangDir := ExpandRelativePath(UsersDefDir, LangDir);
+  if not DirectoryExists(LangDir) then
+    LangDir := UsersDefDir + 'Lang\';
   ini.Free;
   Files := TStringList.Create;
   FindFiles(LangDir + '*.lng', Files);
@@ -606,10 +600,11 @@ begin
     begin
       Result := LangFileName;
       ini.Free;
-      Exit;
+      Break;
     end;
     ini.Free;
   end;
+  Files.Free;
 end;
 
 end.

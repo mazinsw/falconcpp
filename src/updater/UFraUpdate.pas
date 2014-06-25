@@ -2,6 +2,8 @@ unit UFraUpdate;
 
 interface
 
+{$I Falcon.inc}
+
 uses
   Windows, Messages, SysUtils, Classes, Controls, Forms, ComCtrls, StdCtrls,
   XMLDoc, XMLIntf, UUtils, ExtCtrls;
@@ -25,7 +27,7 @@ var
 
 implementation
 
-uses UFrmUpdate;
+uses UFrmUpdate, SystemUtils;
 
 {$R *.dfm}
 
@@ -82,12 +84,17 @@ begin
     end;
     1:
     begin
-      FrmUpdate.LblAction.Caption := STR_FRM_UPD[20];
-      LblDesc.Caption := Format(STR_FRM_UPD[21], [
-         VersionToStr(SiteVersion)]);
       NodeFiles := Node.ChildNodes.FindNode('File');
-      FrmUpdate.FileName := NodeFiles.Attributes['Name'];
+{$IFDEF FALCON_PORTABLE}
+      FrmUpdate.FileDownload.URL := NodeFiles.Attributes['PortableURL'];
+      FrmUpdate.FileName := ExtractFileName(ConvertSlashes(FrmUpdate.FileDownload.URL));
+{$ELSE}
       FrmUpdate.FileDownload.URL := NodeFiles.Attributes['URL'];
+      FrmUpdate.FileName := NodeFiles.Attributes['Name'];
+{$ENDIF}
+      FrmUpdate.LblAction.Caption := STR_FRM_UPD[20];
+      LblDesc.Caption := Format(STR_FRM_UPD[21],
+        [VersionToStr(SiteVersion)]);
       Temp := FrmUpdate.FileDownload.URL;
       Temp := ExtractFileName(ConvertSlashes(Temp));
       FrmUpdate.FileDownload.FileName := GetTempDirectory + Temp +
@@ -98,10 +105,8 @@ begin
         Desc.Strings[X] := Trim(Desc.Strings[X]);
       for X:= Pred(Desc.Count) downto 0 do
         if Length(Desc.Strings[X]) = 0 then Desc.Delete(X);
-
       MemoChanges.Text := Desc.Text;
       Desc.Free;
-
       LblChanges.Show;
       MemoChanges.Show;
       FrmUpdate.BtnCancel.Caption := STR_FRM_UPD[22];
@@ -110,7 +115,6 @@ begin
       Result := True;
     end;
   end;
-  //XMLDoc.Free;
   DeleteFile(UpdateXML);
 end;
 

@@ -1588,8 +1588,8 @@ begin
   begin
     caretChanged := True;
     bCaret := CaretXY;
-    bCaret.Char := LeftOffset + 1;
     TmpStr := GetLeftSpacing(LeftOffset, WantTabs);
+    bCaret.Char := Length(TmpStr) + 1;
     Lines.Insert(CaretY - 1, TmpStr);
     CaretXY := BufferCoord(1, bCaret.Line + 1);
     Dec(LeftOffset, TabWidth);

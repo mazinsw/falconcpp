@@ -1131,7 +1131,7 @@ var
 implementation
 
 uses UUtils, UFrmOptions, UFrmUpdate, UFrmMain,
-  UFrmCompOptions, UFrmEditorOptions, UFrmEnvOptions;
+  UFrmCompOptions, UFrmEditorOptions, UFrmEnvOptions, SystemUtils;
 
 constructor TFalconLanguages.Create;
 var

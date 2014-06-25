@@ -39,6 +39,8 @@
 			<DelphiCompile Include="Updater.dpr">
 				<MainSource>MainSource</MainSource>
 			</DelphiCompile>
+			<DCCReference Include="..\others\fastmm\FastMM4.pas"/>
+			<DCCReference Include="..\others\fastmm\FastMM4Messages.pas"/>
 			<DCCReference Include="UFraGetVer.pas">
 				<Form>FraGetVer</Form>
 				<DesignClass>TFrame</DesignClass>
@@ -51,12 +53,14 @@
 				<Form>FrmUpdate</Form>
 			</DCCReference>
 			<DCCReference Include="UUtils.pas"/>
-			<DCCReference Include="ExecWait.pas"/>
+			<DCCReference Include="..\others\utils\ExecWait.pas"/>
 			<DCCReference Include="..\others\bzip2\BZip2.pas"/>
 			<DCCReference Include="..\others\libtar\LibTar.pas"/>
 			<DCCReference Include="..\others\compressutils\CompressUtils.pas"/>
 			<DCCReference Include="..\others\compressutils\StrMatch.pas"/>
 			<DCCReference Include="..\others\zip\KAZip.pas"/>
+			<DCCReference Include="..\others\utils\SystemUtils.pas"/>
+			<DCCReference Include="..\others\compressutils\ThreadExtract.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

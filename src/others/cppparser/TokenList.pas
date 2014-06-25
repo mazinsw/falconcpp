@@ -129,6 +129,7 @@ type
       SelStart: Integer; SelLine: Integer): Boolean;
     function GetScopeAt(var scopeToken: TTokenClass;
       SelStart: Integer): Boolean;
+    procedure GetUsingNames(List: TStrings; UntilPosition: Integer = 0);
     procedure GetFunctions(List: TStrings; const ScopeFlag: string;
       UseScope: Boolean = False; MakeCopy: Boolean = True;
       OnlyPrototype: Boolean =  False);
@@ -400,6 +401,30 @@ begin
   end;
 end;
 
+procedure TTokenClass.GetUsingNames(List: TStrings; UntilPosition: Integer);
+var
+  I: Integer;
+begin
+  for I := 0 to Count - 1 do
+  begin
+    if (UntilPosition > 0) and (UntilPosition >= Items[I].FSelStart) and
+      (UntilPosition <= (Items[I].FSelStart + Items[I].FSelLength)) then
+    begin
+      if (Items[I].Token <> tkScope) then
+        Exit;
+      Continue;
+    end;
+    if (Items[I].Token = tkUsing) then
+      List.Add(Items[I].Name)
+    else if Items[I].Token in [tkFunction, tkOperator, tkScopeClass,
+      tkClass, tkStruct, tkUnion, tkConstructor, tkDestructor,
+      tkNamespace, tkTypeStruct, tkTypeUnion] then
+    begin
+      Items[I].GetUsingNames(List, UntilPosition);
+    end;
+  end;
+end;
+
 function TTokenClass.GetTokenAt(var scopeToken: TTokenClass;
   SelStart: Integer; SelLine: Integer): Boolean;
 begin
@@ -471,7 +496,7 @@ begin
     if (NotAtSelStart > 0) and (NotAtSelStart >= Items[I].FSelStart) and
       (NotAtSelStart <= (Items[I].FSelStart + Items[I].FSelLength)) then
     begin
-      if not AdvanceAfterSelStart then
+      if not AdvanceAfterSelStart and (Items[I].Token <> tkScope) then
         Exit;
       Continue;
     end;
@@ -523,7 +548,7 @@ begin
       Continue;
     end;
     if (S = Items[I].Name) and (not (Items[I].Token in
-      [tkConstructor, tkDestructor, tkForward]) or (Assigned(Items[I].Parent) and
+      [tkConstructor, tkDestructor, tkForward, tkUsing]) or (Assigned(Items[I].Parent) and
       (Items[I].Parent.Token = tkScopeClass))) then
     begin
       Item := Items[I];

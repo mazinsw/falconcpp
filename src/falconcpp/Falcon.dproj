@@ -65,7 +65,7 @@
 				<DesignClass>TFrame</DesignClass>
 			</DCCReference>
 			<DCCReference Include="UUtils.pas"/>
-			<DCCReference Include="ExecWait.pas"/>
+			<DCCReference Include="..\others\utils\ExecWait.pas"/>
 			<DCCReference Include="UTemplates.pas"/>
 			<DCCReference Include="ULanguages.pas"/>
 			<DCCReference Include="UTools.pas"/>
@@ -172,6 +172,7 @@
 			<DCCReference Include="..\others\encoding\chsdet\src\sbseq\LangGreekModel.pas"/>
 			<DCCReference Include="..\others\encoding\chsdet\src\sbseq\LangHebrewModel.pas"/>
 			<DCCReference Include="..\others\encoding\chsdet\src\vi.pas"/>
+			<DCCReference Include="..\others\utils\SystemUtils.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

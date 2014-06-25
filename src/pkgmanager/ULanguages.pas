@@ -213,7 +213,7 @@ var
 
 implementation
 
-uses PkgUtils, ShlObj;
+uses PkgUtils, ShlObj, SystemUtils;
 
 procedure UpdateLang(ini: TIniFile);
 
@@ -284,16 +284,18 @@ end;
 procedure LoadTranslation;
 var
   Files: TStrings;
-  FalconDir, LangFileName, AlterConfIni, LangDir, ConfigPath: String;
+  FalconDir, LangFileName, AlterConfIni, LangDir, ConfigPath,
+    UsersDefDir: String;
   I: Integer;
   LangID, FileLangID: Cardinal;
   ini: TIniFile;
 begin
   LoadDefaultLang;
   FalconDir := GetFalconDir;
-  ConfigPath := GetSpecialFolderPath(CSIDL_APPDATA) + 'Falcon\';
+  ConfigPath := GetConfigDir(FalconDir);
   ini := TIniFile.Create(ConfigPath + 'Config.ini');
   AlterConfIni := ini.ReadString('EnvironmentOptions', 'ConfigurationFile', '');
+  AlterConfIni := ExpandRelativeFileName(FalconDir, AlterConfIni);
   if ini.ReadBool('EnvironmentOptions', 'AlternativeConfFile', False) and
     FileExists(AlterConfIni) then
   begin
@@ -301,7 +303,15 @@ begin
     ini := TIniFile.Create(AlterConfIni);
   end;
   LangID := ini.ReadInteger('EnvironmentOptions', 'LanguageID', GetSystemDefaultLangID);
-  LangDir := ini.ReadString('EnvironmentOptions', 'LanguageDir', FalconDir + 'Lang\');
+  UsersDefDir := ini.ReadString('EnvironmentOptions', 'UsersDefDir',
+    FalconDir);
+  UsersDefDir := ExpandRelativePath(FalconDir, UsersDefDir);
+  if not DirectoryExists(UsersDefDir) then
+    UsersDefDir := FalconDir;
+  LangDir := ini.ReadString('EnvironmentOptions', 'LanguageDir', UsersDefDir + 'Lang\');
+  LangDir := ExpandRelativePath(UsersDefDir, LangDir);
+  if not DirectoryExists(LangDir) then
+    LangDir := UsersDefDir + 'Lang\';
   ini.Free;
   Files := TStringList.Create;
   FindFiles(LangDir + '*.lng', Files);

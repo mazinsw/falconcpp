@@ -27,7 +27,7 @@ uses
   UParseMsgs, TBXStatusBars, XPPanels, ModernTabs,
   TB2Toolbar, ThreadFileDownload, VirtualTrees,
   PluginManager, PluginServiceManager, UEditor, CppHighlighter, SintaxList,
-  AutoComplete, DScintillaTypes;
+  AutoComplete, DScintillaTypes, SearchEngine;
 
 const
   crReverseArrow = TCursor(-99);
@@ -844,6 +844,7 @@ type
     FalconVersion: TVersion; //this file version 
     CppHighligher: TCppHighlighter;
     CodeCompletion: TCompletionProposal;
+    SearchEngine: TSearchEngine;
 
     procedure SelectFromSelStart(SelStart, SelCount: Integer;
       Editor: TEditor);
@@ -1205,6 +1206,7 @@ var
 begin
   IsLoading := True;
   CppHighligher := TCppHighlighter.Create(Self);
+  SearchEngine := TSearchEngine.Create(Self);
   CodeCompletion := TCompletionProposal.Create(Self);
   CodeCompletion.Options := [scoLimitToMatchedText, scoUseInsertList, scoUsePrettyText, scoUseBuiltInTimer, scoEndCharCompletion, scoCompleteWithTab, scoCompleteWithEnter];
   CodeCompletion.ClSelectedText := clWindowText;

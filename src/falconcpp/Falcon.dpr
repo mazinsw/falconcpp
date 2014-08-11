@@ -110,7 +110,9 @@ uses
   LangGreekModel in '..\others\encoding\chsdet\src\sbseq\LangGreekModel.pas',
   LangHebrewModel in '..\others\encoding\chsdet\src\sbseq\LangHebrewModel.pas',
   vi in '..\others\encoding\chsdet\src\vi.pas',
-  SystemUtils in '..\others\utils\SystemUtils.pas';
+  SystemUtils in '..\others\utils\SystemUtils.pas',
+  RegEx in '..\others\regex\RegEx.pas',
+  SearchEngine in 'editor\SearchEngine.pas';
 
 function OpenWithOther: Boolean;
 var

@@ -2502,6 +2502,7 @@ begin
   FEditor.Align := alClient;
   FEditor.WantTabs := True;
   FEditor.ReadOnly := SourceFile.ReadOnly;
+  FEditor.SearchEngine := FrmFalconMain.SearchEngine;
   FEditor.ImageList := FrmFalconMain.ImageListGutter;
   FEditor.PopupMenu := FrmFalconMain.PopupEditor;
   FEditor.AssignCmdKey(MAKELONG(Ord('S'), LEFT_CTRL_PRESSED), SCI_NULL);

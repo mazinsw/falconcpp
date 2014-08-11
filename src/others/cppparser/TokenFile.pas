@@ -108,7 +108,7 @@ type
       const FilePath: string; IncludeToken: TTokenClass;
       FindedList: TRBTree): Boolean;
     procedure FillCompletionListRecursive(InsertList,
-      ShowList: TStrings; TokenFile: TTokenFile; FindedList: TRBTree;
+      ShowList: TStrings; TokenFile: TTokenFile; SelStart: Integer; FindedList: TRBTree;
       CompletionColors: TCompletionColors; Images: array of Integer);
     function SearchTreeTokenRecursive(const Fields: string;
       TokenFile: TTokenFile; var TokenFileItem: TTokenFile; var Token: TTokenClass;
@@ -1858,7 +1858,7 @@ begin
 end;
 
 procedure TTokenFiles.FillCompletionListRecursive(InsertList,
-  ShowList: TStrings; TokenFile: TTokenFile;
+  ShowList: TStrings; TokenFile: TTokenFile; SelStart: Integer;
   FindedList: TRBTree; CompletionColors: TCompletionColors;
   Images: array of Integer);
 var
@@ -1866,37 +1866,6 @@ var
   FilePath: string;
   FindedTokenFile: TTokenFile;
 begin
-  FillCompletion(InsertList, ShowList, TokenFile.VarConsts, -1, CompletionColors, Images);
-  FillCompletion(InsertList, ShowList, TokenFile.FuncObjs, -1, CompletionColors, Images);
-  FillCompletion(InsertList, ShowList, TokenFile.TreeObjs, -1, CompletionColors, Images);
-  FillCompletion(InsertList, ShowList, TokenFile.Defines, -1, CompletionColors, Images);
-
-  //don't search again
-  FindedList.Add(TokenFile.FileName, TokenFile);
-  //searched filepath
-  FilePath := ExtractFilePath(TokenFile.FileName);
-  //search in all include files
-  for I := 0 to TokenFile.Includes.Count - 1 do
-  begin
-    if InvalidOrFinded(FindedTokenFile, FilePath, TokenFile.Includes.Items[I],
-      FindedList) then
-      Continue;
-    FillCompletionListRecursive(InsertList, ShowList, FindedTokenFile,
-      FindedList, CompletionColors, Images);
-  end;
-end;
-
-procedure TTokenFiles.FillCompletionList(InsertList,
-  ShowList: TStrings; TokenFile: TTokenFile; SelStart: Integer;
-  CompletionColors: TCompletionColors; Images: array of Integer);
-var
-  FindedList: TRBTree;
-  I: Integer;
-  FilePath: string;
-  FindedTokenFile: TTokenFile;
-begin
-
-  FindedList := TRBTree.Create;
   FillCompletion(InsertList, ShowList, TokenFile.VarConsts, SelStart, CompletionColors, Images);
   FillCompletion(InsertList, ShowList, TokenFile.FuncObjs, SelStart, CompletionColors, Images);
   FillCompletion(InsertList, ShowList, TokenFile.TreeObjs, SelStart, CompletionColors, Images);
@@ -1912,10 +1881,20 @@ begin
     if InvalidOrFinded(FindedTokenFile, FilePath, TokenFile.Includes.Items[I],
       FindedList) then
       Continue;
-    FillCompletionListRecursive(InsertList, ShowList, FindedTokenFile,
+    FillCompletionListRecursive(InsertList, ShowList, FindedTokenFile, -1,
       FindedList, CompletionColors, Images);
   end;
+end;
 
+procedure TTokenFiles.FillCompletionList(InsertList,
+  ShowList: TStrings; TokenFile: TTokenFile; SelStart: Integer;
+  CompletionColors: TCompletionColors; Images: array of Integer);
+var
+  FindedList: TRBTree;
+begin
+  FindedList := TRBTree.Create;
+  FillCompletionListRecursive(InsertList, ShowList, TokenFile,
+      SelStart, FindedList, CompletionColors, Images);
   FindedList.Free;
 end;
 
@@ -1935,7 +1914,7 @@ begin
     if not (Token.Items[I].Token in [tkEnumItem, tkEnum, tkTypeEnum]) then
     begin
       if (Token.Items[I].Token in [tkScope, tkUsing, tkOperator]) or
-        ((Token.Items[I].Level > 0) and not IncludeParams) then
+        ((Token.Items[I].Level > 0) and (Token.Token <> tkFuncProList) and not IncludeParams) then
         Continue;
       if Token.Items[I].Token in [tkFunction, tkConstructor, tkDestructor] then
       begin

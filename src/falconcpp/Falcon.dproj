@@ -173,6 +173,8 @@
 			<DCCReference Include="..\others\encoding\chsdet\src\sbseq\LangHebrewModel.pas"/>
 			<DCCReference Include="..\others\encoding\chsdet\src\vi.pas"/>
 			<DCCReference Include="..\others\utils\SystemUtils.pas"/>
+			<DCCReference Include="..\others\regex\RegEx.pas"/>
+			<DCCReference Include="editor\SearchEngine.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

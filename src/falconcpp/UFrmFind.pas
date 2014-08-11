@@ -106,6 +106,13 @@ begin
   if not prop.GetSheet(SourceSheet) then
     Exit;
   Editor := SourceSheet.Editor;
+  SearchFlags := 0;
+  if LastSearch.DiffCase then
+    SearchFlags := SearchFlags or SCFIND_MATCHCASE;
+  if LastSearch.FullWord then
+    SearchFlags := SearchFlags or SCFIND_WHOLEWORD;
+  if LastSearch.SearchMode = 2 then
+    SearchFlags := SearchFlags or SCFIND_REGEXP;
   if Length(LastSearch.Search) = 0 then
   begin
     if not Editor.SelAvail then
@@ -115,18 +122,19 @@ begin
   end
   else if Editor.SelAvail then
   begin
-    LastSearch.Search := Editor.SelText;
     CurrentPosition := Editor.GetSelectionStart;
+    if (LastSearch.SearchMode <> 2) or (Editor.SearchTextEx(LastSearch.Search,
+      SearchFlags, 0, Editor.GetSelectionStart, False,
+      sdDown, SearchResultStart, SearchResultEnd, UsingResearch,
+      Editor.GetSelectionStart, Editor.GetSelectionEnd) = 0) then
+    begin
+      LastSearch.Search := Editor.SelText;
+      if LastSearch.SearchMode = 2 then
+        SearchFlags := SearchFlags and not SCFIND_REGEXP;
+    end;
   end
   else
     CurrentPosition := Editor.GetCurrentPos;
-  SearchFlags := 0;
-  if LastSearch.DiffCase then
-    SearchFlags := SearchFlags + SCFIND_MATCHCASE;
-  if LastSearch.FullWord then
-    SearchFlags := SearchFlags + SCFIND_WHOLEWORD;
-  if LastSearch.SearchMode = 2 then
-    SearchFlags := SearchFlags + SCFIND_REGEXP;
   SearchResultCount := Editor.SearchTextEx(LastSearch.Search, SearchFlags,
     CurrentPosition, 0, True, sdUp, SearchResultStart, SearchResultEnd,
     UsingResearch);
@@ -155,6 +163,13 @@ begin
   if not prop.GetSheet(SourceSheet) then
     Exit;
   Editor := SourceSheet.Editor;
+  SearchFlags := 0;
+  if LastSearch.DiffCase then
+    SearchFlags := SearchFlags or SCFIND_MATCHCASE;
+  if LastSearch.FullWord then
+    SearchFlags := SearchFlags or SCFIND_WHOLEWORD;
+  if LastSearch.SearchMode = 2 then
+    SearchFlags := SearchFlags or SCFIND_REGEXP;
   if Length(LastSearch.Search) = 0 then
   begin
     if not Editor.SelAvail then
@@ -164,18 +179,19 @@ begin
   end
   else if Editor.SelAvail then
   begin
-    LastSearch.Search := Editor.SelText;
+    if (LastSearch.SearchMode <> 2) or (Editor.SearchTextEx(LastSearch.Search,
+      SearchFlags, 0, Editor.GetSelectionStart, False,
+      sdDown, SearchResultStart, SearchResultEnd, UsingResearch,
+      Editor.GetSelectionStart, Editor.GetSelectionEnd) = 0) then
+    begin
+      LastSearch.Search := Editor.SelText;
+      if LastSearch.SearchMode = 2 then
+        SearchFlags := SearchFlags and not SCFIND_REGEXP;
+    end;
     CurrentPosition := Editor.GetSelectionEnd;
   end
   else
     CurrentPosition := Editor.GetCurrentPos;
-  SearchFlags := 0;
-  if LastSearch.DiffCase then
-    SearchFlags := SearchFlags + SCFIND_MATCHCASE;
-  if LastSearch.FullWord then
-    SearchFlags := SearchFlags + SCFIND_WHOLEWORD;
-  if LastSearch.SearchMode = 2 then
-    SearchFlags := SearchFlags + SCFIND_REGEXP;
   SearchResultCount := Editor.SearchTextEx(LastSearch.Search, SearchFlags,
     0, CurrentPosition, True, sdDown, SearchResultStart, SearchResultEnd,
     UsingResearch);
@@ -752,11 +768,11 @@ begin
     Search := ResolveStr(Search);
   SearchFlags := 0;
   if ChbDiffCase.Checked then
-    SearchFlags := SearchFlags + SCFIND_MATCHCASE;
+    SearchFlags := SearchFlags or SCFIND_MATCHCASE;
   if ChbFullWord.Checked then
-    SearchFlags := SearchFlags + SCFIND_WHOLEWORD;
+    SearchFlags := SearchFlags or SCFIND_WHOLEWORD;
   if RGrpSearchMode.ItemIndex = 2 then
-    SearchFlags := SearchFlags + SCFIND_REGEXP;
+    SearchFlags := SearchFlags or SCFIND_REGEXP;
   if RdbtUp.Checked then
     Direction := sdUp
   else
@@ -774,6 +790,7 @@ begin
   end;
   FrmFalconMain.SelectFromPosition(SearchResultStart, SearchResultEnd, Editor);
   frm.LastSearch.Search := Search;
+  frm.LastSearch.SearchMode := RGrpSearchMode.ItemIndex;
   frm.LastSearch.DiffCase := ChbDiffCase.Checked;
   frm.LastSearch.FullWord := ChbFullWord.Checked;
   if ChbTransp.Checked then
@@ -845,11 +862,11 @@ begin
     Replace := ResolveStr(Replace);
   SearchFlags := 0;
   if ChbDiffCase.Checked then
-    SearchFlags := SearchFlags + SCFIND_MATCHCASE;
+    SearchFlags := SearchFlags or SCFIND_MATCHCASE;
   if ChbFullWord.Checked then
-    SearchFlags := SearchFlags + SCFIND_WHOLEWORD;
+    SearchFlags := SearchFlags or SCFIND_WHOLEWORD;
   if RGrpSearchMode.ItemIndex = 2 then
-    SearchFlags := SearchFlags + SCFIND_REGEXP;
+    SearchFlags := SearchFlags or SCFIND_REGEXP;
   //compare and Replace **********
   text := Editor.SelText;
   SearchResultCount := Editor.SearchTextEx(Search, SearchFlags, StartPosition,

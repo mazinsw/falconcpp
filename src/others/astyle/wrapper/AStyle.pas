@@ -367,9 +367,9 @@ begin
   end;
   // Tab Options
   case FTabOptions of
-    toSpaces: Options := Options + SysUtils.Format(' --indent=force-tab=%d', [FTabWidth]);
-    toTab: Options := Options + SysUtils.Format(' --indent=spaces=%d', [FTabWidth]);
-    toForceTab: Options := Options + SysUtils.Format(' --indent=tab=%d', [FTabWidth]);
+    toForceTab: Options := Options + SysUtils.Format(' --indent=force-tab=%d', [FTabWidth]);
+    toSpaces: Options := Options + SysUtils.Format(' --indent=spaces=%d', [FTabWidth]);
+    toTab: Options := Options + SysUtils.Format(' --indent=tab=%d', [FTabWidth]);
   end;
   if FTabXWidth > 0 then
     Options := Options + SysUtils.Format(' --indent=force-tab-x=%d', [FTabXWidth]);

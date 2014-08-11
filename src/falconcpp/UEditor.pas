@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, Classes, Graphics, DScintilla, DScintillaUtils,
-  DScintillaTypes, Highlighter, Controls, Forms, ImgList;
+  DScintillaTypes, Highlighter, Controls, Forms, ImgList, SearchEngine;
 
 const
   MARGIN_BOOKMARK    = 0;
@@ -65,6 +65,7 @@ type
     FHotspotModifiers: Integer;
     FHotspotPosition: Integer;
     FLastSelectionCount: Integer;
+    FSearchEngine: TSearchEngine;
     procedure BracketHighlightChanged(Sender: TObject);
     procedure HighlighterChanged(Sender: TObject);
     function GetModified: Boolean;
@@ -209,6 +210,7 @@ type
     procedure SetActiveLine(Line: Integer);
     procedure RemoveActiveLine(Line: Integer);
 
+    property SearchEngine: TSearchEngine read FSearchEngine write FSearchEngine;
     property Font: TFont read GetFont write SetFont;
     property Zoom: Integer read GetZoom write SetZoomUpdate;
     property LinesInWindow: Integer read GetLinesInWindow;
@@ -262,7 +264,7 @@ implementation
 
 uses
   SysUtils, UnicodeUtils, CustomColors, Contnrs, UUtils, CppHighlighter,
-  CppTokenizer;
+  CppTokenizer, RegEx;
 
 function DisplayCoord(AColumn, ARow: Integer): TDisplayCoord;
 begin
@@ -324,6 +326,11 @@ var
   I, Mask: Integer;
 begin
   inherited;
+  for I := 0 to 255 do
+  begin
+    ClearCmdKey(I + (SCMOD_CTRL shl 16));
+    ClearCmdKey(I + ((SCMOD_CTRL or SCMOD_SHIFT) shl 16));
+  end;
   SetModEventMask(SC_MOD_INSERTTEXT or SC_MOD_DELETETEXT);
   SetMarginWidthN(MARGIN_BOOKMARK, 16);
   SetMarginWidthN(MARGIN_LINE_NUMBER, 0);
@@ -687,21 +694,24 @@ var
   SearchResult, SearchResultEnd, ResearchResult,
   PrevSearchResult, PrevSearchResultEnd: Integer;
 begin
-  SetSearchFlags(SearchFlags);
+  if FSearchEngine = nil then
+    raise Exception.Create('Search engine not set');
   if DocEndPosition = -1 then
     DocEndPosition := GetLength;
+  FSearchEngine.Editor := Self;
+  FSearchEngine.SetSearchFlags(SearchFlags);
   if Direction = sdUp then // search first text before current position
   begin
-    SetTargetStart(DocStartPosition);
-    SetTargetEnd(StartPosition);
+    FSearchEngine.SetTargetStart(DocStartPosition);
+    FSearchEngine.SetTargetEnd(StartPosition);
   end
   else
   begin // select next text after position end
-    SetTargetStart(EndPosition);
-    SetTargetEnd(DocEndPosition);
+    FSearchEngine.SetTargetStart(EndPosition);
+    FSearchEngine.SetTargetEnd(DocEndPosition);
   end;
-  SearchResult := SearchInTarget(Search);
-  SearchResultEnd := GetTargetEnd;
+  SearchResult := FSearchEngine.SearchInTarget(Search);
+  SearchResultEnd := FSearchEngine.GetTargetEnd;
   if Direction = sdUp then // search last text ocurrency from begining before current
   begin
     PrevSearchResult := SearchResult;
@@ -710,10 +720,10 @@ begin
     begin
       PrevSearchResult := SearchResult;
       PrevSearchResultEnd := SearchResultEnd;
-      SetTargetStart(SearchResultEnd);
-      SetTargetEnd(StartPosition);
-      SearchResult := SearchInTarget(Search);
-      SearchResultEnd := GetTargetEnd;
+      FSearchEngine.SetTargetStart(SearchResultEnd);
+      FSearchEngine.SetTargetEnd(StartPosition);
+      SearchResult := FSearchEngine.SearchInTarget(Search);
+      SearchResultEnd := FSearchEngine.GetTargetEnd;
     end;
     SearchResult := PrevSearchResult;
     SearchResultEnd := PrevSearchResultEnd;
@@ -724,17 +734,17 @@ begin
     if Direction = sdUp then
     begin
       // try from end
-      SetTargetStart(StartPosition);
-      SetTargetEnd(DocEndPosition);
+      FSearchEngine.SetTargetStart(StartPosition);
+      FSearchEngine.SetTargetEnd(DocEndPosition);
     end
     else
     begin
       // try from begining
-      SetTargetStart(DocStartPosition);
-      SetTargetEnd(EndPosition);
+      FSearchEngine.SetTargetStart(DocStartPosition);
+      FSearchEngine.SetTargetEnd(EndPosition);
     end;
-    SearchResult := SearchInTarget(Search);
-    SearchResultEnd := GetTargetEnd;
+    SearchResult := FSearchEngine.SearchInTarget(Search);
+    SearchResultEnd := FSearchEngine.GetTargetEnd;
     if Direction = sdUp then // search last text ocurrency after current position
     begin
       PrevSearchResult := SearchResult;
@@ -743,10 +753,10 @@ begin
       begin
         PrevSearchResult := SearchResult;
         PrevSearchResultEnd := SearchResultEnd;
-        SetTargetStart(SearchResultEnd);
-        SetTargetEnd(DocEndPosition);
-        SearchResult := SearchInTarget(Search);
-        SearchResultEnd := GetTargetEnd;
+        FSearchEngine.SetTargetStart(SearchResultEnd);
+        FSearchEngine.SetTargetEnd(DocEndPosition);
+        SearchResult := FSearchEngine.SearchInTarget(Search);
+        SearchResultEnd := FSearchEngine.GetTargetEnd;
       end;
       SearchResult := PrevSearchResult;
       SearchResultEnd := PrevSearchResultEnd;

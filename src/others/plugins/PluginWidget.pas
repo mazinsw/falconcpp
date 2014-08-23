@@ -166,7 +166,7 @@ type
 implementation
 
 uses
-  PluginConst;
+  PluginConst, PluginWidgetMap;
 
 { TWidget }
 
@@ -633,7 +633,7 @@ end;
 constructor TWidgetList.Create;
 begin
   FList := TList.Create;
-  FNextWidgetID := $010000;
+  FNextWidgetID := WIDGET_MAX_ID + 1;
 end;
 
 function TWidgetList.Delete(WidgetID: Integer): Integer;

@@ -39,6 +39,7 @@ type
     function HasBreakpoint(Line: Integer): Boolean;
     function DeleteFrom(LineBegin, LineEnd: Integer): Integer;
     function ToogleBreakpoint(Line: Integer): Boolean;
+    function AddBreakpoint(Line: Integer): TBreakpoint;
     function GetBreakpoint(Line: Integer): TBreakpoint;
     property Count: Integer read GetCount;
     property Items[Index: integer]: TBreakpoint read Get;
@@ -179,6 +180,23 @@ begin
     Exit;
   end;
   Result := TBreakpoint(FList.Items[Index]);
+end;
+
+function TBreakpointList.AddBreakpoint(Line: Integer): TBreakpoint;
+var
+  I: Integer;
+  Breakpoint: TBreakpoint;
+begin
+  I := GetInsertIndex(Line);
+  if (I < FList.Count) and (Items[I].Line = Line) then
+  begin
+    Result := Items[I];
+    Exit;
+  end;
+  Breakpoint := TBreakpoint.Create;
+  Breakpoint.Line := Line;
+  FList.Insert(I, Breakpoint);
+  Result := Breakpoint;
 end;
 
 procedure TBreakpointList.Assign(Value: TBreakpointList);

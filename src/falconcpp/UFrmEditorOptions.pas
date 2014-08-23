@@ -1017,7 +1017,7 @@ end;
 
 procedure TFrmEditorOptions.BtnChooseCodeTemplateClick(Sender: TObject);
 begin
-  if OpenDialog.Execute then
+  if OpenDialog.Execute(Handle) then
   begin
     EditCodeTemplate.Text := OpenDialog.FileName;
   end;

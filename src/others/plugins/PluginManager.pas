@@ -23,6 +23,8 @@ type
     procedure Clear;
     procedure LoadFromDir(DirName: string);
     procedure Delete(PluginID: Integer);
+    function DispachCommand(Command, Widget, Param: Integer;
+      Data: Pointer): Integer;
     function ReceiveCommand(PluginID, Command, Widget, Param: Integer;
       Data: Pointer): Integer;
     property Count: Integer read GetCount;
@@ -77,6 +79,15 @@ begin
   Clear;
   FList.Free;
   inherited;
+end;
+
+function TPluginManager.DispachCommand(Command, Widget, Param: Integer;
+  Data: Pointer): Integer;
+var
+  I: Integer;
+begin
+  for I := FList.Count - 1 downto 0 do
+    Items[I].DispatchCommand(Command, Widget, Param, Data);
 end;
 
 function TPluginManager.GetInsertIndex(PluginID: Integer): Integer;

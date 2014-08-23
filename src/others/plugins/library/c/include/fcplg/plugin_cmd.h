@@ -27,22 +27,15 @@ enum Commands
 	Cmd_PageChange         = 0x0015,
 	Cmd_Enter              = 0x0016,
 	Cmd_Exit               = 0x0017,
+	Cmd_Popup              = 0x0018,
+	Cmd_Enabled            = 0x0019,
 
 	Cmd_CompilerChanged    = 0x0100,
 	Cmd_LangChanged        = 0x0101,
 	Cmd_FileSelected       = 0x0102,
 	Cmd_FileDeleted        = 0x0103,
-	Cmd_ScreenModeChanged  = 0x0104
-};
-
-/* Properties */
-enum Properties
-{
-	Prop_Text               = 0x0001,
-	Prop_Size               = 0x0002,
-	Prop_Info               = 0x0003, // Plugin info
-	Prop_Name               = 0x0004
-//Prop_MAX_ID               = 0xAAAA,
+	Cmd_ScreenModeChanged  = 0x0104,
+	Cmd_ActiveFile         = 0x0105
 };
 
 /* Events */
@@ -59,7 +52,8 @@ enum Events
 	Event_KeyPress     = 0xAAB3,
 	Event_Close        = 0xAAB4,
 	Event_PageChange   = 0xAAB5,
-	Event_Resize       = 0xAAB6
+	Event_Resize       = 0xAAB6,
+	Event_Popup        = 0xAAD7
 };
 
 /* Widgets */
@@ -141,7 +135,7 @@ enum MsgBoxFlags
   Mf_DefButton4       = 0x0300
 };
 
-/*  */
+/* MsgBoxResult */
 enum MsgBoxResult
 {
   Mr_Ok       = 1,
@@ -151,6 +145,25 @@ enum MsgBoxResult
   Mr_Ignore   = 5,
   Mr_Yes      = 6,
   Mr_No       = 7
+};
+
+/* SourceFileFlags */
+enum SourceFileFlags
+{  Sf_Modified = 1,  Sf_Saved    = 2,
+  Sf_Selected = 4,
+  Sf_Project  = 8
+};
+
+/* SourceFileType */
+enum SourceFileType
+{
+  St_Project = 1,
+  St_C = 2,
+  St_CPP = 3,
+  St_H = 4,
+  St_RC = 5,
+  St_Unknow = 6,
+  St_Folder = 7
 };
 
 typedef struct dispatch_command_t
@@ -234,5 +247,12 @@ typedef struct msg_box_t
 	const char* title;
 	unsigned int utype;
 } MsgBox;
+
+typedef struct source_file_t
+{
+	char file_name[260];
+	unsigned int flags;
+	int utype;
+} SourceFile;
 
 #endif /* _PLUGIN_CMD_H_ */

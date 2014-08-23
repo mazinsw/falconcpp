@@ -32,6 +32,10 @@ type
     function GetSubmenuFromID(WidgetID: Integer): TTBXSubmenuItem;
     function GetMenuItemFromID(WidgetID: Integer): TTBXItem;
     function WidgetShowModal(Widget: TWidget): Integer;
+    function GetPopupMenuFromID(WidgetID: Integer): TTBXPopupMenu;
+    function GetFileSelected(WidgetID, Param: Integer; Data: Pointer): Integer;
+    function SetWidgetEnabled(WidgetID: Integer; Enabled: Boolean): Integer;
+    function GetActiveFile(WidgetID, Param: Integer; Data: Pointer): Integer;
   public
     constructor Create(MainForm: TForm);
     destructor Destroy; override;
@@ -59,7 +63,7 @@ uses
   UFrmGotoFunction,
   UFrmPromptCodeTemplate,
   UFrmCodeTemplates,
-  UFrmVisualCppOptions;
+  UFrmVisualCppOptions, USourceFile;
 
 { TPluginServiceManager }
 
@@ -90,14 +94,20 @@ end;
 function TPluginServiceManager.CreateMenuItemWidget(Plugin: TPlugin;
   Param: Integer; Data: Pointer): Integer;
 var
-  MenuItem: PMenuItem;
-  Submenu: TTBXSubmenuItem;
+  MenuItem: PFCPMenuItem;
+  Submenu: TTBCustomItem;
+  Submenuitem: TTBXSubmenuItem;
   Item, NewItem: TTBCustomItem;
   I: Integer;
   Widget: TWidget;
 begin
-  MenuItem := PMenuItem(Data);
-  Submenu := GetSubmenuFromID(MenuItem^.SubmenuID);
+  MenuItem := PFCPMenuItem(Data);
+  Submenu := nil;
+  Submenuitem := GetSubmenuFromID(MenuItem^.SubmenuID);
+  if Submenuitem <> nil then
+    Submenu := Submenuitem;
+  if Submenu = nil then
+    Submenu := GetPopupMenuFromID(MenuItem^.SubmenuID).Items;
   if Submenu = nil then
   begin
     Result := 0;
@@ -117,7 +127,7 @@ begin
   else
     NewItem := TWidgetMenuItem.CreateWidget(Widget, Submenu.Owner);
   NewItem.Tag := Widget.ID;
-  NewItem.Caption := StrPas(MenuItem^.Text);
+  NewItem.Caption := string(StrPas(MenuItem^.Text));
   NewItem.ImageIndex := MenuItem^.ImageIndex;
   NewItem.ShortCut := MenuItem^.ShortCut;
   Submenu.Insert(I, NewItem);
@@ -127,20 +137,21 @@ end;
 function TPluginServiceManager.CreateMsgBoxWidget(Param: Integer;
   Data: Pointer): Integer;
 var
-  MsgBox: PMsgBox;
+  MsgBox: PFCPMsgBox;
 begin
-  MsgBox := PMsgBox(Data);
-  Result := MessageBox(GetHandleFromID(MsgBox^.ParentID), MsgBox^.Text, MsgBox^.Title, MsgBox^.uType);
+  MsgBox := PFCPMsgBox(Data);
+  Result := MessageBox(GetHandleFromID(MsgBox^.ParentID), PChar(string(StrPas(MsgBox^.Text))), 
+    PChar(string(StrPas(MsgBox^.Title))), MsgBox^.uType);
 end;
 
 function TPluginServiceManager.CreateFormWidget(Plugin: TPlugin;
   Param: Integer; Data: Pointer): Integer;
 var
-  Window: PWindow;
+  Window: PFCPWindow;
   NativeForm: TWidgetWindow;
   Widget: TWidget;
 begin
-  Window := PWindow(Data);
+  Window := PFCPWindow(Data);
   Widget := Widgets.Add(Plugin);
   NativeForm := TWidgetWindow.CreateWidget(Widget, GetHandleFromID(Window^.ParentID));
   case Window^.Border of
@@ -150,7 +161,7 @@ begin
     Wb_SizeToolWin: NativeForm.BorderStyle := bsSizeToolWin;
     Wb_None: NativeForm.BorderStyle := bsNone;
   end;
-  NativeForm.Caption := Window^.Text;
+  NativeForm.Caption := string(StrPas(Window^.Text));
   NativeForm.ClientWidth := Window^.Width;
   NativeForm.ClientHeight := Window^.Height;
   if (Window^.X = -1) and (Window^.Y = -1) then
@@ -166,12 +177,12 @@ end;
 function TPluginServiceManager.CreateButtonWidget(Plugin: TPlugin;
   Param: Integer; Data: Pointer): Integer;
 var
-  Button: PButton;
+  Button: PFCPButton;
   WidgetButton: TWidgetButton;
   Widget: TWidget;
   Control: TWinControl;
 begin
-  Button := PButton(Data);
+  Button := PFCPButton(Data);
   Control := GetControlFromID(Button^.ParentID);
   if Control = nil then
   begin
@@ -181,7 +192,7 @@ begin
   Widget := Widgets.Add(Plugin);
   WidgetButton := TWidgetButton.CreateWidget(Widget, Control);
   WidgetButton.Parent := Control;
-  WidgetButton.Caption := Button^.Text;
+  WidgetButton.Caption := string(StrPas(Button^.Text));
   WidgetButton.Width := Button^.Width;
   WidgetButton.Height := Button^.Height;
   WidgetButton.Left := Button^.X;
@@ -192,12 +203,12 @@ end;
 function TPluginServiceManager.CreateCheckBoxWidget(Plugin: TPlugin;
   Param: Integer; Data: Pointer): Integer;
 var
-  CheckBox: PCheckBox;
+  CheckBox: PFCPCheckBox;
   WidgetCheckBox: TWidgetCheckBox;
   Widget: TWidget;
   Control: TWinControl;
 begin
-  CheckBox := PCheckBox(Data);
+  CheckBox := PFCPCheckBox(Data);
   Control := GetControlFromID(CheckBox^.ParentID);
   if Control = nil then
   begin
@@ -207,7 +218,7 @@ begin
   Widget := Widgets.Add(Plugin);
   WidgetCheckBox := TWidgetCheckBox.CreateWidget(Widget, Control);
   WidgetCheckBox.Parent := Control;
-  WidgetCheckBox.Caption := CheckBox^.Text;
+  WidgetCheckBox.Caption := string(StrPas(CheckBox^.Text));
   WidgetCheckBox.Width := CheckBox^.Width;
   WidgetCheckBox.Height := CheckBox^.Height;
   WidgetCheckBox.Left := CheckBox^.X;
@@ -218,12 +229,12 @@ end;
 function TPluginServiceManager.CreateEditWidget(Plugin: TPlugin;
   Param: Integer; Data: Pointer): Integer;
 var
-  Edit: PEdit;
+  Edit: PFCPEdit;
   WidgetEdit: TWidgetEdit;
   Widget: TWidget;
   Control: TWinControl;
 begin
-  Edit := PEdit(Data);
+  Edit := PFCPEdit(Data);
   Control := GetControlFromID(Edit^.ParentID);
   if Control = nil then
   begin
@@ -243,12 +254,12 @@ end;
 function TPluginServiceManager.CreateLabelWidget(Plugin: TPlugin;
   Param: Integer; Data: Pointer): Integer;
 var
-  aLabel: PLabel;
+  aLabel: PFCPLabel;
   WidgetLabel: TWidgetLabel;
   Widget: TWidget;
   Control: TWinControl;
 begin
-  aLabel := PLabel(Data);
+  aLabel := PFCPLabel(Data);
   Control := GetControlFromID(aLabel^.ParentID);
   if Control = nil then
   begin
@@ -258,12 +269,76 @@ begin
   Widget := Widgets.Add(Plugin);
   WidgetLabel := TWidgetLabel.CreateWidget(Widget, Control);
   WidgetLabel.Parent := Control;
-  WidgetLabel.Caption := aLabel^.Text;
+  WidgetLabel.Caption := string(StrPas(aLabel^.Text));
   WidgetLabel.Width := aLabel^.Width;
   WidgetLabel.Height := aLabel^.Height;
   WidgetLabel.Left := aLabel^.X;
   WidgetLabel.Top := aLabel^.Y;
   Result := Widget.ID;
+end;
+
+function TPluginServiceManager.GetFileSelected(WidgetID, Param: Integer; 
+  Data: Pointer): Integer;
+var
+  MainForm: TFrmFalconMain;
+  SelectedFile: TSourceFile;
+  SourceFile: PFCPSourceFile;
+  S: AnsiString;
+begin           
+  MainForm := TFrmFalconMain(FForm);
+  if WidgetID = TREEVIEW_PROJECTS then
+  begin
+    if MainForm.TreeViewProjects.SelectionCount = 1 then
+    begin
+      SelectedFile := TSourceFile(MainForm.TreeViewProjects.Selected.Data);
+      SourceFile := PFCPSourceFile(Data);
+      SourceFile^.uType := SelectedFile.FileType;
+      SourceFile^.Flags := 0;
+      if SelectedFile.Modified then
+        SourceFile^.Flags := SourceFile^.Flags + Sf_Modified;
+      if SelectedFile.Saved then
+        SourceFile^.Flags := SourceFile^.Flags + Sf_Saved;
+      if SelectedFile.Node.Selected then
+        SourceFile^.Flags := SourceFile^.Flags + Sf_Selected;
+      if SelectedFile is TProjectBase then
+        SourceFile^.Flags := SourceFile^.Flags + Sf_Project;
+      S := AnsiString(SelectedFile.FileName);
+      CopyMemory(@SourceFile^.FileName, Pointer(S), Length(S) + 1);
+      Result := 0;
+      Exit;
+    end;
+  end;
+  Result := 1;
+end;
+
+function TPluginServiceManager.GetActiveFile(WidgetID, Param: Integer; 
+  Data: Pointer): Integer;
+var
+  MainForm: TFrmFalconMain;
+  ActiveFile: TSourceFile;
+  SourceFile: PFCPSourceFile;
+  S: AnsiString;
+begin           
+  MainForm := TFrmFalconMain(FForm);
+  if MainForm.GetActiveFile(ActiveFile) then
+  begin
+    SourceFile := PFCPSourceFile(Data);
+    SourceFile^.uType := ActiveFile.FileType;
+    SourceFile^.Flags := 0;
+    if ActiveFile.Modified then
+      SourceFile^.Flags := SourceFile^.Flags + Sf_Modified;
+    if ActiveFile.Saved then
+      SourceFile^.Flags := SourceFile^.Flags + Sf_Saved;
+    if ActiveFile.Node.Selected then
+      SourceFile^.Flags := SourceFile^.Flags + Sf_Selected;
+    if ActiveFile is TProjectBase then
+      SourceFile^.Flags := SourceFile^.Flags + Sf_Project;
+    S := AnsiString(ActiveFile.FileName);
+    CopyMemory(@SourceFile^.FileName, Pointer(S), Length(S) + 1);
+    Result := 0;
+    Exit;
+  end;
+  Result := 1;
 end;
 
 function TPluginServiceManager.DispatcheCommand(Plugin: TPlugin; Command,
@@ -310,9 +385,39 @@ begin
       Result := WidgetShowModal(Widgets.Find(Widget));
       Exit;
     end;
+    Cmd_ActiveFile:
+    begin
+      Result := GetActiveFile(Widget, Param, Data);
+      Exit;
+    end;
+    Cmd_FileSelected:
+    begin
+      Result := GetFileSelected(Widget, Param, Data);
+      Exit;
+    end;
+    Cmd_Enabled:
+    begin
+      Result := SetWidgetEnabled(Widget, Param <> 0);
+      Exit;
+    end
   else
   end;
   Result := 0;
+end;
+
+function TPluginServiceManager.SetWidgetEnabled(WidgetID: Integer; 
+  Enabled: Boolean): Integer;
+var
+  Component: TComponent;
+begin
+  Component := GetMenuItemFromID(WidgetID);
+  if Component <> nil then
+  begin
+    TTBXItem(Component).Enabled := Enabled;
+    Result := 0; 
+    Exit;
+  end;
+  Result := 1;
 end;
 
 function TPluginServiceManager.GetHandleFromID(WidgetID: Integer): HWND;
@@ -335,7 +440,7 @@ begin
   if WidgetID > $00FFFF then
   begin
     Widget := Widgets.Find(WidgetID);
-    if Widget <> nil then
+    if (Widget <> nil) and (Widget.Component is TTBXSubmenuItem) then
       Result := TTBXSubmenuItem(Widget.Component)
     else
       Result := nil;
@@ -360,6 +465,30 @@ begin
     SUBMENU_MAIN_TOOLS: Result := MainForm.MenuTools;
     SUBMENU_MAIN_HELP: Result := MainForm.MenuHelp;
     SUBMENU_MAIN_HELP_FALCONCPP: Result := MainForm.HelpFalcon;
+
+    SUBMENU_PROJECT_NEW: Result := MainForm.PopProjNew;
+  else
+    Result := nil;
+  end;
+end;
+
+function TPluginServiceManager.GetPopupMenuFromID(WidgetID: Integer): TTBXPopupMenu;
+var
+  MainForm: TFrmFalconMain;
+  Widget: TWidget;
+begin
+  MainForm := TFrmFalconMain(FForm);
+  if WidgetID > $00FFFF then
+  begin
+    Widget := Widgets.Find(WidgetID);
+    if (Widget <> nil) and (Widget.Component is TTBXPopupMenu) then
+      Result := TTBXPopupMenu(Widget.Component)
+    else
+      Result := nil;
+    Exit;
+  end;
+  case WidgetID of
+    POPUPMENU_PROJECT: Result:= MainForm.PopupProject;
   else
     Result := nil;
   end;
@@ -469,6 +598,14 @@ begin
     MENUITEM_MAIN_HELP_TIPOFDAY: Result := MainForm.HelpTipOfDay;
     MENUITEM_MAIN_HELP_UPDATE: Result := MainForm.HelpUpdate;
     MENUITEM_MAIN_HELP_ABOUT: Result := MainForm.HelpAbout;
+
+    MENUITEM_PROJECT_EDIT: Result := MainForm.PopProjEdit;
+    MENUITEM_PROJECT_OPEN: Result := MainForm.PopProjOpen;
+    MENUITEM_PROJECT_ADDTOPROJECT: Result := MainForm.PopProjAdd;
+    MENUITEM_PROJECT_REMOVE: Result := MainForm.PopProjRemove;
+    MENUITEM_PROJECT_RENAME: Result := MainForm.PopProjRename;
+    MENUITEM_PROJECT_DELETEFROMDISK: Result := MainForm.PopProjDelFromDsk;
+    MENUITEM_PROJECT_PROPERTY: Result := MainForm.PopProjProp;
   else
     if (WidgetID >= MENUITEM_MAIN_EDIT_TOGGLEBOOKMARKS_1) and
        (WidgetID <= MENUITEM_MAIN_EDIT_TOGGLEBOOKMARKS_9) and

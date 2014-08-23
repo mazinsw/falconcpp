@@ -475,7 +475,7 @@ begin
     Options := Options + [ofFileMustExist];
     Filter := STR_FRM_ENV_OPT[36] + '(*.ini, *.conf, *.cfg)|' +
       '*.ini; *.conf; *.cfg';
-    if Execute then
+    if Execute(Self.Handle) then
     begin
       EditAltConfFile.Text := FileName;
     end;

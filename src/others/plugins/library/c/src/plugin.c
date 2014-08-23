@@ -1,6 +1,6 @@
 #include "plugin.h"
 #include <stdlib.h>
-#define FCPLG_VERSION "1.0"
+#define FCPLG_VERSION "1.1"
 
 #ifdef WIN32
 # include <windows.h>
@@ -52,7 +52,7 @@ int Plugin_sendCommand(Plugin* plugin, int command, int widget, int param,
 	return SendMessage(plugin->handle, WM_FALCONCPP_PLUGIN, plugin->id, (LPARAM)&msg);
 }
 
-const char* Plugin_getVersion()
+DECLSPEC const char* FCPCALL Plugin_getVersion()
 {
 	return FCPLG_VERSION;
 }

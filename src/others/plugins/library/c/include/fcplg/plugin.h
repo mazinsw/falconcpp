@@ -40,7 +40,7 @@ PluginInfo* Plugin_getInfo(Plugin* plugin);
  * return
  *   C string containing the version number
  */
-const char* Plugin_getVersion();
+DECLSPEC const char* FCPCALL Plugin_getVersion();
 
 /**
  * Send a command to Falcon C++ IDE

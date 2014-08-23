@@ -1,7 +1,6 @@
 #ifndef _PLUGIN_WDG_MAP_H_
 #define _PLUGIN_WDG_MAP_H_
 
-// definition TYPE_WIDGET
 #define WINDOW_MAIN                            0x0000FF
 #define MENU_MAIN                              0x000100
 #define SUBMENU_MAIN_FILE                      0x000101
@@ -148,12 +147,22 @@
 //MENUITEM_MAIN_HELP_MAX_ID                    0x0001D6
 //MENUITEM_MAIN_MAX_ID                         0x0001DB
 
-// definition TYPE_WINDOW_WIDGET
-#define POPUPMENU_MAIN_TABS         0x000100
-#define POPUPMENU_MAIN_PROJECT      0x000100
-#define POPUPMENU_MAIN_EDITOR       0x000100
-#define POPUPMENU_MAIN_MESSAGES     0x000100
-#define TOOLBAR_MAIN_DEFAULT        0x000100
+#define POPUPMENU_TABS         0x000200
+
+#define POPUPMENU_PROJECT                      0x00027F
+#define SUBMENU_PROJECT_NEW                    0x000280
+#define MENUITEM_PROJECT_EDIT                  0x000281
+#define MENUITEM_PROJECT_OPEN                  0x000282
+#define MENUITEM_PROJECT_ADDTOPROJECT          0x000283
+#define MENUITEM_PROJECT_REMOVE                0x000284
+#define MENUITEM_PROJECT_RENAME                0x000285
+#define MENUITEM_PROJECT_DELETEFROMDISK        0x000286
+#define MENUITEM_PROJECT_PROPERTY              0x000287
+//MENUITEM_PROJECT_MAX_ID                      0x0002FF
+
+#define POPUPMENU_EDITOR       0x000300
+#define POPUPMENU_MESSAGES     0x00037F
+#define TOOLBAR_DEFAULT        0x000400
 
 
 
@@ -170,7 +179,9 @@
 #define WINDOW_GOTO_LINE            0x002427 // OK
 #define WINDOW_GOTO_FUNCTION        0x00280F // OK
 #define WINDOW_ABOUT                0x002BF7 // OK
-//#define WIDGET_MAX_ID             0x00FFFF
+#define TREEVIEW_PROJECTS           0x002FDF
+
+#define WIDGET_MAX_ID               0x00FFFF
 
 
 

@@ -30,6 +30,10 @@ object FrmEditorOptions: TFrmEditorOptions
     TabOrder = 0
     object TSGeneral: TTabSheet
       Caption = 'General'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object GroupBox1: TGroupBox
         Left = 5
         Top = 2

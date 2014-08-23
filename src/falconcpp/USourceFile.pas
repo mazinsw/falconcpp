@@ -184,6 +184,7 @@ type
     procedure Reload;
     procedure LoadFromFile(const FileName: string); overload;
     procedure UpdateDate;
+    procedure UpdateBreakpoint;
     procedure Assign(Value: TSourceFile);
     constructor Create(Node: TTreeNode);
     destructor Destroy; override;
@@ -246,7 +247,7 @@ type
     function NeedBuild: Boolean; virtual;
     function GetTarget: string;
     function TargetChanged: Boolean;
-    function GetBreakpointLists(List: TStrings): Boolean;
+    function GetBreakpointFiles(List: TStrings): Boolean;
     function HasBreakpoint: Boolean;
   public
     property ForceClean: Boolean read FForceClean write FForceClean;
@@ -592,6 +593,32 @@ begin
     Exit;
   LoadFromFile(FileName);
   UpdateDate;
+end;
+
+procedure TSourceFile.UpdateBreakpoint;
+var
+  Line, MatchCount: Integer;
+  Sheet: TSourceFileSheet;
+begin
+  if not GetSheet(Sheet) then
+    Exit;
+  MatchCount := 0;
+  Line := Sheet.Editor.MarkerNext(0, 1 shl MARK_BREAKPOINT);
+  while Line <> -1 do
+  begin
+    if Breakpoint.HasBreakpoint(Line + 1) then
+      Inc(MatchCount);
+    Line := Sheet.Editor.MarkerNext(Line + 1, 1 shl MARK_BREAKPOINT);
+  end;
+  if MatchCount = Breakpoint.Count then
+    Exit; // ok
+  Breakpoint.Clear;
+  Line := Sheet.Editor.MarkerNext(0, 1 shl MARK_BREAKPOINT);
+  while Line <> -1 do
+  begin
+    Breakpoint.AddBreakpoint(Line + 1);
+    Line := Sheet.Editor.MarkerNext(Line + 1, 1 shl MARK_BREAKPOINT);
+  end;
 end;
 
 procedure TSourceFile.UpdateDate;
@@ -1246,7 +1273,7 @@ begin
   end;
 end;
 
-function TProjectBase.GetBreakpointLists(List: TStrings): Boolean;
+function TProjectBase.GetBreakpointFiles(List: TStrings): Boolean;
 var
   I: Integer;
   Files: TStrings;
@@ -1258,7 +1285,7 @@ begin
   for I := 0 to Files.Count - 1 do
   begin
     fprop := TSourceFile(Files.Objects[I]);
-    List.AddObject(Files.Strings[I], fprop.Breakpoint);
+    List.AddObject(Files.Strings[I], fprop);
   end;
   Files.Free;
 end;
@@ -2206,7 +2233,7 @@ begin
         ExecFileName := 'gcc'
       else
         ExecFileName := 'g++';
-      ExecParams := Trim(CompilerOptions + ' -fno-diagnostics-show-option');
+      ExecParams := Trim(CompilerOptions);
       if Debugging then
       begin
         ExecParams := RemoveOption('-s', ExecParams);
@@ -2222,6 +2249,7 @@ begin
       ExecParams := ExecParams + ' -o ' + Temp;
       ExecParams := Trim(ExecParams + ' ' + Libs);
       ExecParams := Trim(ExecParams + ' ' + Flags);
+      ExecParams := Trim(ExecParams + ' -fno-diagnostics-show-option');
       MkRes := 0;
     end
     else

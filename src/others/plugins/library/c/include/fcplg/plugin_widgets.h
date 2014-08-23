@@ -31,6 +31,9 @@ int Plugin_MenuItem_create(Plugin* plugin, const char * text, int position,
 int Plugin_MsgBox_show(Plugin* plugin, int parent_id, const char* text, 
 	const char* title, unsigned int utype);
 
+int Plugin_SourceFile_getActive(Plugin* plugin, SourceFile * source);
+int Plugin_SourceFile_getSelected(Plugin* plugin, SourceFile * source);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }

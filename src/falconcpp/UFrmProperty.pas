@@ -506,7 +506,7 @@ end;
 
 procedure TFrmProperty.BtnLoadIconClick(Sender: TObject);
 begin
-  if OpenIcon.Execute then
+  if OpenIcon.Execute(Handle) then
   begin
     if not Assigned(AppIcon) then
       AppIcon := TIcon.Create;
@@ -596,7 +596,7 @@ begin
       FilterIndex := 0;
       LibDir := FrmFalconMain.Config.Compiler.Path + '\lib\';
       InitialDir := LibDir;
-      if Execute then
+      if Execute(Self.Handle) then
       begin
         if Pos(LibDir, FileName) = 0 then
         begin

@@ -27,18 +27,15 @@ const
 	Cmd_PageChange         = $0015;
 	Cmd_Enter              = $0016;
 	Cmd_Exit               = $0017;
+  Cmd_Popup              = $0018;
+	Cmd_Enabled            = $0019;
 	
 	Cmd_CompilerChanged    = $0100;
 	Cmd_LangChanged        = $0101;
 	Cmd_FileSelected       = $0102;
 	Cmd_FileDeleted        = $0103;
 	Cmd_ScreenModeChanged  = $0104;
-
-  {* Properties *}
-  Prop_Text            = $0001;
-  Prop_Size            = $0002;
-  Prop_Info            = $0003; // Plugin info
-  Prop_Name            = $0004;
+	Cmd_ActiveFile         = $0105;
 
   {* Events *}
 	Event_Click        = $AAAB;
@@ -53,6 +50,7 @@ const
 	Event_Close        = $AAB4;
 	Event_PageChange   = $AAB5;
 	Event_Resize       = $AAB6;
+	Event_Popup        = $AAD7;
 
   {* Widgets *}
 	Wdg_Menu             = $0001;
@@ -95,6 +93,12 @@ const
 	Ca_Free     = $02;
 	Ca_Minimize = $03;
 
+  {* SourceFileFlags *}
+  Sf_Modified = $01;
+  Sf_Saved    = $02;
+  Sf_Selected = $04;
+  Sf_Project  = $08;
+
 
   cannotLoadPlugin = 'Can''t load plugin %s.';
   functionNotFound = 'Function %s not found.';
@@ -102,6 +106,8 @@ const
   failedToInitializePlugin = 'Failed to initialize plugin: error code %d.';
   pluginNotInitialized = 'Plugin not initialized.';
   pluginAlreadyExists  = 'Plugin with ID: %d already exists.';
+  pluginIncompatibleVersion = 'Failed to initialize plugin: incompatible plugin ' +
+    'version %s with plugin manager version %s.';
 
 
 // REGEX C TO PASCAL
@@ -117,78 +123,85 @@ type
   end;
   PDispatchCommand = ^TDispatchCommand;
 
-  TWindow = record
+  TFCPWindow = record
     ParentID: Integer;
     X: Integer;
     Y: Integer;
     Width: Integer;
     Height: Integer;
-    Text: PChar;
+    Text: PAnsiChar;
     Border: Integer;
   end;
-  PWindow = ^TWindow;
+  PFCPWindow = ^TFCPWindow;
 
-  TButton = record
+  TFCPButton = record
     ParentID: Integer;
     X: Integer;
     Y: Integer;
     Width: Integer;
     Height: Integer;
-    Text: PChar;
+    Text: PAnsiChar;
   end;
-  PButton = ^TButton;
+  PFCPButton = ^TFCPButton;
 
-  TCheckBox = record
+  TFCPCheckBox = record
     ParentID: Integer;
     X: Integer;
     Y: Integer;
     Width: Integer;
     Height: Integer;
-    Text: PChar;
+    Text: PAnsiChar;
   end;
-  PCheckBox = ^TCheckBox;
+  PFCPCheckBox = ^TFCPCheckBox;
 
-  TEdit = record
+  TFCPEdit = record
     ParentID: Integer;
     X: Integer;
     Y: Integer;
     Width: Integer;
     Height: Integer;
   end;
-  PEdit = ^TEdit;
+  PFCPEdit = ^TFCPEdit;
 
-  TLabel = record
+  TFCPLabel = record
     ParentID: Integer;
     X: Integer;
     Y: Integer;
     Width: Integer;
     Height: Integer;
-    Text: PChar;
+    Text: PAnsiChar;
   end;
-  PLabel = ^TLabel;
+  PFCPLabel = ^TFCPLabel;
 
-  TMenu = record
+  TFCPMenu = record
     ParentID: Integer;
     ImageList: Integer;
   end;
-  PMenu = ^TMenu;
+  PFCPMenu = ^TFCPMenu;
 
-  TMenuItem = record
+  TFCPMenuItem = record
     SubmenuID: Integer;
     ImageIndex: Integer;
     Position: Integer;
-    Text: PChar;
+    Text: PAnsiChar;
     ShortCut: Word;
   end;
-  PMenuItem = ^TMenuItem;
+  PFCPMenuItem = ^TFCPMenuItem;
 
-  TMsgBox = record
+  TFCPMsgBox = record
     ParentID: Integer;
-    Text: PChar;
-    Title: PChar;
+    Text: PAnsiChar;
+    Title: PAnsiChar;
     uType: Cardinal;
   end;
-  PMsgBox = ^TMsgBox;
+  PFCPMsgBox = ^TFCPMsgBox;
+
+  TFCPSourceFile = record
+    FileName: array[0..259] of AnsiChar;
+    Flags: Cardinal;
+    uType: Integer;
+  end;
+  PFCPSourceFile = ^TFCPSourceFile;
 
 implementation
 

@@ -177,6 +177,7 @@ type
     function BufferToDisplayPos(const rowcol: TBufferCoord): TDisplayCoord;
     function DisplayToBufferPos(const Display: TDisplayCoord): TBufferCoord;
     function CharIndexToRowCol(index: Integer): TBufferCoord;
+    function GetLineChars: string;
     procedure CutToClipboard;
     procedure CopyToClipboard;
     procedure PasteFromClipboard;
@@ -205,7 +206,7 @@ type
       var S: UnicodeString; var Style: THighlighStyle): Boolean;
     procedure ProcessCloseBracketChar;
     procedure ProcessBreakLine;
-    procedure AddBreakpoint(Line: Integer);
+    function AddBreakpoint(Line: Integer): Integer;
     procedure DeleteBreakpoint(Line: Integer);
     procedure SetActiveLine(Line: Integer);
     procedure RemoveActiveLine(Line: Integer);
@@ -593,6 +594,18 @@ end;
 function TEditor.GetDisplayY: Integer;
 begin
   Result := LineFromPosition(GetCurrentPos) + 1;
+end;
+
+function TEditor.GetLineChars: string;
+begin
+  case GetEOLMode of
+    SC_EOL_LF: // linux
+      Result := #10;
+    SC_EOL_CR: // mac
+      Result := #13;
+  else // windows
+    Result := #13#10;
+  end;
 end;
 
 function TEditor.GetLineHeight: Integer;
@@ -1677,7 +1690,7 @@ begin
   if NextLineStr = '*/' then
   begin
     TmpStr := GetLeftSpacing(LeftOffset + 1, WantTabs);
-    SelText := #13 + TmpStr + '*/';
+    SelText := GetLineChars + TmpStr + '*/';
   end;
   CaretXY := bCaret;
   EndUndoAction;
@@ -1930,9 +1943,11 @@ begin
   else Result := StringOfChar(#32, CharCount);
 end;
 
-procedure TEditor.AddBreakpoint(Line: Integer);
+function TEditor.AddBreakpoint(Line: Integer): Integer;
 begin
-  MarkerAdd(Line - 1, MARK_BREAKPOINT);
+  Result := MarkerAdd(Line - 1, MARK_BREAKPOINT);
+  if Result = -1 then
+    Exit;
   MarkerAdd(Line - 1, MARK_BREAKICON);
   Colourise(PositionFromLine(Line - 1), GetLineEndPosition(Line - 1));
 end;

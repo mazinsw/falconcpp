@@ -154,6 +154,18 @@ const
   //MENUITEM_MAIN_HELP_MAX_ID                    0x0001D6
   //MENUITEM_MAIN_MAX_ID                         0x0001DB
 
+
+  POPUPMENU_PROJECT                      = $00027F;
+  SUBMENU_PROJECT_NEW                    = $000280;
+  MENUITEM_PROJECT_EDIT                  = $000281;
+  MENUITEM_PROJECT_OPEN                  = $000282;
+  MENUITEM_PROJECT_ADDTOPROJECT          = $000283;
+  MENUITEM_PROJECT_REMOVE                = $000284;
+  MENUITEM_PROJECT_RENAME                = $000285;
+  MENUITEM_PROJECT_DELETEFROMDISK        = $000286;
+  MENUITEM_PROJECT_PROPERTY              = $000287;
+  //MENUITEM_PROJECT_MAX_ID                      0x0002FF
+
 	WINDOW_COMPILER_OPTIONS     = $0004E7;
 	WINDOW_EDITOR_OPTIONS       = $0008CF;
 	WINDOW_ENVIRONMENT_OPTIONS  = $000CB7;
@@ -165,6 +177,10 @@ const
 	WINDOW_GOTO_LINE            = $002427;
 	WINDOW_GOTO_FUNCTION        = $00280F;
 	WINDOW_ABOUT                = $002BF7;
+
+  TREEVIEW_PROJECTS           = $002FDF;
+
+  WIDGET_MAX_ID               = $00FFFF;
 
 implementation
 

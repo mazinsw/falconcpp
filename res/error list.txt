@@ -9,6 +9,7 @@ linha.c:7:1: warning: "max" redefined
 NovoArquivo.cpp:7: warning: division by zero
 NovoArquivo.cpp:6: error: too many initializers for 'int [1]'
 lib/Socket.cpp:73: error: invalid types 'long unsigned int[int]' for array subscript
+1076.cpp:49:26: warning: too many arguments for format
 
 already in use:
 %s: In function '%s':

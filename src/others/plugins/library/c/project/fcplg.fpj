@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Project>
 	<Libs Value=""/>
-	<Flags Value="-I&quot;..\include\fcplg&quot;"/>
+	<Flags Value="-I&quot;..\include\fcplg&quot; -DBUILD_DLL"/>
 	<Target Value="..\lib\libfcplg.a"/>
 	<CommandLine Value=""/>
 	<CompilerOptions Value="-Wall -s -O2"/>

@@ -104,3 +104,11 @@ int Plugin_MsgBox_show(Plugin* plugin, int parent_id, const char* text,
 	msgbox.utype = utype;
 	return Plugin_sendCommand(plugin, Cmd_Create, Wdg_MsgBox, 0, &msgbox);
 }
+
+int Plugin_SourceFile_getActive(Plugin* plugin, SourceFile * source)
+{	return Plugin_sendCommand(plugin, Cmd_ActiveFile, 0, 0, source);} 
+
+int Plugin_SourceFile_getSelected(Plugin* plugin, SourceFile * source)
+{
+	return Plugin_sendCommand(plugin, Cmd_FileSelected, TREEVIEW_PROJECTS, 0, source);
+}

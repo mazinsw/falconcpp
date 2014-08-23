@@ -9,19 +9,24 @@ const
   PluginInitializeStr      = 'Plugin_initialize';
   PluginDispatchCommandStr = 'Plugin_dispatchCommand';
   PluginFinalizeStr        = 'Plugin_finalize';
+  PluginGetVersion         = 'Plugin_getVersion';
+
+  Plugin_Version           = '1.1';
+
 
 type
   TPluginInfo = record
-    Version: array[0..30] of Char;
-    Name: array[0..100] of Char;
-    Author: array[0..100] of Char;
-    Description: array[0..254] of Char;
+    Version: array[0..30] of AnsiChar;
+    Name: array[0..100] of AnsiChar;
+    Author: array[0..100] of AnsiChar;
+    Description: array[0..254] of AnsiChar;
   end;
 
   TPluginInitialize      = function(Handle: HWND; var Info: TPluginInfo;
     var Data: Pointer): Integer; cdecl;
   TPluginDispatchCommand = function(var Cmd: TDispatchCommand; Data: Pointer): Integer; cdecl;
   TPluginFinalize        = procedure(Data: Pointer); cdecl;
+  TPluginGetVersion = function: PAnsiChar; cdecl;
 
   TPlugin = class
   private
@@ -35,6 +40,7 @@ type
     FPluginInitialize: TPluginInitialize;
     FPluginDispatchCommand: TPluginDispatchCommand;
     FPluginFinalize: TPluginFinalize;
+    FPluginGetVersion: TPluginGetVersion;
   protected
   public
     constructor Create(FileName: string; DispatchHandle: HWND);
@@ -58,6 +64,7 @@ constructor TPlugin.Create(FileName: string; DispatchHandle: HWND);
 var
   FuncPtr: Pointer;
   PluginInfo: TPluginInfo;
+  sptr: PAnsiChar;
 begin
   FHandle := LoadLibrary(PChar(FileName));
   if FHandle = 0 then
@@ -86,6 +93,21 @@ begin
     raise Exception.CreateFmt(functionNotFound, [PluginFinalizeStr]);
   end;
   FPluginFinalize := FuncPtr;
+  FuncPtr := GetProcAddress(FHandle, PluginGetVersion);
+  if FuncPtr = nil then
+  begin
+    FreeLibrary(FHandle);
+    FHandle := 0;
+    raise Exception.CreateFmt(functionNotFound, [PluginGetVersion]);
+  end;
+  FPluginGetVersion := FuncPtr;
+  sptr := FPluginGetVersion();
+  if CompareText(StrPas(sptr), Plugin_Version) <> 0 then
+  begin
+    FreeLibrary(FHandle);
+    FHandle := 0;
+    raise Exception.CreateFmt(pluginIncompatibleVersion, [StrPas(sptr), Plugin_Version]);
+  end;
   FID := FPluginInitialize(DispatchHandle, PluginInfo, FData);
   if FID <= 0 then
   begin

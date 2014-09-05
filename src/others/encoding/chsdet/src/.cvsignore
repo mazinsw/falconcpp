@@ -1,0 +1,8 @@
+*.bak
+*.rar
+*.zip
+*.exe
+*.dll
+*.dcu
+*.res
+__history

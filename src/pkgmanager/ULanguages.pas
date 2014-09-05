@@ -213,9 +213,9 @@ var
 
 implementation
 
-uses PkgUtils, ShlObj, SystemUtils;
+uses PkgUtils, ShlObj, SystemUtils, UnicodeUtils;
 
-procedure UpdateLang(ini: TIniFile);
+procedure UpdateLang(ini: TCustomIniFile);
 
   function ReadStr(const Ident: Integer; const Default: string): string;
   begin
@@ -288,7 +288,8 @@ var
     UsersDefDir: String;
   I: Integer;
   LangID, FileLangID: Cardinal;
-  ini: TIniFile;
+  ini: TCustomIniFile;
+  Lines: TStrings;
 begin
   LoadDefaultLang;
   FalconDir := GetFalconDir;
@@ -315,10 +316,16 @@ begin
   ini.Free;
   Files := TStringList.Create;
   FindFiles(LangDir + '*.lng', Files);
+  Lines := TStringList.Create;
   for I := 0 to Files.Count - 1 do
   begin
     LangFileName := LangDir + Files.Strings[I];
-    ini := TIniFile.Create(LangFileName);
+    ini := TMemIniFile.Create('');
+    try
+      LoadFileEx(LangFileName, Lines);
+      TMemIniFile(ini).SetStrings(Lines);
+    except
+    end;
     FileLangID := ini.ReadInteger('FALCON', 'LangID', 0);
     if FileLangID = LangID then
     begin
@@ -328,6 +335,7 @@ begin
     end;
     ini.Free;
   end;
+  Lines.Free;
   Files.Free;
 end;
 

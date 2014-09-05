@@ -78,7 +78,7 @@ var
 
 implementation
 
-uses UFrmUpdate, Registry, ShellAPI, SystemUtils;
+uses UFrmUpdate, Registry, ShellAPI, SystemUtils, UnicodeUtils;
 
 Function GetFileVersionA(FileName: String): TVersion;
 type
@@ -333,18 +333,27 @@ procedure LoadLang;
 var
   LangFile: String;
   I: Integer;
-  ini: TIniFile;
+  ini: TMemIniFile;
 
   function ReadStr(const Ident: Integer; const Default: String): String;
   begin
     Result := ini.ReadString('FALCON', IntToStr(Ident), Default);
   end;
 
+var
+  Lines: TStrings;
 begin
   LangFile := GetLangFileName;
   if FileExists(LangFile) then
   begin
-    ini := TIniFile.Create(LangFile);
+    Lines := TStringList.Create;
+    ini := TMemIniFile.Create('');
+    try
+      LoadFileEx(LangFile, Lines);
+      TMemIniFile(ini).SetStrings(Lines);
+    except
+    end;
+    Lines.Free;
     for I := 1 to 25 do//4001 - 4021
       STR_FRM_UPD[I] := ReadStr(I + 4000, CONST_STR_FRM_UPD[I]);
     ini.Free;
@@ -566,7 +575,8 @@ var
   Files: TStrings;
   ID, UserLangID: Integer;
   LangFileName, AlterConfIni, LangDir, UsersDefDir: String;
-  ini: TIniFile;
+  ini: TCustomIniFile;
+  Lines: TStrings;
 begin
   Result := '';
   ini := TIniFile.Create(ConfigPath + 'Config.ini');
@@ -591,10 +601,16 @@ begin
   ini.Free;
   Files := TStringList.Create;
   FindFiles(LangDir + '*.lng', Files);
+  Lines := TStringList.Create;
   for I:= 0 to Pred(Files.Count) do
   begin
     LangFileName := LangDir + Files.Strings[I];
-    ini := TIniFile.Create(LangFileName);
+    ini := TMemIniFile.Create('');
+    try
+      LoadFileEx(LangFileName, Lines);
+      TMemIniFile(ini).SetStrings(Lines);
+    except
+    end;
     ID := ini.ReadInteger('FALCON', 'LangID', 0);
     if ID = UserLangID then
     begin
@@ -604,6 +620,7 @@ begin
     end;
     ini.Free;
   end;
+  Lines.Free;
   Files.Free;
 end;
 

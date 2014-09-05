@@ -1,0 +1,1051 @@
+[FALCON]
+
+# Language definitions
+LangID=2052
+LangName=Simplified Chinese
+ImageIndex=45
+
+# Translated by
+Name=firefox78
+Email=firefox78@126.com
+Version=
+
+# Main Form
+# Top Menu
+1=文件
+2=编辑
+3=搜索
+4=视图
+5=项目
+6=运行
+7=工具
+8=帮助
+
+# File Menu
+109=新建
+110=打开
+111=重新打开
+113=保存
+114=另存为...
+115=全部保存
+117=导入
+118=输出
+120=关闭
+121=关闭所有
+122=移除
+124=打印
+126=退出
+
+# Edit Menu
+221=撤销
+222=重复
+224=剪切
+225=复制
+226=粘贴
+228=切换头文件/源文件
+230=删除
+231=全选
+233=切换书签
+234=转到书签
+236=缩进
+237=取消缩进
+239=切换注释行
+241=格式化
+243=折叠代码
+244=取消折叠
+
+# Search Menu
+334=查找...
+335=查找下一个
+336=向前查找
+337=在文件中查找...
+338=替换...
+339=增量查找...
+341=跳转到函数...
+342=跳转到前一函数
+343=跳转到下一函数
+344=跳转到行号...
+
+# View Menu
+391=项目管理
+392=状态条
+393=提纲
+394=编译器输出
+395=工具条
+396=主题
+397=缩放
+399=全屏
+401=恢复默认值
+
+# Project Menu
+435=增加...
+436=移除...
+438=编译
+440=属性...
+
+# Run Menu
+541=运行
+542=编译
+543=执行
+545=切换断点
+546=单步执行
+547=单步运行
+548=单步跳转
+549=运行到光标位置
+550=停止
+
+# Tools Menu
+646=开发环境选项...
+647=编译器选项...
+648=编辑器选项...
+650=创建模板...
+651=创建程序包...
+653=程序包...
+
+# Help Menu
+854=Falcon帮助
+855=每日提示...
+857=更新
+859=关于...
+
+# SubMenu New from File Menu
+959=项目...
+960=C文件
+961=C++文件
+962=头文件
+963=资源文件
+964=空文件
+966=文件夹
+
+# SubMenu Import from File Menu
+970=Dev-C++项目
+971=Code::Blocks项目
+972=MS Visual C++ 项目
+
+# SubMenu Toolbars from View Menu
+978=默认工具条
+979=编辑工具条
+980=搜索工具条
+981=编译工具条
+982=导航条
+983=项目工具条
+984=帮助工具条
+985=调试工具条
+
+# DefaultBar ToolBar
+1067=新建
+1068=打开
+1069=移除
+1071=保存
+1072=保存所有
+
+# EditBar ToolBar
+1080=撤销
+1081=重做
+
+# NavigatorBar ToolBar
+1089=前一页
+1090=下一页
+1092=切换书签
+1093=跳转到书签
+
+# CompilerBar ToolBar
+1098=运行
+1099=编译
+1100=执行
+1102=停止
+
+# HelpBar ToolBar
+1110=帮助
+1111=上下文帮助
+
+# ProjectBar ToolBar
+1119=新建项目
+1120=项目属性
+
+# DebugBar Toolbar
+1128=单步执行
+1129=单步运行
+1130=单步跳转
+
+# SearchBar Toolbar
+1138=查找
+1139=替换
+1141=跳转到行号
+
+# PopupMenu from Project List
+1181=新建
+1183=编辑
+1184=打开
+1186=添加到项目
+1187=移除
+1188=重命名
+1189=从磁盘删除
+1191=项目值...
+
+# PopupMenu from Editor
+1291=打开定义
+1293=光标处插入类
+1294=切换头文件/源文件
+1296=撤销
+1297=重做
+1299=剪切
+1300=复制
+1301=粘贴
+1302=删除
+1303=全选
+1305=工具
+1307=切换书签
+1308=跳转到书签
+1310=编辑器属性...
+
+# PopupMenu from Tabs
+1351=关闭
+1352=关闭所有
+1353=关闭其余窗口
+1355=保存
+1356=全部保存
+1358=复制全文件名
+1359=复制文件名
+1360=复制目录路径
+1362=切换头文件/源文件
+1364=只读
+1366=页面置顶
+1367=页面置底
+1369=页面属性值...
+
+# PopupMenu from Messages
+1375=复制
+1376=复制原始消息
+1378=原始消息
+1380=跳转到行
+1381=清除
+
+# Tabs Left
+1405=项目
+1406=浏览
+
+# Tabs Right
+1407=输出
+
+# Tabs Down
+1408=消息集
+
+# Messages List
+1410=文件
+1411=行号
+1412=通知
+
+# Others
+1413=空项目
+1414=保存改变到"%s"? 
+
+# Filters
+1415=Falcon项目文件
+1416=所有类型
+
+# default FileName
+1417=新建文件
+1418=新建文件夹
+1419=主文件
+1420=资源
+
+# Others
+1421=运行中...
+1422=编译中...
+1423=构建中...
+1424=从项目删除文件"%s" ？
+1425=从磁盘删除文件"%s"？
+1426=通用错误
+1427=项目
+
+# Splash Screen
+1428=翻译：%s
+1429=创建标准模板...
+1430=载入模板...
+1431=载入项目...
+1432=创建标准工具...
+1433=设置开发环境变量...
+1434=准备启动应用程序....
+1435=(空)
+1436=清除历史记录
+1437=载入历史记录...
+1438=%s文件没有找到
+
+# Filters
+1439=所有关联文件
+1440=载入所有已装程序包...
+1441=检测新装程序包
+1442=dddd, d of mmmm of yyyy t
+
+# Compilation messages
+1443=编译成功，耗时%s秒
+1444=编译失败
+1445=增加%d/%d消息
+1446=遍历%d/%d结果
+1447=您需要创建吗？
+1448=调试
+1449=载入配置...
+1450=没有检测到编译器
+1451=不能导入%s项目！
+1452=%s项目
+1453=此文件被其它程序修改。\n您需要重新导入吗？
+1454=变量
+1455=继续
+1456=从项目中删除"%s"文件夹
+1457=从磁盘中删除"%s"文件夹
+1458="%s"文件已存在。\n您需要覆盖吗？
+
+# Property Form
+# Tabs
+1528=应用
+1529=版本信息
+1530=编译器
+1531=运行
+
+# Sheet Application
+1532=应用程序设置
+1533=项目名称
+1534=目标
+1535=图标
+1536=双击改变应用程序图标
+1537=载入图标
+1538=输出设置
+1539=目标文件扩展:
+1540=包含所有文件到项目
+1573=属性值
+1574=应用程序类型
+1575=控制台应用
+1576=Windows应用
+1577=DLL动态链接库
+1578=Lib静态连接库
+1579=主题生效
+1580=管理员权限
+1581=创建链接库
+1582=选择文件夹到Include
+1583=编辑所选
+1584=选择Lib库文件夹
+
+# Common buttons
+1541=确定
+1542=取消
+1543=应用
+
+# Sheet Version Info
+1544=项目版本信息
+1545=版本号
+1546=主要版本
+1547=次要版本号
+1548=发布
+1549=构建
+1550=自动增量编译
+1551=语言设置
+1552=区域
+1553=主键
+1554=值
+
+# Sheet Compiler
+1555=编译类型
+1556=优化选项
+1557=最小尺寸
+1558=显示警告
+1559=优化速度
+1560=Lib库文件
+1561=添加
+1562=删除选择
+1563=上移
+1564=下移
+1565=Include文件
+1566=清除
+1567=编译前删除*.OBJ文件
+1568=编译后删除*.OBJ文件
+1569=编译后删除*.MAK文件
+1570=编译后删除*.RES资源文件
+
+# Sheet Run
+1571=应用程序
+1572=参数
+
+# New Project Form
+1673=新建项目
+1674=< 后退
+1675=前进 >
+1676=结束
+
+# Projects Frame
+1677=程序描述
+1678=Falcon C++项目向导
+
+# Project Options Frame
+1679=更改
+1680=应用程序图标
+1681=公司
+1682=版本
+1683=产品名称
+1684=名称
+
+# Update Frame
+4001=应用程序更新
+4002=查找更新
+4003=更新
+4004=Falcon C++开启，您需要关闭吗？
+4005=更新失败
+4006=连接错误.
+4007=更新成功完成.
+4008=更新完成.
+4009=下载失败,再试一次?
+4010=下载错误
+4011=下载进度 0%...
+4012=连接中...
+4013=下载中...
+
+# Get Version Frame
+4014=找到Falcon C++新版本...
+
+# Update Frame
+4015=更改
+4016=XML格式错误
+4017=无更新应用
+4018=此版本比发现版本更新
+4019=已安装最新版本
+4020=有更新可用
+4021=新版本可用: %s
+4022=关闭
+4023=确定
+4024=取消
+4025=安装中...
+
+# Find/Replace Form
+4201=查找和替换
+4202=查找
+4203=替换
+4204=在文件中查找
+4205=查找
+4206=替换为:
+4207=替换
+4208=在已选中
+4209=替换所有
+4210=大于
+4211=小于
+4212=向前查找
+4213=取消
+4214=搜索选项
+4215=匹配大小写
+4216=匹配全字
+4217=绕排
+4218=搜索模式
+4219=正常
+4220=扩展 (\n, \r, \t, \0, \x...)
+4221=正则表达式
+4222=方向
+4223=向上
+4224=向下
+4225=透明
+4226=透明度
+4227=查找...
+4228=项目
+4229=选择目标
+4230=没有找到文本:\n"%s"
+4231=完成%d处替换.
+4232=停止
+4233=找到字符'%s'于'%s'文件中
+4234=找到字符'%s' 与%d行,%d列
+
+# Editor Options Form
+4333=编辑器选项
+
+# General Sheet
+4334=通用选项
+4335=编辑器选项
+4336=自动缩进
+4338=插入模式
+4339=组撤销
+4340=保持结尾空格
+4341=显示空格和制表符
+4342=滚动提示
+4343=表格缩进或取消缩进
+4344=智能表格
+4345=使用制表符
+4346=增强Home键
+4347=最大撤销次数
+4348=Tab宽度
+4349=匹配括号高亮
+4350=正常颜色
+4351=出错颜色
+4352=背景颜色
+4353=当前行高亮
+4354=颜色
+4355=连接点击
+4356=恢复默认
+4470=自动增补括号
+4471=移过行尾光标
+
+# Display Sheet
+4357=显示
+4358=编辑器字体
+4359=尺寸
+4360=示例
+4361=Margin和Gutter设置
+4362=显示右Margin
+4363=显示Gutter
+4364=显示行Gutter
+4365=梯度Gutter
+4366=右Margin
+4367=Gutter宽度
+
+# Colors Sheet
+4368=颜色
+4369=类型
+4370=定义语法
+4371=保存语法
+4372=删除语法
+4373=前景
+4374=背景
+4375=样式
+4376=粗体
+4377=斜体
+4378=下划线
+4379=新语法
+
+# Formatter
+4380=格式化
+
+# Style
+4381=样式
+4382=自定义
+4383=预览
+4384=示例
+
+# Indentation
+4385=缩进
+4386=强制使用TAB符号
+4387=classes缩进(关键字 public:, protected: 和 private:)
+4388=switches 缩进 (关键字 case:)
+4389=case缩进: switches中的statements  (命令case:)
+4390=括弧缩进
+4391=块缩进
+4392=namespaces缩进
+4393=标签缩进
+4394=多行预处理定义缩进
+4395=单行注释缩进
+
+# Hints
+4396=使用制表符缩进
+4397=缩进 'class' 和 'struct' 块使'public:', 'protected:' 和'private:' 缩进. 只有当在struct块某处申明访问修饰符时struct块缩进. 整个块结构缩进.此设置仅用于C++文件.
+4398=缩进 'switch' 块使 'case X:' 结构在switch块中缩进.整个case块缩进.
+4399=从 'case X:' 块头部缩进'case X:' 块.未封闭的Case结构在块中不缩进.
+4400=namespace 块中增加额外的缩进
+4401=标签添加一个额外的缩进,使它们比当前缩进少一个缩进位,\n而不是向左移(默认值).
+4402=缩进多行预处理定义以一个反斜杠结尾.将转换为制表符来适应.\n确实很有用,但是不能处理混淆的预处理定义.没有此选项\n预处理语句保持不变.
+4403=缩进在第一列的C++注释,默认第一列C++注释不缩进.\n此选项允许代码后注释缩进.
+
+# Padding sheet
+4404=Padding设置
+4405=围绕header块填充空行('if' 'while' ..)
+4406=header块填充break结尾.
+4407=operators插入填充空格
+4408=括号外填充空格
+4409=括号内填充空格
+4410=括号头部填充
+4411=删除围绕空格的额外填充空格
+4412=删除空行
+4413=在前行以空格填充空行
+
+# Hints
+4414=header块填充空行 (例如 'if', 'for', 'while'...).
+4415=header块填充空行(例如 'if', 'for', 'while'...). header块(例如 'else', 'catch')结束时处理为独立块.
+4416=operators插入空格填充.在原始行中保持任何的行注释.可能的话,标注没有选项除去填充.一旦填充,它们将保持填充.
+4417=仅在括弧外插入空格填充.可能的话,在原始行保留任何的行注释.
+4418=仅在括弧内插入空格填充.可能的话,在原始行保留任何的行注释.
+4419=仅在后括弧插入空格填充(例如'if','for','while').可能的话,在原始行保留任何的行注释.
+4420=删除括号的多余空格填充.可能的话,在原始行保留任何的行注释.
+4421=删除函数或方法内空行.函数或方法外空行不被删除.
+4422=前行以空格填充空行.
+
+# Formatting
+4423=格式化
+4424=括弧样式
+4425=无样式
+4426=Break
+4427=附属
+4428=Linux
+4429=headers括弧结束
+4430= 'else if()' 头部结束,合并到新行.
+4431=增加括弧
+4432=增加一行括弧
+4433=整行块不结束
+4434=不结束复杂结构和多行结构为单行
+4435=转换制表符为空格
+
+# Hints
+4436=When used with brackets=attach, brackets=linux, this breaks closing headers (e.g. 'else', 'catch', ...) from their\nimmediately preceding closing brackets. Closing header brackets are always broken with broken brackets, horstmann \nbrackets, indented blocks, and indented brackets.
+4437=Break "else if" header combinations into separate lines. This option has no effect if keep one line statements is used, the\n"else if" statements will remain as they are.\nIf this option is NOT used, "else if" header combinations will be placed on a single line.
+4438=Add brackets to unbracketed one line conditional statements (e.g. 'if', 'for', 'while'...). The statement must be on a single \nline. The brackets will be added according to the currently requested predefined style or bracket type. If no style or \nbracket type is requested the brackets will be attached. If add one line brackets is also used the result will be one line \nbrackets.
+4439=Add one line brackets to unbracketed one line conditional statements  (e.g. 'if', 'for', 'while'...). The statement must be on\na single line. The option implies keep one line blocks and will not break the one line blocks.
+4440=不封闭整行块.
+4441=不封闭复杂语句和多行语句重排序为一行.
+4442=Converts tabs into spaces in the non-indentation part of the line. The number of spaces inserted will maintain the spacing \nof the tab. The current setting for spaces per tab is used. It may not produce the expected results if convert-tabs is used\nwhen changing spaces per tab. Tabs are not replaced in quotes.
+4443=指针对齐
+4444=空
+4445=类型
+4446=中等
+4447=名称
+4448=Attach a pointer or reference operator (* or &) to either the variable type (left) or variable name (right), or place it\nbetween the type and name (middle). The spacing between the type and name will be preserved, if possible. To format\nreferences separately use the following align-reference option.
+
+# Code Resources
+4449=代码资源
+4450=自动特征
+4451=代码完成
+4452=代码参数
+4453=表达式赋值提示
+4454=符号提示
+4455=延时
+4456=%.1f 秒
+4457=完成列表颜色
+4458=常数符号
+4459=函数符号
+4460=变量符号
+4461=类型符号
+4462=定义类型符号
+4463=预处理
+4464=已选
+4465=背景
+4466=代码模板
+4467=自定义代码模板文件
+4468=打开
+4469=编辑
+
+# Form Environment Options
+4569=开发环境选项
+
+# General
+4570=通用设置
+4571=默认新建C++文件
+4572=全屏显示工具条
+4573=关闭移除文件
+4574=一次点击打开文件
+4575=自动检测更新
+4576=创建布局文件
+4577=询问是否删除项目文件
+4578=控制台运行控制台程序
+4579=自动打开
+4580=所有项目文件
+4581=上次全部文件
+4582=仅上次打开文件
+4583=仅首个项目
+4584=空
+
+# Interface
+4585=界面
+4586=重新打开菜单最大文件数量
+4587=语言
+4588=显示欢迎屏幕
+4589=主题
+
+# Files and Directories
+4590=文件和目录
+4591=替换配置文件
+4592=配置文件
+4593=用户默认目录
+4594=模板目录
+4595=语言文件目录
+4596=项目目录
+4597=帮助文档目录
+4598=示例目录
+4599=打开
+4600=视图
+4601=选择
+4602=选择目录
+4603=重新启动程序应用更改
+4604=配置文件
+
+# Form Code Templates
+4704=模板
+4705=代码
+4706=无效名字
+4707=名字已存在
+4708=增加代码模板
+4709=编辑代码模板
+
+# Form Prompt Code Templates
+4808=名称
+4809=描述
+
+# About Form
+4909=关于
+4910=兼容: %s
+4911=许可
+4912=开发者
+4913=翻译者
+4914=测试者
+
+# Form Goto Line
+5015=跳转到行
+5016=行(%d - %d):
+
+# Form Goto Function
+5117=跳转到函数
+5118=函数名称
+5119=名称
+5120=返回类型
+5121=行
+5122=文件
+
+# Console Runner
+6001=处理返回 %ld 执行时间 : %0.3f s
+6002=按任意键继续...
+
+# Package Manager
+# Loading form
+7001=解压程序包中，请稍候...
+7002=解压数据: %d%%
+
+# Wizard form
+7101=%s 安装
+7102=< 后退
+7103=前进>
+7104=取消
+7105=我同意
+7106=安装
+7107=结束
+7108=需要重启Windows系统吗？
+7109=Falcon C++ 安装向导
+7110=确定退出 %s 安装?
+7111=错误！不能打开"%s"文件.
+7112=错误！不能创建 "%s"文件.
+7113=错误！不能解压 "%s"文件.
+7114=%s 成功安装.
+7115=程序包入口没有找到！
+7116=附加依赖项:
+7117=创建目录:
+7118=错误创建目录:
+7119=%s 安装错误\n '%s'文件夹不能创建.
+7120=%s 安装错误\n%d 不能安装.
+7121= %s 安装中断:\n错误!不能创建%s目录.
+7122=打开的文件写入错误
+7123=%s 安装错误\n '%s'文件不能安装.
+7124=%s安装中断:\n错误!不能打开 '%s'文件写入.
+7125=打开临时文件错误:
+7126=移除临时文件...
+
+# Welcome frame
+7201=欢迎使用%s程序包安装向导
+7202=本向导将指导你通过%s的安装.
+7203=启动安装前,建议您关闭Falcon C++应用.这将可能在编译器文件夹中更新所有文件.
+7204=点击Next按钮继续.
+
+# Install step frame
+7301=Falcon C++ 安装程序包
+
+# Agreement frame
+7401=如果您接受协议条款,点击I Agree按钮继续.您必须接受协议才能安装%s.
+7402=许可协议
+7403=安装%s之前请参照许可条款.
+7404=按下一页按钮阅读剩余协议.
+
+# Readme frame
+7501=按下一页按钮阅读剩余自述文件.
+7502=点击下一步按钮继续.
+7503=自述文件
+7504=请阅读后面自述文件.
+
+# Description frame
+7601=程序包描述
+7602=%s程序包细节.
+7603=需要空间:
+7604=应用空间:
+7605=程序包描述
+7606=名称:
+7607=版本:
+7608=网址:
+7609=描述:
+7610=点击安装按钮启动安装程序.
+
+# Progress frame
+7701=显示细节
+7702=安装中...
+7703=%s 程序包在安装中,请稍候...
+7704=点击Abort按钮停止安装,Retry按钮再试一次,Ignore按钮跳过此文件.
+
+# Finish frame
+7801=完成%s安装向导
+7802=点击Finish按钮关闭向导.
+7803=显示程序包管理器
+
+# Uninstall form
+7901=卸载程序包...
+7902=确定
+7903=完成.
+7904="%s"程序包没有找到
+7905=其余依赖项:
+
+# Package Manager form
+8001=Falcon C++程序包管理器
+8002=程序包
+8003=视图
+8004=帮助
+8005=安装
+8006=卸载
+8007=-
+8008=重新载入
+8009=检测
+8010=-
+8011=退出
+8012=工具条
+8013=细节
+8014=状态条
+8015=帮助
+8016=-
+8017=关于...
+8018=安装
+8019=卸载
+8020=重新载入
+8021=检测
+8022=帮助
+8023=关于
+8024=退出
+8025=信息
+8026=文件
+8027=打开文件夹
+8028=复制文件名称
+8029=没有找到%d于%d文件中
+8030=有效程序包文件!
+8031=移除"%s" - 版本: %s ?
+
+# Help form
+8032=确定
+
+# Download form
+8101=安装程序包
+8102=程序包
+8103=名称
+8104=版本
+8105=尺寸
+8106=状态
+8107=显示
+8108=更新/新文件
+8109=已安装
+8110=搜索程序包:
+8111=安装程序包:
+8112=删除程序包中...
+8113=已完成载入程序包.
+8114=载入程序包...
+8115=分析XML错误.
+8116=重试
+8117=从"%s %s"到"%s %s"的依赖项没有找到
+8118=下载程序包清单%.2f%%.
+8119=下载程序包清单中...
+8120=安装%d程序包...
+8121=安装%d程序包...
+8122=删除%d程序包...
+8123=删除%d程序包...
+8124=取消下载
+8125=无效XML文件,下载出错.
+8126=卸载
+8127=已安装
+8128=安装
+8129=没有安装
+8130=您需要取消程序包安装?
+8131=程序包已经安装!
+8132=程序包不能安装,一个最低附属版本已安装!
+8133=程序包不能卸载,其它程序包附属于它!
+8134=错误!%s文件没有找到!
+8135=安装%s程序包中...
+8136=程序包安装完成.
+8137=卸载%s程序包中...
+8138=程序包卸载完成.
+8139=下载%s程序包中...
+8140=下载%s程序包 - %.1f%%...
+8141=安装%s程序包错误
+8142=卸载%s程序包错误
+
+# Compiler messages
+1785=In function '$2':
+1786=implicit declaration of function '$3'
+1787=assignment makes pointer from integer without a cast
+1788=invalid suffix "$4" on integer constant
+1789=unused variable '$3'
+1790='$3' was not declared in this scope
+1791=expected '$3' before '$4'
+1792=macro "$4" passed $5 arguments, but takes just $6
+1793=macro "$4" requires $5 arguments, but only $6 given
+1794=at this point in file
+1795=too many arguments to function '$3'
+1796='$3' undeclared (first use in this function)
+1797=expected '$3' before numeric constant
+1798=(Each undeclared identifier is reported only once for each function it appears in.)
+1799=statement has no effect
+1800=passing argument $3 of '$4' makes integer from pointer without a cast
+1801=expected '$3' but argument is of type '$4'
+1802=invalid conversion from '$3' to '$4'
+1803=initializing argument $3 of '$4'
+1804=too few arguments to function '$3'
+1805=undefined reference to `$4'
+1806=cannot convert '$3' to '$4' for argument '$5' to '$6'
+1807=value computed is not used
+1808='$3' is used uninitialized in this function
+1809=base operand of '$3' has non-pointer type '$4'
+1810=$4: No such file or directory
+1811='$3' does not name a type
+1812=expected initializer before '$3'
+1813=a function-definition is not allowed here before '$3' token expected '$4' at end of input
+1814=return makes integer from pointer without a cast
+1815=overflow in implicit constant conversion
+1816=integer constant is too large for '$3' type
+1817=integer constant is too large for its type
+1818=this decimal constant is unsigned only in ISO C90
+1819=expected '$3' before '$4' token
+1820=expected expression before '$3' token
+1821='$3' was declared here
+1822=statement with no effect
+1823=lvalue required as left operand of assignment
+1824=type defaults to '$3' in declaration of '$4'
+1825=initialization makes integer from pointer without a cast
+1826=character constant too long for its type
+1827=expected identifier or '$3' before numeric constant
+1828=expected '=', ',', ';', 'asm' or '__attribute__' before '$3'
+1829=label '$3' defined but not used
+1830='$3' has no member named '$4'
+1831=array subscript is not an integer
+1832=too few arguments for format
+1833=format '$3' expects type '$4', but argument $5 has type '$6'
+1834=switch quantity not an integer
+1835=incompatible type for argument $3 of '$4'
+1836=expected statement before '$3' token
+1837=control reaches end of non-void function
+1838='$3' may be used uninitialized in this function
+1839=missing braces around initializer
+1840=(near initialization for '$3')
+1841=statement is a reference, not call, to function '$3'
+1842=case label '$3' not within a switch statement
+1843=expected primary-expression before '$3' token
+1844=no return statement in function returning non-void
+1845=expected unqualified-id before '$3'
+1846=array subscript is above array bounds
+1847=suggest parentheses around assignment used as truth value
+1848=storage size of '$3' isn't known
+1849=invalid application of '$3' to incomplete type '$4'
+1850=incompatible implicit declaration of built-in function '$3'
+1851=comparison between signed and unsigned integer expressions
+1852=deprecated conversion from string constant to '$3'
+1853=expected class-name before '$3' token
+1854=ISO C++ forbids declaration of '$3' with no type
+1855=typedef '$3' is initialized (use decltype instead)
+1856=expected constructor, destructor, or type conversion before '$3' token
+1857=expected initializer before '$3' token
+1858=expected constructor, destructor, or type conversion before '$3'
+1859=file included from $1:$2:
+1860=first defined here
+1861=enumeration value '$3' not handled in switch
+1862=In member function '$2':
+1863=stray '$3' in program
+1864=expected '$3' at end of input
+1865=field width should have type '$3', but argument $4 has type '$5'
+1866=subscripted value is neither array nor pointer
+1867=array type has incomplete element type
+1868=too many arguments for format
+1869=operation on '$3' may be undefined
+1870=unterminated comment
+1871="$4" within comment
+1872=missing terminating $4 character
+1873=$2: No such file or directory
+1874=missing terminating $3 character
+1875=array size missing in '$3'
+1876=passing argument $3 of '$4' from incompatible pointer type
+1877=return type defaults to '$3'
+1878=expected identifier or '$3' before '$4' token
+1879=expected identifier or '$3' at end of input
+1880=expected specifier-qualifier-list before '$3'
+1881=declaration does not declare anything
+1882=bit-field '$3' width not an integer constant
+1883='$3' undeclared here (not in a function)
+1884='$2' after last input file has no effect
+1885=no input files
+1886=preprocessing failed.
+1887=zero width for bit-field '$3'
+1888=width of '$3' exceeds its type
+1889=braces around scalar initializer
+1890=initialization from incompatible pointer type
+1891=excess elements in scalar initializer
+1892=left-hand operand of comma expression has no effect
+1893=assignment from incompatible pointer type
+1894=initializer-string for array of chars is too long
+1895=no resources
+1896=invalid application of '$3' to incomplete type '$4'
+1897=void value not ignored as it ought to be
+1898=Creating library file
+1899=useless type name in empty declaration
+1900=unknown conversion type character '$3' in format
+1901=parameter name omitted
+1902=expected declaration specifiers before '$3'
+1903=old-style parameter declarations in prototyped function definition
+1904=empty declaration
+1905=expected declaration specifiers before '$3' token
+1906=expected declaration specifiers or '$3' before '$4'
+1907=storage class specified for parameter '$3'
+1908=duplicate member '$3'
+1909=expected '$3' before string constant
+1910=called object '$3' is not a function
+1911=too many memory references for `$3'
+1912=excess elements in array initializer
+1913=size of array '$3' is too large
+1914=incompatible types when assigning to type '$3' from type '$4'
+1915=invalid operands to binary $3 (have '$4' and '$5')
+1916=assuming signed overflow does not occur when assuming that $3 is always $4
+1917=more undefined references to `$4' follow
+1918=extended initializer lists only available with $3 or $4
+1919=type of formal parameter $3 is incomplete
+1920=dereferencing '$3' pointer
+1921=request for member '$3' in something not a structure or union
+1922=conflicting types for '$3'
+1923=previous definition of '$3' was here
+1924=useless storage class specifier in empty declaration
+1925='$3' was ignored in this declaration
+1926=overflow in array dimension
+1927=dereferencing pointer to incomplete type
+1928=no matching function for call to '$3'
+1929=candidates are: $3
+1930=declaration of '$3' shadows a parameter
+1931=within this context
+1932=previous declaration of '$3' was here
+1933=return-statement with a value, in function returning '$3'
+1934=passing '$3' as '$4' argument of '$5' discards qualifiers
+1935=template argument $3 is invalid
+1936=expected unqualified-id before '$3' token
+1937=return type of '$3' is not '$4'
+1938='$3' with a value, in function returning void
+1939='$3' with no value, in function returning non-void
+1940=redefinition of '$3'
+1941=integer constant is so large that it is unsigned
+1942='$3' or '$4' invalid for '$5'
+1943=variable or field '$3' declared void
+1944=expected primary-expression before '$3'
+1945=redeclaration of '$3' with no linkage
+1946=undefined reference to `$3'
+1947=cannot open output file $2: Permission denied
+1948=too many decimal points in number
+1949=assignment makes integer from pointer without a cast [enabled by default]
+1950=lvalue required as unary '$4' operand
+1951='$3' loop initial declarations are only allowed in $4 mode
+1952=use option $3 or $4 to compile your code
+1953=$4: No such file or directory
+1954=compilation terminated.
+1955=no newline at end of file
+1956='$3' previously defined here
+1957=invalid use of '$3'
+1958=expected declaration before '$3' token
+1959='$3' defined but not used
+1960=variable-sized object may not be initialized
+1961=this is the location of the previous definition
+1962=friend declaration '$3' declares a non-template function
+1963=if this is not what you intended, make sure the function template has already been declared and add <> after the function name here
+1964='$3' has not been declared
+1965='$3' is an inaccessible base of '$4'
+1966=In function `$2':
+1967=`$3' was not declared in this scope
+1968=expected `$3' before "$4"
+1969=extra qualification '$3' on member '$4'
+1970=initializer element is not constant
+1971=conflicting types for '$3'
+1972=previous implicit declaration of '$3' was here
+1973=At top level:

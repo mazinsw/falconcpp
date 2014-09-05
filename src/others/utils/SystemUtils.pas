@@ -2,6 +2,8 @@ unit SystemUtils;
 
 interface
 
+{$I Falcon.inc}
+
 uses
   Windows, Classes, ShlObj, ShellAPI;
 
@@ -26,6 +28,7 @@ function GetTempDirectory: String;
 function GetSysDir: String;
 function ExpandRelativePath(const Base, Path: string): string;
 function ExpandRelativeFileName(const Base, FileName: string): string;
+function ExtractRelativePathOpt(const BaseName, DestName: string): string;
 function GetLanguageName(LangID: Word): string;
 function EmptyDirectory(const Dir: string): Boolean;
 function ConvertSlashes(const Path: String): String;
@@ -153,10 +156,14 @@ end;
 
 function ExpandRelativePath(const Base, Path: string): string;
 begin
+{$IFDEF FALCON_PORTABLE}
   if (ExtractFileDrive(Path) = '') and DirectoryExists(Base + Path) then
     Result := ExpandFileName(Base + Path)
   else
     Result := ExpandFileName(ExtractRelativePath(Base, Path));
+{$ELSE}
+    Result := Path;
+{$ENDIF}
 end;
 
 function ExpandRelativeFileName(const Base, FileName: string): string;
@@ -164,7 +171,20 @@ begin
   if FileName = '' then
     Result := ''
   else
+{$IFDEF FALCON_PORTABLE}
     Result := ExpandRelativePath(base, ExtractFilePath(FileName)) + ExtractFileName(FileName);
+{$ELSE}
+    Result := FileName;
+{$ENDIF}
+end;
+
+function ExtractRelativePathOpt(const BaseName, DestName: string): string;
+begin
+{$IFDEF FALCON_PORTABLE}
+  Result := ExtractRelativePath(BaseName, DestName);
+{$ELSE}
+  Result := DestName;
+{$ENDIF}
 end;
 
 function ConvertSlashes(const Path: String): String;

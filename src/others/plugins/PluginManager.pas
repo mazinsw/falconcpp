@@ -86,6 +86,7 @@ function TPluginManager.DispachCommand(Command, Widget, Param: Integer;
 var
   I: Integer;
 begin
+  Result := 0;
   for I := FList.Count - 1 downto 0 do
     Items[I].DispatchCommand(Command, Widget, Param, Data);
 end;

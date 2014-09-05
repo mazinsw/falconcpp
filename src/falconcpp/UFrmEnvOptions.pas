@@ -428,6 +428,7 @@ begin
       if ComboBoxLanguage.ItemsEx.Count > 0 then
         ComboBoxLanguage.ItemIndex := 0;
     end;
+    FrmFalconMain.Config.Save(FrmFalconMain.IniConfigFile, FrmFalconMain);
     //reload templates
     if CompareText(OldTemplatesDir, TemplatesDir) <> 0 then
     begin

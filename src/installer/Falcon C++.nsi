@@ -32,10 +32,12 @@
   !define PKG_CPP      "gcc-g++ 4.7.1.fpk"
 ;--------------------------------
 ;General
-
-;!define WITH_MINGW
+  
+  ;Properly display all languages (Installer will not work on Windows 95, 98 or ME!)
+  Unicode true
 
   Name "${PROJECT_NAME}"
+;!define WITH_MINGW
 !ifdef WITH_MINGW
   OutFile "..\..\bin\Falcon C++-${APP_VERSION}-Setup.exe"
 !else  
@@ -145,10 +147,10 @@
   !insertmacro LANG_LOAD "PortugueseBR"
 ;  !insertmacro LANG_LOAD "Spanish"
   !insertmacro LANG_LOAD "Italian"
+  !insertmacro LANG_LOAD "SimpChinese"
 /*!insertmacro LANG_LOAD "French"
   !insertmacro LANG_LOAD "German"
   !insertmacro LANG_LOAD "SpanishInternational"
-  !insertmacro LANG_LOAD "SimpChinese"
   !insertmacro LANG_LOAD "TradChinese"
   !insertmacro LANG_LOAD "Japanese"
   !insertmacro LANG_LOAD "Korean"

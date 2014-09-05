@@ -13,5 +13,6 @@ copy /Y SciLexer.dll Falcon\
 copy /Y AStyle.dll Falcon\
 copy /Y ..\res\Templates\*.ftm Falcon\Templates\
 copy /Y ..\res\Lang\*.lng Falcon\Lang\
+rm -f Falcon\Lang\English.lng
 "%programfiles%\7-zip\7z" -tzip a -r %filename_no_mingw% Falcon -x!MinGW -x!Config -x!Packages
 "%programfiles%\7-zip\7z" -tzip a -r %filename% Falcon -x!Config

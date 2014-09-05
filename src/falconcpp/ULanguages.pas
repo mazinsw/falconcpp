@@ -1131,7 +1131,7 @@ var
 implementation
 
 uses UUtils, UFrmOptions, UFrmUpdate, UFrmMain,
-  UFrmCompOptions, UFrmEditorOptions, UFrmEnvOptions, SystemUtils;
+  UFrmCompOptions, UFrmEditorOptions, UFrmEnvOptions, SystemUtils, UnicodeUtils;
 
 constructor TFalconLanguages.Create;
 var
@@ -1313,16 +1313,24 @@ var
   Temp: string;
   I: Integer;
   SaveID: Cardinal;
-  ini: TIniFile;
+  ini: TMemIniFile;
+  Lines: TStrings;
 begin
   Files := TStringList.Create;
   SaveID := FCurrent.ID;
   Clear;
+  Lines := TStringList.Create;
   FindFiles(LangDir + '*.lng', Files);
   for I := 0 to Files.Count - 1 do
   begin
     Temp := LangDir + Files.Strings[I];
-    ini := TIniFile.Create(Temp);
+    ini := TMemIniFile.Create('');
+    try
+      LoadFileEx(Temp, Lines);
+      ini.SetStrings(Lines);
+    except
+      Continue;
+    end;
     LangItem := TLanguageProperty.Create;
     LangItem.ID := ini.ReadInteger('FALCON', 'LangID', 0);
     LangItem.ImageIndex := ini.ReadInteger('FALCON', 'ImageIndex', -1);
@@ -1335,6 +1343,7 @@ begin
       FCurrent := LangItem;
     ini.Free;
   end;
+  Lines.Free;
   Files.Free;
   Result := True;
 end;
@@ -1359,13 +1368,15 @@ var
   LangProp: TLanguageProperty;
   Temp: string;
   I: Integer;
-  ini: TIniFile;
+  ini: TMemIniFile;
 
   function ReadStr(const Ident: Integer; const Default: string): string;
   begin
     Result := ini.ReadString('FALCON', IntToStr(Ident), Default);
   end;
 
+var
+  Lines: TStrings;
 begin
   Result := False;
   Temp := '';
@@ -1391,8 +1402,14 @@ begin
     end;
     Exit;
   end;
-  ini := TIniFile.Create(Temp);
-
+  Lines := TStringList.Create;
+  ini := TMemIniFile.Create('');
+  try
+    LoadFileEx(Temp, Lines);
+    ini.SetStrings(Lines);
+  except
+  end;
+  Lines.Free;
   for I := 1 to MAX_MENUS do //1
     STR_MENUS[I] := ReadStr(I, CONST_STR_MENUS[I]);
   for I := 1 to MAX_MENU_FILE do //109

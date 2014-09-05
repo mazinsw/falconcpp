@@ -375,7 +375,6 @@ type
     ProjectPanel: TSplitterPanel;
     PanelOutline: TSplitterPanel;
     PanelMessages: TSplitterPanel;
-    PanelEditor: TXPPanel;
     PageControlProjects: TModernPageControl;
     TSProjects: TModernTabSheet;
     TreeViewProjects: TTreeView;

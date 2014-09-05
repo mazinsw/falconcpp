@@ -5,22 +5,22 @@
 
 ; Name of sections
 
-  !insertmacro LANG_STRING NAME_SecCore "N˙cleo"
-  !insertmacro LANG_STRING NAME_SecFtm "Modelos b·sicos"
-  !insertmacro LANG_STRING NAME_SecAssoc "AssociaÁ„o de arquivos C/C++"
+  !insertmacro LANG_STRING NAME_SecCore "N√∫cleo"
+  !insertmacro LANG_STRING NAME_SecFtm "Modelos b√°sicos"
+  !insertmacro LANG_STRING NAME_SecAssoc "Associa√ß√£o de arquivos C/C++"
   !insertmacro LANG_STRING NAME_SecLangFile "Arquivos de linguagens"
-  !insertmacro LANG_STRING NAME_SecDeskScut "Atalho na ¡rea de Trabalho"
-  !insertmacro LANG_STRING NAME_SecQckLScut "Atalho R·pido"
+  !insertmacro LANG_STRING NAME_SecDeskScut "Atalho na √Årea de Trabalho"
+  !insertmacro LANG_STRING NAME_SecQckLScut "Atalho R√°pido"
   !insertmacro LANG_STRING NAME_SecMinGW "MinGW(Compilador)"
 
 ; Description of sections
 
   !insertmacro LANG_STRING DESC_SecCore "IDE C++"
-  !insertmacro LANG_STRING DESC_SecFtm "Modelos b·sicos: Aplicac„o de Janelas, Aplicac„o Console e Biblioteca de ligaÁ„o est·tica e din‚mica(DLL)."
+  !insertmacro LANG_STRING DESC_SecFtm "Modelos b√°sicos: Aplicac√£o de Janelas, Aplicac√£o Console e Biblioteca de liga√ß√£o est√°tica e din√¢mica(DLL)."
   !insertmacro LANG_STRING DESC_SecAssoc "Associar arquivos C/C++ ao Falcon C++."
   !insertmacro LANG_STRING DESC_SecLangFile "Instalar arquivos de todas as linguagens."
-  !insertmacro LANG_STRING DESC_SecDeskScut "Criar atalho na ·rea de trabalho."
-  !insertmacro LANG_STRING DESC_SecQckLScut "Criar atalho na barra de inicializaÁ„o r·pida."
+  !insertmacro LANG_STRING DESC_SecDeskScut "Criar atalho na √°rea de trabalho."
+  !insertmacro LANG_STRING DESC_SecQckLScut "Criar atalho na barra de inicializa√ß√£o r√°pida."
   !insertmacro LANG_STRING DESC_SecMinGW "Compilador C/C++."
 
 ; Package instalation description
@@ -34,17 +34,17 @@
   !insertmacro LANG_STRING DESC_InstGCC_Core "Instalando pacote GCC Core..."
   !insertmacro LANG_STRING DESC_InstGCC_GPP "Instalando pacote GCC G++..."
 
-  !insertmacro LANG_STRING DESC_AdjEnvVar "Ajustando Vari·vel de Ambiente..."
+  !insertmacro LANG_STRING DESC_AdjEnvVar "Ajustando Vari√°vel de Ambiente..."
 
 ; Association file format description
 
   !insertmacro LANG_STRING DESC_Assoc_FPJ "Projeto do Falcon C++"
   !insertmacro LANG_STRING DESC_Assoc_FTM "Modelo de Projeto do Falcon C++"
-  !insertmacro LANG_STRING DESC_Assoc_FPK "Pacote de InstalaÁ„o do Falcon C++"
+  !insertmacro LANG_STRING DESC_Assoc_FPK "Pacote de Instala√ß√£o do Falcon C++"
 
   !insertmacro LANG_STRING DESC_Assoc_C "Arquivo Fonte C"
   !insertmacro LANG_STRING DESC_Assoc_CPP "Arquivo Fonte C++"
-  !insertmacro LANG_STRING DESC_Assoc_H "Arquivo de CabeÁalho"
+  !insertmacro LANG_STRING DESC_Assoc_H "Arquivo de Cabe√ßalho"
   !insertmacro LANG_STRING DESC_Assoc_RC "Arquivo de Recurso"
   !insertmacro LANG_STRING DESC_Assoc_INL "Arquivo Fonte Inline"
   !insertmacro LANG_STRING DESC_Assoc_RES "Objeto de Recurso"
@@ -55,6 +55,6 @@
 
   !insertmacro LANG_STRING DESC_LinkPkgMan "Gerenciador de pacotes do Falcon C++"
   !insertmacro LANG_STRING DESC_LinkUpdater "Atualizador do Falcon C++"
-  !insertmacro LANG_STRING DESC_LinkUninstall "Programa de desinstalaÁ„o"
+  !insertmacro LANG_STRING DESC_LinkUninstall "Programa de desinstala√ß√£o"
 
 ;-----------------------------------------------------------

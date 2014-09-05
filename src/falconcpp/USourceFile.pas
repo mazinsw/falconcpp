@@ -2533,9 +2533,6 @@ begin
   FEditor.SearchEngine := FrmFalconMain.SearchEngine;
   FEditor.ImageList := FrmFalconMain.ImageListGutter;
   FEditor.PopupMenu := FrmFalconMain.PopupEditor;
-  FEditor.AssignCmdKey(MAKELONG(Ord('S'), LEFT_CTRL_PRESSED), SCI_NULL);
-  // TODO: commented
-  // FEditor.SearchEngine := FrmFalconMain.EditorSearch;
   case SourceFile.FileType of
     FILE_TYPE_C..FILE_TYPE_H, FILE_TYPE_UNKNOW: FEditor.Highlighter := FrmFalconMain.CppHighligher;
   // TODO: commented
@@ -2559,8 +2556,6 @@ begin
   FEditor.OnMarginClick := FrmFalconMain.TextEditorGutterClick;
   FEditor.OnScroll := FrmFalconMain.TextEditorScroll;
   FEditor.OnClick := FrmFalconMain.TextEditorClick;
-  //FEditor.OnLinesDeleted := FrmFalconMain.TextLinesDeleted;
-  //FEditor.OnLinesInserted := FrmFalconMain.TextLinesInserted;
   if SelectTab then
     PageCtrl.ActivePageIndex := PageIndex;
 end;
@@ -2570,6 +2565,7 @@ procedure TSourceFileSheet.TextEditorMouseDown(Sender: TObject;
 var
   P: TBufferCoord;
 begin
+  // TODO: move to TEditor
   if (Button = mbMiddle) then
   begin
     P := Editor.DisplayToBufferPos(Editor.PixelsToRowColumn(X, Y));

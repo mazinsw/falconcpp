@@ -30,10 +30,6 @@ object FrmEnvOptions: TFrmEnvOptions
     TabOrder = 0
     object TSGeneral: TTabSheet
       Caption = 'General'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object RadioGroupAutoOpen: TRadioGroup
         Left = 4
         Top = 229
@@ -126,10 +122,6 @@ object FrmEnvOptions: TFrmEnvOptions
     object TSInterface: TTabSheet
       Caption = 'Interface'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LabelMaxFileReopenMenu: TLabel
         Left = 4
         Top = 16
@@ -203,10 +195,6 @@ object FrmEnvOptions: TFrmEnvOptions
     object TSFilesandDir: TTabSheet
       Caption = 'Files and Directories'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LabelTemplatesDir: TLabel
         Left = 4
         Top = 124

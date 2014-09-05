@@ -102,7 +102,7 @@ begin
   end;
   FPluginGetVersion := FuncPtr;
   sptr := FPluginGetVersion();
-  if CompareText(StrPas(sptr), Plugin_Version) <> 0 then
+  if CompareText(string(StrPas(sptr)), Plugin_Version) <> 0 then
   begin
     FreeLibrary(FHandle);
     FHandle := 0;
@@ -115,10 +115,10 @@ begin
     FHandle := 0;
     raise Exception.CreateFmt(failedToInitializePlugin, [FID]);
   end;
-  FVersion := PluginInfo.Version;
-  FName := PluginInfo.Name;
-  FAuthor := PluginInfo.Author;
-  FDescription := PluginInfo.Description;
+  FVersion := string(PluginInfo.Version);
+  FName := string(PluginInfo.Name);
+  FAuthor := string(PluginInfo.Author);
+  FDescription := string(PluginInfo.Description);
 end;
 
 destructor TPlugin.Destroy;

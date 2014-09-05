@@ -3,7 +3,7 @@ unit UnicodeUtils;
 interface
 
 uses
-  SysUtils, Classes, DScintillaTypes;
+  SysUtils, Classes;
 
 function IsIn(Ch: WideChar; const S: UnicodeString): Boolean;
 procedure LoadFileEx(const FileName: string; Lines: TStrings;

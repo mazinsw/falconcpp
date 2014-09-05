@@ -1147,39 +1147,6 @@ object FrmFalconMain: TFrmFalconMain
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
-    object PanelEditor: TXPPanel
-      Left = 0
-      Top = 0
-      Width = 518
-      Height = 386
-      Align = alClient
-      BorderStyle = bsNone
-      TabOrder = 0
-      object PageControlEditor: TModernPageControl
-        Left = 0
-        Top = 0
-        Width = 518
-        Height = 386
-        Align = alClient
-        CanDragTabs = True
-        NormalColor = clWhite
-        FocusedColor = 15973017
-        Images = ImgListMenus
-        ParentColor = False
-        PopupMenu = PopupTabs
-        TabIndex = -1
-        TabOrder = 0
-        TabStop = True
-        FixedTabWidth = True
-        Visible = False
-        OnChange = PageControlEditorChange
-        OnClose = PageControlEditorClose
-        OnContextPopup = PageControlEditorContextPopup
-        OnDblClick = PageControlEditorDblClick
-        OnMouseDown = PageControlEditorMouseDown
-        OnPageChange = PageControlEditorPageChange
-      end
-    end
     object PanelMessages: TSplitterPanel
       Left = 0
       Top = 386
@@ -1188,7 +1155,7 @@ object FrmFalconMain: TFrmFalconMain
       Align = alBottom
       BorderStyle = bsNone
       Size = 4
-      TabOrder = 1
+      TabOrder = 0
       Visible = False
       object PageControlMessages: TModernPageControl
         Left = 0
@@ -1243,6 +1210,30 @@ object FrmFalconMain: TFrmFalconMain
           end
         end
       end
+    end
+    object PageControlEditor: TModernPageControl
+      Left = 0
+      Top = 0
+      Width = 518
+      Height = 386
+      Align = alClient
+      CanDragTabs = True
+      NormalColor = clWhite
+      FocusedColor = 15973017
+      Images = ImgListMenus
+      ParentColor = False
+      PopupMenu = PopupTabs
+      TabIndex = -1
+      TabOrder = 1
+      TabStop = True
+      FixedTabWidth = True
+      Visible = False
+      OnChange = PageControlEditorChange
+      OnClose = PageControlEditorClose
+      OnContextPopup = PageControlEditorContextPopup
+      OnDblClick = PageControlEditorDblClick
+      OnMouseDown = PageControlEditorMouseDown
+      OnPageChange = PageControlEditorPageChange
     end
   end
   object StatusBar: TTBXStatusBar

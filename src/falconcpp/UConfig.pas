@@ -680,7 +680,7 @@ begin
     ini.WriteString('EditorOptions', 'CompListBg', ColorToString(CompListBg));
 
     ini.WriteString('EditorOptions', 'CodeTemplateFile',
-      ExtractRelativePath(TFrmFalconMain(Form).AppRoot, CodeTemplateFile));
+      ExtractRelativePathOpt(TFrmFalconMain(Form).AppRoot, CodeTemplateFile));
   end;
   with Environment do
   begin
@@ -706,7 +706,7 @@ begin
     if not AlternativeConfFileLoaded then
     begin
       ini.WriteBool('EnvironmentOptions', 'AlternativeConfFile', AlternativeConfFile);
-      ini.WriteString('EnvironmentOptions', 'ConfigurationFile', ExtractRelativePath(TFrmFalconMain(Form).AppRoot, ConfigurationFile));
+      ini.WriteString('EnvironmentOptions', 'ConfigurationFile', ExtractRelativePathOpt(TFrmFalconMain(Form).AppRoot, ConfigurationFile));
     end
     else
     begin
@@ -719,14 +719,14 @@ begin
         oriini.Free;
       end;
     end;
-    ini.WriteString('EnvironmentOptions', 'UsersDefDir', ExtractRelativePath(TFrmFalconMain(Form).AppRoot, UsersDefDir));
-    ini.WriteString('EnvironmentOptions', 'ProjectsDir', ExtractRelativePath(TFrmFalconMain(Form).AppRoot, ProjectsDir));
+    ini.WriteString('EnvironmentOptions', 'UsersDefDir', ExtractRelativePathOpt(TFrmFalconMain(Form).AppRoot, UsersDefDir));
+    ini.WriteString('EnvironmentOptions', 'ProjectsDir', ExtractRelativePathOpt(TFrmFalconMain(Form).AppRoot, ProjectsDir));
     ini.WriteString('EnvironmentOptions', 'TemplatesDir', ExtractRelativePath(UsersDefDir, TemplatesDir));
     ini.WriteString('EnvironmentOptions', 'LanguageDir', ExtractRelativePath(UsersDefDir, LanguageDir));
   end;
   with Compiler do
   begin
-    ini.WriteString('CompilerOptions', 'Path', ExtractRelativePath(TFrmFalconMain(Form).AppRoot, Path));
+    ini.WriteString('CompilerOptions', 'Path', ExtractRelativePathOpt(TFrmFalconMain(Form).AppRoot, Path));
     ini.WriteString('CompilerOptions', 'Version', Version);
     ini.WriteBool('CompilerOptions', 'ReverseDebugging', ReverseDebugging);
   end;

@@ -222,6 +222,7 @@ begin
         '    '#13 +
         '}');
       Add('if', '', '', '');
+      Add('else', '', '', '');
       Add('else', 'else block',
         'else'#13 +
         '{'#13 +
@@ -240,7 +241,6 @@ begin
         '{'#13 +
         '    '#13 +
         '}');
-      Add('else', '', '', '');
       Add('default', '', '', '');
     end;
   end;

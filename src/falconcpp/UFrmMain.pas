@@ -27,7 +27,7 @@ uses
   UParseMsgs, TBXStatusBars, XPPanels, ModernTabs,
   TB2Toolbar, ThreadFileDownload, VirtualTrees,
   PluginManager, PluginServiceManager, UEditor, CppHighlighter, SintaxList,
-  AutoComplete, DScintillaTypes, SearchEngine;
+  AutoComplete, DScintillaTypes, SearchEngine, SystemUtils;
 
 const
   crReverseArrow = TCursor(-99);
@@ -685,7 +685,7 @@ type
     LastOpenFileName: string;
 
     // flags
-    FIsLoading: Boolean;
+    FLoadingCount: Integer;
     FTriggerOnLoading: Integer;
     ShowingReloadEnquiry: Boolean;
     FRunNow: Boolean; // ?
@@ -826,8 +826,8 @@ type
     procedure UpdateStatusbar;
     procedure LoadInternetConfiguration;
     procedure DoTypeChangedSource(Source: TSourceBase; OldType: Integer);
-    procedure SetIsLoading(const Value: Boolean);
     procedure RestoreOutline;
+    function GetIsLoading: Boolean;
   public
     { Public declarations }
     LastSearch: TSearchItem;
@@ -864,7 +864,8 @@ type
     function GetActiveSheet(var sheet: TSourceFileSheet): Boolean;
     procedure GotoLineAndAlignCenter(Editor: TEditor; Line: Integer;
       Col: Integer = 1; EndCol: Integer = 1; CursorEnd: Boolean = False);
-
+    procedure IncLoading;
+    procedure DecLoading;
     property LastProjectBuild
       : TProjectFile read FLastProjectBuild write FLastProjectBuild;
     property LastSelectedProject: TProjectFile read FLastSelectedProject write
@@ -877,7 +878,7 @@ type
     property SintaxList: TSintaxList read FSintaxList;
     property Templates: TTemplates read FTemplates;
     property Config: TConfig read FConfig;
-    property IsLoading: Boolean read FIsLoading write SetIsLoading;
+    property IsLoading: Boolean read GetIsLoading;
     property AppRoot: string read FAppRoot;
     property AutoComplete: TAutoComplete read FAutoComplete;
     property SearchList: TStrings read FSearchList;
@@ -925,7 +926,7 @@ uses
   UFrmUpdate, ULanguages, UFrmEnvOptions, UFrmCompOptions, UFrmFind, AStyle,
   UFrmGotoFunction, UFrmGotoLine, TBXThemes, Makefile, CodeTemplate,
   StrUtils, UFrmVisualCppOptions,
-  PluginConst, Math, Highlighter, DScintilla, SystemUtils, PluginWidgetMap;
+  PluginConst, Math, Highlighter, DScintilla, PluginWidgetMap, AppConst;
 {$R *.dfm}
 
 var
@@ -1194,7 +1195,7 @@ var
   FileProp: TSourceFile;
   Proj: TProjectFile;
 begin
-  IsLoading := True;
+  IncLoading;
   CppHighligher := TCppHighlighter.Create(Self);
   SearchEngine := TSearchEngine.Create(Self);
   CodeCompletion := TCompletionProposal.Create(Self);
@@ -1242,7 +1243,7 @@ begin
   // create config root directory
   if not DirectoryExists(ConfigRoot) then
     CreateDir(ConfigRoot);
-  FIniConfigFile := ConfigRoot + 'Config.ini';
+  FIniConfigFile := ConfigRoot + CONFIG_NAME;
   Config.Load(IniConfigFile, Self);
   if Config.Environment.AlternativeConfFile and FileExists
     (Config.Environment.ConfigurationFile) then
@@ -1536,7 +1537,7 @@ begin
   List.Free;
   SplashScreen.Hide;
   TimerStartUpdate.Enabled := True;
-  IsLoading := False;
+  DecLoading;
   // update grayed project and outline
 end;
 
@@ -1780,16 +1781,6 @@ begin
   end;
   if SleepAtEnd then
     Sleep(3000);
-end;
-
-procedure TFrmFalconMain.SetIsLoading(const Value: Boolean);
-begin
-  if FIsLoading = Value then
-    Exit;
-  FIsLoading := Value;
-  if not FIsLoading and (FTriggerOnLoading > 0) then
-    RestoreOutline;
-  FTriggerOnLoading := 0;
 end;
 
 procedure TFrmFalconMain.UpdateMenuItems(Regions: TRegionMenuState);
@@ -2111,7 +2102,7 @@ begin
   for I := 0 to token.Count - 1 do
   begin
     Node := Parent;
-    if not(token.Items[I].token in [tkParams, tkScope, tkScopeClass, tkUsing])
+    if not(token.Items[I].token in [tkParams, tkScope, tkScopeClass, tkUsing, tkFriend])
       then
     begin
       if token.Items[I].token in [tkFunction, tkProtoType, tkConstructor,
@@ -2479,10 +2470,10 @@ begin
   PageControlEditor.CancelDragging;
   if OpenDlg.Execute(Handle) then
   begin
-    IsLoading := True;
+    IncLoading;
     LastOpenFileName := OpenDlg.Files.Strings[OpenDlg.Files.Count - 1];
     OnDragDropFiles(Sender, OpenDlg.Files);
-    IsLoading := False;
+    DecLoading;
     // parser files
   end;
 end;
@@ -3085,9 +3076,9 @@ begin
             for I := 0 to List.Count - 1 do
             begin
               TSourceFile(List.Objects[I]).UpdateBreakpoint;
-              BreakpointList := TSourceFile(List.Objects[I]).Breakpoint;
+              BreakpointList := TSourceFile(List.Objects[I]).BreakPoint;
               if BreakpointList.Count = 0 then
-                Continue;
+                continue;
               Source := ExtractRelativePath(SourcePath, List.Strings[I]);
               Source := StringReplace(Source, '\', '/', [rfReplaceAll]);
               for J := 0 to BreakpointList.Count - 1 do
@@ -3999,10 +3990,10 @@ var
 begin
   if not(Sender is TDataMenuItem) then
     Exit;
-  IsLoading := True;
+  IncLoading;
   if OpenFileWithHistoric(TDataMenuItem(Sender).HelpFile, Proj) then
     ParseProjectFiles(Proj);
-  IsLoading := False;
+  DecLoading;
 end;
 
 function TFrmFalconMain.OpenFileWithHistoric(Value: string;
@@ -4115,18 +4106,23 @@ begin
   Files.Free;
 end;
 
+function TFrmFalconMain.GetIsLoading: Boolean;
+begin
+  Result := FLoadingCount > 0;
+end;
+
 procedure TFrmFalconMain.OnDragDropFiles(Sender: TObject; Files: TStrings);
 var
   I: Integer;
   Proj: TProjectFile;
 begin
-  IsLoading := True;
+  IncLoading;
   for I := 0 to Files.Count - 1 do
   begin
     if OpenFileWithHistoric(Files.Strings[I], Proj) then
       ParseProjectFiles(Proj);
   end;
-  IsLoading := False;
+  DecLoading;
 end;
 
 procedure TFrmFalconMain.ExecutorStart(Sender: TObject);
@@ -4161,8 +4157,7 @@ begin
   CompMessages := ParseResult(ConsoleOut);
   if (ExitCode = 0) then
   begin
-    TimeStr := Format(STR_FRM_MAIN[39],
-      [GetTickTime(BuildTime, '%d:%2d:%2d:%d')]);
+    TimeStr := Format(STR_FRM_MAIN[39], [GetTickTime(BuildTime)]);
     StatusBar.Panels.Items[2].Caption := TimeStr;
     W := Canvas.TextWidth(TimeStr) + 20 + ImgListMenus.Width + 10;
     StatusBar.Panels.Items[2].Size := Max(W, 200);
@@ -5341,6 +5336,7 @@ begin
     end;
     // other file
     // is in project list
+    IncLoading;
     if SearchSourceFile(TokenFileItem.FileName, prop) then
       prop.Edit
     else // non opened. open
@@ -5351,6 +5347,7 @@ begin
       sheet.Editor.readonly := True;
       sheet.Font.Color := clGrayText;
     end;
+    DecLoading;
     SelectToken(token);
   end;
 end;
@@ -5522,8 +5519,9 @@ begin
         BracketBalacing := sheet.Editor.GetBalancingBracketEx
           (sheet.Editor.CaretXY, '{');
         Ln := sheet.Editor.GetLineChars;
-        str := str + IfThen(replaceLine, '{') + Ln + S + GetLeftSpacing(sheet.Editor.TabWidth,
-          sheet.Editor.TabWidth, sheet.Editor.WantTabs) + Ln + S + '}';
+        str := str + IfThen(replaceLine, '{') + Ln + S + GetLeftSpacing
+          (sheet.Editor.TabWidth, sheet.Editor.TabWidth,
+          sheet.Editor.WantTabs) + Ln + S + '}';
         sheet.Editor.BeginUpdate;
         if BracketBalacing <= 0 then
           sheet.Editor.SelText := str
@@ -9407,6 +9405,11 @@ begin
   // sheet.Editor.ToggleLineComment;
 end;
 
+procedure TFrmFalconMain.IncLoading;
+begin
+  Inc(FLoadingCount);
+end;
+
 function TFrmFalconMain.InternalMessageBox(Text, Caption: string; uType: UINT;
   Handle: HWND): Integer;
 var
@@ -9688,11 +9691,10 @@ procedure TFrmFalconMain.PopEditorOpenDeclClick(Sender: TObject);
 var
   CurrentTokenFile, SrcTokenFile: TTokenFile;
   sheet: TSourceFileSheet;
-  scope, scopeToken, token (* , ParentToken *) : TTokenClass;
+  scope, scopeToken, token: TTokenClass;
   SrcFileName: string;
   CurrentSrcFile, SrcFile: TSourceFile;
   SelStart, SelLine: Integer;
-  BC: TBufferCoord;
   Input, Fields, ScopeFlag: string;
   InputError: Boolean;
 begin
@@ -9702,14 +9704,8 @@ begin
   CurrentTokenFile := FilesParsed.ItemOfByFileName(CurrentSrcFile.FileName);
   if (CurrentTokenFile = nil) then
     Exit;
-  BC := sheet.Editor.CaretXY;
-  SelLine := BC.Line;
-  if BC.Line > 0 then
-  begin
-    if BC.Char > (Length(sheet.Editor.Lines[SelLine - 1]) + 1) then
-      BC.Char := Length(sheet.Editor.Lines[SelLine - 1]) + 1;
-  end;
-  SelStart := sheet.Editor.RowColToCharIndex(BC);
+  SelStart := sheet.Editor.GetSelectionStart;
+  SelLine := sheet.Editor.CaretY;
   SrcFile := CurrentSrcFile;
   SrcFileName := CurrentSrcFile.FileName;
   // get prototype
@@ -9728,23 +9724,22 @@ begin
   scope := GetTokenByName(scopeToken, 'Scope', tkScope);
   if not(scopeToken.token in [tkProtoType, tkConstructor, tkDestructor]) and
     (scope = nil) then
+  begin
+    if CurrentSrcFile = nil then
+    begin
+      if FileExists(SrcFileName) then
+        CurrentSrcFile := OpenFile(SrcFileName)
+      else
+        Exit;
+    end;
+    CurrentSrcFile.Edit;
+    SelectToken(scopeToken);
     Exit;
+  end;
   ScopeFlag := '';
   if scope <> nil then
     ScopeFlag := scope.Flag;
   { TODO -oMazin -c : get all parent scope 04/05/2013 21:17:55 }
-  // get parent of Token
-  // ParentToken := ScopeToken.Parent;
-  // if Assigned(ParentToken) and
-  // (ParentToken.Token in [tkClass, tkStruct, tkScopeClass]) then
-  // ParentToken := ParentToken.Parent;
-  // tree parent object?
-  // if Assigned(ParentToken) and Assigned(ParentToken.Parent) and
-  // (ParentToken.Parent.Token in [tkClass, tkStruct]) then
-  // ParentToken := ParentToken.Parent;
-  // if (ParentToken <> nil) and not (ParentToken.Token in [tkClass, tkStruct]) then
-  // ParentToken := nil;
-  // implementation on same file
   { TODO -oMazin -c : Search with scope 04/05/2013 21:20:23 }
   if not CurrentTokenFile.SearchToken(scopeToken.name, ScopeFlag, token,
     scopeToken.SelStart, True, [tkFunction, tkConstructor, tkDestructor,
@@ -9832,7 +9827,7 @@ begin
     ParentToken := scopeToken.Parent;
   if Assigned(ParentToken) and (ParentToken.token in [tkScopeClass]) then
     ParentToken := ParentToken.Parent;
-  if (ParentToken <> nil) and not(ParentToken.token in [tkClass, tkStruct,
+  if (ParentToken <> nil) and not (ParentToken.token in [tkClass, tkStruct,
     tkUnion]) then
     ParentToken := nil;
   scope := GetTokenByName(scopeToken, 'Scope', tkScope);
@@ -10112,7 +10107,8 @@ begin
     Editor.CaretXY := BS;
     LastLineText := ClassFuncList.Strings[0];
     for I := 1 to ClassFuncList.Count - 1 do
-      LastLineText := LastLineText + Editor.GetLineChars + ClassFuncList.Strings[I];
+      LastLineText := LastLineText + Editor.GetLineChars + ClassFuncList.Strings
+        [I];
     Editor.SelText := LastLineText;
     Editor.EndUpdate;
   end;
@@ -10152,7 +10148,7 @@ begin
     if fprop.BreakPoint.HasBreakpoint(aLine) then
     begin
       BreakPoint := fprop.BreakPoint.GetBreakpoint(aLine);
-      DebugReader.SendCommand(GDB_DELETE, IntToStr(BreakPoint.Index));
+      DebugReader.SendCommand(GDB_DELETE, IntToStr(BreakPoint.index));
     end
     else
     begin
@@ -10395,7 +10391,7 @@ begin
         if fp.BreakPoint.HasBreakpoint(Line) then
         begin
           BreakPoint := fp.BreakPoint.GetBreakpoint(Line);
-          BreakPoint.Index := StrToInt(Value);
+          BreakPoint.index := StrToInt(Value);
           // AddItemMsg('breakpoint set index', Value, Line);
         end;
       end;
@@ -10544,6 +10540,16 @@ begin
   TSOutline.Caption := STR_FRM_MAIN[50];
   TreeViewOutline.Images := ImageListDebug;
   // TreeViewOutline.Indent := ImageListDebug.Width + 3;
+end;
+
+procedure TFrmFalconMain.DecLoading;
+begin
+  if FLoadingCount <= 0 then
+    Exit;
+  Dec(FLoadingCount);
+  if (FLoadingCount = 0) and (FTriggerOnLoading > 0) then
+    RestoreOutline;
+  FTriggerOnLoading := 0;
 end;
 
 procedure TFrmFalconMain.RunContinue(Sender: TObject);

@@ -6,7 +6,7 @@ uses
   Classes, Dialogs;
 
 const
-  Sign: array[0..6] of AnsiChar = ('F', 'C', 'P', ' ', '3', '.', '5');
+  Sign: array[0..6] of AnsiChar = ('F', 'C', 'P', ' ', '3', '.', '6');
 
 type
   TTkType = (
@@ -30,6 +30,7 @@ type
     tkNamespace,
     tkEnumItem,
     tkForward,
+    tkFriend,
     tkUnknow,
     //********
     tkIncludeList,
@@ -543,12 +544,12 @@ begin
       (NotAtSelStart <= (Items[I].FSelStart + Items[I].FSelLength)) then
     begin
       if not AdvanceAfterSelStart and not
-        (Items[I].Token in [tkScope, tkTypedef, tkForward]) then
+        (Items[I].Token in [tkScope, tkTypedef, tkForward, tkFriend]) then
         Exit;
       Continue;
     end;
     if (S = Items[I].Name) and (not (Items[I].Token in
-      [tkConstructor, tkDestructor, tkForward, tkUsing]) or (Assigned(Items[I].Parent) and
+      [tkConstructor, tkDestructor, tkForward, tkUsing, tkFriend]) or (Assigned(Items[I].Parent) and
       (Items[I].Parent.Token = tkScopeClass))) then
     begin
       Item := Items[I];

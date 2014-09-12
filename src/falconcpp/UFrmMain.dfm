@@ -1426,8 +1426,8 @@ object FrmFalconMain: TFrmFalconMain
     end
   end
   object XPManifest: TXPManifest
-    Left = 186
-    Top = 112
+    Left = 490
+    Top = 80
   end
   object OpenDlg: TOpenDialog
     Filter = 
@@ -1440,35 +1440,35 @@ object FrmFalconMain: TFrmFalconMain
       'rh, *.hh)|*.h; *.hpp; *.rh; *.hh|Resource File (*.rc)|*.rc|All f' +
       'iles|*.*'
     Options = [ofHideReadOnly, ofAllowMultiSelect, ofFileMustExist, ofEnableSizing]
-    Left = 123
-    Top = 49
+    Left = 115
+    Top = 89
   end
   object SendData: TSendData
     ClassNamed = 'TFrmFalconMain'
     SendType = stSend
     OnReceivedStream = SendDataReceivedStream
     OnCopyData = SendDataCopyData
-    Left = 107
-    Top = 156
+    Left = 67
+    Top = 500
   end
   object CompilerCmd: TOutputConsole
     OnStart = CompilerCmdStart
     OnFinish = CompilerCmdFinish
     ConvertOemToAnsi = False
-    Left = 435
+    Left = 395
     Top = 521
   end
   object TimerStartUpdate: TTimer
     Enabled = False
     Interval = 10000
     OnTimer = TimerStartUpdateTimer
-    Left = 139
-    Top = 209
+    Left = 67
+    Top = 369
   end
   object UpdateDownload: TFileDownload
     OnFinish = UpdateDownloadFinish
-    Left = 171
-    Top = 209
+    Left = 51
+    Top = 217
   end
   object SplashScreen: TSplashScreen
     PNGResName = 'IMGLOGO'
@@ -1482,13 +1482,13 @@ object FrmFalconMain: TFrmFalconMain
     Font.Name = 'MS Sans Serif'
     Font.Style = []
     TransparentColor = clFuchsia
-    Left = 147
-    Top = 116
+    Left = 107
+    Top = 156
   end
   object FrmPos: TFormPosition
     FileName = 'FormPosition.ini'
-    Left = 75
-    Top = 153
+    Left = 131
+    Top = 209
   end
   object ImgListOutLine: TImageList
     Width = 24
@@ -1497,15 +1497,15 @@ object FrmFalconMain: TFrmFalconMain
   end
   object TBXSwitcher: TTBXSwitcher
     Theme = 'Default'
-    Left = 107
-    Top = 113
+    Left = 27
+    Top = 153
   end
   object PopupProject: TTBXPopupMenu
     Images = ImgListMenus
     OwnerDraw = True
     OnPopup = PopupProjectPopup
-    Left = 75
-    Top = 112
+    Left = 35
+    Top = 96
     object PopProjNew: TTBXSubmenuItem
       Caption = '&New'
       ImageIndex = 6
@@ -1557,8 +1557,8 @@ object FrmFalconMain: TFrmFalconMain
   object PopupEditor: TTBXPopupMenu
     Images = ImgListMenus
     OwnerDraw = True
-    Left = 299
-    Top = 272
+    Left = 259
+    Top = 328
     object PopEditorOpenDecl: TTBXItem
       Caption = 'Open declaration'
       OnClick = PopEditorOpenDeclClick
@@ -1675,8 +1675,8 @@ object FrmFalconMain: TFrmFalconMain
     Enabled = False
     Interval = 250
     OnTimer = TimerChangeDelayTimer
-    Left = 340
-    Top = 272
+    Left = 372
+    Top = 328
   end
   object ImgListMenus: TTBImageList
     DisabledImages = DisImgListMenus
@@ -1684,29 +1684,29 @@ object FrmFalconMain: TFrmFalconMain
     Top = 4
   end
   object DisImgListMenus: TTBImageList
-    Left = 731
+    Left = 787
     Top = 4
   end
   object TimerHintTipEvent: TTimer
     Enabled = False
     Interval = 300
     OnTimer = TimerHintTipEventTimer
-    Left = 408
-    Top = 272
+    Left = 472
+    Top = 328
   end
   object ApplicationEvents: TApplicationEvents
     OnActivate = ApplicationEventsActivate
     OnDeactivate = ApplicationEventsDeactivate
     OnMessage = ApplicationEventsMessage
-    Left = 107
-    Top = 215
+    Left = 75
+    Top = 431
   end
   object TimerHintParams: TTimer
     Enabled = False
     Interval = 300
     OnTimer = TimerHintParamsTimer
-    Left = 374
-    Top = 272
+    Left = 566
+    Top = 328
   end
   object PopupTabs: TTBXPopupMenu
     Images = ImgListMenus
@@ -1795,7 +1795,7 @@ object FrmFalconMain: TFrmFalconMain
     Top = 282
   end
   object ImageListDebug: TImageList
-    Left = 340
+    Left = 404
     Top = 243
   end
   object PopupMenuLineEnding: TTBXPopupMenu

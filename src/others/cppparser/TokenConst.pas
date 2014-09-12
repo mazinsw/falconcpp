@@ -28,6 +28,7 @@ const
     'const',
     '',
     '',
+    '',
     //********
     '',
     '',
@@ -88,6 +89,7 @@ const
     'tkNamespace',
     'tkEnumItem',
     'tkForward',
+    'tkFriend',
     'tkUnknow',
     //********
     'tkIncludeList',
@@ -128,6 +130,8 @@ const
   ScopeNames: array[0..2] of string = (
     'public', 'private', 'protected'
     );
+  UnnamedBlockStr = '{unnamed}';
+  TruncatedDefinition = '{...}';
 
 type
   TCompletionColors = array[TTkType] of string;

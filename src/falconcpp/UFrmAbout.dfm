@@ -92,12 +92,17 @@ object FormAbout: TFormAbout
       TabOrder = 0
       object TSLicence: TTabSheet
         Caption = 'Licence'
-        object EditLicense: TMemo
+        object EditLicense: TRichEdit
           Left = 0
           Top = 0
           Width = 435
           Height = 236
           Align = alClient
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = []
           Lines.Strings = (
             '                    GNU GENERAL PUBLIC LICENSE'
             '                       Version 3, 29 June 2007'
@@ -1544,57 +1549,74 @@ object FormAbout: TFormAbout
               ' General'
             'Public License instead of this License.  But first, please read'
             '<http://www.gnu.org/philosophy/why-not-lgpl.html>.')
+          ParentFont = False
           ReadOnly = True
-          ScrollBars = ssVertical
+          ScrollBars = ssBoth
           TabOrder = 0
         end
       end
       object TSDevelopers: TTabSheet
         Caption = 'Developers'
         ImageIndex = 1
-        object EditDevelopers: TRichEditViewer
+        object EditDevelopers: TRichEdit
           Left = 0
           Top = 0
           Width = 435
           Height = 236
           Align = alClient
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = []
           Lines.Strings = (
-            'Mazinsw: mailto:mazin.z@hotmail.com       '#13)
+            'Mazinsw: mailto:mazinsw@gmail.com')
+          ParentFont = False
           ReadOnly = True
-          ScrollBars = ssVertical
+          ScrollBars = ssBoth
           TabOrder = 0
         end
       end
       object TSTranslator: TTabSheet
         Caption = 'Translators'
         ImageIndex = 2
-        object EditTranslators: TRichEditViewer
+        object EditTranslators: TRichEdit
           Left = 0
           Top = 0
           Width = 435
           Height = 236
           Align = alClient
-          Lines.Strings = (
-            'Mazinsw: mailto:mazin.z@hotmail.com         '#13)
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = []
+          ParentFont = False
           ReadOnly = True
-          ScrollBars = ssVertical
+          ScrollBars = ssBoth
           TabOrder = 0
         end
       end
       object TSTesters: TTabSheet
         Caption = 'Testers'
         ImageIndex = 3
-        object EditTesters: TRichEditViewer
+        object EditTesters: TRichEdit
           Left = 0
           Top = 0
           Width = 435
           Height = 236
           Align = alClient
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = []
           Lines.Strings = (
-            'Marcos Castro: mailto:marcoscastro87@hotmail.com       '#13
-            'Gilvan Veras: mailto:gilvanokra@hotmail.com '#13)
+            'Marcos Castro: mailto:marcoscastro87@hotmail.com'
+            'Gilvan Veras: mailto:gilvanokra@hotmail.com')
+          ParentFont = False
           ReadOnly = True
-          ScrollBars = ssVertical
+          ScrollBars = ssBoth
           TabOrder = 0
         end
       end

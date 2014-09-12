@@ -213,7 +213,7 @@ var
 
 implementation
 
-uses PkgUtils, ShlObj, SystemUtils, UnicodeUtils;
+uses PkgUtils, ShlObj, SystemUtils, UnicodeUtils, AppConst;
 
 procedure UpdateLang(ini: TCustomIniFile);
 
@@ -294,7 +294,7 @@ begin
   LoadDefaultLang;
   FalconDir := GetFalconDir;
   ConfigPath := GetConfigDir(FalconDir);
-  ini := TIniFile.Create(ConfigPath + 'Config.ini');
+  ini := TIniFile.Create(ConfigPath + CONFIG_NAME);
   AlterConfIni := ini.ReadString('EnvironmentOptions', 'ConfigurationFile', '');
   AlterConfIni := ExpandRelativeFileName(FalconDir, AlterConfIni);
   if ini.ReadBool('EnvironmentOptions', 'AlternativeConfFile', False) and

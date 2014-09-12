@@ -18,11 +18,11 @@ type
     TSLicence: TTabSheet;
     TSDevelopers: TTabSheet;
     TSTranslator: TTabSheet;
-    EditLicense: TMemo;
     TSTesters: TTabSheet;
-    EditTesters: TRichEditViewer;
-    EditTranslators: TRichEditViewer;
-    EditDevelopers: TRichEditViewer;
+    EditDevelopers: TRichEdit;
+    EditTranslators: TRichEdit;
+    EditTesters: TRichEdit;
+    EditLicense: TRichEdit;
     procedure BtnOkClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
@@ -30,6 +30,7 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
   private
+    procedure InitRichEditURLDetection(RE: TRichEdit);
     { Private declarations }
   protected
     procedure CreateParams(var Params: TCreateParams); override;
@@ -44,7 +45,7 @@ var
 
 implementation
 
-uses UFrmMain, UUtils;
+uses UFrmMain, UUtils, RichEdit;
 
 {$R *.dfm}
 
@@ -72,6 +73,19 @@ begin
     Close;
 end;
 
+procedure TFormAbout.InitRichEditURLDetection(RE: TRichEdit);
+var
+  mask: Word;
+  text: string;
+begin
+  mask := SendMessage(RE.Handle, EM_GETEVENTMASK, 0, 0);
+  SendMessage(RE.Handle, EM_SETEVENTMASK, 0, mask or ENM_LINK);
+  SendMessage(RE.Handle, EM_AUTOURLDETECT, Integer(True), 0);
+  text := RE.Text;
+  RE.Lines.Text := '';
+  RE.Lines.Text := text;
+end;
+
 procedure TFormAbout.LoadTranslators(Languages: TFalconLanguages);
 var
   I: Integer;
@@ -96,6 +110,10 @@ end;
 procedure TFormAbout.FormCreate(Sender: TObject);
 begin
   AssignAppIcon(Image1.Picture);
+  InitRichEditURLDetection(EditLicense);
+  InitRichEditURLDetection(EditDevelopers);
+  InitRichEditURLDetection(EditTranslators);
+  InitRichEditURLDetection(EditTesters);
   UpdateLangNow;
   LblNameVersion.Caption := Format('Falcon C++ v%d.%d.%d.%d',
     [FrmFalconMain.FalconVersion.Major,

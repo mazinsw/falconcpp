@@ -706,12 +706,12 @@ begin
   begin
     if (SelStart >= 0) and (Token.Items[I].SelStart > SelStart) then
       Exit;
-    if (Token.Items[I].Name = '') or (Token.Items[I].Token in [tkScope]) or
-      ((Token.Items[I].Token in [tkParams]) and not IncludeParams) then
+    if (Token.Items[I].Name = '') or (Token.Items[I].Token in [tkScope, tkUsing,
+      tkFriend, tkForward]) or ((Token.Items[I].Token in [tkParams]) and
+      not IncludeParams) then
     begin
       Continue;
     end;
-
     if not (Token.Items[I].Token in [tkParams, tkScopeClass]) then
     begin
       if UseList and Assigned(TokenList) then

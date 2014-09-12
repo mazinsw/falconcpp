@@ -108,7 +108,8 @@ function LoadPackageFile(ParentWindow: HWND; FileName: String; Silent: Boolean =
 
 implementation
 
-uses UFrmLoad, SysUtils, UFrmWizard, ShlObj, Controls, ULanguages, SystemUtils;
+uses UFrmLoad, SysUtils, UFrmWizard, ShlObj, Controls, ULanguages, SystemUtils,
+  AppConst;
 
 function LoadPackageFile(ParentWindow: HWND; FileName: String; Silent, Reparse: Boolean): Boolean;
 begin
@@ -729,7 +730,7 @@ begin
     PrgsEvent(Self, Curr, Size, True, not FAborted, '', '', Action);
 
   ConfigRoot := GetConfigDir(FFalconDir);
-  ini := TIniFile.Create(ConfigRoot + 'Config.ini');
+  ini := TIniFile.Create(ConfigRoot + CONFIG_NAME);
   PkgIni := ini.ReadInteger('Packages', 'NewInstalled', 0);
   if PkgIni < 0 then PkgIni := 0;
   ini.WriteInteger('Packages', 'NewInstalled', PkgIni + 1);

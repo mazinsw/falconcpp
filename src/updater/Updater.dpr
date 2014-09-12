@@ -53,7 +53,9 @@ uses
   LangBulgarianModel in '..\others\encoding\chsdet\src\sbseq\LangBulgarianModel.pas',
   LangCyrillicModel in '..\others\encoding\chsdet\src\sbseq\LangCyrillicModel.pas',
   LangGreekModel in '..\others\encoding\chsdet\src\sbseq\LangGreekModel.pas',
-  LangHebrewModel in '..\others\encoding\chsdet\src\sbseq\LangHebrewModel.pas';
+  LangHebrewModel in '..\others\encoding\chsdet\src\sbseq\LangHebrewModel.pas',
+  RegEx in '..\others\regex\RegEx.pas',
+  AppConst in '..\falconcpp\AppConst.pas';
 
 {$IFDEF FALCON_PORTABLE}
   {$R resources_portable.RES}

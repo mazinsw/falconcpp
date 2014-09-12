@@ -40,7 +40,7 @@ var
 implementation
 
 uses UFraProjs, UFraNewOpt, UFrmMain, UUtils, ULanguages,
-  TokenUtils, icoformat;
+  TokenUtils, icoformat, SystemUtils;
 
 {$R *.dfm}
 
@@ -307,7 +307,7 @@ var
   DoOverr: Boolean;
   sheet: TProjectsSheet;
 begin
-  FrmFalconMain.IsLoading := True;
+  FrmFalconMain.IncLoading;
   NewPrj := FrmFalconMain.CreateProject('', FILE_TYPE_PROJECT);
   Node := NewPrj.Node;
   if (Page = pwProj) then
@@ -457,7 +457,7 @@ begin
   Node.Text := NewPrj.Name;
   Node.Selected := True;
   Node.Focused := True;
-  FrmFalconMain.IsLoading := False;
+  FrmFalconMain.DecLoading;
   FrmFalconMain.ParseProjectFiles(NewPrj);
   Close;
 end;

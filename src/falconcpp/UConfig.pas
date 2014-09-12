@@ -147,7 +147,7 @@ function ReadIniFile(Section, Ident, Default: string): string;
 implementation
 
 uses UFrmMain, UUtils, SystemUtils, Windows, SysUtils, IniFiles, Dialogs,
-  Menus, Controls, TBX, ModernTabs;
+  Menus, Controls, TBX, ModernTabs, AppConst;
 
 procedure WriteIniFile(const Section, Ident, Value: string);
 var
@@ -714,7 +714,7 @@ begin
       ini.WriteString('EnvironmentOptions', 'ConfigurationFile', '');
       if not AlternativeConfFile then
       begin
-        oriini := TIniFile.Create(TFrmFalconMain(Form).ConfigRoot + 'Config.ini');
+        oriini := TIniFile.Create(TFrmFalconMain(Form).ConfigRoot + CONFIG_NAME);
         oriini.WriteBool('EnvironmentOptions', 'AlternativeConfFile', False);
         oriini.Free;
       end;

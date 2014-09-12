@@ -797,7 +797,7 @@ var
   Position: Integer;
 begin
   Position := PositionRelative(0, RowColToCharIndex(rowcol));
-  Result := (GetSelectionStart >= Position) and (Position <= GetSelectionEnd);
+  Result := (Position >= GetSelectionStart) and (Position <= GetSelectionEnd);
 end;
 
 procedure TEditor.MoveSelectionDown;

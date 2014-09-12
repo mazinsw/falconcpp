@@ -40,7 +40,7 @@ var
 
 implementation
 
-uses UFrmMain, ULanguages;
+uses UFrmMain, ULanguages, SystemUtils;
 
 {$R *.dfm}
 

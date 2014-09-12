@@ -91,6 +91,8 @@
 			<DCCReference Include="..\others\encoding\chsdet\src\sbseq\LangCyrillicModel.pas"/>
 			<DCCReference Include="..\others\encoding\chsdet\src\sbseq\LangGreekModel.pas"/>
 			<DCCReference Include="..\others\encoding\chsdet\src\sbseq\LangHebrewModel.pas"/>
+			<DCCReference Include="..\others\regex\RegEx.pas"/>
+			<DCCReference Include="..\falconcpp\AppConst.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

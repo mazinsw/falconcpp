@@ -111,16 +111,17 @@ uses
 procedure TThreadTokenFiles.ParseLoadA;
 var
   TokenFile: TTokenFile;
-  Text: TStringList;
-  ParserOk: Boolean;
+  Lines: TStringList;
+  WithBOM, ParserOk: Boolean;
   FileObj: TFileObject;
-  S: string;
+  LineBreak, S: string;
   Data: Pointer;
+  Encoding: TEncoding;
 begin
   fCancel := False;
   fBusy := True;
   Synchronize(DoStart);
-  Text := TStringList.Create;
+  Lines := TStringList.Create;
   while PeekItem(S, Data) do
   begin
     ParserOk := False;
@@ -137,8 +138,9 @@ begin
         TokenFile.FileName := S;
         TokenFile.Data := FileObj.ID;
         FileObj.Free;
-        LoadFileEx(S, Text);
-        fParser.Parse(Text.Text, TokenFile);
+        LoadFileEx(S, Lines, WithBOM, Encoding, LineBreak);
+        Lines.LineBreak := LineBreak;
+        fParser.Parse(Lines.Text, TokenFile);
         if fCancel then
         begin
           TokenFile.Free;
@@ -173,7 +175,7 @@ begin
     end;
     ParserProgress(TokenFile, S, 1, ParserOk);
   end;
-  Text.Free;
+  Lines.Free;
   fBusy := False;
   Synchronize(DoFinish);
 end;
@@ -183,8 +185,11 @@ function TThreadTokenFiles.ParseRecursiveAux(const FileName: string;
 var
   I, J: Integer;
   TokenFile: TTokenFile;
-  Text: TStringList;
+  Lines: TStringList;
   PathOnly, IncludeFileName, IncludeName: string;
+  WithBOM: Boolean;
+  LineBreak: string;
+  Encoding: TEncoding;
 begin
   Result := FilesParsed;
   if not FileExists(FileName) then
@@ -193,12 +198,13 @@ begin
     Exit;
   if fCancel then
     Exit;
-  Text := TStringList.Create;
+  Lines := TStringList.Create;
   TokenFile := TTokenFile.Create(fTokenFiles);
   TokenFile.FileName := FileName;
-  LoadFileEx(FileName, Text);
-  fParser.Parse(Text.Text, TokenFile);
-  Text.Free;
+  LoadFileEx(FileName, Lines, WithBOM, Encoding, LineBreak);
+  Lines.LineBreak := LineBreak;
+  fParser.Parse(Lines.Text, TokenFile);
+  Lines.Free;
   if fCancel then
   begin
     TokenFile.Free;
@@ -335,16 +341,19 @@ end;
 procedure TThreadTokenFiles.ParseAndSaveFilesA;
 var
   TokenFile: TTokenFile;
-  Text: TStringList;
+  Lines: TStringList;
   ParserOk, CanParse: Boolean;
   DestName, DirDest, FileName: string;
   Header: TSimpleFileToken;
   Data: Pointer;
+  WithBOM: Boolean;
+  LineBreak: string;
+  Encoding: TEncoding;
 begin
   fCancel := False;
   fBusy := True;
   Synchronize(DoStart);
-  Text := TStringList.Create;
+  Lines := TStringList.Create;
   while PeekItem(FileName, Data) do
   begin
     ParserOk := False;
@@ -371,8 +380,9 @@ begin
       if CanParse then
       begin
         TokenFile.FileName := FileName;
-        LoadFileEx(FileName, Text);
-        fParser.Parse(Text.Text, TokenFile);
+        LoadFileEx(FileName, Lines, WithBOM, Encoding, LineBreak);
+        Lines.LineBreak := LineBreak;
+        fParser.Parse(Lines.Text, TokenFile);
         if fCancel then
         begin
           TokenFile.Free;
@@ -386,7 +396,7 @@ begin
     end;
     ParserProgress(nil, FileName, 1, ParserOk);
   end;
-  Text.Free;
+  Lines.Free;
   Synchronize(DoFinish);
   fBusy := False;
 end;

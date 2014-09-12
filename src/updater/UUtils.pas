@@ -5,12 +5,10 @@ interface
 {$I Falcon.inc}
 
 uses
-  Windows, Forms, SysUtils, Messages, Classes, XMLDoc, XMLIntf, ComCtrls,
-  ShlObj, IniFiles;
+  Messages, ComCtrls, SystemUtils, AppConst;
 
 const
-  FALCON_URL_UPDATE = 'https://downloads.sourceforge.net/project/falconcpp/' +
-    'Update/Update.xml';
+  FALCON_URL_UPDATE = URL_UPDATE;
   CSIDL_PROGRAM_FILES = $0026;
   {$EXTERNALSYM PBS_MARQUEE}
   PBS_MARQUEE = $0008;
@@ -46,29 +44,16 @@ const
     'Installing...'
   );
 
-type
-
-  TVersion = packed record
-    Major: Word;
-    Minor: Word;
-    Release: Word;
-    Build: Word;
-  end;
-
-function GetFileVersionA(FileName: String): TVersion;
-function ParseVersion(Version: String): TVersion;
-function CompareVersion(Ver1, Ver2: TVersion): Integer;
-function VersionToStr(Version: TVersion): String;
 procedure LoadLang;
 function IsSecureUpdate: Boolean;
-function CanUpdate(UpdateXML: String): Boolean;
+function CanUpdate(const UpdateXML: String): Boolean;
 function BringUpApp(const ClassName: string): Boolean;
 procedure RunSecureUpdater;
 function ForceForegroundWindow(hwnd: THandle): Boolean;
 procedure SetProgsType(PrgsBar: TProgressBar; Infinity: Boolean);
 function GetLangFileName: String;
-procedure WriteIniFile(Const Section, Ident, Value: String);
-function ReadIniFile(Section, Ident, Default: String): String;
+procedure WriteIniFile(const Section, Ident, Value: String);
+function ReadIniFile(const Section, Ident, Default: String): String;
 function GetFalconDir: String;
 
 var
@@ -78,231 +63,11 @@ var
 
 implementation
 
-uses UFrmUpdate, Registry, ShellAPI, SystemUtils, UnicodeUtils;
+uses
+  UFrmUpdate, Registry, ShellAPI, UnicodeUtils, Windows, Forms,
+  SysUtils, Classes, XMLDoc, XMLIntf, ShlObj, IniFiles;
 
-Function GetFileVersionA(FileName: String): TVersion;
-type
-  PFFI = ^vs_FixedFileInfo;
-var
-  F       : PFFI;
-  Handle  : Dword;
-  Len     : Longint;
-  Data    : Pchar;
-  Buffer  : Pointer;
-  Tamanho : Dword;
-  Parquivo: Pchar;
-begin
-  Result.Major:= 0;
-  Result.Minor:= 0;
-  Result.Release:= 0;
-  Result.Build:= 0;
-  Parquivo := StrAlloc(Length(FileName) + 1);
-  StrPcopy(Parquivo, FileName);
-  Len := GetFileVersionInfoSize(Parquivo, Handle);
-  if Len > 0 then
-  begin
-    Data:=StrAlloc(Len+1);
-    if GetFileVersionInfo(Parquivo,Handle,Len,Data) then
-    begin
-      VerQueryValue(Data, '',Buffer,Tamanho);
-      F := PFFI(Buffer);
-      Result.Major:= HiWord(F^.dwFileVersionMs);
-      Result.Minor:= LoWord(F^.dwFileVersionMs);
-      Result.Release:= HiWord(F^.dwFileVersionLs);
-      Result.Build:= Loword(F^.dwFileVersionLs);
-    end;
-    StrDispose(Data);
-  end;
-  StrDispose(Parquivo);
-end;
-
-function GetLine(Str: String; Index: Integer): String;
-var
-  Line: String;
-  I: Integer;
-begin
-  Line := '';
-  I := 0;
-  while (Pos(#13, Str) > 0) do
-  begin
-    Line := Copy(Str, 1, Pos(#13, Str) - 1);
-    Delete(Str, 1, Pos(#13, Str));
-    if (I = Index) then
-    begin
-      Result := Line;
-      Exit;
-    end;
-    Inc(I);
-  end;
-  if (I = Index) then Line := Str;
-  Result := Line;
-end;
-
-function CountLine(Str: String): Integer;
-begin
-  Result := 0;
-  while (Pos(#13, Str) > 0) do
-  begin
-    Delete(Str, 1, Pos(#13, Str));
-    Inc(Result);
-  end;
-  if Length(Str) > 0 then Inc(Result);
-end;
-
-function GetTypes(afmt: String): String;
-var
-  I: Integer;
-  Symb: array[0..1] of Char;
-  Res: String;
-begin
-  Res := '';
-  for I:= 1 to Length(afmt) do
-    if (I < Length(afmt)) then
-    begin
-      Symb[0] := afmt[I];
-      Symb[1] := afmt[I + 1];
-      if CompareStr(Symb, '%s') = 0 then Res := Res + 's';
-      if CompareStr(Symb, '%c') = 0 then Res := Res + 'c';
-      if CompareStr(Symb, '%d') = 0 then Res := Res + 'd';
-      if CompareStr(Symb, '%f') = 0 then Res := Res + 'f';
-    end;
-  Result := Res;
-end;
-
-function sscanf(const fmt, src: String; const params: array of Pointer): Boolean;
-var
-  Consts, Values: String;
-  Temp, Str, Types: String;
-  I: Integer;
-  //results
-  StrResPtr: PString;
-  CharResPtr: PChar;
-  IntResPtr: PInteger;
-  FloatResPtr: PExtended;
-begin
-  Temp := fmt;
-  Result := False;
-  if (Length(fmt) < 2) or (Length(src) = 0) then Exit;
-  Types := GetTypes(fmt);
-  for I:= 1 to Length(types) do
-    Temp := StringReplace(Temp, '%' + types[I], #13, [rfReplaceAll]);
-  if Temp[Length(Temp)] = #13 then Delete(Temp, Length(Temp), 1);
-  if Temp[1] = #13 then Delete(Temp, 1, 1);
-  Consts := Temp;
-  Temp := src;
-  for I:= 0 to Pred(CountLine(Consts)) do
-  begin
-    Str := GetLine(Consts, I);
-    if (Pos(Str, Temp) > 0) then
-      Temp := StringReplace(Temp, Str, #13, [])
-    else
-      Exit;
-  end;
-  Values := Temp;
-  if (CountLine(Values) <> Length(Types)) then Exit;
-  for I:= 0 to High(params) do
-  begin
-    case Types[I + 1] of
-      's':
-      begin
-        StrResPtr := params[I];
-        StrResPtr^ := GetLine(Values, I);
-      end;
-      'c':
-      begin
-        CharResPtr := params[I];
-        CharResPtr^ := GetLine(Values, I)[1];
-      end;
-      'd':
-      begin
-        IntResPtr := params[I];
-        IntResPtr^ := StrToIntDef(GetLine(Values, I), 0);
-      end;
-      'f':
-      begin
-        FloatResPtr := params[I];
-        FloatResPtr^ := StrToFloatDef(GetLine(Values, I), 0);
-      end;
-    end;
-  end;
-  Result := True;
-end;
-
-function ParseVersion(Version: String): TVersion;
-var
-  v1, v2, v3, v4: Integer;
-begin
-  if sscanf('%d.%d.%d.%d', Version, [@v1, @v2, @v3, @v4]) then
-  begin
-    Result.Major := v1;
-    Result.Minor := v2;
-    Result.Release := v3;
-    Result.Build := v4;
-  end
-  else
-  begin
-    Result.Major := 0;
-    Result.Minor := 0;
-    Result.Release := 0;
-    Result.Build := 0;
-  end;
-end;
-
-function VersionToStr(Version: TVersion): String;
-begin
-  Result := Format('%d.%d.%d.%d', [
-            Version.Major,
-            Version.Minor,
-            Version.Release,
-            Version.Build
-            ]);
-end;
-
-function CompareVersion(Ver1, Ver2: TVersion): Integer;
-
-  procedure ExitFunction(Value: Integer);
-  begin
-    Result := Value;
-    Exit;
-  end;
-
-begin
-  if Ver1.Major > Ver2.Major then
-    ExitFunction(1)
-  else
-  begin
-    if Ver1.Major < Ver2.Major then
-      ExitFunction(-1)
-    else
-      if Ver1.Minor > Ver2.Minor then
-        ExitFunction(1)
-      else
-      begin
-        if Ver1.Minor < Ver2.Minor then
-          ExitFunction(-1)
-        else
-          if Ver1.Release > Ver2.Release then
-            ExitFunction(1)
-          else
-          begin
-            if Ver1.Release < Ver2.Release then
-              ExitFunction(-1)
-            else
-              if Ver1.Build > Ver2.Build then
-                ExitFunction(1)
-              else
-              begin
-                if Ver1.Build < Ver2.Build then
-                  ExitFunction(-1)
-                else
-                  ExitFunction(0);
-              end;
-          end;
-      end;
-  end;
-end;
-
-function CanUpdate(UpdateXML: String): Boolean;
+function CanUpdate(const UpdateXML: String): Boolean;
 var
   XMLDoc: TXMLDocument;
   Node, FalconNode: IXMLNode;
@@ -555,16 +320,16 @@ procedure WriteIniFile(Const Section, Ident, Value: String);
 var
   ini:TIniFile;
 begin
-  ini := TIniFile.Create(ConfigPath + 'Config.ini');
+  ini := TIniFile.Create(ConfigPath + CONFIG_NAME);
   ini.WriteString(Section, Ident, Value);
   ini.Free;
 end;
 
-function ReadIniFile(Section, Ident, Default: String): String;
+function ReadIniFile(const Section, Ident, Default: String): String;
 var
   ini:TIniFile;
 begin
-  ini := TIniFile.Create(ConfigPath + 'Config.ini');
+  ini := TIniFile.Create(ConfigPath + CONFIG_NAME);
   Result := ini.ReadString(Section, Ident, Default);
   ini.Free;
 end;
@@ -579,7 +344,7 @@ var
   Lines: TStrings;
 begin
   Result := '';
-  ini := TIniFile.Create(ConfigPath + 'Config.ini');
+  ini := TIniFile.Create(ConfigPath + CONFIG_NAME);
   AlterConfIni := ini.ReadString('EnvironmentOptions', 'ConfigurationFile', '');
   AlterConfIni := ExpandRelativeFileName(AppRoot, AlterConfIni);
   if ini.ReadBool('EnvironmentOptions', 'AlternativeConfFile', False) and

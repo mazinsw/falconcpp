@@ -175,15 +175,17 @@
 			<DCCReference Include="..\others\utils\SystemUtils.pas"/>
 			<DCCReference Include="..\others\regex\RegEx.pas"/>
 			<DCCReference Include="editor\SearchEngine.pas"/>
+			<DCCReference Include="editor\RCHighlighter.pas"/>
+			<DCCReference Include="AppConst.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
-			<BuildConfiguration Include="Debug">
-				<Key>Cfg_2</Key>
-				<CfgParent>Base</CfgParent>
-			</BuildConfiguration>
 			<BuildConfiguration Include="Release">
 				<Key>Cfg_1</Key>
+				<CfgParent>Base</CfgParent>
+			</BuildConfiguration>
+			<BuildConfiguration Include="Debug">
+				<Key>Cfg_2</Key>
 				<CfgParent>Base</CfgParent>
 			</BuildConfiguration>
 		</ItemGroup>

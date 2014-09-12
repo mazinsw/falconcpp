@@ -97,7 +97,7 @@ var
 
 implementation
 
-uses UFrmMain, ULanguages, ExecWait, UUtils, UConfig;
+uses UFrmMain, ULanguages, ExecWait, UUtils, UConfig, SystemUtils;
 
 {$R *.dfm}
 

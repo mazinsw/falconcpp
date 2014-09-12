@@ -180,7 +180,7 @@ function InstallPackages(ParentWindow: HWND): Integer;
 implementation
 
 uses UInstaller, UFrmPkgMan, ShlObj, UUninstaller, PkgUtils, ULanguages,
-  IniFiles, SystemUtils;
+  IniFiles, SystemUtils, AppConst;
 
 {$R *.dfm}
 
@@ -569,7 +569,7 @@ var
 begin
   FalconDir := GetFalconDir;
   ConfigPath := GetConfigDir(FalconDir);
-  ini := TIniFile.Create(ConfigPath + 'Config.ini');
+  ini := TIniFile.Create(ConfigPath + CONFIG_NAME);
   AlterConfIni := ini.ReadString('EnvironmentOptions', 'ConfigurationFile', '');
   if ini.ReadBool('EnvironmentOptions', 'AlternativeConfFile', False) and
     FileExists(AlterConfIni) then

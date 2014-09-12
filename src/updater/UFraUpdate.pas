@@ -6,7 +6,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Controls, Forms, ComCtrls, StdCtrls,
-  XMLDoc, XMLIntf, UUtils, ExtCtrls;
+  XMLDoc, XMLIntf, UUtils, ExtCtrls, SystemUtils;
 
 type
   TFraUpdate = class(TFrame)
@@ -27,7 +27,7 @@ var
 
 implementation
 
-uses UFrmUpdate, SystemUtils;
+uses UFrmUpdate;
 
 {$R *.dfm}
 

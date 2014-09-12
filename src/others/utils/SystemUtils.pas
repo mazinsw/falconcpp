@@ -20,6 +20,13 @@ type
     );
   TExecuteFileOptions = set of TExecuteFileOption;
 
+  TVersion = packed record
+    Major: Word;
+    Minor: Word;
+    Release: Word;
+    Build: Word;
+  end;
+
 function FindFiles(const Search: string; Finded: TStrings): Boolean; overload;
 function FindFiles(const PathName, FileName: string; List: TStrings): Boolean; overload;
 procedure ListDir(Dir, Regex: string; List: TStrings; IncludeSubDir: Boolean = False);
@@ -41,6 +48,10 @@ function IsNT: Boolean;
 function IsForeground(Handle: HWND): Boolean;
 function ForceForegroundWindow(hwnd: THandle): Boolean;
 function BringUpApp(const ClassName: string): Boolean;
+function GetFileVersionA(const FileName: string): TVersion;
+function ParseVersion(const Version: string): TVersion;
+function CompareVersion(Ver1, Ver2: TVersion): Integer;
+function VersionToStr(Version: TVersion): string;
 
 
 {$EXTERNALSYM SwitchToThisWindow}
@@ -65,7 +76,7 @@ function SHOpenFolderAndSelectItems(pidlFolder: PItemIDList; cidl: Cardinal;
 implementation
 
 uses
-  Forms, CommCtrl, ImgList, Controls, SysUtils, Registry;
+  Forms, CommCtrl, ImgList, Controls, SysUtils, Registry, PerlRegEx;
 
 function FindFiles(const Search: string; Finded: TStrings): Boolean;
 var
@@ -474,6 +485,151 @@ begin
     until FindNext(F) <> 0;
     FindClose(F);
   end;
+end;
+
+
+function GetFileVersionA(const FileName: string): TVersion;
+type
+  PFFI = ^vs_FixedFileInfo;
+var
+  F: PFFI;
+  Handle: Dword;
+  Len: Longint;
+  Data: Pchar;
+  Buffer: Pointer;
+  Tamanho: Dword;
+  Parquivo: Pchar;
+begin
+  Result.Major := 0;
+  Result.Minor := 0;
+  Result.Release := 0;
+  Result.Build := 0;
+  Parquivo := StrAlloc(Length(FileName) + 1);
+  StrPcopy(Parquivo, FileName);
+  Len := GetFileVersionInfoSize(Parquivo, Handle);
+  if Len > 0 then
+  begin
+    Data := StrAlloc(Len + 1);
+    if GetFileVersionInfo(Parquivo, Handle, Len, Data) then
+    begin
+      VerQueryValue(Data, '', Buffer, Tamanho);
+      F := PFFI(Buffer);
+      Result.Major := HiWord(F^.dwFileVersionMs);
+      Result.Minor := LoWord(F^.dwFileVersionMs);
+      Result.Release := HiWord(F^.dwFileVersionLs);
+      Result.Build := Loword(F^.dwFileVersionLs);
+    end;
+    StrDispose(Data);
+  end;
+  StrDispose(Parquivo);
+end;
+
+function Trim(Left: Char; const S: string; Rigth: Char): string; overload;
+var
+  Len: Integer;
+begin
+  Result := Trim(S);
+  Len := Length(Result);
+  while (Len > 0) and (Result[1] = Left) do
+  begin
+    Delete(Result, 1, 1);
+    Dec(Len);
+  end;
+  while (Len > 0) and (Result[Len] = Rigth) do
+  begin
+    Delete(Result, Len, 1);
+    Dec(Len);
+  end;
+end;
+
+function CountChar(const S: string; ch: Char): Integer;
+var
+  I: Integer;
+begin
+  Result := 0;
+  for I := 1 to Length(S) do
+    if S[I] = ch then
+      Inc(Result);
+end;
+
+function ParseVersion(const Version: string): TVersion;
+
+type
+  TCharSet = set of AnsiChar;
+
+  function Only(str: string; Chars: TCharSet): string;
+  var
+    I: Integer;
+  begin
+    Result := '';
+    for I := 1 to Length(str) do
+    begin
+      if CharInSet(str[I], Chars) then
+        Result := Result + str[I];
+    end;
+  end;
+
+var
+  RegExp: TPerlRegEx;
+  Temp: string;
+begin
+  Temp := StringReplace(Version, ',', '.', [rfReplaceAll]);
+  Temp := Trim('.', Only(Temp, ['0'..'9', '.']), '.');
+  case CountChar(Temp, '.') of
+    0: Temp := Temp + '.0.0.0';
+    1: Temp := Temp + '.0.0';
+    2: Temp := Temp + '.0';
+  end;
+  RegExp := TPerlRegEx.Create;
+  RegExp.RegEx := '([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)';
+  RegExp.Subject := UTF8Encode(Temp);
+  if RegExp.Match then
+  begin
+    Result.Major := StrToInt(UTF8ToString(RegExp.Groups[1]));
+    Result.Minor := StrToInt(UTF8ToString(RegExp.Groups[2]));
+    Result.Release := StrToInt(UTF8ToString(RegExp.Groups[3]));
+    Result.Build := StrToInt(UTF8ToString(RegExp.Groups[4]));
+  end
+  else
+  begin
+    Result.Major := 0;
+    Result.Minor := 0;
+    Result.Release := 0;
+    Result.Build := 0;
+  end;
+  RegExp.Free;
+end;
+
+function VersionToStr(Version: TVersion): string;
+begin
+  Result := Format('%d.%d.%d.%d', [
+    Version.Major,
+      Version.Minor,
+      Version.Release,
+      Version.Build
+      ]);
+end;
+
+function CompareVersion(Ver1, Ver2: TVersion): Integer;
+begin
+  if Ver1.Major > Ver2.Major then
+    Result := 1
+  else if Ver1.Major < Ver2.Major then
+    Result := -1
+  else if Ver1.Minor > Ver2.Minor then
+    Result := 1
+  else if Ver1.Minor < Ver2.Minor then
+    Result := -1
+  else if Ver1.Release > Ver2.Release then
+    Result := 1
+  else if Ver1.Release < Ver2.Release then
+    Result := -1
+  else if Ver1.Build > Ver2.Build then
+    Result := 1
+  else if Ver1.Build < Ver2.Build then
+    Result := -1
+  else
+    Result := 0;
 end;
 
 end.

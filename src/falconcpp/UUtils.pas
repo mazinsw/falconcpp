@@ -36,17 +36,10 @@ type
     ImageIndex: TImageIndex;
   end;
 
-  TVersion = packed record
-    Major: Word;
-    Minor: Word;
-    Release: Word;
-    Build: Word;
-  end;
-
   pRGBALine = ^TRGBALine;
   TRGBALine = array[Word] of TRGBQuad;
 
-function GetTickTime(ticks: Cardinal; fmt: string): string;
+function GetTickTime(ticks: Cardinal): string;
 procedure GetNameAndVersion(const S: string; var aName, aVersion: string);
 procedure SearchCompilers(List: TStrings; var PathCompiler: string);
 function TranslateSpecialChars(const S: string): string;
@@ -63,10 +56,6 @@ function IconToBitmap(const Icon: TIcon; Width: Integer = 48;
   Height: Integer = 48): TBitmap;
 function GetRGBAPointerFromImageIndex(ImageList: TCustomImageList;
   Index: Integer; var Width, Height: Integer): PAnsiChar;
-function GetFileVersionA(FileName: string): TVersion;
-function ParseVersion(Version: string): TVersion;
-function CompareVersion(Ver1, Ver2: TVersion): Integer;
-function VersionToStr(Version: TVersion): string;
 function CanUpdate(UpdateXML: string): Boolean;
 procedure SetProgsType(PrgsBar: TProgressBar; Infinity: Boolean);
 function GetCompiler(FileType: Integer): Integer;
@@ -182,22 +171,15 @@ begin
   ReleaseDC(0, DC);
 end;
 
-function GetTickTime(ticks: Cardinal; fmt: string): string;
+function GetTickTime(ticks: Cardinal): string;
 var
-  milli, sec , min: Cardinal;
-  S: string;
+  min: Cardinal;
 begin
-  milli := ticks mod 1000;
-  ticks := ticks div 1000;
-  sec := ticks{ mod 60};
-  //ticks := ticks div 60;
-  min := 0{ticks};
-  S := Format('%.3f', [milli / 1000]);
-  S := Copy(S, Pos(',', S) + 1, MaxInt);
+  min := ticks div 60000;
   if min > 0 then
-    Result := Format('%d:%.*d.%s', [min, 2, sec, S])
+    Result := Format('%d:%2.3f', [min, ticks / 1000])
   else
-    Result := Format('%d.%s', [sec, S]);
+    Result := Format('%.3f', [ticks / 1000]);
 end;
 
 procedure GetNameAndVersion(const S: string; var aName, aVersion: string);
@@ -585,141 +567,6 @@ begin
   end;
   Image.Free;
   Result := PAnsiChar(DestPtr);
-end;
-
-
-function GetFileVersionA(FileName: string): TVersion;
-type
-  PFFI = ^vs_FixedFileInfo;
-var
-  F: PFFI;
-  Handle: Dword;
-  Len: Longint;
-  Data: Pchar;
-  Buffer: Pointer;
-  Tamanho: Dword;
-  Parquivo: Pchar;
-begin
-  Result.Major := 0;
-  Result.Minor := 0;
-  Result.Release := 0;
-  Result.Build := 0;
-  Parquivo := StrAlloc(Length(FileName) + 1);
-  StrPcopy(Parquivo, FileName);
-  Len := GetFileVersionInfoSize(Parquivo, Handle);
-  if Len > 0 then
-  begin
-    Data := StrAlloc(Len + 1);
-    if GetFileVersionInfo(Parquivo, Handle, Len, Data) then
-    begin
-      VerQueryValue(Data, '', Buffer, Tamanho);
-      F := PFFI(Buffer);
-      Result.Major := HiWord(F^.dwFileVersionMs);
-      Result.Minor := LoWord(F^.dwFileVersionMs);
-      Result.Release := HiWord(F^.dwFileVersionLs);
-      Result.Build := Loword(F^.dwFileVersionLs);
-    end;
-    StrDispose(Data);
-  end;
-  StrDispose(Parquivo);
-end;
-
-function ParseVersion(Version: string): TVersion;
-
-type
-  TCharSet = set of AnsiChar;
-
-  function Only(str: string; Chars: TCharSet): string;
-  var
-    I: Integer;
-  begin
-    Result := '';
-    for I := 1 to Length(str) do
-    begin
-      if CharInSet(str[I], Chars) then
-        Result := Result + str[I];
-    end;
-  end;
-
-var
-  RegExp: TPerlRegEx;
-begin
-  Version := StringReplace(Version, ',', '.', [rfReplaceAll]);
-  Version := Trim('.', Only(Version, ['0'..'9', '.']), '.');
-  case CountChar(Version, '.') of
-    0: Version := Version + '.0.0.0';
-    1: Version := Version + '.0.0';
-    2: Version := Version + '.0';
-  end;
-  RegExp := TPerlRegEx.Create;
-  RegExp.RegEx := '([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)';
-  RegExp.Subject := UTF8Encode(Version);
-  if RegExp.Match then
-  begin
-    Result.Major := StrToInt(UTF8ToString(RegExp.Groups[1]));
-    Result.Minor := StrToInt(UTF8ToString(RegExp.Groups[2]));
-    Result.Release := StrToInt(UTF8ToString(RegExp.Groups[3]));
-    Result.Build := StrToInt(UTF8ToString(RegExp.Groups[4]));
-  end
-  else
-  begin
-    Result.Major := 0;
-    Result.Minor := 0;
-    Result.Release := 0;
-    Result.Build := 0;
-  end;
-  RegExp.Free;
-end;
-
-function VersionToStr(Version: TVersion): string;
-begin
-  Result := Format('%d.%d.%d.%d', [
-    Version.Major,
-      Version.Minor,
-      Version.Release,
-      Version.Build
-      ]);
-end;
-
-function CompareVersion(Ver1, Ver2: TVersion): Integer;
-
-  procedure ExitFunction(Value: Integer);
-  begin
-    Result := Value;
-    Exit;
-  end;
-
-begin
-  if Ver1.Major > Ver2.Major then
-    ExitFunction(1)
-  else
-  begin
-    if Ver1.Major < Ver2.Major then
-      ExitFunction(-1)
-    else if Ver1.Minor > Ver2.Minor then
-      ExitFunction(1)
-    else
-    begin
-      if Ver1.Minor < Ver2.Minor then
-        ExitFunction(-1)
-      else if Ver1.Release > Ver2.Release then
-        ExitFunction(1)
-      else
-      begin
-        if Ver1.Release < Ver2.Release then
-          ExitFunction(-1)
-        else if Ver1.Build > Ver2.Build then
-          ExitFunction(1)
-        else
-        begin
-          if Ver1.Build < Ver2.Build then
-            ExitFunction(-1)
-          else
-            ExitFunction(0);
-        end;
-      end;
-    end;
-  end;
 end;
 
 function CanUpdate(UpdateXML: string): Boolean;

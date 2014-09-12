@@ -539,7 +539,7 @@ begin
     if FTreeObjList.SearchToken(S, ScopeFlag, Item, SelStart,
       AdvanceAfterSelStart, Mode) then
       Exit;
-  if HasOneToken([tkVariable, tkForward], Mode) then
+  if HasOneToken([tkVariable, tkForward, tkFriend], Mode) then
     if FVarConstList.SearchToken(S, ScopeFlag, Item, SelStart,
       AdvanceAfterSelStart, Mode) then
       Exit;
@@ -1913,8 +1913,9 @@ begin
     ShowClassFunction := True;
     if not (Token.Items[I].Token in [tkEnumItem, tkEnum, tkTypeEnum]) then
     begin
-      if (Token.Items[I].Token in [tkScope, tkUsing, tkOperator]) or
-        ((Token.Items[I].Level > 0) and (Token.Token <> tkFuncProList) and not IncludeParams) then
+      if (Token.Items[I].Token in [tkScope, tkUsing, tkFriend, tkOperator]) or
+        ((Token.Items[I].Level > 0) and (Token.Items[I].Parent <> nil) and
+         (Token.Items[I].Parent.Parent <> nil) and (Token.Token <> tkFuncProList) and not IncludeParams) then
         Continue;
       if Token.Items[I].Token in [tkFunction, tkConstructor, tkDestructor] then
       begin
@@ -1922,9 +1923,7 @@ begin
         if Assigned(Scope) and (Scope.Flag <> '') then
           ShowClassFunction := False;
       end;
-    end
-    else
-      ShowClassFunction := True;
+    end;
     if not (Token.Items[I].Token in [tkParams]) and ShowClassFunction then
     begin
       NewToken := Token.Items[I];//TTokenClass.Create;

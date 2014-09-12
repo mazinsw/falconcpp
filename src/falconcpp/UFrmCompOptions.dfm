@@ -30,6 +30,10 @@ object FrmCompOptions: TFrmCompOptions
     TabOrder = 0
     object TSCompiler: TTabSheet
       Caption = 'Compiler'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LabelLang: TLabel
         Left = 3
         Top = 10
@@ -169,10 +173,8 @@ object FrmCompOptions: TFrmCompOptions
         Width = 421
         Height = 22
         ItemsEx = <>
-        ItemHeight = 16
         TabOrder = 0
         Images = FrmFalconMain.DisImgListMenus
-        DropDownCount = 8
       end
       object PageControl2: TPageControl
         Left = 4
@@ -183,6 +185,10 @@ object FrmCompOptions: TFrmCompOptions
         TabOrder = 1
         object TabSheet1: TTabSheet
           Caption = 'General'
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
           object LabelUserDefDir: TLabel
             Left = 4
             Top = 14
@@ -256,7 +262,6 @@ object FrmCompOptions: TFrmCompOptions
             Top = 33
             Width = 431
             Height = 21
-            ItemHeight = 13
             TabOrder = 0
             OnSelect = ComboBoxCompilerPathSelect
           end
@@ -387,6 +392,10 @@ object FrmCompOptions: TFrmCompOptions
         object TabSheet3: TTabSheet
           Caption = 'Compiler options'
           ImageIndex = 2
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
           object Label10: TLabel
             Left = 5
             Top = 248
@@ -469,6 +478,10 @@ object FrmCompOptions: TFrmCompOptions
         object TabSheet2: TTabSheet
           Caption = 'Linker options'
           ImageIndex = 1
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
           object Label12: TLabel
             Left = 5
             Top = 248
@@ -553,6 +566,10 @@ object FrmCompOptions: TFrmCompOptions
     object TSDebugger: TTabSheet
       Caption = 'Debugger'
       ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object GroupBox2: TGroupBox
         Left = 5
         Top = 10
@@ -648,10 +665,18 @@ object FrmCompOptions: TFrmCompOptions
     object TSDirectories: TTabSheet
       Caption = 'Directories'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
     end
     object TSPrograms: TTabSheet
       Caption = 'Programs'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
     end
   end
   object BtnOk: TButton

@@ -57,7 +57,7 @@ var
 implementation
 
 uses UFraGetVer, UFraUpdate, CompressUtils, ExecWait, SystemUtils,
-  ThreadExtract;
+  ThreadExtract, AppConst;
 
 {$R *.dfm}
 
@@ -67,7 +67,7 @@ var
   ini: TIniFile;
 begin
   FalconDir := AppRoot;
-  ini := TIniFile.Create(ConfigPath + 'Config.ini');
+  ini := TIniFile.Create(ConfigPath + CONFIG_NAME);
   AlterConfIni := ini.ReadString('EnvironmentOptions', 'ConfigurationFile', '');
   if ini.ReadBool('EnvironmentOptions', 'AlternativeConfFile', False) and
     FileExists(AlterConfIni) then

@@ -210,10 +210,10 @@ begin
   SynCpp := TCppHighlighter.Create(Self);
   EditPreview := TEditor.Create(TSSintax);
   EditPreview.Parent := TSSintax;
-  EditPreview.Left := 6;
-  EditPreview.Top := 152;
-  EditPreview.Width := 475;
-  EditPreview.Height := 241;
+  EditPreview.Left := ListBoxType.Left;
+  EditPreview.Top := ListBoxType.Top + ListBoxType.Height + ListBoxType.Left;
+  EditPreview.Width := TSSintax.Width - 2 * ListBoxType.Left;
+  EditPreview.Height := TSSintax.Height - EditPreview.Top - ListBoxType.Left;
   EditPreview.TabOrder := 5;
   EditPreview.OnMouseDown := SynPrevMouseDown;
   EditPreview.ShowLineNumber := True;
@@ -239,10 +239,7 @@ begin
   // GroupBoxFormatterSample
   EditFormatter := TEditor.Create(GroupBoxFormatterSample);
   EditFormatter.Parent := GroupBoxFormatterSample;
-  EditFormatter.Left := 10;
-  EditFormatter.Top := 16;
-  EditFormatter.Width := 313;
-  EditFormatter.Height := 320;
+  EditFormatter.Align := alClient;
   EditFormatter.TabOrder := 0;
   EditFormatter.ShowLineNumber := False;
   EditFormatter.HideSelection(False);

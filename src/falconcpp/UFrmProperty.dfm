@@ -17,6 +17,9 @@ object FrmProperty: TFrmProperty
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
+  DesignSize = (
+    511
+    473)
   PixelsPerInch = 96
   TextHeight = 13
   object PageCtrlProp: TPageControl
@@ -25,22 +28,26 @@ object FrmProperty: TFrmProperty
     Width = 497
     Height = 428
     ActivePage = TSApp
+    Anchors = [akLeft, akTop, akRight, akBottom]
     TabOrder = 0
     object TSApp: TTabSheet
       Caption = 'Application'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      DesignSize = (
+        489
+        400)
       object GrpAppSet: TGroupBox
         Left = 8
         Top = 2
         Width = 473
         Height = 343
+        Anchors = [akLeft, akTop, akRight, akBottom]
         Caption = 'Application settings'
         TabOrder = 0
+        DesignSize = (
+          473
+          343)
         object LblIcon: TLabel
-          Left = 290
+          Left = 306
           Top = 24
           Width = 24
           Height = 13
@@ -61,7 +68,7 @@ object FrmProperty: TFrmProperty
           Caption = 'Target:'
         end
         object PanelIcon: TPanel
-          Left = 280
+          Left = 296
           Top = 40
           Width = 50
           Height = 50
@@ -97,7 +104,7 @@ object FrmProperty: TFrmProperty
           OnChange = EditTargetChange
         end
         object BtnLoadIcon: TButton
-          Left = 250
+          Left = 266
           Top = 97
           Width = 113
           Height = 25
@@ -110,6 +117,7 @@ object FrmProperty: TFrmProperty
           Top = 194
           Width = 177
           Height = 135
+          Anchors = [akLeft, akBottom]
           Caption = 'Application Type'
           ItemIndex = 0
           Items.Strings = (
@@ -125,6 +133,7 @@ object FrmProperty: TFrmProperty
           Top = 244
           Width = 162
           Height = 17
+          Anchors = [akLeft, akBottom]
           Caption = 'Enable theme'
           Checked = True
           State = cbChecked
@@ -137,6 +146,7 @@ object FrmProperty: TFrmProperty
           Top = 304
           Width = 161
           Height = 17
+          Anchors = [akLeft, akBottom]
           Caption = 'Requires admin level'
           TabOrder = 6
           OnClick = ProjectChange
@@ -146,6 +156,7 @@ object FrmProperty: TFrmProperty
           Top = 276
           Width = 162
           Height = 17
+          Anchors = [akLeft, akBottom]
           Caption = 'Create linked library'
           TabOrder = 7
           Visible = False
@@ -156,17 +167,20 @@ object FrmProperty: TFrmProperty
     object TSVersion: TTabSheet
       Caption = 'Version Info'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      DesignSize = (
+        489
+        400)
       object GrbIncVer: TGroupBox
         Left = 8
         Top = 2
         Width = 471
         Height = 367
+        Anchors = [akLeft, akTop, akRight, akBottom]
         Caption = '     Include version information in project '
         TabOrder = 0
+        DesignSize = (
+          471
+          367)
         object ChbIncVer: TCheckBox
           Left = 8
           Top = -1
@@ -180,9 +194,13 @@ object FrmProperty: TFrmProperty
           Top = 18
           Width = 455
           Height = 103
+          Anchors = [akLeft, akTop, akRight]
           Caption = 'Version numbers'
           Enabled = False
           TabOrder = 1
+          DesignSize = (
+            455
+            103)
           object LblMajor: TLabel
             Left = 8
             Top = 24
@@ -204,6 +222,7 @@ object FrmProperty: TFrmProperty
             Top = 24
             Width = 39
             Height = 13
+            Anchors = [akTop, akRight]
             Caption = 'Release'
             Enabled = False
           end
@@ -212,6 +231,7 @@ object FrmProperty: TFrmProperty
             Top = 24
             Width = 23
             Height = 13
+            Anchors = [akTop, akRight]
             Caption = 'Build'
             Enabled = False
           end
@@ -279,6 +299,7 @@ object FrmProperty: TFrmProperty
             Width = 55
             Height = 21
             Alignment = taRightJustify
+            Anchors = [akTop, akRight]
             Enabled = False
             TabOrder = 5
             Text = '0'
@@ -290,6 +311,7 @@ object FrmProperty: TFrmProperty
             Top = 40
             Width = 16
             Height = 21
+            Anchors = [akTop, akRight]
             Associate = EditRelease
             Enabled = False
             Max = 9999
@@ -303,6 +325,7 @@ object FrmProperty: TFrmProperty
             Width = 55
             Height = 21
             Alignment = taRightJustify
+            Anchors = [akTop, akRight]
             Enabled = False
             TabOrder = 7
             Text = '0'
@@ -314,6 +337,7 @@ object FrmProperty: TFrmProperty
             Top = 40
             Width = 16
             Height = 21
+            Anchors = [akTop, akRight]
             Associate = EditBuild
             Enabled = False
             Max = 9999
@@ -326,9 +350,13 @@ object FrmProperty: TFrmProperty
           Top = 134
           Width = 455
           Height = 70
+          Anchors = [akLeft, akTop, akRight]
           Caption = 'Language'
           Enabled = False
           TabOrder = 2
+          DesignSize = (
+            455
+            70)
           object LblLocale: TLabel
             Left = 8
             Top = 21
@@ -355,10 +383,11 @@ object FrmProperty: TFrmProperty
           object CbbLang: TComboBoxEx
             Left = 8
             Top = 40
-            Width = 393
+            Width = 439
             Height = 22
             ItemsEx = <>
             Style = csExDropDownList
+            Anchors = [akLeft, akTop, akRight]
             Enabled = False
             TabOrder = 0
             OnChange = CbbLangChange
@@ -370,6 +399,7 @@ object FrmProperty: TFrmProperty
           Top = 215
           Width = 455
           Height = 138
+          Anchors = [akLeft, akTop, akRight, akBottom]
           ColCount = 2
           DefaultColWidth = 215
           DefaultRowHeight = 15
@@ -398,30 +428,30 @@ object FrmProperty: TFrmProperty
     object TSCompiler: TTabSheet
       Caption = 'Compiler'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      DesignSize = (
+        489
+        400)
       object PageControl1: TPageControl
         Left = 8
-        Top = 177
+        Top = 176
         Width = 473
         Height = 216
         ActivePage = GrbLibs
+        Anchors = [akLeft, akTop, akRight, akBottom]
         TabOrder = 3
         object GrbLibs: TTabSheet
           Caption = 'Libraries'
           ImageIndex = -1
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
+          DesignSize = (
+            465
+            188)
           object SBtnAdd: TSpeedButton
             Left = 432
             Top = 7
             Width = 24
             Height = 24
             Hint = 'Add'
+            Anchors = [akTop, akRight]
             Glyph.Data = {
               36060000424D3606000000000000360000002800000020000000100000000100
               1800000000000006000000000000000000000000000000000000FFFFFFFFFFFF
@@ -484,6 +514,7 @@ object FrmProperty: TFrmProperty
             Width = 24
             Height = 24
             Hint = 'Delete selected'
+            Anchors = [akTop, akRight]
             Enabled = False
             Glyph.Data = {
               36060000424D3606000000000000360000002800000020000000100000000100
@@ -547,6 +578,7 @@ object FrmProperty: TFrmProperty
             Width = 24
             Height = 24
             Hint = 'Move to up'
+            Anchors = [akRight, akBottom]
             Enabled = False
             Glyph.Data = {
               36060000424D3606000000000000360000002800000020000000100000000100
@@ -610,6 +642,7 @@ object FrmProperty: TFrmProperty
             Width = 24
             Height = 24
             Hint = 'Move to down'
+            Anchors = [akRight, akBottom]
             Enabled = False
             Glyph.Data = {
               36060000424D3606000000000000360000002800000020000000100000000100
@@ -673,6 +706,7 @@ object FrmProperty: TFrmProperty
             Width = 24
             Height = 24
             Hint = 'Edit selected'
+            Anchors = [akTop, akRight]
             Enabled = False
             Glyph.Data = {
               36080000424D3608000000000000360000002800000020000000100000000100
@@ -751,6 +785,7 @@ object FrmProperty: TFrmProperty
             Top = 8
             Width = 417
             Height = 21
+            Anchors = [akLeft, akTop, akRight]
             TabOrder = 0
             OnKeyPress = CBLibsKeyPress
           end
@@ -759,6 +794,7 @@ object FrmProperty: TFrmProperty
             Top = 43
             Width = 417
             Height = 136
+            Anchors = [akLeft, akTop, akRight, akBottom]
             ItemHeight = 13
             TabOrder = 1
             OnClick = ListLibsClick
@@ -769,16 +805,16 @@ object FrmProperty: TFrmProperty
         object GrbIncs: TTabSheet
           Caption = 'Includes'
           ImageIndex = -1
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
+          DesignSize = (
+            465
+            188)
           object SBtnAddInc: TSpeedButton
             Left = 432
             Top = 7
             Width = 24
             Height = 24
             Hint = 'Add'
+            Anchors = [akTop, akRight]
             Glyph.Data = {
               36060000424D3606000000000000360000002800000020000000100000000100
               1800000000000006000000000000000000000000000000000000FFFFFFFFFFFF
@@ -841,6 +877,7 @@ object FrmProperty: TFrmProperty
             Width = 24
             Height = 24
             Hint = 'Delete selected'
+            Anchors = [akTop, akRight]
             Enabled = False
             Glyph.Data = {
               36060000424D3606000000000000360000002800000020000000100000000100
@@ -904,6 +941,7 @@ object FrmProperty: TFrmProperty
             Width = 24
             Height = 24
             Hint = 'Move to up'
+            Anchors = [akRight, akBottom]
             Enabled = False
             Glyph.Data = {
               36060000424D3606000000000000360000002800000020000000100000000100
@@ -967,6 +1005,7 @@ object FrmProperty: TFrmProperty
             Width = 24
             Height = 24
             Hint = 'Move to down'
+            Anchors = [akRight, akBottom]
             Enabled = False
             Glyph.Data = {
               36060000424D3606000000000000360000002800000020000000100000000100
@@ -1030,6 +1069,7 @@ object FrmProperty: TFrmProperty
             Width = 24
             Height = 24
             Hint = 'Edit selected'
+            Anchors = [akTop, akRight]
             Enabled = False
             Glyph.Data = {
               36080000424D3608000000000000360000002800000020000000100000000100
@@ -1108,6 +1148,7 @@ object FrmProperty: TFrmProperty
             Top = 8
             Width = 417
             Height = 21
+            Anchors = [akLeft, akTop, akRight]
             TabOrder = 0
             OnKeyPress = CBIncsKeyPress
           end
@@ -1116,6 +1157,7 @@ object FrmProperty: TFrmProperty
             Top = 43
             Width = 417
             Height = 136
+            Anchors = [akLeft, akTop, akRight, akBottom]
             ItemHeight = 13
             TabOrder = 1
             OnClick = ListIncsClick
@@ -1193,14 +1235,19 @@ object FrmProperty: TFrmProperty
         Top = 86
         Width = 470
         Height = 84
+        Anchors = [akLeft, akTop, akRight]
         Caption = 'Cleaning'
         TabOrder = 2
+        DesignSize = (
+          470
+          84)
         object CLBClean: TCheckListBox
           Left = 8
           Top = 16
           Width = 453
           Height = 57
           OnClickCheck = ProjectChange
+          Anchors = [akLeft, akTop, akRight, akBottom]
           ItemHeight = 13
           Items.Strings = (
             'Delete Objects Before compilation'
@@ -1214,17 +1261,20 @@ object FrmProperty: TFrmProperty
     object TSRun: TTabSheet
       Caption = 'Run'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      DesignSize = (
+        489
+        400)
       object GrbApprun: TGroupBox
         Left = 8
         Top = 2
         Width = 471
         Height = 69
+        Anchors = [akLeft, akTop, akRight]
         Caption = 'Application'
         TabOrder = 0
+        DesignSize = (
+          471
+          69)
         object LblParams: TLabel
           Left = 8
           Top = 22
@@ -1237,6 +1287,7 @@ object FrmProperty: TFrmProperty
           Top = 37
           Width = 454
           Height = 21
+          Anchors = [akLeft, akTop, akRight]
           TabOrder = 0
           OnChange = ProjectChange
         end
@@ -1248,6 +1299,7 @@ object FrmProperty: TFrmProperty
     Top = 442
     Width = 75
     Height = 25
+    Anchors = [akRight, akBottom]
     Caption = 'Ok'
     TabOrder = 1
     OnClick = BtnOkClick
@@ -1257,6 +1309,7 @@ object FrmProperty: TFrmProperty
     Top = 442
     Width = 75
     Height = 25
+    Anchors = [akRight, akBottom]
     Caption = 'Cancel'
     TabOrder = 2
     OnClick = BtnCancelClick
@@ -1266,6 +1319,7 @@ object FrmProperty: TFrmProperty
     Top = 442
     Width = 75
     Height = 25
+    Anchors = [akRight, akBottom]
     Caption = 'Apply'
     Enabled = False
     TabOrder = 3
@@ -1274,7 +1328,7 @@ object FrmProperty: TFrmProperty
   object PUMIcon: TPopupMenu
     OwnerDraw = True
     Left = 69
-    Top = 394
+    Top = 418
     object ChangeIcon1: TMenuItem
       Caption = 'Change Icon'
       OnClick = BtnLoadIconClick
@@ -1287,6 +1341,6 @@ object FrmProperty: TFrmProperty
   object OpenIcon: TIconDialog
     IconIndex = 0
     Left = 20
-    Top = 394
+    Top = 418
   end
 end

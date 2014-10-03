@@ -114,7 +114,11 @@ uses
   RegEx in '..\others\regex\RegEx.pas',
   SearchEngine in 'editor\SearchEngine.pas',
   RCHighlighter in 'editor\RCHighlighter.pas',
-  AppConst in 'AppConst.pas';
+  AppConst in 'AppConst.pas',
+  CompilerSettings in 'settings\CompilerSettings.pas',
+  StyleExporter in 'editor\StyleExporter.pas',
+  ExporterHTML in 'editor\ExporterHTML.pas',
+  ExporterRTF in 'editor\ExporterRTF.pas';
 
 function OpenWithOther: Boolean;
 var

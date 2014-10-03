@@ -23,24 +23,29 @@ object FrmNewProj: TFrmNewProj
     Left = 0
     Top = 0
     Width = 521
-    Height = 351
+    Height = 328
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
+    ExplicitHeight = 351
   end
   object PainelBtns: TPanel
     Left = 0
-    Top = 351
+    Top = 328
     Width = 521
-    Height = 33
+    Height = 56
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 1
+    DesignSize = (
+      521
+      56)
     object BtnProx: TButton
       Left = 262
-      Top = -1
+      Top = 23
       Width = 75
       Height = 23
+      Anchors = [akRight, akBottom]
       Caption = 'Next >'
       Enabled = False
       Font.Charset = DEFAULT_CHARSET
@@ -51,12 +56,14 @@ object FrmNewProj: TFrmNewProj
       ParentFont = False
       TabOrder = 0
       OnClick = BtnProxClick
+      ExplicitTop = 20
     end
     object BtnCan: TButton
       Left = 436
-      Top = -1
+      Top = 23
       Width = 75
       Height = 23
+      Anchors = [akRight, akBottom]
       Caption = 'Cancel'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -66,12 +73,14 @@ object FrmNewProj: TFrmNewProj
       ParentFont = False
       TabOrder = 1
       OnClick = BtnCanClick
+      ExplicitTop = 20
     end
     object BtnVoltar: TButton
       Left = 187
-      Top = -1
+      Top = 23
       Width = 75
       Height = 23
+      Anchors = [akRight, akBottom]
       Caption = '< Back'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -82,12 +91,14 @@ object FrmNewProj: TFrmNewProj
       TabOrder = 2
       Visible = False
       OnClick = BtnVoltarClick
+      ExplicitTop = 20
     end
     object BtnFnsh: TButton
       Left = 348
-      Top = -1
+      Top = 23
       Width = 75
       Height = 23
+      Anchors = [akRight, akBottom]
       Caption = 'Finish'
       Enabled = False
       Font.Charset = DEFAULT_CHARSET
@@ -98,6 +109,46 @@ object FrmNewProj: TFrmNewProj
       ParentFont = False
       TabOrder = 3
       OnClick = BtnFnshClick
+      ExplicitTop = 20
+    end
+    object Panel1: TPanel
+      Left = 0
+      Top = 0
+      Width = 521
+      Height = 19
+      Align = alTop
+      BevelOuter = bvNone
+      BorderWidth = 3
+      TabOrder = 4
+      ExplicitTop = 318
+      object LblWidz: TLabel
+        Left = 3
+        Top = 3
+        Width = 104
+        Height = 13
+        Align = alLeft
+        Caption = 'Falcon Project Wizard'
+        Enabled = False
+      end
+      object Panel2: TPanel
+        Left = 107
+        Top = 3
+        Width = 411
+        Height = 13
+        Align = alClient
+        AutoSize = True
+        BevelOuter = bvNone
+        BorderWidth = 3
+        TabOrder = 0
+        object Bevel1: TBevel
+          Left = 3
+          Top = 3
+          Width = 405
+          Height = 7
+          Align = alClient
+          Shape = bsBottomLine
+        end
+      end
     end
   end
 end

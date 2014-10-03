@@ -325,8 +325,7 @@ procedure TFrmFind.FormCreate(Sender: TObject);
 var
   bmp: TBitmap;
 begin
-  ClientHeight := 178;
-  TabCtrl.Height := 166;
+  ClientHeight := LblSrchOpt.Top + LblSrchOpt.Left + TabCtrl.Top;
   DoubleBuffered := True;
   TabCtrl.DoubleBuffered := True;
   bmp := TBitmap.Create;
@@ -358,8 +357,8 @@ begin
   BtnFind.Caption := STR_FRM_FIND[12];
   BtnCancel.Caption := STR_FRM_FIND[13];
   LblSrchOpt.Caption := STR_FRM_FIND[14];
-  BvSrchOpt.Left := LblSrchOpt.Left + LblSrchOpt.Width + 9;
-  BvSrchOpt.Width := TabCtrl.Width - BvSrchOpt.Left - 13;
+  BvSrchOpt.Left := 2 * LblSrchOpt.Left + LblSrchOpt.Width;
+  BvSrchOpt.Width := TabCtrl.Width - BvSrchOpt.Left - LblSrchOpt.Left;
   ChbDiffCase.Caption := STR_FRM_FIND[15];
   ChbFullWord.Caption := STR_FRM_FIND[16];
   ChbCircSearch.Caption := STR_FRM_FIND[17];
@@ -388,8 +387,7 @@ begin
   bmp := TBitmap.Create;
   if BtnMore.Tag = 1 then
   begin
-    ClientHeight := 178;
-    TabCtrl.Height := 166;
+    ClientHeight := LblSrchOpt.Top + LblSrchOpt.Left + TabCtrl.Top;
     BtnMore.Tag := 0;
     bmp.LoadFromResourceName(HInstance, 'moredown');
     BtnMore.Glyph.Assign(bmp);
@@ -410,8 +408,8 @@ begin
     GBoxDirection.Visible := TabCtrl.TabIndex <> 2;
     RdbtUp.Enabled := TabCtrl.TabIndex < 1;
     GBoxTransp.Visible := True;
-    ClientHeight := 360;
-    TabCtrl.Height := 349;
+    ClientHeight := RGrpSearchMode.Top + RGrpSearchMode.Height +
+      TabCtrl.Top + 2 * TabCtrl.Left;
     BtnMore.Tag := 1;
     bmp.LoadFromResourceName(HInstance, 'moreup');
     BtnMore.Glyph.Assign(bmp);
@@ -435,7 +433,7 @@ begin
         ChbCircSearch.Visible := BtnMore.Tag = 1;
         GBoxDirection.Visible := BtnMore.Tag = 1;
         RdbtUp.Enabled := True;
-        BtnMore.Left := 231;
+        BtnMore.Left := BtnFind.Left - BtnMore.Width - (BtnCancel.Left - BtnFind.Left - BtnFind.Width);
         BtnMore.Visible := True;
         if Visible then
           CboFind.SetFocus;
@@ -445,8 +443,9 @@ begin
         ProgressBarFindFiles.Visible := False;
         LblRep.Caption := STR_FRM_FIND[6];
         BtnFind.Caption := STR_FRM_FIND[12];
-        BtnReplace.Left := 131;
-        GBoxRplcAll.Left := 228;
+        BtnMore.Left := ChbDiffCase.Left;
+        BtnReplace.Left := BtnMore.Left + BtnMore.Width + (BtnCancel.Left - BtnFind.Left - BtnFind.Width);
+        GBoxRplcAll.Left := BtnReplace.Left + BtnReplace.Width + (BtnFind.Left - BtnReplace.Left - BtnReplace.Width - GBoxRplcAll.Width) div 2;
         LblRep.Visible := True;
         CboReplace.Visible := True;
         BtnReplace.Visible := True;
@@ -455,7 +454,6 @@ begin
         GBoxDirection.Visible := BtnMore.Tag = 1;
         RdbtDown.Checked := True;
         RdbtUp.Enabled := False;
-        BtnMore.Left := 31;
         BtnMore.Visible := True;
         if Visible then
           CboFind.SetFocus;
@@ -482,7 +480,7 @@ begin
         ChbCircSearch.Visible := False;
         GBoxDirection.Visible := False;
         BtnMore.Visible := not FindFilesRunning;
-        BtnMore.Left := 231;
+        BtnMore.Left := BtnFind.Left - BtnMore.Width - (BtnCancel.Left - BtnFind.Left - BtnFind.Width);
         if Visible then
           CboFind.SetFocus;
       end;

@@ -11,8 +11,6 @@ type
   TFraPrjOpt = class(TFrame)
     PanelControls: TPanel;
     GrbProj: TGroupBox;
-    LblWidz: TLabel;
-    Bevel1: TBevel;
     GrbApp: TGroupBox;
     PanelIcon: TPanel;
     LblDescIcon: TLabel;
@@ -34,8 +32,6 @@ type
     CHBMinSize: TCheckBox;
     CHBShowWar: TCheckBox;
     CHBOptSpd: TCheckBox;
-    Panel1: TPanel;
-    Panel2: TPanel;
     OpenIcon: TIconDialog;
     EditComp: TEdit;
     Bevel2: TBevel;

@@ -1,10 +1,10 @@
 object FrmRemove: TFrmRemove
   Left = 516
   Top = 395
-  Width = 402
-  Height = 239
   BorderStyle = bsSizeToolWin
   Caption = 'Remove from project'
+  ClientHeight = 205
+  ClientWidth = 386
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -13,6 +13,7 @@ object FrmRemove: TFrmRemove
   Font.Style = []
   KeyPreview = True
   OldCreateOrder = False
+  Position = poScreenCenter
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
@@ -22,7 +23,7 @@ object FrmRemove: TFrmRemove
     Left = 41
     Top = 0
     Width = 345
-    Height = 160
+    Height = 164
     Align = alClient
     BevelOuter = bvNone
     BorderWidth = 9
@@ -31,7 +32,7 @@ object FrmRemove: TFrmRemove
       Left = 9
       Top = 9
       Width = 327
-      Height = 142
+      Height = 146
       Align = alClient
       Columns = <
         item
@@ -54,7 +55,7 @@ object FrmRemove: TFrmRemove
   end
   object Panel1: TPanel
     Left = 0
-    Top = 160
+    Top = 164
     Width = 386
     Height = 41
     Align = alBottom
@@ -102,7 +103,7 @@ object FrmRemove: TFrmRemove
     Left = 0
     Top = 0
     Width = 41
-    Height = 160
+    Height = 164
     Align = alLeft
     BevelOuter = bvNone
     TabOrder = 1

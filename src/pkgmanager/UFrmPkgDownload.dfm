@@ -75,10 +75,10 @@ object FrmPkgDownload: TFrmPkgDownload
       LineStyle = lsSolid
       NodeDataSize = 4
       TabOrder = 1
-      TreeOptions.AutoOptions = [toAutoScrollOnExpand, toAutoTristateTracking, toAutoHideButtons, toAutoDeleteMovedNodes]
+      TreeOptions.AutoOptions = [toAutoScrollOnExpand, toAutoTristateTracking, toAutoHideButtons, toAutoDeleteMovedNodes, toAutoChangeScale]
       TreeOptions.MiscOptions = [toCheckSupport, toFullRepaintOnResize, toInitOnSave, toReportMode, toToggleOnDblClick, toWheelPanning]
       TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowHorzGridLines, toShowRoot, toShowTreeLines, toShowVertGridLines, toThemeAware, toUseBlendedImages, toFullVertGridLines, toUseExplorerTheme, toHideTreeLinesIfThemed]
-      TreeOptions.SelectionOptions = [toFullRowSelect]
+      TreeOptions.SelectionOptions = [toFullRowSelect, toRightClickSelect]
       OnChange = TreeViewPackagesChange
       OnChecked = TreeViewPackagesChecked
       OnChecking = TreeViewPackagesChecking

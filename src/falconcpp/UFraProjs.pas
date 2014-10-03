@@ -14,10 +14,6 @@ type
     MemoDesc: TMemo;
     ImageProj: TImage;
     MemoCap: TMemo;
-    Panel1: TPanel;
-    LblWidz: TLabel;
-    Panel2: TPanel;
-    Bevel1: TBevel;
     PageControl: TModernPageControl;
     procedure ProjectListSelectItem(Sender: TObject; Item: TListItem;
       Selected: Boolean);

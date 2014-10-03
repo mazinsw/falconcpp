@@ -926,7 +926,8 @@ uses
   UFrmUpdate, ULanguages, UFrmEnvOptions, UFrmCompOptions, UFrmFind, AStyle,
   UFrmGotoFunction, UFrmGotoLine, TBXThemes, Makefile, CodeTemplate,
   StrUtils, UFrmVisualCppOptions,
-  PluginConst, Math, Highlighter, DScintilla, PluginWidgetMap, AppConst;
+  PluginConst, Math, Highlighter, DScintilla, PluginWidgetMap, AppConst,
+  ExporterHTML, ExporterRTF;
 {$R *.dfm}
 
 var
@@ -8833,55 +8834,51 @@ end;
 procedure TFrmFalconMain.FileExportHTMLClick(Sender: TObject);
 var
   sheet: TSourceFileSheet;
+  ExporterHTML: TExporterHTML;
 begin
   if not GetActiveSheet(sheet) then
     Exit;
-  // TODO: commented
-  // ExporterHTML.Clear;
-  // ExporterHTML.Highlighter := sheet.Editor.Highlighter;
-  // ExporterHTML.Title := Sheet.SourceFile.Name;
-  // ExporterHTML.ExportAsText := True;
-  // TODO: commented
-  // ExporterHTML.ExportAll(sheet.Editor.Lines);
-
+  ExporterHTML := TExporterHTML.Create;
+  ExporterHTML.Title := Sheet.SourceFile.Name;
   with TSaveDialog.Create(Self) do
   begin
-    // Filter := ExporterHTML.DefaultFilter;
+    Filter := ExporterHTML.DefaultFilter;
     DefaultExt := '.html';
     Options := Options + [ofOverwritePrompt];
-    FileName := ChangeFileExt(sheet.SourceFile.name, '.html');
+    FileName := ChangeFileExt(ExporterHTML.Title, '.html');
     if Execute(Self.Handle) then
     begin
-      // ExporterHTML.SaveToFile(FileName);
+      ExporterHTML.ExportAll(sheet.Editor);
+      ExporterHTML.SaveToFile(FileName);
     end;
     Free;
   end;
+  ExporterHTML.Free;
 end;
 
 procedure TFrmFalconMain.FileExportRTFClick(Sender: TObject);
 var
   sheet: TSourceFileSheet;
+  ExporterRTF: TExporterRTF;
 begin
   if not GetActiveSheet(sheet) then
     Exit;
-  // TODO: commented
-  // ExporterRTF.Highlighter := sheet.Editor.Highlighter;
-  // ExporterRTF.Title := Sheet.SourceFile.Name;
-  // TODO: commented
-  // ExporterRTF.ExportAll(sheet.Editor.Lines);
-
+  ExporterRTF := TExporterRTF.Create;
+  ExporterRTF.Title := Sheet.SourceFile.Name;
   with TSaveDialog.Create(Self) do
   begin
-    // Filter := ExporterRTF.DefaultFilter;
+    Filter := ExporterRTF.DefaultFilter;
     DefaultExt := '.rtf';
     Options := Options + [ofOverwritePrompt];
-    FileName := ChangeFileExt(sheet.SourceFile.name, '.rtf');
+    FileName := ChangeFileExt(ExporterRTF.Title, '.rtf');
     if Execute(Self.Handle) then
     begin
-      // ExporterRTF.SaveToFile(FileName);
+      ExporterRTF.ExportAll(sheet.Editor);
+      ExporterRTF.SaveToFile(FileName);
     end;
     Free;
   end;
+  ExporterRTF.Free;
 end;
 
 procedure TFrmFalconMain.FileExportTeXClick(Sender: TObject);

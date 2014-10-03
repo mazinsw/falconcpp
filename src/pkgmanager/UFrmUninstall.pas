@@ -103,8 +103,10 @@ end;
 procedure TFrmUninstall.BtnShowClick(Sender: TObject);
 begin
   BtnShow.Hide;
-  ClientHeight := 335;
-  BtnOk.Top := 304;
+  ClientHeight := ListDesc.Top + ListDesc.Height + BtnOk.Height +
+    2 * (BtnShow.Top - PrgBar.Top - PrgBar.Height);
+  BtnOk.Top := ListDesc.Top + ListDesc.Height +
+    1 * (BtnShow.Top - PrgBar.Top - PrgBar.Height);
   ListDesc.Show;
 end;
 

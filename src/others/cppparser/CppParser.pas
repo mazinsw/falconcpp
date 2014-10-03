@@ -59,7 +59,7 @@ type
     procedure ProcessEnumFields;
     procedure ProcessTypedef(StructToken: TTokenClass);
     procedure SkipInstruction(UntilComma: Boolean = False);
-    procedure ProcessVariableOrFunctionEx(TypeStr, TypeNameStr: string;
+    procedure ProcessVariableOrFunctionEx(const STypeStr, TypeNameStr: string;
       TokenIdType, TokenDestr: PToken; Fields: Boolean);
   public
     property Canceled: Boolean read fCancel;
@@ -119,7 +119,7 @@ begin
         Break;
       TokenID := FCurrent;
     end
-    else if (FCurrent^.Token in [tkxLess, tkxShiftLeft]) and 
+    else if (FCurrent^.Token = tkxLess) and
       ((TokenID = nil) or not TokenMatch(FStartPtr, 'operator', TokenID)) then
     begin
       SkipTemplate;
@@ -260,12 +260,10 @@ begin
       Inc(OpenCount)
     else if FCurrent^.Token = tkxGreater then
       Dec(OpenCount)
-    else if FCurrent^.Token = tkxShiftLeft then
-      Inc(OpenCount, 2)
     else if FCurrent^.Token = tkxShiftRight then
       Dec(OpenCount, 2);
     Next;
-  until (FCurrent = nil) or (OpenCount = 0);
+  until (FCurrent = nil) or (OpenCount <= 0);
   Result := OpenCount = 0;
 end;
 
@@ -425,7 +423,7 @@ begin
       Next;
       Flag := GetInheritanceNoTemplate;
     end
-    else if FCurrent^.Token in [tkxLess, tkxShiftLeft] then
+    else if FCurrent^.Token = tkxLess then
     begin
       SkipTemplate;
     end;
@@ -596,18 +594,19 @@ begin
     fields);
 end;
 
-procedure TCppParser.ProcessVariableOrFunctionEx(TypeStr, TypeNameStr: string;
+procedure TCppParser.ProcessVariableOrFunctionEx(const STypeStr, TypeNameStr: string;
   TokenIdType, TokenDestr: PToken; Fields: Boolean);
 var
   TokenID, TokenOption, TokenPtrRef, TokenScope, SaveCurrent, SaveSkip: PToken;
   VarToken, FuncToken: TTokenClass;
   TokenType: TTkType;
   PtrRefStr, VarName, VectorStr, OptionsStr, ScopeStr, SaveTypeStr: string;
+  TypeStr: string;
   ParensCount: Integer;
   IsOperator, IsThrow: Boolean;
 begin
-  SaveTypeStr := TypeStr;
-  TypeStr := TypeStr + TypeNameStr;
+  SaveTypeStr := STypeStr;
+  TypeStr := STypeStr + TypeNameStr;
   PtrRefStr := '';
   OptionsStr := '';
   VectorStr := ''; // TODO
@@ -1153,6 +1152,7 @@ procedure TCppParser.ProcessFields(StopLevel: Integer);
 begin
   repeat
     case FCurrent^.Token of
+      tkxBinNot, // ~Destructor();
       tkxGlobalScope,
       tkxIdentifier:
       begin

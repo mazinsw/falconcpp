@@ -5,8 +5,6 @@ object FrmFalconMain: TFrmFalconMain
   ClientHeight = 617
   ClientWidth = 906
   Color = clBtnFace
-  Constraints.MinHeight = 480
-  Constraints.MinWidth = 640
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11

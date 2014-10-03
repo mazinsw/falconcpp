@@ -19,6 +19,9 @@ object FrmEditorOptions: TFrmEditorOptions
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
   OnKeyPress = FormKeyPress
+  DesignSize = (
+    511
+    473)
   PixelsPerInch = 96
   TextHeight = 13
   object PageControl1: TPageControl
@@ -27,20 +30,24 @@ object FrmEditorOptions: TFrmEditorOptions
     Width = 497
     Height = 428
     ActivePage = TSGeneral
+    Anchors = [akLeft, akTop, akRight, akBottom]
     TabOrder = 0
     object TSGeneral: TTabSheet
       Caption = 'General'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      DesignSize = (
+        489
+        400)
       object GroupBox1: TGroupBox
-        Left = 5
+        Left = 6
         Top = 2
-        Width = 476
+        Width = 475
         Height = 167
+        Anchors = [akLeft, akTop, akRight]
         Caption = 'Editor Options'
         TabOrder = 0
+        DesignSize = (
+          475
+          167)
         object Label16: TLabel
           Left = 8
           Top = 120
@@ -58,22 +65,26 @@ object FrmEditorOptions: TFrmEditorOptions
           OnClick = EditorOptionsChanged
         end
         object ChbUseTabChar: TCheckBox
-          Left = 248
+          Left = 247
           Top = 48
           Width = 220
           Height = 17
+          Anchors = [akTop, akRight]
           Caption = 'Use Tab Character'
           TabOrder = 1
           OnClick = EditorOptionsChanged
+          ExplicitLeft = 248
         end
         object ChbTabUnOrIndt: TCheckBox
-          Left = 248
+          Left = 247
           Top = 16
           Width = 220
           Height = 17
+          Anchors = [akTop, akRight]
           Caption = 'Tab Indent/Unindent'
           TabOrder = 2
           OnClick = EditorOptionsChanged
+          ExplicitLeft = 248
         end
         object ChbInsMode: TCheckBox
           Left = 8
@@ -109,22 +120,26 @@ object FrmEditorOptions: TFrmEditorOptions
             '8')
         end
         object ChbSmartTabs: TCheckBox
-          Left = 248
+          Left = 247
           Top = 32
           Width = 220
           Height = 17
+          Anchors = [akTop, akRight]
           Caption = 'Smart Tabs'
           TabOrder = 6
           OnClick = EditorOptionsChanged
+          ExplicitLeft = 248
         end
         object ChbEnhHomeKey: TCheckBox
-          Left = 248
+          Left = 247
           Top = 64
           Width = 220
           Height = 17
+          Anchors = [akTop, akRight]
           Caption = 'Enhanced Home Key'
           TabOrder = 7
           OnClick = EditorOptionsChanged
+          ExplicitLeft = 248
         end
         object ChbShowSpaceChars: TCheckBox
           Left = 8
@@ -150,6 +165,7 @@ object FrmEditorOptions: TFrmEditorOptions
         Top = 369
         Width = 108
         Height = 25
+        Anchors = [akRight, akBottom]
         Caption = 'Restore Default'
         TabOrder = 1
         OnClick = BtnRestDefClick
@@ -158,19 +174,19 @@ object FrmEditorOptions: TFrmEditorOptions
     object TSDisplay: TTabSheet
       Caption = 'Display'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      DesignSize = (
+        489
+        400)
       object Label9: TLabel
         Left = 296
         Top = 16
         Width = 23
         Height = 13
+        Anchors = [akTop, akRight]
         Caption = 'Size:'
       end
       object Label10: TLabel
-        Left = 8
+        Left = 6
         Top = 64
         Width = 38
         Height = 13
@@ -184,18 +200,24 @@ object FrmEditorOptions: TFrmEditorOptions
         Caption = 'Editor font:'
       end
       object GroupBox5: TGroupBox
-        Left = 8
+        Left = 6
         Top = 184
-        Width = 471
+        Width = 475
         Height = 90
+        Anchors = [akLeft, akTop, akRight]
         Caption = 'Margin and gutter'
         TabOrder = 0
+        DesignSize = (
+          475
+          90)
         object Label7: TLabel
-          Left = 288
+          Left = 292
           Top = 40
           Width = 62
           Height = 13
+          Anchors = [akTop, akRight]
           Caption = 'Right margin:'
+          ExplicitLeft = 288
         end
         object ChbShowgtt: TCheckBox
           Left = 8
@@ -209,27 +231,31 @@ object FrmEditorOptions: TFrmEditorOptions
           OnClick = EditorOptionsChanged
         end
         object ChbShowRMrgn: TCheckBox
-          Left = 288
+          Left = 292
           Top = 16
           Width = 169
           Height = 17
+          Anchors = [akTop, akRight]
           Caption = 'Show right margin'
           Checked = True
           State = cbChecked
           TabOrder = 1
           OnClick = EditorOptionsChanged
+          ExplicitLeft = 288
         end
         object CboRMrg: TComboBox
-          Left = 288
+          Left = 292
           Top = 56
           Width = 172
           Height = 21
+          Anchors = [akTop, akRight]
           ItemIndex = 0
           TabOrder = 2
           Text = '80'
           OnChange = EditorOptionsChanged
           Items.Strings = (
             '80')
+          ExplicitLeft = 288
         end
         object ChbShowLnNumb: TCheckBox
           Left = 8
@@ -244,10 +270,11 @@ object FrmEditorOptions: TFrmEditorOptions
         end
       end
       object PanelTest: TPanel
-        Left = 8
+        Left = 6
         Top = 80
-        Width = 473
+        Width = 475
         Height = 81
+        Anchors = [akLeft, akTop, akRight]
         BevelOuter = bvLowered
         Caption = 'AaBbYyZz'
         TabOrder = 1
@@ -257,6 +284,7 @@ object FrmEditorOptions: TFrmEditorOptions
         Top = 32
         Width = 65
         Height = 21
+        Anchors = [akTop, akRight]
         TabOrder = 2
         Text = '10'
         OnChange = CboSizeChange
@@ -266,6 +294,7 @@ object FrmEditorOptions: TFrmEditorOptions
         Top = 32
         Width = 185
         Height = 21
+        Anchors = [akLeft, akTop, akRight]
         TabOrder = 3
         OnSelect = CboEditFontSelect
       end
@@ -274,6 +303,7 @@ object FrmEditorOptions: TFrmEditorOptions
         Top = 369
         Width = 108
         Height = 25
+        Anchors = [akRight, akBottom]
         Caption = 'Restore Default'
         TabOrder = 4
         OnClick = Button1Click
@@ -282,15 +312,15 @@ object FrmEditorOptions: TFrmEditorOptions
     object TSSintax: TTabSheet
       Caption = 'Colors'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      DesignSize = (
+        489
+        400)
       object Label12: TLabel
-        Left = 312
+        Left = 184
         Top = 8
         Width = 70
         Height = 13
+        Anchors = [akTop, akRight]
         Caption = 'Defined sintax:'
       end
       object BtnSave: TSpeedButton
@@ -299,6 +329,7 @@ object FrmEditorOptions: TFrmEditorOptions
         Width = 22
         Height = 22
         Hint = 'Save sintax'
+        Anchors = [akTop, akRight]
         Enabled = False
         Flat = True
         Glyph.Data = {
@@ -363,6 +394,7 @@ object FrmEditorOptions: TFrmEditorOptions
         Width = 22
         Height = 22
         Hint = 'Delete sintax'
+        Anchors = [akTop, akRight]
         Enabled = False
         Flat = True
         Glyph.Data = {
@@ -433,43 +465,46 @@ object FrmEditorOptions: TFrmEditorOptions
         Top = 48
         Width = 54
         Height = 13
+        Anchors = [akTop, akRight]
         Caption = 'Foreground'
       end
       object Label15: TLabel
-        Left = 184
-        Top = 105
+        Left = 336
+        Top = 48
         Width = 58
         Height = 13
+        Anchors = [akTop, akRight]
         Caption = 'Background'
       end
       object GroupBox6: TGroupBox
-        Left = 367
-        Top = 58
-        Width = 113
-        Height = 84
+        Left = 184
+        Top = 98
+        Width = 297
+        Height = 47
+        Anchors = [akTop, akRight]
         Caption = 'Styles'
         TabOrder = 0
         object ChbBold: TCheckBox
           Left = 8
           Top = 18
-          Width = 97
+          Width = 95
           Height = 17
           Caption = 'Bold'
           TabOrder = 0
           OnClick = StyleChangeClick
         end
         object ChbItalic: TCheckBox
-          Left = 8
-          Top = 40
-          Width = 97
+          Left = 109
+          Top = 18
+          Width = 74
           Height = 17
           Caption = 'Italic'
           TabOrder = 1
           OnClick = StyleChangeClick
         end
         object ChbUnderl: TCheckBox
-          Left = 8
-          Top = 62
+          Left = 195
+          Top = 18
           Width = 97
           Height = 17
           Caption = 'Underlined'
@@ -478,11 +513,12 @@ object FrmEditorOptions: TFrmEditorOptions
         end
       end
       object CbDefSin: TComboBox
-        Left = 312
+        Left = 184
         Top = 24
-        Width = 114
+        Width = 242
         Height = 21
         AutoComplete = False
+        Anchors = [akTop, akRight]
         MaxLength = 48
         TabOrder = 1
         OnSelect = CbDefSinSelect
@@ -490,8 +526,9 @@ object FrmEditorOptions: TFrmEditorOptions
       object ListBoxType: TListBox
         Left = 6
         Top = 24
-        Width = 171
+        Width = 169
         Height = 121
+        Anchors = [akLeft, akTop, akRight]
         ItemHeight = 13
         TabOrder = 2
         OnClick = ListBoxTypeClick
@@ -499,18 +536,20 @@ object FrmEditorOptions: TFrmEditorOptions
       object ClbFore: TColorBox
         Left = 184
         Top = 64
-        Width = 129
+        Width = 137
         Height = 22
         Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbIncludeNone, cbIncludeDefault, cbCustomColor, cbPrettyNames]
+        Anchors = [akTop, akRight]
         TabOrder = 3
         OnChange = ColorChange
       end
       object ClbBack: TColorBox
-        Left = 184
-        Top = 121
-        Width = 129
+        Left = 336
+        Top = 64
+        Width = 145
         Height = 22
         Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbIncludeNone, cbIncludeDefault, cbCustomColor, cbPrettyNames]
+        Anchors = [akTop, akRight]
         TabOrder = 4
         OnChange = ColorChange
       end
@@ -518,29 +557,33 @@ object FrmEditorOptions: TFrmEditorOptions
     object TSFormatter: TTabSheet
       Caption = 'Formatter'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      DesignSize = (
+        489
+        400)
       object PageControl2: TPageControl
         Left = 6
         Top = 6
         Width = 475
         Height = 387
         ActivePage = TSFormatterStyle
+        Anchors = [akLeft, akTop, akRight, akBottom]
         TabOrder = 0
         object TSFormatterStyle: TTabSheet
           Caption = 'Style'
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
+          DesignSize = (
+            467
+            359)
           object GroupBoxFormatterSample: TGroupBox
             Left = 124
             Top = 3
             Width = 333
             Height = 347
+            Anchors = [akLeft, akTop, akRight, akBottom]
             Caption = 'Sample'
+            Padding.Left = 6
+            Padding.Top = 6
+            Padding.Right = 6
+            Padding.Bottom = 6
             TabOrder = 0
           end
           object RadioGroupFormatterStyles: TRadioGroup
@@ -565,6 +608,7 @@ object FrmEditorOptions: TFrmEditorOptions
             Top = 325
             Width = 114
             Height = 25
+            Anchors = [akLeft, akBottom]
             Caption = 'Preview'
             TabOrder = 2
             Visible = False
@@ -574,10 +618,6 @@ object FrmEditorOptions: TFrmEditorOptions
         object TSFormatterIndentation: TTabSheet
           Caption = 'Indentation'
           ImageIndex = 1
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
           object CheckBoxForceUsingTabs: TCheckBox
             Left = 6
             Top = 8
@@ -714,10 +754,6 @@ object FrmEditorOptions: TFrmEditorOptions
         object TSFormatterPadding: TTabSheet
           Caption = 'Padding'
           ImageIndex = 4
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
           object CheckBoxPadEmptyLines: TCheckBox
             Left = 6
             Top = 8
@@ -852,10 +888,6 @@ object FrmEditorOptions: TFrmEditorOptions
         object TSFormatterFormatting: TTabSheet
           Caption = 'Formatting'
           ImageIndex = 2
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
           object LabelBracketsStyle: TLabel
             Left = 6
             Top = 8
@@ -1029,14 +1061,10 @@ object FrmEditorOptions: TFrmEditorOptions
     object TSCodeResources: TTabSheet
       Caption = 'Code Resources'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GroupBox8: TGroupBox
-        Left = 4
+        Left = 6
         Top = 4
-        Width = 477
+        Width = 475
         Height = 105
         Caption = 'Automatic features'
         TabOrder = 0
@@ -1062,7 +1090,7 @@ object FrmEditorOptions: TFrmEditorOptions
           Caption = '1.5 sec'
         end
         object ChbCodeCompletion: TCheckBox
-          Left = 8
+          Left = 10
           Top = 22
           Width = 177
           Height = 17
@@ -1073,7 +1101,7 @@ object FrmEditorOptions: TFrmEditorOptions
           OnClick = EditorOptionsChanged
         end
         object ChbCodeParameters: TCheckBox
-          Left = 8
+          Left = 10
           Top = 40
           Width = 177
           Height = 17
@@ -1084,7 +1112,7 @@ object FrmEditorOptions: TFrmEditorOptions
           OnClick = EditorOptionsChanged
         end
         object ChbTooltipSymbol: TCheckBox
-          Left = 8
+          Left = 10
           Top = 76
           Width = 201
           Height = 17
@@ -1095,7 +1123,7 @@ object FrmEditorOptions: TFrmEditorOptions
           OnClick = EditorOptionsChanged
         end
         object ChbTooltopexev: TCheckBox
-          Left = 8
+          Left = 10
           Top = 58
           Width = 217
           Height = 17
@@ -1118,9 +1146,9 @@ object FrmEditorOptions: TFrmEditorOptions
         end
       end
       object GroupBox9: TGroupBox
-        Left = 5
+        Left = 6
         Top = 120
-        Width = 476
+        Width = 475
         Height = 129
         Caption = 'Completion List Colors'
         TabOrder = 1
@@ -1270,14 +1298,17 @@ object FrmEditorOptions: TFrmEditorOptions
         end
       end
       object GroupBox7: TGroupBox
-        Left = 5
+        Left = 6
         Top = 264
-        Width = 476
-        Height = 81
+        Width = 475
+        Height = 83
         Caption = 'Code Templates'
         TabOrder = 2
+        DesignSize = (
+          475
+          83)
         object Label25: TLabel
-          Left = 8
+          Left = 10
           Top = 18
           Width = 132
           Height = 13
@@ -1289,6 +1320,7 @@ object FrmEditorOptions: TFrmEditorOptions
           Width = 24
           Height = 24
           Hint = 'Edit'
+          Anchors = [akTop, akRight]
           Enabled = False
           Glyph.Data = {
             36080000424D3608000000000000360000002800000020000000100000000100
@@ -1368,6 +1400,7 @@ object FrmEditorOptions: TFrmEditorOptions
           Width = 24
           Height = 24
           Hint = 'Open'
+          Anchors = [akTop, akRight]
           Glyph.Data = {
             36060000424D3606000000000000360000002800000020000000100000000100
             18000000000000060000130B0000130B00000000000000000000FF00FFFF00FF
@@ -1425,10 +1458,11 @@ object FrmEditorOptions: TFrmEditorOptions
           OnClick = BtnChooseCodeTemplateClick
         end
         object EditCodeTemplate: TEdit
-          Left = 8
+          Left = 10
           Top = 34
-          Width = 401
-          Height = 21
+          Width = 399
+          Height = 22
+          Anchors = [akLeft, akTop, akRight]
           TabOrder = 0
           OnChange = EditCodeTemplateChange
         end
@@ -1440,6 +1474,7 @@ object FrmEditorOptions: TFrmEditorOptions
     Top = 442
     Width = 75
     Height = 25
+    Anchors = [akRight, akBottom]
     Caption = 'Ok'
     TabOrder = 1
     OnClick = BtnOkClick
@@ -1449,6 +1484,7 @@ object FrmEditorOptions: TFrmEditorOptions
     Top = 442
     Width = 75
     Height = 25
+    Anchors = [akRight, akBottom]
     Caption = 'Cancel'
     TabOrder = 2
     OnClick = BtnCancelClick
@@ -1458,6 +1494,7 @@ object FrmEditorOptions: TFrmEditorOptions
     Top = 442
     Width = 75
     Height = 25
+    Anchors = [akRight, akBottom]
     Caption = 'Apply'
     Enabled = False
     TabOrder = 3

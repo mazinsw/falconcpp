@@ -19,16 +19,19 @@ object FormAbout: TFormAbout
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
+  DesignSize = (
+    486
+    424)
   PixelsPerInch = 96
   TextHeight = 13
   object Image1: TImage
-    Left = 24
+    Left = 17
     Top = 24
     Width = 48
     Height = 48
   end
   object LblNameVersion: TLabel
-    Left = 88
+    Left = 81
     Top = 40
     Width = 72
     Height = 13
@@ -43,7 +46,7 @@ object FormAbout: TFormAbout
     ParentFont = False
   end
   object Label6: TLabel
-    Left = 88
+    Left = 81
     Top = 56
     Width = 278
     Height = 13
@@ -58,10 +61,11 @@ object FormAbout: TFormAbout
     ParentFont = False
   end
   object Panel1: TPanel
-    Left = 216
+    Left = 205
     Top = 384
     Width = 77
     Height = 27
+    Anchors = [akRight, akBottom]
     BevelOuter = bvLowered
     TabOrder = 0
     object BtnOk: TButton
@@ -75,10 +79,11 @@ object FormAbout: TFormAbout
     end
   end
   object XPPanel1: TXPPanel
-    Left = 24
+    Left = 17
     Top = 96
     Width = 449
     Height = 273
+    Anchors = [akLeft, akTop, akRight, akBottom]
     BorderWidth = 3
     TabOrder = 1
     object PageControl1: TPageControl
@@ -90,6 +95,7 @@ object FormAbout: TFormAbout
       Align = alClient
       Style = tsFlatButtons
       TabOrder = 0
+      ExplicitLeft = 2
       object TSLicence: TTabSheet
         Caption = 'Licence'
         object EditLicense: TRichEdit

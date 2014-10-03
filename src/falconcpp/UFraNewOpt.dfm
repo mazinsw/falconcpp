@@ -2,21 +2,27 @@ object FraPrjOpt: TFraPrjOpt
   Left = 0
   Top = 0
   Width = 521
-  Height = 337
+  Height = 328
+  Align = alClient
   TabOrder = 0
   object PanelControls: TPanel
     Left = 0
     Top = 0
     Width = 521
-    Height = 337
+    Height = 328
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
+    ExplicitHeight = 337
+    DesignSize = (
+      521
+      328)
     object GrbProj: TGroupBox
       Left = 8
       Top = 168
       Width = 505
       Height = 145
+      Anchors = [akLeft, akTop, akRight]
       Caption = 'Project'
       TabOrder = 0
       object LblName: TLabel
@@ -89,8 +95,12 @@ object FraPrjOpt: TFraPrjOpt
       Top = 8
       Width = 505
       Height = 145
+      Anchors = [akLeft, akTop, akRight]
       Caption = 'Application'
       TabOrder = 1
+      DesignSize = (
+        505
+        145)
       object LblDescIcon: TLabel
         Left = 11
         Top = 77
@@ -116,8 +126,8 @@ object FraPrjOpt: TFraPrjOpt
         object ImgIcon: TImage
           Left = 1
           Top = 1
-          Width = 32
-          Height = 32
+          Width = 49
+          Height = 49
           Hint = 'Double click to change application icon'
           Align = alClient
           AutoSize = True
@@ -161,8 +171,6 @@ object FraPrjOpt: TFraPrjOpt
           PopupMenu = PUMIcon
           ShowHint = True
           OnDblClick = BtnChgIconClick
-          ExplicitWidth = 49
-          ExplicitHeight = 49
         end
       end
       object BtnChgIcon: TButton
@@ -190,7 +198,11 @@ object FraPrjOpt: TFraPrjOpt
         Top = 32
         Width = 329
         Height = 104
+        Anchors = [akLeft, akTop, akRight]
         TabOrder = 3
+        DesignSize = (
+          329
+          104)
         object LblCompa: TLabel
           Left = 8
           Top = 8
@@ -210,6 +222,7 @@ object FraPrjOpt: TFraPrjOpt
           Top = 8
           Width = 35
           Height = 13
+          Anchors = [akTop, akRight]
           Caption = 'Version'
         end
         object LblProdName: TLabel
@@ -217,6 +230,7 @@ object FraPrjOpt: TFraPrjOpt
           Top = 55
           Width = 67
           Height = 13
+          Anchors = [akTop, akRight]
           Caption = 'Product Name'
         end
         object Bevel2: TBevel
@@ -224,6 +238,7 @@ object FraPrjOpt: TFraPrjOpt
           Top = 6
           Width = 1
           Height = 78
+          Anchors = [akTop, akRight]
           Shape = bsLeftLine
         end
         object EditComp: TEdit
@@ -231,6 +246,7 @@ object FraPrjOpt: TFraPrjOpt
           Top = 23
           Width = 137
           Height = 21
+          Anchors = [akLeft, akTop, akRight]
           TabOrder = 0
         end
         object EditDesc: TEdit
@@ -238,6 +254,7 @@ object FraPrjOpt: TFraPrjOpt
           Top = 70
           Width = 137
           Height = 21
+          Anchors = [akLeft, akTop, akRight]
           TabOrder = 1
         end
         object EditVer: TEdit
@@ -245,6 +262,7 @@ object FraPrjOpt: TFraPrjOpt
           Top = 23
           Width = 137
           Height = 21
+          Anchors = [akTop, akRight]
           TabOrder = 2
           Text = '1.0.0.0'
         end
@@ -253,45 +271,8 @@ object FraPrjOpt: TFraPrjOpt
           Top = 70
           Width = 137
           Height = 21
+          Anchors = [akTop, akRight]
           TabOrder = 3
-        end
-      end
-    end
-    object Panel1: TPanel
-      Left = 0
-      Top = 318
-      Width = 521
-      Height = 19
-      Align = alBottom
-      BevelOuter = bvNone
-      BorderWidth = 3
-      TabOrder = 2
-      object LblWidz: TLabel
-        Left = 3
-        Top = 3
-        Width = 104
-        Height = 13
-        Align = alLeft
-        Caption = 'Falcon Project Wizard'
-        Enabled = False
-      end
-      object Panel2: TPanel
-        Left = 107
-        Top = 3
-        Width = 411
-        Height = 13
-        Align = alClient
-        AutoSize = True
-        BevelOuter = bvNone
-        BorderWidth = 3
-        TabOrder = 0
-        object Bevel1: TBevel
-          Left = 3
-          Top = 3
-          Width = 405
-          Height = 7
-          Align = alClient
-          Shape = bsBottomLine
         end
       end
     end

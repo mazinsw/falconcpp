@@ -177,6 +177,10 @@
 			<DCCReference Include="editor\SearchEngine.pas"/>
 			<DCCReference Include="editor\RCHighlighter.pas"/>
 			<DCCReference Include="AppConst.pas"/>
+			<DCCReference Include="settings\CompilerSettings.pas"/>
+			<DCCReference Include="editor\StyleExporter.pas"/>
+			<DCCReference Include="editor\ExporterHTML.pas"/>
+			<DCCReference Include="editor\ExporterRTF.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

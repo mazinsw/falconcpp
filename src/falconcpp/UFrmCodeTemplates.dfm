@@ -19,6 +19,9 @@ object FrmCodeTemplates: TFrmCodeTemplates
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
   OnKeyPress = FormKeyPress
+  DesignSize = (
+    460
+    428)
   PixelsPerInch = 96
   TextHeight = 13
   object GroupBox1: TGroupBox
@@ -26,8 +29,12 @@ object FrmCodeTemplates: TFrmCodeTemplates
     Top = 8
     Width = 443
     Height = 378
+    Anchors = [akLeft, akTop, akRight, akBottom]
     Caption = 'Code Templates'
     TabOrder = 0
+    DesignSize = (
+      443
+      378)
     object Label1: TLabel
       Left = 8
       Top = 16
@@ -48,6 +55,7 @@ object FrmCodeTemplates: TFrmCodeTemplates
       Width = 24
       Height = 24
       Hint = 'Add'
+      Anchors = [akRight, akBottom]
       Glyph.Data = {
         36060000424D3606000000000000360000002800000020000000100000000100
         1800000000000006000000000000000000000000000000000000FFFFFFFFFFFF
@@ -110,6 +118,7 @@ object FrmCodeTemplates: TFrmCodeTemplates
       Width = 24
       Height = 24
       Hint = 'Delete selected'
+      Anchors = [akRight, akBottom]
       Enabled = False
       Glyph.Data = {
         36060000424D3606000000000000360000002800000020000000100000000100
@@ -173,6 +182,7 @@ object FrmCodeTemplates: TFrmCodeTemplates
       Width = 24
       Height = 24
       Hint = 'Edit selected'
+      Anchors = [akRight, akBottom]
       Enabled = False
       Glyph.Data = {
         36080000424D3608000000000000360000002800000020000000100000000100
@@ -251,6 +261,7 @@ object FrmCodeTemplates: TFrmCodeTemplates
       Top = 32
       Width = 398
       Height = 137
+      Anchors = [akLeft, akTop, akRight]
       Columns = <
         item
           Caption = 'Name'
@@ -275,6 +286,7 @@ object FrmCodeTemplates: TFrmCodeTemplates
     Top = 396
     Width = 75
     Height = 25
+    Anchors = [akRight, akBottom]
     Caption = 'Ok'
     TabOrder = 1
     OnClick = BtnOkClick

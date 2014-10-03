@@ -4,8 +4,8 @@ object FrmFind: TFrmFind
   BorderIcons = [biSystemMenu]
   BorderStyle = bsDialog
   Caption = 'Find and replace'
-  ClientHeight = 360
-  ClientWidth = 549
+  ClientHeight = 365
+  ClientWidth = 550
   Color = clBtnFace
   TransparentColorValue = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -23,13 +23,17 @@ object FrmFind: TFrmFind
   OnDestroy = FormDestroy
   OnDeactivate = FormDeactivate
   OnKeyDown = FormKeyDown
+  DesignSize = (
+    550
+    365)
   PixelsPerInch = 96
   TextHeight = 13
   object TabCtrl: TTabControl
     Left = 8
-    Top = 6
+    Top = 8
     Width = 536
     Height = 349
+    Anchors = [akLeft, akTop, akRight, akBottom]
     HotTrack = True
     MultiLine = True
     TabOrder = 0
@@ -39,23 +43,28 @@ object FrmFind: TFrmFind
       'Fin&d in files')
     TabIndex = 0
     OnChange = TabCtrlChange
+    DesignSize = (
+      536
+      349)
     object LblRep: TLabel
-      Left = 7
+      Left = 38
       Top = 90
       Width = 65
       Height = 13
+      Alignment = taRightJustify
       Caption = 'Replace with:'
       Visible = False
     end
     object LblFind: TLabel
-      Left = 7
-      Top = 39
+      Left = 80
+      Top = 38
       Width = 23
       Height = 13
+      Alignment = taRightJustify
       Caption = 'Find:'
     end
     object LblSrchOpt: TLabel
-      Left = 7
+      Left = 10
       Top = 166
       Width = 71
       Height = 13
@@ -71,15 +80,16 @@ object FrmFind: TFrmFind
       ParentFont = False
     end
     object BvSrchOpt: TBevel
-      Left = 86
+      Left = 87
       Top = 173
-      Width = 437
+      Width = 436
       Height = 3
       Align = alCustom
+      Anchors = [akLeft, akTop, akRight]
       Shape = bsBottomLine
     end
     object GBoxRplcAll: TGroupBox
-      Left = 128
+      Left = 111
       Top = 114
       Width = 100
       Height = 46
@@ -106,7 +116,7 @@ object FrmFind: TFrmFind
     end
     object RGrpSearchMode: TRadioGroup
       Left = 10
-      Top = 257
+      Top = 260
       Width = 173
       Height = 79
       Caption = 'Search mode'
@@ -119,15 +129,19 @@ object FrmFind: TFrmFind
       Visible = False
     end
     object GBoxTransp: TGroupBox
-      Left = 344
-      Top = 257
+      Left = 345
+      Top = 260
       Width = 179
       Height = 79
+      Anchors = [akLeft, akTop, akRight]
       Caption = '      Transparency'
       Color = clBtnFace
       ParentColor = False
       TabOrder = 11
       Visible = False
+      DesignSize = (
+        179
+        79)
       object LblOpcty: TLabel
         Left = 8
         Top = 24
@@ -150,6 +164,7 @@ object FrmFind: TFrmFind
         Top = 39
         Width = 173
         Height = 17
+        Anchors = [akLeft, akTop, akRight]
         Max = 200
         PageSize = 60
         Frequency = 10
@@ -160,7 +175,7 @@ object FrmFind: TFrmFind
       end
     end
     object ChbFullWord: TCheckBox
-      Left = 15
+      Left = 9
       Top = 211
       Width = 209
       Height = 17
@@ -169,7 +184,7 @@ object FrmFind: TFrmFind
       Visible = False
     end
     object ChbDiffCase: TCheckBox
-      Left = 15
+      Left = 9
       Top = 192
       Width = 209
       Height = 17
@@ -178,7 +193,7 @@ object FrmFind: TFrmFind
       Visible = False
     end
     object ChbCircSearch: TCheckBox
-      Left = 15
+      Left = 9
       Top = 229
       Width = 209
       Height = 17
@@ -189,11 +204,12 @@ object FrmFind: TFrmFind
       Visible = False
     end
     object CboReplace: TComboBox
-      Left = 84
+      Left = 111
       Top = 86
-      Width = 439
+      Width = 413
       Height = 21
       AutoComplete = False
+      Anchors = [akLeft, akTop, akRight]
       TabOrder = 1
       Visible = False
       OnEnter = CboReplaceEnter
@@ -201,18 +217,19 @@ object FrmFind: TFrmFind
       OnKeyPress = CboReplaceKeyPress
     end
     object CboFind: TComboBox
-      Left = 84
+      Left = 111
       Top = 35
-      Width = 439
+      Width = 413
       Height = 21
       AutoComplete = False
+      Anchors = [akLeft, akTop, akRight]
       TabOrder = 0
       OnChange = CboFindChange
       OnEnter = CboFindEnter
       OnKeyPress = CboFindKeyPress
     end
     object BtnReplace: TButton
-      Left = 31
+      Left = 9
       Top = 135
       Width = 94
       Height = 22
@@ -223,22 +240,22 @@ object FrmFind: TFrmFind
       OnClick = BtnReplaceClick
     end
     object BtnMore: TBitBtn
-      Left = 231
+      Left = 220
       Top = 135
       Width = 94
       Height = 22
+      Anchors = [akTop, akRight]
       Caption = 'More'
-      DoubleBuffered = True
       Layout = blGlyphRight
-      ParentDoubleBuffered = False
       TabOrder = 5
       OnClick = BtnMoreClick
     end
     object BtnFind: TButton
-      Left = 331
+      Left = 325
       Top = 135
       Width = 94
       Height = 22
+      Anchors = [akTop, akRight]
       Caption = 'Find Next'
       Enabled = False
       TabOrder = 2
@@ -249,13 +266,14 @@ object FrmFind: TFrmFind
       Top = 135
       Width = 94
       Height = 22
+      Anchors = [akTop, akRight]
       Caption = 'Cancel'
       TabOrder = 12
       OnClick = BtnCancelClick
     end
     object GBoxDirection: TGroupBox
       Left = 192
-      Top = 257
+      Top = 260
       Width = 145
       Height = 79
       Caption = 'Direction'
@@ -281,10 +299,11 @@ object FrmFind: TFrmFind
       end
     end
     object ProgressBarFindFiles: TProgressBar
-      Left = 8
+      Left = 10
       Top = 105
-      Width = 516
+      Width = 514
       Height = 17
+      Anchors = [akLeft, akTop, akRight]
       TabOrder = 13
       Visible = False
     end

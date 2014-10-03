@@ -16,6 +16,10 @@ type
     BtnCan: TButton;
     BtnVoltar: TButton;
     BtnFnsh: TButton;
+    Panel1: TPanel;
+    LblWidz: TLabel;
+    Panel2: TPanel;
+    Bevel1: TBevel;
     procedure FormCreate(Sender: TObject);
     procedure BtnProxClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -189,9 +193,9 @@ begin
   BtnProx.Caption := STR_FRM_NEW_PROJ[3];
   BtnFnsh.Caption := STR_FRM_NEW_PROJ[4];
   BtnCan.Caption := STR_FRM_PROP[15];
+  LblWidz.Caption := STR_FRM_NEW_PROJ[6];
   //FraProj
   FraProjs.GrBoxDesc.Caption := STR_FRM_NEW_PROJ[5];
-  FraProjs.LblWidz.Caption := STR_FRM_NEW_PROJ[6];
   //FraPrjOpt
   FraPrjOpt.GrbApp.Caption := STR_FRM_PROP[1];
   FraPrjOpt.ImgIcon.Hint := STR_FRM_PROP[9];
@@ -209,7 +213,6 @@ begin
   FraPrjOpt.CHBShowWar.Caption := STR_FRM_PROP[31];
   FraPrjOpt.CHBOptSpd.Caption := STR_FRM_PROP[32];
   FraPrjOpt.RGrpType.Caption := STR_FRM_PROP[28];
-  FraPrjOpt.LblWidz.Caption := STR_FRM_NEW_PROJ[6];
   ///////////////
 end;
 

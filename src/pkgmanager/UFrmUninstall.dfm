@@ -18,6 +18,9 @@ object FrmUninstall: TFrmUninstall
   OnClose = FormClose
   OnCreate = FormCreate
   OnKeyDown = FormKeyDown
+  DesignSize = (
+    495
+    157)
   PixelsPerInch = 96
   TextHeight = 13
   object LblDesc: TLabel
@@ -31,6 +34,7 @@ object FrmUninstall: TFrmUninstall
     Top = 119
     Width = 449
     Height = 178
+    Anchors = [akLeft, akTop, akRight]
     Columns = <
       item
         Width = 400
@@ -47,6 +51,7 @@ object FrmUninstall: TFrmUninstall
     Top = 8
     Width = 449
     Height = 57
+    Anchors = [akLeft, akTop, akRight]
     Caption = 'Package description'
     TabOrder = 0
     object Label4: TLabel
@@ -92,6 +97,7 @@ object FrmUninstall: TFrmUninstall
     Top = 96
     Width = 449
     Height = 17
+    Anchors = [akLeft, akTop, akRight]
     Step = 1
     TabOrder = 3
   end
@@ -100,6 +106,7 @@ object FrmUninstall: TFrmUninstall
     Top = 124
     Width = 89
     Height = 24
+    Anchors = [akTop, akRight]
     Caption = 'Ok'
     Enabled = False
     TabOrder = 4

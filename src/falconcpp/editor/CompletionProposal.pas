@@ -1388,13 +1388,25 @@ begin
             end;
         end;
       VK_PRIOR:
+      begin
         MoveLine(FLinesInWindow * -1);
+        Key := 0;
+      end;
       VK_NEXT:
+      begin
         MoveLine(FLinesInWindow);
+        Key := 0;
+      end;
       VK_END:
+      begin
         Position := FAssignedList.Count - 1;
+        Key := 0;
+      end;
       VK_HOME:
+      begin
         Position := 0;
+        Key := 0;
+      end;
       VK_UP:
         begin
           if ssCtrl in Shift then

@@ -102,10 +102,10 @@ begin
   AutoComplete := TSynAutoCompleteTemplate.Create(Self);
   SynTemplates := TEditor.Create(GroupBox1);
   SynTemplates.Parent := GroupBox1;
-  SynTemplates.Left := 9;
-  SynTemplates.Top := 192;
-  SynTemplates.Width := 426;
-  SynTemplates.Height := 177;
+  SynTemplates.Left := Label2.Left;
+  SynTemplates.Top := Label2.Top + Label2.Height + Label2.Left div 2;
+  SynTemplates.Width := GroupBox1.Width - 2 * Label2.Left;
+  SynTemplates.Height := GroupBox1.Height - SynTemplates.Top - Label2.Left;
   SynTemplates.TabOrder := 1;
   SynTemplates.Highlighter := FrmFalconMain.CppHighligher;
   TSourceFileSheet.UpdateEditor(SynTemplates);

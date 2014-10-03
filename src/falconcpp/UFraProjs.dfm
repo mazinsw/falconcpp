@@ -2,23 +2,30 @@ object FraProjs: TFraProjs
   Left = 0
   Top = 0
   Width = 521
-  Height = 337
+  Height = 328
+  Align = alClient
   TabOrder = 0
   object PanelControls: TPanel
     Left = 0
     Top = 0
     Width = 521
-    Height = 337
+    Height = 328
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
+    ExplicitHeight = 337
+    DesignSize = (
+      521
+      328)
     object GrBoxDesc: TGroupBox
       Left = 376
       Top = 8
       Width = 137
-      Height = 305
+      Height = 312
+      Anchors = [akTop, akRight, akBottom]
       Caption = 'Description'
       TabOrder = 0
+      ExplicitHeight = 321
       object ImageProj: TImage
         Left = 44
         Top = 24
@@ -61,59 +68,23 @@ object FraProjs: TFraProjs
         TabOrder = 1
       end
     end
-    object Panel1: TPanel
-      Left = 0
-      Top = 318
-      Width = 521
-      Height = 19
-      Align = alBottom
-      BevelOuter = bvNone
-      BorderWidth = 3
-      TabOrder = 1
-      object LblWidz: TLabel
-        Left = 3
-        Top = 3
-        Width = 104
-        Height = 13
-        Align = alLeft
-        Caption = 'Falcon Project Wizard'
-        Enabled = False
-      end
-      object Panel2: TPanel
-        Left = 107
-        Top = 3
-        Width = 411
-        Height = 13
-        Align = alClient
-        AutoSize = True
-        BevelOuter = bvNone
-        BorderWidth = 3
-        TabOrder = 0
-        object Bevel1: TBevel
-          Left = 3
-          Top = 3
-          Width = 405
-          Height = 7
-          Align = alClient
-          Shape = bsBottomLine
-        end
-      end
-    end
     object PageControl: TModernPageControl
       Left = 8
       Top = 8
       Width = 361
-      Height = 305
+      Height = 312
+      Anchors = [akLeft, akTop, akRight, akBottom]
       NormalColor = clWhite
       FocusedColor = 15973017
       ParentColor = False
       ShowCloseButton = False
       TabIndex = -1
-      TabOrder = 2
+      TabOrder = 1
       TabStop = True
       FixedTabWidth = False
       OnMouseMove = ProjectListMouseMove
       OnPageChange = PageControlPageChange
+      ExplicitHeight = 321
     end
   end
   object ImageList: TImageList

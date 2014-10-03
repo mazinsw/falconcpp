@@ -17,6 +17,9 @@ object FrmHelp: TFrmHelp
   OnClose = FormClose
   OnCreate = FormCreate
   OnKeyDown = FormKeyDown
+  DesignSize = (
+    481
+    401)
   PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
@@ -24,14 +27,16 @@ object FrmHelp: TFrmHelp
     Top = 8
     Width = 465
     Height = 337
+    Anchors = [akLeft, akTop, akRight, akBottom]
     AutoSize = False
     WordWrap = True
   end
   object Button1: TButton
-    Left = 227
+    Left = 206
     Top = 360
     Width = 75
     Height = 25
+    Anchors = [akRight, akBottom]
     Caption = 'Ok'
     TabOrder = 0
     OnClick = Button1Click

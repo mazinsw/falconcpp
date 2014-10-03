@@ -353,21 +353,21 @@ begin
   if (Filter = []) and (Scope = tkUnknow) then
   begin
     Add('main', 'main function',
-      'int main(int argc, char** argv)'#13 +
+      'int main()'#13 +
       '{'#13 +
       '    return 0;'#13 +
       '}',
-      'int main(int argc, char** argv)'#13 +
+      'int main()'#13 +
       '{'#13 +
       '    |'#13 +
       '    return 0;'#13 +
       '}');
-    Add('main', 'main function without parameters',
-      'int main()'#13 +
+    Add('main', 'main function with parameters',
+      'int main(int argc, char** argv)'#13 +
       '{'#13 +
       '    return 0;'#13 +
       '}',
-      'int main()'#13 +
+      'int main(int argc, char** argv)'#13 +
       '{'#13 +
       '    |'#13 +
       '    return 0;'#13 +
@@ -518,12 +518,9 @@ begin
         if (j > 0) and not PipeFind then begin
           Delete(s, j, 1);
           Temp[i] := s;
-//              if j > 1 then
-//                Dec(j);
           NewCaretPos := TRUE;
           Inc(p.Line, i);
           if i = 0 then
-//                Inc(p.x, j)
             Inc(p.Char, j - 1)
           else
             p.Char := j;

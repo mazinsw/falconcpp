@@ -118,7 +118,8 @@ uses
   CompilerSettings in 'settings\CompilerSettings.pas',
   StyleExporter in 'editor\StyleExporter.pas',
   ExporterHTML in 'editor\ExporterHTML.pas',
-  ExporterRTF in 'editor\ExporterRTF.pas';
+  ExporterRTF in 'editor\ExporterRTF.pas',
+  EditorPrint in 'editor\EditorPrint.pas';
 
 function OpenWithOther: Boolean;
 var

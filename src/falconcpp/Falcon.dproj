@@ -181,6 +181,7 @@
 			<DCCReference Include="editor\StyleExporter.pas"/>
 			<DCCReference Include="editor\ExporterHTML.pas"/>
 			<DCCReference Include="editor\ExporterRTF.pas"/>
+			<DCCReference Include="editor\EditorPrint.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

@@ -64,6 +64,12 @@ begin
   Editor.Colourise(0, -1); // force apply styles
   FBuilder.AppendLine('<title>' + Title + '</title>');
   FBuilder.AppendLine('<style type="text/css">');
+  FBuilder.AppendLine('body {');
+  FBuilder.AppendLine('  color: ' + ColorToHtml(Editor.StyleGetFore(STYLE_DEFAULT)) + ';');
+  BckCl := Editor.StyleGetBack(STYLE_DEFAULT);
+  if (BckCl <> clNone) and (BckCl <> clWhite) then
+    FBuilder.AppendLine('  background-color: ' + ColorToHtml(Editor.StyleGetBack(STYLE_DEFAULT)) + ';');
+  FBuilder.AppendLine('}');
   for I := 0 to STYLE_MAX do
     StyleUsed[I] := False;
   for I := 0 to DocLen - 1 do
@@ -88,7 +94,7 @@ begin
   FBuilder.AppendLine('</style>');
   FBuilder.AppendLine('</head>');
   FBuilder.AppendLine('<body>');
-  FBuilder.AppendLine('<div style="float: left; white-space: pre;">');
+  FBuilder.AppendLine('<pre><code>');
   LastStyle := -1;
   I := 0;
   while I < DocLen do
@@ -154,7 +160,7 @@ begin
   if LastStyle <> -1 then
     FBuilder.Append('</span>');
   FBuilder.AppendLine;
-  FBuilder.AppendLine('</div>');
+  FBuilder.AppendLine('</code></pre>');
   FBuilder.AppendLine('</body>');
   FBuilder.AppendLine('</html>');
 end;

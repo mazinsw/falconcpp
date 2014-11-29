@@ -130,8 +130,6 @@ type
     ComboBoxPointerAlign: TComboBox;
     ChbAutoCloseBrackets: TCheckBox;
     procedure FormKeyPress(Sender: TObject; var Key: Char);
-    procedure SynPrevMouseDown(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure CbDefSinSelect(Sender: TObject);
@@ -172,6 +170,8 @@ type
     EditFormatter: TEditor;
     SynCpp: TCppHighlighter;
     procedure OptionsChange;
+    procedure PositionChanged(Position: Integer);
+    procedure SynPrevUpdateUI(Sender: TObject; AUpdated: Integer);
   protected
     procedure CreateParams(var Params: TCreateParams); override;
   public
@@ -215,7 +215,6 @@ begin
   EditPreview.Width := TSSintax.Width - 2 * ListBoxType.Left;
   EditPreview.Height := TSSintax.Height - EditPreview.Top - ListBoxType.Left;
   EditPreview.TabOrder := 5;
-  EditPreview.OnMouseDown := SynPrevMouseDown;
   EditPreview.ShowLineNumber := True;
   EditPreview.HideSelection(False);
   EditPreview.Highlighter := SynCpp;
@@ -235,6 +234,7 @@ begin
     '}';
   EditPreview.ReadOnly := True;
   EditPreview.OnMarginClick := SynPrevGutterClick;
+  EditPreview.OnUpdateUI := SynPrevUpdateUI;
 
   // GroupBoxFormatterSample
   EditFormatter := TEditor.Create(GroupBoxFormatterSample);
@@ -632,48 +632,34 @@ begin
   BtnEditCodeTemplate.Hint := STR_FRM_EDITOR_OPT[137];
 end;
 
-procedure TFrmEditorOptions.SynPrevGutterClick(ASender: TObject;
-  AModifiers: Integer; APosition: Integer; AMargin: Integer);
-var
-  st: TSintaxType;
-  I: Integer;
-begin
-  if ActiveSintax.GetType(STY_PROP_GUTTER, st) then
-  begin
-    I := ActiveSintax.IndexOf(st);
-    if I < 0 then
-      Exit;
-    ListBoxType.ItemIndex := I;
-    ListBoxType.Selected[I] := True;
-    ListBoxTypeClick(Self);
-  end
-end;
-
-procedure TFrmEditorOptions.SynPrevMouseDown(Sender: TObject;
-  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+procedure TFrmEditorOptions.PositionChanged(Position: Integer);
 var
   AttrName: string;
   S: UnicodeString;
   attr: THighlighStyle;
   st: TSintaxType;
-  I, Position, Line: Integer;
+  I, Line: Integer;
 begin
-  Position := EditPreview.PositionFromPoint(X, Y);
-  Line := EditPreview.LineFromPosition(Position) + 1;
-  if Line = 8 then
-  begin
-    AttrName := STY_PROP_BREAKPOINT;
-  end
-  else if Line = 9 then
-  begin
-    AttrName := STY_PROP_EXECPOINT;
-  end
+  if Position = -1 then
+    AttrName := STY_PROP_GUTTER
   else
   begin
-    if not EditPreview.GetHighlighterAttriAt(Position, S, attr) then
-      AttrName := HL_Style_Space
+    Line := EditPreview.LineFromPosition(Position) + 1;
+    if Line = 8 then
+    begin
+      AttrName := STY_PROP_BREAKPOINT;
+    end
+    else if Line = 9 then
+    begin
+      AttrName := STY_PROP_EXECPOINT;
+    end
     else
-      AttrName := attr.Name;
+    begin
+      if not EditPreview.GetHighlighterAttriAt(Position, S, attr) then
+        AttrName := HL_Style_Space
+      else
+        AttrName := attr.Name;
+    end;
   end;
   if ActiveSintax.GetType(AttrName, st) then
   begin
@@ -684,6 +670,20 @@ begin
     ListBoxType.Selected[I] := True;
     ListBoxTypeClick(Self);
   end;
+end;
+
+procedure TFrmEditorOptions.SynPrevUpdateUI(Sender: TObject;
+  AUpdated: Integer);
+begin
+  if (AUpdated and SC_UPDATE_SELECTION) <> SC_UPDATE_SELECTION then
+    Exit;
+  PositionChanged(EditPreview.GetCurrentPos);
+end;
+
+procedure TFrmEditorOptions.SynPrevGutterClick(ASender: TObject;
+  AModifiers: Integer; APosition: Integer; AMargin: Integer);
+begin
+  PositionChanged(-1);
 end;
 
 procedure TFrmEditorOptions.FormDestroy(Sender: TObject);

@@ -7,36 +7,34 @@ uses
   DScintillaTypes, Highlighter, Controls, Forms, ImgList, SearchEngine;
 
 const
-  MARGIN_BOOKMARK    = 0;
+  MARGIN_BOOKMARK = 0;
   MARGIN_LINE_NUMBER = 1;
-  MARGIN_BREAKPOINT  = 2;
-  MARGIN_FOLD        = 3;
-  MARGIN_SPACE       = 4;
-
+  MARGIN_BREAKPOINT = 2;
+  MARGIN_FOLD = 3;
+  MARGIN_SPACE = 4;
 
   MARK_BREAKPOINT = 1;
   MARK_CURRENTLINE = 2;
   MARK_BREAKICON = 3;
   MARK_BREAKCURR = 4;
-  MARK_BOOKMARK: array[0..9] of Integer = (5, 6, 7, 8, 9, 10,
-    11, 12, 13, 14);
+  MARK_BOOKMARK: array [0 .. 9] of Integer = (5, 6, 7, 8, 9, 10, 11, 12, 13,
+    14);
 
   INDIC_MATCHSEL = 0;
 
-  WM_HOTSPOTFIXCLICK = WM_USER + 1221;
 type
   TBufferCoord = record
-    Char: integer;
-    Line: integer;
+    Char: Integer;
+    Line: Integer;
   end;
 
   TDisplayCoord = record
-    Column: integer;
-    Row: integer;
+    Column: Integer;
+    Row: Integer;
   end;
 
   TSearchDirection = (sdUp, sdDown);
-  
+
   TEditor = class(TDScintilla)
   private
     FBraceAtCaret, FBraceOpposite: Integer;
@@ -61,11 +59,12 @@ type
     FShowIndentGuides: Boolean;
     FActiveLineColor: TColor;
     FLinkColor: TColor;
-    FOnHotSpotFixClick: TDSciHotSpotClickEvent;
-    FHotspotModifiers: Integer;
-    FHotspotPosition: Integer;
+    FLinkClick: Boolean;
+    FHotSpotEnabled: Boolean;
+    FHotSpotPosition: Integer;
     FLastSelectionCount: Integer;
     FSearchEngine: TSearchEngine;
+    FShowGutter: Boolean;
     procedure BracketHighlightChanged(Sender: TObject);
     procedure HighlighterChanged(Sender: TObject);
     function GetModified: Boolean;
@@ -90,7 +89,8 @@ type
     function GetTopLine: Integer;
     procedure SetTopLine(const Value: Integer);
     function GetLinesInWindow: Integer;
-    procedure DoMarginClick(AModifiers: Integer; APosition: Integer; AMargin: Integer);
+    procedure DoMarginClick(AModifiers: Integer; APosition: Integer;
+      AMargin: Integer);
     procedure DoModified(APosition: Integer; AModificationType: Integer;
       ALength: Integer; ALinesAdded: Integer; ALine: Integer;
       AFoldLevelNow: Integer; AFoldLevelPrev: Integer);
@@ -109,12 +109,12 @@ type
     procedure UpdateStyles;
     procedure ApplyStyle(Style: THighlighStyle);
     procedure DoBraceMatch;
-    procedure FindMatchingBracePos(caretPos: Integer; var braceAtCaret, braceOpposite: Integer);
+    procedure FindMatchingBracePos(caretPos: Integer; var braceAtCaret,
+      braceOpposite: Integer);
     function GetLineText: UnicodeString;
-    procedure CMMouseEnter(var Message: TMessage); message CM_MOUSEENTER;
-    procedure CMMouseLeave(var Message: TMessage); message CM_MOUSELEAVE;
-    procedure CMFontChanged(var Message: TMessage); message CM_FONTCHANGED;
-    procedure WMHotSpotFixClick(var Message: TMessage); message WM_HOTSPOTFIXCLICK;
+    procedure CMMouseEnter(var message: TMessage); message CM_MOUSEENTER;
+    procedure CMMouseLeave(var message: TMessage); message CM_MOUSELEAVE;
+    procedure CMFontChanged(var message: TMessage); message CM_FONTCHANGED;
     procedure SetFolding(const Value: Boolean);
     procedure UpdateFolderMarker;
     function GetWordEnd: TBufferCoord;
@@ -123,8 +123,8 @@ type
     function GetLeftSpacing(CharCount: Integer; WantTabs: Boolean): string;
     function GetFirstNonSpaceChar(const S: string): Char;
     function GetLastNonSpaceChar(const S: string): Char;
-    procedure AdvanceSpaceBreakLine(aLine: Integer;
-      var LeftOffset: Integer; var Unindent: Boolean);
+    procedure AdvanceSpaceBreakLine(ALine: Integer; var LeftOffset: Integer;
+      var Unindent: Boolean);
     function RightSpacesEx(const Line: string; WantTabs: Boolean): Integer;
     procedure SetShowLineNumber(const Value: Boolean);
     procedure SetImageList(const Value: TCustomImageList);
@@ -145,15 +145,27 @@ type
     procedure ResetAllStyle;
     procedure ColouriseVisibleArea;
     function RelativePosition(APosition: Integer): Integer;
+    procedure SetShowGutter(const Value: Boolean);
+    procedure SetLinkClick(const Value: Boolean);
+    procedure RefreshLinkClick(X, Y: Integer);
+    procedure SetHotSpotClick(HotSpotEnabled: Boolean);
   protected
-    procedure Notification(AComponent: TComponent; Operation: TOperation); override;
-    procedure DoScroll; virtual;
-    function DoSCNotification(const ASCNotification: TDSciSCNotification): Boolean;
+    procedure Notification(AComponent: TComponent; Operation: TOperation);
       override;
-    procedure MouseEnter(Sender: TObject; Shift: TShiftState; X, Y: Integer); virtual;
-    procedure MouseLeave(Sender: TObject; Shift: TShiftState; X, Y: Integer); virtual;
+    procedure DoScroll; virtual;
+    function DoSCNotification(const ASCNotification: TDSciSCNotification)
+      : Boolean; override;
+    procedure MouseEnter(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+      virtual;
+    procedure MouseLeave(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+      virtual;
     procedure InitDefaults; override;
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X: Integer;
+      Y: Integer); override;
+    procedure KeyDown(var Key: Word; Shift: TShiftState); override;
+    procedure KeyUp(var Key: Word; Shift: TShiftState); override;
+    procedure MouseMove(Shift: TShiftState; X: Integer; Y: Integer); override;
+    procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X: Integer;
       Y: Integer); override;
   public
     constructor Create(AOwner: TComponent); override;
@@ -162,7 +174,7 @@ type
     procedure UncollapseLine(Line: Integer);
     procedure SetCaretAndSelection(const caret, b, c: TBufferCoord);
     procedure GotoLineAndCenter(Line: Integer);
-    function PixelsToRowColumn(x, y: Integer): TDisplayCoord;
+    function PixelsToRowColumn(X, Y: Integer): TDisplayCoord;
     function IsPointInSelection(const rowcol: TBufferCoord): Boolean;
     function GetWordAt(APosition: Integer): UnicodeString;
     function GetWordAtRowCol(const rowcol: TBufferCoord): UnicodeString;
@@ -195,7 +207,6 @@ type
     procedure CollapseAll;
     procedure UncollapseAll;
     procedure UncollapseRange(startLine, endLine: Integer);
-    procedure SetLinkClick(Enabled: Boolean);
     function WordStartEx(const rowcol: TBufferCoord): TBufferCoord;
     function GetMatchingBracketEx(const rowcol: TBufferCoord): TBufferCoord;
     function GetBalancingBracketEx(const APoint: TBufferCoord;
@@ -219,7 +230,7 @@ type
     property WantTabs: Boolean read GetWantTabs write SetWantTabs;
     property TabWidth: Integer read GetTabWidth write SetTabWidth;
     property Modified: Boolean read GetModified;
-    property ReadOnly: Boolean read GetReadOnly write SetReadOnly;
+    property readonly: Boolean read GetReadOnly write SetReadOnly;
     property DisplayY: Integer read GetDisplayY;
     property DisplayX: Integer read GetDisplayX;
     property DisplayXY: TDisplayCoord read GetDisplayXY;
@@ -237,8 +248,11 @@ type
     property InsertMode: Boolean read GetInsertMode write SetInsertMode;
     property Highlighter: THighlighter read FHighlighter write SetHighlighter;
     property Folding: Boolean read FFolding write SetFolding;
-    property ShowLineNumber: Boolean read FShowLineNumber write SetShowLineNumber;
-    property ShowIndentGuides: Boolean read FShowIndentGuides write SetShowIndentGuides;
+    property ShowGutter: Boolean read FShowGutter write SetShowGutter;
+    property ShowLineNumber
+      : Boolean read FShowLineNumber write SetShowLineNumber;
+    property ShowIndentGuides: Boolean read FShowIndentGuides write
+      SetShowIndentGuides;
     property BracketHighlight: THighlighStyle read FBracketHighlight;
     property BadBracketHighlight: THighlighStyle read FBadBracketHighlight;
     property LineNumberHighlight: THighlighStyle read FLineNumberHighlight;
@@ -246,15 +260,18 @@ type
     property CaretLineHighlight: THighlighStyle read FCaretLineHighlight;
     property CaretColor: TColor read FCaretColor write SetCaretColor;
     property LinkColor: TColor read FLinkColor write SetLinkColor;
+    property LinkClick: Boolean read FLinkClick write SetLinkClick;
     property SelectionHighlight: THighlighStyle read FSelectionHighlight;
     property BreakpointHighlight: THighlighStyle read FBreakpointHighlight;
-    property ExecutionPointHighlight: THighlighStyle read FExecutionPointHighlight;
+    property ExecutionPointHighlight
+      : THighlighStyle read FExecutionPointHighlight;
     property MatchWordHighlight: THighlighStyle read FMatchWordHighlight;
     property ImageList: TCustomImageList read FImageList write SetImageList;
     property OnScroll: TNotifyEvent read FOnScroll write FOnScroll;
-    property OnMouseEnter: TMouseMoveEvent read fOnMouseEnter write fOnMouseEnter;
-    property OnMouseLeave: TMouseMoveEvent read fOnMouseLeave write fOnMouseLeave;
-    property OnHotSpotFixClick: TDSciHotSpotClickEvent read FOnHotSpotFixClick write FOnHotSpotFixClick;
+    property OnMouseEnter
+      : TMouseMoveEvent read fOnMouseEnter write fOnMouseEnter;
+    property OnMouseLeave
+      : TMouseMoveEvent read fOnMouseLeave write fOnMouseLeave;
 
   end;
 
@@ -290,7 +307,8 @@ begin
   FBracketHighlight.OnChange := BracketHighlightChanged;
   FBadBracketHighlight := THighlighStyle.Create(STYLE_BRACEBAD, 'Bad Brace');
   FBadBracketHighlight.OnChange := BracketHighlightChanged;
-  FLineNumberHighlight := THighlighStyle.Create(STYLE_LINENUMBER, 'Line Number');
+  FLineNumberHighlight := THighlighStyle.Create(STYLE_LINENUMBER,
+    'Line Number');
   FLineNumberHighlight.OnChange := LineNumberHighlightChanged;
   FDefaultHighlight := THighlighStyle.Create(STYLE_DEFAULT, 'Default');
   FDefaultHighlight.OnChange := DefaultHighlightChanged;
@@ -305,7 +323,7 @@ begin
   FMatchWordHighlight := THighlighStyle.Create(0, 'Match Word');
   FMatchWordHighlight.OnChange := MatchWordHighlightChanged;
   SetLength(FBookmarks, 10);
-end;              
+end;
 
 destructor TEditor.Destroy;
 begin
@@ -333,10 +351,10 @@ begin
     ClearCmdKey(I + ((SCMOD_CTRL or SCMOD_SHIFT) shl 16));
   end;
   SetModEventMask(SC_MOD_INSERTTEXT or SC_MOD_DELETETEXT);
-  SetMarginWidthN(MARGIN_BOOKMARK, 16);
+  SetMarginWidthN(MARGIN_BOOKMARK, 0);
   SetMarginWidthN(MARGIN_LINE_NUMBER, 0);
-  SetMarginWidthN(MARGIN_BREAKPOINT, 14);
-  SetMarginWidthN(MARGIN_SPACE, 1);
+  SetMarginWidthN(MARGIN_BREAKPOINT, 0);
+  SetMarginWidthN(MARGIN_SPACE, 0);
 
   SetMarginTypeN(MARGIN_BOOKMARK, SC_MARGIN_SYMBOL);
   SetMarginTypeN(MARGIN_LINE_NUMBER, SC_MARGIN_NUMBER);
@@ -350,8 +368,8 @@ begin
   SetMarginMaskN(MARGIN_BOOKMARK, Mask);
   SetMarginMaskN(MARGIN_LINE_NUMBER, 0);
   SetMarginMaskN(MARGIN_BREAKPOINT, (1 shl MARK_BREAKICON) or
-    (1 shl MARK_BREAKCURR));
-  SetMarginMaskN(MARGIN_FOLD, Integer(SC_MASK_FOLDERS)); 
+      (1 shl MARK_BREAKCURR));
+  SetMarginMaskN(MARGIN_FOLD, Integer(SC_MASK_FOLDERS));
   SetMarginMaskN(MARGIN_SPACE, 0);
   SetScrollWidthTracking(True);
   SetScrollWidth(1);
@@ -366,25 +384,25 @@ begin
   // Indicator style
   IndicSetStyle(INDIC_MATCHSEL, INDIC_ROUNDBOX);
   // Breakpoint line
-	MarkerDefine(MARK_BREAKPOINT, SC_MARK_BACKGROUND);
-	MarkerSetAlpha(MARK_BREAKPOINT, 70);
+  MarkerDefine(MARK_BREAKPOINT, SC_MARK_BACKGROUND);
+  MarkerSetAlpha(MARK_BREAKPOINT, 70);
   // current breakpoint line
-	MarkerDefine(MARK_CURRENTLINE, SC_MARK_BACKGROUND);
-	MarkerSetAlpha(MARK_CURRENTLINE, 70);
+  MarkerDefine(MARK_CURRENTLINE, SC_MARK_BACKGROUND);
+  MarkerSetAlpha(MARK_CURRENTLINE, 70);
   MarkerEnableHighlight(True);
   SetMarginSensitiveN(MARGIN_BOOKMARK, True);
   SetMarginSensitiveN(MARGIN_LINE_NUMBER, True);
   SetMarginSensitiveN(MARGIN_BREAKPOINT, True);
   SetMarginSensitiveN(MARGIN_FOLD, True);
-  SetFoldFlags(SC_FOLDFLAG_LINEAFTER_CONTRACTED); // 16  	Draw line below if not expanded
-  SetShowIndentGuides(True);                                          
+  SetFoldFlags(SC_FOLDFLAG_LINEAFTER_CONTRACTED);
+  // 16  	Draw line below if not expanded
+  SetShowIndentGuides(True);
   SetCaretLineVisibleAlways(True);
   SetCaretColor(clBlack);
   SetCaretPeriod(500);
-  Font.Name := 'Courier New';
+  Font.name := 'Courier New';
   Font.Size := 10;
 end;
-
 
 procedure TEditor.UpdateMarginIcons;
 var
@@ -393,12 +411,12 @@ var
   ImgPtr: PAnsiChar;
 begin
   if FImageList = nil then
-  begin                 
-  // breakpoint icon
+  begin
+    // breakpoint icon
     MarkerDefine(MARK_BREAKICON, SC_MARK_CIRCLE);
     MarkerSetBack(MARK_BREAKICON, DSColor(clRed));
     MarkerSetFore(MARK_BREAKICON, DSColor(clBlack));
-  // breakpoint arrow icon
+    // breakpoint arrow icon
     MarkerDefine(MARK_BREAKCURR, SC_MARK_SHORTARROW);
     MarkerSetBack(MARK_BREAKCURR, DSColor(clGreen));
     MarkerSetFore(MARK_BREAKCURR, DSColor(clBlack));
@@ -409,20 +427,23 @@ begin
     for I := 0 to 9 do
     begin
       FBookmarks[I] := 0;
-      ImgPtr := GetRGBAPointerFromImageIndex(FImageList, 6 + I, ImageWidth, ImageHeight);
+      ImgPtr := GetRGBAPointerFromImageIndex(FImageList, 6 + I, ImageWidth,
+        ImageHeight);
       RGBAImageSetWidth(ImageWidth);
       RGBAImageSetHeight(ImageHeight);
       MarkerDefineRGBAImage(MARK_BOOKMARK[I], ImgPtr);
       FreeMem(ImgPtr);
     end;
     // breakpoint icon
-    ImgPtr := GetRGBAPointerFromImageIndex(FImageList, 2, ImageWidth, ImageHeight);
+    ImgPtr := GetRGBAPointerFromImageIndex(FImageList, 2, ImageWidth,
+      ImageHeight);
     RGBAImageSetWidth(ImageWidth);
     RGBAImageSetHeight(ImageHeight);
     MarkerDefineRGBAImage(MARK_BREAKICON, ImgPtr);
     FreeMem(ImgPtr);
     // breakpoint arrow icon
-    ImgPtr := GetRGBAPointerFromImageIndex(FImageList, 4, ImageWidth, ImageHeight);
+    ImgPtr := GetRGBAPointerFromImageIndex(FImageList, 4, ImageWidth,
+      ImageHeight);
     RGBAImageSetWidth(ImageWidth);
     RGBAImageSetHeight(ImageHeight);
     MarkerDefineRGBAImage(MARK_BREAKCURR, ImgPtr);
@@ -432,9 +453,9 @@ end;
 
 procedure TEditor.UpdateFolderMarker;
 const
-  marker: array[0..6] of Integer = (SC_MARKNUM_FOLDER, SC_MARKNUM_FOLDEROPEN,
-    SC_MARKNUM_FOLDERTAIL, SC_MARKNUM_FOLDERSUB, SC_MARKNUM_FOLDEREND,
-    SC_MARKNUM_FOLDEROPENMID, SC_MARKNUM_FOLDERMIDTAIL);
+  marker: array [0 .. 6] of Integer = (SC_MARKNUM_FOLDER,
+    SC_MARKNUM_FOLDEROPEN, SC_MARKNUM_FOLDERTAIL, SC_MARKNUM_FOLDERSUB,
+    SC_MARKNUM_FOLDEREND, SC_MARKNUM_FOLDEROPENMID, SC_MARKNUM_FOLDERMIDTAIL);
 var
   I: Integer;
 begin
@@ -442,7 +463,7 @@ begin
   begin
     MarkerSetFore(marker[I], DSColor(FDefaultHighlight.Background));
     MarkerSetBack(marker[I], DSColor(FLineNumberHighlight.Foreground));
-    MarkerSetBackSelected(marker[i], DSColor(FBracketHighlight.Foreground));
+    MarkerSetBackSelected(marker[I], DSColor(FBracketHighlight.Foreground));
   end;
   StyleSetFore(STYLE_INDENTGUIDE, DSColor(FLineNumberHighlight.Foreground));
   StyleSetBack(STYLE_INDENTGUIDE, DSColor(FDefaultHighlight.Background));
@@ -450,25 +471,24 @@ end;
 
 procedure TEditor.BeginUpdate;
 begin
- //TODO:
+  // TODO:
 end;
 
-function TEditor.BufferToDisplayPos(
-  const rowcol: TBufferCoord): TDisplayCoord;
+function TEditor.BufferToDisplayPos(const rowcol: TBufferCoord): TDisplayCoord;
 var
   Position: Integer;
 begin
-  //TODO:
+  // TODO:
   Position := RowColToCharIndex(rowcol);
   Result.Row := rowcol.Line;
   Result.Column := GetColumn(PositionRelative(0, Position)) + 1;
 end;
 
-function TEditor.CharIndexToRowCol(Index: Integer): TBufferCoord;
+function TEditor.CharIndexToRowCol(index: Integer): TBufferCoord;
 begin
-  Index := PositionRelative(0, Index);
-  Result.Line := LineFromPosition(Index) + 1;
-  Result.Char := CountCharacters(PositionFromLine(Result.Line - 1), Index) + 1;
+  index := PositionRelative(0, index);
+  Result.Line := LineFromPosition(index) + 1;
+  Result.Char := CountCharacters(PositionFromLine(Result.Line - 1), index) + 1;
 end;
 
 procedure TEditor.ClearBookMark(I: Integer);
@@ -510,19 +530,20 @@ begin
   Cut;
 end;
 
-function TEditor.DisplayToBufferPos(
-  const Display: TDisplayCoord): TBufferCoord;
+function TEditor.DisplayToBufferPos(const Display: TDisplayCoord): TBufferCoord;
 begin
-  Result := CharIndexToRowCol(RelativePosition(FindColumn(Display.Row - 1, Display.Column - 1)));
+  Result := CharIndexToRowCol(RelativePosition(FindColumn(Display.Row - 1,
+        Display.Column - 1)));
 end;
 
 procedure TEditor.DoMarginClick(AModifiers, APosition, AMargin: Integer);
 var
   line_number: Integer;
 begin
-  line_number := LineFromPosition(Aposition);
-  case Amargin of
-    MARGIN_FOLD: ToggleFold(line_number);
+  line_number := LineFromPosition(APosition);
+  case AMargin of
+    MARGIN_FOLD:
+      ToggleFold(line_number);
   end;
 end;
 
@@ -624,7 +645,7 @@ begin
   mpx := TextWidth(STYLE_LINENUMBER, '999');
   if (px < mpx) then
     px := mpx;
-  result := px + 2;
+  Result := px + 2;
 end;
 
 function TEditor.GetLinesInWindow: Integer;
@@ -702,10 +723,11 @@ end;
 function TEditor.SearchTextEx(const Search: string; SearchFlags: Integer;
   StartPosition, EndPosition: Integer; Research: Boolean;
   Direction: TSearchDirection; var SelectionStart, SelectionEnd: Integer;
-  var UsingResearch: Boolean; DocStartPosition, DocEndPosition: Integer): Integer;
+  var UsingResearch: Boolean; DocStartPosition, DocEndPosition: Integer)
+  : Integer;
 var
-  SearchResult, SearchResultEnd, ResearchResult,
-  PrevSearchResult, PrevSearchResultEnd: Integer;
+  SearchResult, SearchResultEnd, ResearchResult, PrevSearchResult,
+    PrevSearchResultEnd: Integer;
 begin
   if FSearchEngine = nil then
     raise Exception.Create('Search engine not set');
@@ -789,7 +811,7 @@ end;
 
 procedure TEditor.InvalidateLine(Line: Integer);
 begin
-  //TODO:
+  // TODO:
 end;
 
 function TEditor.IsPointInSelection(const rowcol: TBufferCoord): Boolean;
@@ -798,6 +820,57 @@ var
 begin
   Position := PositionRelative(0, RowColToCharIndex(rowcol));
   Result := (Position >= GetSelectionStart) and (Position <= GetSelectionEnd);
+end;
+
+procedure TEditor.SetHotSpotClick(HotSpotEnabled: Boolean);
+var
+  Pt: TPoint;
+begin
+  if FHotSpotEnabled = HotSpotEnabled then
+    Exit;
+  FHotSpotEnabled := HotSpotEnabled;
+  Pt := ScreenToClient(Mouse.CursorPos);
+  RefreshLinkClick(Pt.X, Pt.Y);
+end;
+
+procedure TEditor.RefreshLinkClick(X, Y: Integer);
+var
+  APosition, Ws, We: Integer;
+begin
+  APosition := PositionFromPoint(X, Y);
+  Ws := -1;
+  We := -1;
+  if FHotSpotPosition <> -1 then
+  begin
+    Ws := WordStartPosition(FHotSpotPosition, True);
+    We := WordEndPosition(FHotSpotPosition, True);
+  end;
+  if (APosition >= Ws) and (APosition <= We) and FHotSpotEnabled then
+    Exit;
+  if not(GetStyleAt(APosition) in [SCE_C_IDENTIFIER, SCE_C_PREPROCESSOR]) then
+    APosition := -1;
+  FHotSpotPosition := APosition;
+  if not FHotSpotEnabled or (FHotSpotPosition < 0) then
+  begin
+    SetCursor(SC_CURSORNORMAL);
+    FHotSpotPosition := -1;
+    Exit;
+  end;
+  SetCursor(8);
+end;
+
+procedure TEditor.KeyDown(var Key: Word; Shift: TShiftState);
+begin
+  inherited;
+  if (Shift = [ssCtrl]) then
+    SetHotSpotClick(True);
+end;
+
+procedure TEditor.KeyUp(var Key: Word; Shift: TShiftState);
+begin
+  inherited;
+  if Shift <> [ssCtrl] then
+    SetHotSpotClick(False);
 end;
 
 procedure TEditor.MoveSelectionDown;
@@ -815,18 +888,18 @@ begin
   Paste;
 end;
 
-function TEditor.PixelsToRowColumn(x, y: Integer): TDisplayCoord;
+function TEditor.PixelsToRowColumn(X, Y: Integer): TDisplayCoord;
 var
   APos: Integer;
 begin
-  APos := PositionFromPoint(x, y);
+  APos := PositionFromPoint(X, Y);
   Result.Column := GetColumn(APos) + 1;
   Result.Row := LineFromPosition(APos) + 1;
 end;
 
 function TEditor.PrevWordPos: TBufferCoord;
 begin
-  //TODO:
+  // TODO:
 end;
 
 function TEditor.RowColToCharIndex(const rowcol: TBufferCoord): Integer;
@@ -908,7 +981,7 @@ end;
 
 procedure TEditor.SetCaretXY(const Value: TBufferCoord);
 begin
-  //TODO:
+  // TODO:
   SetEmptySelection(PositionRelative(0, RowColToCharIndex(Value)));
   ScrollCaret;
 end;
@@ -961,7 +1034,7 @@ end;
 
 function TEditor.WordStart: TBufferCoord;
 begin
-  //TODO:
+  // TODO:
   Result := WordStartEx(CaretXY)
 end;
 
@@ -1076,7 +1149,7 @@ var
   TargetStart, TargetEnd, MatchLen: Integer;
   SaveLastSelectionCount: Integer;
 begin
-  MatchLen := GetSelLength;   
+  MatchLen := GetSelLength;
   TargetStart := 0;
   TargetEnd := GetTextLength;
   if FLastSelectionCount > 0 then
@@ -1110,7 +1183,7 @@ begin
       Break;
     SetIndicatorCurrent(INDIC_MATCHSEL);
     IndicatorFillRange(TargetStart, MatchLen);
-    //Colourise(TargetStart, TargetStart + MatchLen);
+    // Colourise(TargetStart, TargetStart + MatchLen);
     Inc(TargetStart, MatchLen);
     Inc(FLastSelectionCount);
   end;
@@ -1120,32 +1193,35 @@ end;
 
 procedure TEditor.DoBraceMatch;
 var
-  BraceAtCaret, BraceOpposite: Integer;
+  braceAtCaret, braceOpposite: Integer;
   columnAtCaret, columnOpposite: Integer;
 begin
-  FindMatchingBracePos(GetCurrentPos, BraceAtCaret, BraceOpposite);
-  if (FBraceAtCaret = BraceAtCaret) and (FBraceOpposite = BraceOpposite) then
+  FindMatchingBracePos(GetCurrentPos, braceAtCaret, braceOpposite);
+  if (FBraceAtCaret = braceAtCaret) and (FBraceOpposite = braceOpposite) then
     Exit;
-  if (BraceAtCaret <> -1) and (BraceOpposite = -1) then
+  if (braceAtCaret <> -1) and (braceOpposite = -1) then
   begin
-    FBraceAtCaret := BraceAtCaret;
+    FBraceAtCaret := braceAtCaret;
     FBraceOpposite := -1;
     BraceBadLight(FBraceAtCaret);
     SetHighlightGuide(0);
   end
   else
   begin
-    BraceHighlight(BraceAtCaret, BraceOpposite);
-    if (FBraceAtCaret <> -1) and (FBraceAtCaret <> BraceAtCaret) then
-      Colourise(FBraceAtCaret, FBraceAtCaret + 1); // invalidate previows brace highlight
-    if (FBraceOpposite <> -1) and (FBraceOpposite <> BraceOpposite) then
-      Colourise(FBraceOpposite, FBraceOpposite + 1); // invalidate previows brace highlight
-    FBraceAtCaret := BraceAtCaret;
-    FBraceOpposite := BraceOpposite;
-    //if (FBraceAtCaret <> -1) then
-    //  Colourise(FBraceAtCaret, FBraceAtCaret + 1); // invalidate new brace highlight
+    BraceHighlight(braceAtCaret, braceOpposite);
+    if (FBraceAtCaret <> -1) and (FBraceAtCaret <> braceAtCaret) then
+      Colourise(FBraceAtCaret, FBraceAtCaret + 1);
+    // invalidate previows brace highlight
+    if (FBraceOpposite <> -1) and (FBraceOpposite <> braceOpposite) then
+      Colourise(FBraceOpposite, FBraceOpposite + 1);
+    // invalidate previows brace highlight
+    FBraceAtCaret := braceAtCaret;
+    FBraceOpposite := braceOpposite;
+    // if (FBraceAtCaret <> -1) then
+    // Colourise(FBraceAtCaret, FBraceAtCaret + 1); // invalidate new brace highlight
     if (FBraceOpposite <> -1) then
-      Colourise(FBraceOpposite, FBraceOpposite + 1); // invalidate new brace highlight
+      Colourise(FBraceOpposite, FBraceOpposite + 1);
+    // invalidate new brace highlight
     if FShowIndentGuides then
     begin
       columnAtCaret := GetColumn(FBraceAtCaret);
@@ -1172,14 +1248,14 @@ begin
   begin
     charBefore := WideChar(GetCharAt(caretPos - 1));
   end;
- // Priority goes to character before caret
+  // Priority goes to character before caret
   if ((charBefore <> #0) and IsIn(charBefore, '[](){}')) then
   begin
     braceAtCaret := caretPos - 1;
   end;
   if ((lengthDoc > 0) and (braceAtCaret < 0)) then
   begin
-  // No brace found so check other side
+    // No brace found so check other side
     charAfter := WideChar(GetCharAt(caretPos));
     if ((charAfter <> #0) and IsIn(charAfter, '[](){}')) then
     begin
@@ -1190,38 +1266,39 @@ begin
     braceOpposite := BraceMatch(braceAtCaret);
 end;
 
-function TEditor.GetBalancingBracketEx(
-  const APoint: TBufferCoord; Bracket: WideChar): Integer;
+function TEditor.GetBalancingBracketEx(const APoint: TBufferCoord;
+  Bracket: WideChar): Integer;
 const
-  Brackets: array[0..7] of WideChar = ('(', ')', '[', ']', '{', '}', '<', '>');
+  Brackets: array [0 .. 7] of WideChar = ('(', ')', '[', ']', '{', '}', '<',
+    '>');
 var
   Line: UnicodeString;
-  i, PosX, PosY, Len, RealY: integer;
+  I, PosX, PosY, Len, RealY: Integer;
   Test, BracketInc, BracketDec: WideChar;
   vDummy: UnicodeString;
   OpenCount, CloseCount: Integer;
   attr: THighlighStyle;
   p: TBufferCoord;
-  isCommentOrString: boolean;
+  isCommentOrString: Boolean;
   Stack: TStack;
 begin
   Test := Bracket;
   OpenCount := 0;
   CloseCount := 0;
   // is it one of the recognized brackets?
-  for i := Low(Brackets) to High(Brackets) do
-    if Test = Brackets[i] then
+  for I := low(Brackets) to high(Brackets) do
+    if Test = Brackets[I] then
     begin
       // this is the bracket, get the matching one and the direction
-      if i < (i xor 1) then
+      if I < (I xor 1) then
       begin
-        BracketInc := Brackets[i];
-        BracketDec := Brackets[i xor 1]; // 0 -> 1, 1 -> 0, ...
+        BracketInc := Brackets[I];
+        BracketDec := Brackets[I xor 1]; // 0 -> 1, 1 -> 0, ...
       end
       else
       begin
-        BracketInc := Brackets[i xor 1]; // 0 -> 1, 1 -> 0, ...
-        BracketDec := Brackets[i];
+        BracketInc := Brackets[I xor 1]; // 0 -> 1, 1 -> 0, ...
+        BracketDec := Brackets[I];
       end;
       // position of balancing
       PosX := APoint.Char;
@@ -1244,10 +1321,11 @@ begin
           begin
             if GetHighlighterAttriAtRowCol(p, vDummy, attr) then
             begin
-              isCommentOrString := Highlighter.IsComment(attr) or Highlighter.IsString(attr);
+              isCommentOrString := Highlighter.IsComment(attr)
+                or Highlighter.IsString(attr);
             end
             else
-              isCommentOrString := false;
+              isCommentOrString := False;
             if (Test = BracketInc) and (not isCommentOrString) then
             begin
               if (Stack.Count > 0) and (WideChar(Stack.Peek) = BracketDec) then
@@ -1261,7 +1339,8 @@ begin
         end;
         // get previous line if possible
         Dec(PosY);
-        if PosY = 0 then Break;
+        if PosY = 0 then
+          Break;
         Line := Lines[PosY - 1];
         PosX := Length(Line) + 1;
       until False;
@@ -1285,10 +1364,11 @@ begin
           begin
             if GetHighlighterAttriAtRowCol(p, vDummy, attr) then
             begin
-              isCommentOrString := Highlighter.IsComment(attr) or Highlighter.IsString(attr);
+              isCommentOrString := Highlighter.IsComment(attr)
+                or Highlighter.IsString(attr);
             end
             else
-              isCommentOrString := false;
+              isCommentOrString := False;
             if (Test = BracketInc) and (not isCommentOrString) then
               Stack.Push(Pointer(BracketInc))
             else if (Test = BracketDec) and (not isCommentOrString) then
@@ -1316,8 +1396,10 @@ end;
 
 procedure TEditor.ApplyStyle(Style: THighlighStyle);
 begin
-  StyleSetFore(Style.ID, DSColor(Style.Foreground, FDefaultHighlight.Foreground));
-  StyleSetBack(Style.ID, DSColor(Style.Background, FDefaultHighlight.Background));
+  StyleSetFore(Style.ID, DSColor(Style.Foreground,
+      FDefaultHighlight.Foreground));
+  StyleSetBack(Style.ID, DSColor(Style.Background,
+      FDefaultHighlight.Background));
   StyleSetBold(Style.ID, fsBold in Style.Style);
   StyleSetItalic(Style.ID, fsItalic in Style.Style);
   StyleSetUnderline(Style.ID, fsUnderline in Style.Style);
@@ -1354,7 +1436,8 @@ end;
 
 procedure TEditor.SelectionHighlightChanged(Sender: TObject);
 begin
-  SetSelBack(FSelectionHighlight.Background <> clNone, DSColor(FSelectionHighlight.Background));
+  SetSelBack(FSelectionHighlight.Background <> clNone,
+    DSColor(FSelectionHighlight.Background));
 end;
 
 procedure TEditor.BreakpointHighlightChanged(Sender: TObject);
@@ -1374,21 +1457,11 @@ begin
   IndicSetFore(INDIC_MATCHSEL, DSColor(FMatchWordHighlight.Foreground));
 end;
 
-procedure TEditor.SetLinkClick(Enabled: Boolean);
-var
-  Style: THighlighStyle;
+procedure TEditor.SetLinkClick(const Value: Boolean);
 begin
-  if FHighlighter = nil then
+  if FLinkClick = Value then
     Exit;
-  Style := FHighlighter.FindStyle(HL_Style_Identifier);
-  if Style = nil then
-    Exit;
-  Style.Hotspot := Enabled;
-  Style := FHighlighter.FindStyle(HL_Style_Preprocessor);
-  if Style <> nil then
-    Style.Hotspot := Enabled;
-  // Colourise(0, -1);
-  ColouriseVisibleArea;
+  FLinkClick := Value;
 end;
 
 function TEditor.GetLineText: UnicodeString;
@@ -1396,7 +1469,8 @@ var
   Line: Integer;
 begin
   Line := CaretY;
-  Result := GetTextRange(PositionFromLine(Line - 1), GetLineEndPosition(Line - 1));
+  Result := GetTextRange(PositionFromLine(Line - 1),
+    GetLineEndPosition(Line - 1));
 end;
 
 procedure TEditor.DoScroll;
@@ -1405,55 +1479,47 @@ begin
     FOnScroll(Self);
 end;
 
-function TEditor.DoSCNotification(
-  const ASCNotification: TDSciSCNotification): Boolean;
+function TEditor.DoSCNotification(const ASCNotification: TDSciSCNotification)
+  : Boolean;
 begin
   Result := inherited DoSCNotification(ASCNotification);
   case ASCNotification.NotifyHeader.code of
-    SCN_UPDATEUI: DoUpdateUI(ASCNotification.updated);
-    SCN_MODIFIED: DoModified(ASCNotification.position, ASCNotification.modificationType,
-        ASCNotification.length, ASCNotification.linesAdded, ASCNotification.line,
-        ASCNotification.foldLevelNow, ASCNotification.foldLevelPrev);
-    SCN_MARGINCLICK: DoMarginClick(ASCNotification.modifiers,
-        ASCNotification.position, ASCNotification.margin);
-    SCN_HOTSPOTCLICK:
-    begin
-      FHotspotModifiers := ASCNotification.modifiers;
-      FHotspotPosition := ASCNotification.position;
-    end;
+    SCN_UPDATEUI:
+      DoUpdateUI(ASCNotification.updated);
+    SCN_MODIFIED:
+      DoModified(ASCNotification.Position, ASCNotification.modificationType,
+        ASCNotification.Length, ASCNotification.linesAdded,
+        ASCNotification.Line, ASCNotification.foldLevelNow,
+        ASCNotification.foldLevelPrev);
+    SCN_MARGINCLICK:
+      DoMarginClick(ASCNotification.modifiers, ASCNotification.Position,
+        ASCNotification.margin);
   end;
 end;
 
-procedure TEditor.CMMouseEnter(var Message: TMessage);
+procedure TEditor.CMMouseEnter(var message: TMessage);
 var
-  P: TPoint;
+  p: TPoint;
   Shift: TShiftState;
 begin
   Shift := KeyboardStateToShiftState;
-  P := Point(TWMMouse(Message).XPos, TWMMouse(Message).YPos);
-  P := ScreenToClient(P);
-  MouseEnter(Self, Shift, P.X, P.Y);
+  p := Point(TWMMouse(message).XPos, TWMMouse(message).YPos);
+  p := ScreenToClient(p);
+  MouseEnter(Self, Shift, p.X, p.Y);
 end;
 
-procedure TEditor.MouseEnter(Sender: TObject; Shift: TShiftState; X, Y: Integer);
-begin
-  if assigned(fOnMouseEnter) then
-    fOnMouseEnter(Sender, Shift, X, Y);
-end;
-
-procedure TEditor.CMMouseLeave(var Message: TMessage);
+procedure TEditor.CMMouseLeave(var message: TMessage);
 var
-  P: TPoint;
+  p: TPoint;
   Shift: TShiftState;
 begin
   Shift := KeyboardStateToShiftState;
-  P := Point(TWMMouse(Message).XPos, TWMMouse(Message).YPos);
-  P := ScreenToClient(P);
-  MouseLeave(Self, Shift, P.X, P.Y);
+  p := Point(TWMMouse(message).XPos, TWMMouse(message).YPos);
+  p := ScreenToClient(p);
+  MouseLeave(Self, Shift, p.X, p.Y);
 end;
 
-procedure TEditor.Notification(AComponent: TComponent;
-  Operation: TOperation);
+procedure TEditor.Notification(AComponent: TComponent; Operation: TOperation);
 begin
   inherited Notification(AComponent, Operation);
   if Operation = opRemove then
@@ -1463,9 +1529,48 @@ begin
     else if AComponent = FImageList then
       SetImageList(nil);
   end;
-end;       
+end;
 
-procedure TEditor.CMFontChanged(var Message: TMessage);
+procedure TEditor.MouseDown(Button: TMouseButton; Shift: TShiftState;
+  X, Y: Integer);
+begin
+  inherited;
+end;
+
+procedure TEditor.MouseEnter(Sender: TObject; Shift: TShiftState;
+  X, Y: Integer);
+begin
+  if Assigned(fOnMouseEnter) then
+    fOnMouseEnter(Sender, Shift, X, Y);
+end;
+
+procedure TEditor.MouseLeave(Sender: TObject; Shift: TShiftState;
+  X, Y: Integer);
+begin
+  if Assigned(fOnMouseLeave) then
+    fOnMouseLeave(Sender, Shift, X, Y);
+  SetHotSpotClick(False);
+end;
+
+procedure TEditor.MouseMove(Shift: TShiftState; X, Y: Integer);
+begin
+  inherited;
+  if FHotSpotEnabled then
+    RefreshLinkClick(X, Y);
+end;
+
+procedure TEditor.MouseUp(Button: TMouseButton; Shift: TShiftState;
+  X, Y: Integer);
+begin
+  inherited;
+  if FHotSpotEnabled and (FHotSpotPosition >= 0) then
+  begin
+    if Assigned(OnHotSpotClick) then
+      OnHotSpotClick(Self, 0, FHotSpotPosition);
+  end;
+end;
+
+procedure TEditor.CMFontChanged(var message: TMessage);
 begin
   inherited;
   ResetAllStyle;
@@ -1473,28 +1578,21 @@ end;
 
 procedure TEditor.ResetAllStyle;
 begin
-  StyleSetFont(STYLE_DEFAULT, Font.Name);
+  StyleSetFont(STYLE_DEFAULT, Font.name);
   StyleSetSize(STYLE_DEFAULT, Font.Size);
   StyleClearAll;
   ApplyStyle(FBracketHighlight);
   UpdateStyles;
 end;
 
-
-procedure TEditor.MouseLeave(Sender: TObject; Shift: TShiftState; X, Y: Integer);
-begin
-  if assigned(fOnMouseLeave) then
-    fOnMouseLeave(Sender, Shift, X, Y);
-end;
-
-function TEditor.GetMatchingBracketEx(
-  const rowcol: TBufferCoord): TBufferCoord;
+function TEditor.GetMatchingBracketEx(const rowcol: TBufferCoord): TBufferCoord;
 var
   braceAtCaret, braceOpposite: Integer;
 begin
   braceAtCaret := -1;
   braceOpposite := -1;
-  FindMatchingBracePos(PositionRelative(0, RowColToCharIndex(rowcol)), braceAtCaret, braceOpposite);
+  FindMatchingBracePos(PositionRelative(0, RowColToCharIndex(rowcol)),
+    braceAtCaret, braceOpposite);
 
   if ((braceAtCaret <> -1) and (braceOpposite = -1)) then
   begin
@@ -1539,7 +1637,7 @@ begin
     Exit;
   FFolding := Value;
   SetProperty('fold', IntToStr(Integer(FFolding)));
-  if  FFolding then
+  if FFolding then
     SetMarginWidthN(MARGIN_FOLD, 14)
   else
     SetMarginWidthN(MARGIN_FOLD, 0);
@@ -1547,7 +1645,8 @@ end;
 
 function TEditor.GetWordEnd: TBufferCoord;
 begin
-  Result := CharIndexToRowCol(RelativePosition(WordEndPosition(GetCurrentPos, True)));
+  Result := CharIndexToRowCol(RelativePosition(WordEndPosition(GetCurrentPos,
+        True)));
 end;
 
 function TEditor.GetDisplayXY: TDisplayCoord;
@@ -1562,15 +1661,15 @@ var
   LineStr, StrPrevBracket, StrBracket, Temp: string;
   SpaceCount: Integer;
 begin
-  if ReadOnly then
+  if readonly then
     Exit;
   c := CaretXY;
   LineStr := LineText;
   StrPrevBracket := System.Copy(LineStr, 1, c.Char - 2);
   StrBracket := System.Copy(LineStr, c.Char - 1, Length(LineStr) - c.Char + 2);
-  CaretNew := GetMatchingBracketEx(BufferCoord(C.Char - 1, C.Line));
+  CaretNew := GetMatchingBracketEx(BufferCoord(c.Char - 1, c.Line));
   if (CaretNew.Char > 0) and (CaretNew.Line > 0) and
-     (Length(Trim(StrPrevBracket)) = 0) then
+    (Length(Trim(StrPrevBracket)) = 0) then
   begin
     SpaceCount := LeftSpacesEx(Lines[CaretNew.Line - 1], True);
     Temp := GetLeftSpacing(SpaceCount, WantTabs);
@@ -1586,17 +1685,17 @@ end;
 procedure TEditor.ProcessBreakLine;
 var
   c, bCaret: TBufferCoord;
-  LineStr, PrevLineStr, StrPrevCaret, StrPosCaret, TmpStr,
-    CommentStr, NextLineStr: string;
+  LineStr, PrevLineStr, StrPrevCaret, StrPosCaret, TmpStr, CommentStr,
+    NextLineStr: string;
   token: UnicodeString;
   LeftOffset, SpaceCount, I, RL: Integer;
   lstch, fstch: Char;
   attri: THighlighStyle;
   Unindent, caretChanged, IsCommentLine: Boolean;
 begin
-  if ReadOnly then
+  if readonly then
     Exit;
-  caretChanged:= False;
+  caretChanged := False;
   c := CaretXY;
   RL := c.Line;
   PrevLineStr := Lines[RL - 2];
@@ -1618,7 +1717,7 @@ begin
     Dec(LeftOffset, TabWidth);
   end
   else if ((fstch = '{') or (fstch <> #0)) and
-    ((LeftOffset >= TabWidth) or (fstch = '{'))then
+    ((LeftOffset >= TabWidth) or (fstch = '{')) then
   begin
     if (LeftOffset >= TabWidth) then
       Dec(LeftOffset, TabWidth);
@@ -1632,19 +1731,21 @@ begin
   CommentStr := '';
   TmpStr := Trim(PrevLineStr);
   IsCommentLine := False;
-  if GetHighlighterAttriAtRowCol(BufferCoord(Length(PrevLineStr), c.Line - 1), token, attri)
-    and (attri.Name = 'Documentation Comment') then
+  if GetHighlighterAttriAtRowCol(BufferCoord(Length(PrevLineStr), c.Line - 1),
+    token, attri) and (attri.name = 'Documentation Comment') then
     IsCommentLine := True;
   NextLineStr := '';
   // ( is /** or * blabla ) and not /** bla bla */
-  if ((System.Copy(TmpStr, 1, 3) = '/**') or ((System.Copy(TmpStr, 1, 1) = '*') and IsCommentLine))
-    and (System.Copy(TmpStr, Length(TmpStr) - 1, 2) <> '*/') then
+  if ((System.Copy(TmpStr, 1, 3) = '/**') or ((System.Copy(TmpStr, 1,
+          1) = '*') and IsCommentLine)) and (System.Copy(TmpStr,
+      Length(TmpStr) - 1, 2) <> '*/') then
   begin
     // get next line after /**
     if RL < Lines.Count then
       NextLineStr := Trim(Lines[RL]);
     // check next line if is */ or * insert * else insert */
-    if (System.Copy(NextLineStr, 1, 2) = '*/') or (System.Copy(NextLineStr, 1, 1) = '*') then
+    if (System.Copy(NextLineStr, 1, 2) = '*/') or (System.Copy(NextLineStr, 1,
+        1) = '*') then
       NextLineStr := '* '
     else
       NextLineStr := '*/';
@@ -1673,7 +1774,8 @@ begin
     if I <= Length(LineStr) then
       Dec(I);
     if SpaceCount <> LeftOffset then
-      CommentStr := GetLeftSpacing(LeftOffset - SpaceCount, WantTabs) + CommentStr;
+      CommentStr := GetLeftSpacing(LeftOffset - SpaceCount, WantTabs)
+        + CommentStr;
     if I <= CaretX then
     begin
       SetCaretAndSelection(CaretXY, BufferCoord(I + 1, CaretY), CaretXY);
@@ -1700,12 +1802,12 @@ function TEditor.RightSpacesEx(const Line: string; WantTabs: Boolean): Integer;
 var
   p, pend: PChar;
 begin
-  p := pointer(Line);
+  p := Pointer(Line);
   pend := p + Length(Line) - 1;
   if Assigned(p) then
   begin
     Result := 0;
-    while (pend >= p) and CharInSet(pend^, [#1..#32]) do
+    while (pend >= p) and CharInSet(pend^, [#1 .. #32]) do
     begin
       if (pend^ = #9) and WantTabs then
         Inc(Result, TabWidth)
@@ -1718,81 +1820,85 @@ begin
     Result := 0;
 end;
 
-procedure TEditor.AdvanceSpaceBreakLine(aLine: Integer;
+procedure TEditor.AdvanceSpaceBreakLine(ALine: Integer;
   var LeftOffset: Integer; var Unindent: Boolean);
 var
   wStart: TBufferCoord;
-  PrevLine: String;
+  PrevLine: string;
   token: UnicodeString;
-  p, pt, sp, pend: PChar;
-  j, i, k, tokenstart: Integer;
+  p, Pt, sp, pend: PChar;
+  j, I, k, tokenstart: Integer;
   CheckPrevLines, HasBreak, SkipComment: Boolean;
   attri: THighlighStyle;
 begin
   Unindent := False;
   LeftOffset := 0;
-  i := 0;
+  I := 0;
   k := 0;
   SkipComment := False;
-  while aLine > 0 do
+  while ALine > 0 do
   begin
-    PrevLine := Lines[aLine - 1];
-    i := 0;
+    PrevLine := Lines[ALine - 1];
+    I := 0;
     k := 0;
     p := PChar(PrevLine);
     if p^ <> #0 then
       repeat
-        if not CharInSet(p^, [#9, #32]) then Break;
+        if not CharInSet(p^, [#9, #32]) then
+          Break;
         if p^ = #9 then
           Inc(k, TabWidth)
         else
           Inc(k);
-        Inc(i);
+        Inc(I);
         Inc(p);
       until p^ = #0;
-    pt := PChar(PrevLine);
-    Inc(pt, Length(PrevLine) - 1);
+      Pt := PChar(PrevLine);
+    Inc(Pt, Length(PrevLine) - 1);
     if (p^ <> #0) and not SkipComment then
     begin
       p := PChar(PrevLine);
-      pt := p + Length(PrevLine) - 1;
-      while pt >= p do
+      Pt := p + Length(PrevLine) - 1;
+      while Pt >= p do
       begin
-        if not CharInSet(pt^, [#9, #32]) then Break;
-        Dec(pt);
+        if not CharInSet(Pt^, [#9, #32]) then
+          Break;
+        Dec(Pt);
       end;
-      if (pt - 1 >= p) and (pt^ = '/') and ((pt - 1)^ = '*') then
+      if (Pt - 1 >= p) and (Pt^ = '/') and ((Pt - 1)^ = '*') then
         SkipComment := True
       else
         Break;
-      Dec(pt, 2);
+      Dec(Pt, 2);
     end;
     if SkipComment then
     begin
       p := PChar(PrevLine);
-      while pt > p do
+      while Pt > p do
       begin
-        if (pt^ = '*') and ((pt - 1)^ = '/') then Break;
-        Dec(pt);
+        if (Pt^ = '*') and ((Pt - 1)^ = '/') then
+          Break;
+        Dec(Pt);
       end;
-      if (pt > p) then
+      if (Pt > p) then
       begin
-        //SkipComment := False;
+        // SkipComment := False;
         Break;
       end;
     end;
-    Dec(aLine);
+    Dec(ALine);
   end;
-  if aLine = 0 then
+  if ALine = 0 then
     Exit;
-  PrevLine := Lines[aLine - 1];
+  PrevLine := Lines[ALine - 1];
   p := PChar(PrevLine);
   pend := p + Length(PrevLine);
   if pend > p then
   begin
     repeat
       Dec(pend);
-      if not CharInSet(pend^, [#9, #32]) then break;
+      if not CharInSet(pend^, [#9, #32]) then
+        Break;
     until pend <= p;
   end;
   if pend^ = '{' then
@@ -1803,15 +1909,15 @@ begin
   end;
   CheckPrevLines := False;
   HasBreak := False;
-  wStart := BufferCoord(i + 1, aLine);
+  wStart := BufferCoord(I + 1, ALine);
   if GetHighlighterAttriAtRowCol(wStart, token, attri) then
   begin
     if ((attri.name = HL_Style_InstructionWord) and
-       ((token = 'if') or (token = 'case') or (token = 'while')
-       or (token = 'else') or (token = 'for') or (token = 'default'))) or
-       ((attri.name = HL_Style_TypeWord) and
-       ((token = 'public') or (token = 'private') or (token = 'protected'))) or
-       ((attri.name = 'Symbol') and (token = '{')) then
+        ((token = 'if') or (token = 'case') or (token = 'while') or
+          (token = 'else') or (token = 'for') or (token = 'default'))) or
+      ((attri.name = HL_Style_TypeWord) and ((token = 'public') or
+          (token = 'private') or (token = 'protected'))) or
+      ((attri.name = 'Symbol') and (token = '{')) then
     begin
       if pend^ <> ';' then
         Inc(k, TabWidth);
@@ -1825,16 +1931,17 @@ begin
     end;
   end;
   // dont indent when single line statement block
-  aLine := aLine - 1;
-  while CheckPrevLines and (aLine > 0) do
+  ALine := ALine - 1;
+  while CheckPrevLines and (ALine > 0) do
   begin
-    PrevLine := Lines[aLine - 1];
+    PrevLine := Lines[ALine - 1];
     if (Length(PrevLine) >= 1) then
     begin
       p := @PrevLine[1];
       j := 0;
       repeat
-        if not CharInSet(p^, [#9, #32]) then break;
+        if not CharInSet(p^, [#9, #32]) then
+          Break;
         Inc(j);
         Inc(p);
       until p^ = #0;
@@ -1845,18 +1952,20 @@ begin
         sp := @PrevLine[1];
         p := sp + Length(PrevLine) - 1;
         repeat
-          if not CharInSet(p^, [#9, #32]) then break;
+          if not CharInSet(p^, [#9, #32]) then
+            Break;
           Dec(p);
         until p < sp;
         if (p >= sp) and (p^ = '{') then
           Break;
-        wStart := BufferCoord(j + 1, aLine); // TODO use collapsed line
+        wStart := BufferCoord(j + 1, ALine); // TODO use collapsed line
         if GetHighlighterAttriAtRowCol(wStart, token, attri) then
         begin
-          tokenstart := WordStartPosition(PositionRelative(0, RowColToCharIndex(wStart)), True);
+          tokenstart := WordStartPosition(PositionRelative(0,
+              RowColToCharIndex(wStart)), True);
           if ((attri.name = HL_Style_InstructionWord) and
-            ((token = 'if') or (token = 'while') or (token = 'else')
-            or (token = 'for'))) or HasBreak then
+              ((token = 'if') or (token = 'while') or (token = 'else') or
+                (token = 'for'))) or HasBreak then
           begin
             if (tokenstart - 1 >= 0) then
             begin
@@ -1869,7 +1978,7 @@ begin
         Break;
       end;
     end;
-    Dec(aLine);
+    Dec(ALine);
   end;
   LeftOffset := k;
 end;
@@ -1919,11 +2028,11 @@ function TEditor.LeftSpacesEx(const Line: string; WantTabs: Boolean): Integer;
 var
   p: PChar;
 begin
-  p := pointer(Line);
+  p := Pointer(Line);
   if Assigned(p) then
   begin
     Result := 0;
-    while CharInSet(p^, [#1..#32]) do
+    while CharInSet(p^, [#1 .. #32]) do
     begin
       if (p^ = #9) and (WantTabs) then
         Inc(Result, TabWidth)
@@ -1939,8 +2048,10 @@ end;
 function TEditor.GetLeftSpacing(CharCount: Integer; WantTabs: Boolean): string;
 begin
   if WantTabs and (CharCount >= TabWidth) then
-    Result := StringOfChar(#9, CharCount div TabWidth) + StringOfChar(#32, CharCount mod TabWidth)
-  else Result := StringOfChar(#32, CharCount);
+    Result := StringOfChar(#9, CharCount div TabWidth) + StringOfChar(#32,
+      CharCount mod TabWidth)
+  else
+    Result := StringOfChar(#32, CharCount);
 end;
 
 function TEditor.AddBreakpoint(Line: Integer): Integer;
@@ -1970,7 +2081,7 @@ begin
     SetMarginWidthN(MARGIN_LINE_NUMBER, 0);
   ApplyStyle(FLineNumberHighlight);
   UpdateFolderMarker;
-end;    
+end;
 
 procedure TEditor.SetActiveLine(Line: Integer);
 begin
@@ -2004,6 +2115,25 @@ begin
   inherited Font := Value;
 end;
 
+procedure TEditor.SetShowGutter(const Value: Boolean);
+begin
+  if FShowGutter = Value then
+    Exit;
+  FShowGutter := Value;
+  if FShowGutter then
+  begin
+    SetMarginWidthN(MARGIN_BOOKMARK, 16);
+    SetMarginWidthN(MARGIN_BREAKPOINT, 14);
+    SetMarginWidthN(MARGIN_SPACE, 1);
+  end
+  else
+  begin
+    SetMarginWidthN(MARGIN_BOOKMARK, 0);
+    SetMarginWidthN(MARGIN_BREAKPOINT, 0);
+    SetMarginWidthN(MARGIN_SPACE, 0);
+  end;
+end;
+
 procedure TEditor.SetShowIndentGuides(const Value: Boolean);
 begin
   if FShowIndentGuides = Value then
@@ -2028,27 +2158,6 @@ begin
   if FLinkColor = Value then
     Exit;
   FLinkColor := Value;
-  // set link color
-  SetHotspotActiveFore(LinkColor <> clNone, DSColor(LinkColor));
-end;
-
-procedure TEditor.WMHotSpotFixClick(var Message: TMessage);
-begin
-  if Assigned(FOnHotSpotFixClick) then
-    FOnHotSpotFixClick(Self, Message.WParam, Message.LParam);
-end;
-
-procedure TEditor.MouseUp(Button: TMouseButton; Shift: TShiftState; X,
-  Y: Integer);
-begin
-  inherited;
-  if FHotspotModifiers <> 0 then
-  begin
-    PostMessage(Handle, WM_HOTSPOTFIXCLICK, FHotspotModifiers,
-      FHotspotPosition);
-    FHotspotModifiers := 0;
-  end;
 end;
 
 end.
-

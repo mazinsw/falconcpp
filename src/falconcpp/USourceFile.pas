@@ -2489,10 +2489,6 @@ begin
 //    else
 //      Exclude(Options, eoSmartTabs);
     SynMemo.SetUseTabs(UseTabChar);
-//    if EnhancedHomeKey then
-//      Include(Options, eoEnhanceHomeKey)
-//    else
-//      Exclude(Options, eoEnhanceHomeKey);
     if ShowSpaceChars then
       SynMemo.SetViewWS(SCWS_VISIBLEALWAYS)
     else
@@ -2507,8 +2503,7 @@ begin
     end
     else
       SynMemo.SetEdgeMode(EDGE_NONE);
-    // TODO: commented
-//    SynMemo.Gutter.Visible := ShowGutter;
+    SynMemo.ShowGutter := ShowGutter;
     SynMemo.ShowLineNumber := ShowLineNumber;
     //-------------- Colors -------------------------//
   end;
@@ -2548,11 +2543,10 @@ begin
   FEditor.OnUpdateUI := FrmFalconMain.TextEditorStatusChange;
   FEditor.OnMouseDown := TextEditorMouseDown;
   FEditor.OnMouseMove := FrmFalconMain.TextEditorMouseMove;
-  FEditor.OnHotSpotFixClick := FrmFalconMain.TextEditorLinkClick;
+  FEditor.OnHotSpotClick := FrmFalconMain.TextEditorLinkClick;
   FEditor.OnCharAdded := FrmFalconMain.TextEditorCharAdded;
   FEditor.OnKeyDown := FrmFalconMain.TextEditorKeyDown;
   FEditor.OnKeyPress := FrmFalconMain.TextEditorKeyPress;
-  FEditor.OnKeyUp := FrmFalconMain.TextEditorKeyUp;
   FEditor.OnMarginClick := FrmFalconMain.TextEditorGutterClick;
   FEditor.OnScroll := FrmFalconMain.TextEditorScroll;
   FEditor.OnClick := FrmFalconMain.TextEditorClick;

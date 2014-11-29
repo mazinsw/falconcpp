@@ -497,8 +497,6 @@ type
     procedure TextEditorKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure TextEditorKeyPress(Sender: TObject; var Key: Char);
-    procedure TextEditorKeyUp(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
     procedure TextEditorMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure TextEditorScroll(Sender: TObject);
@@ -927,7 +925,7 @@ uses
   UFrmGotoFunction, UFrmGotoLine, TBXThemes, Makefile, CodeTemplate,
   StrUtils, UFrmVisualCppOptions,
   PluginConst, Math, Highlighter, DScintilla, PluginWidgetMap, AppConst,
-  ExporterHTML, ExporterRTF;
+  ExporterHTML, ExporterRTF, EditorPrint;
 {$R *.dfm}
 
 var
@@ -5575,10 +5573,7 @@ begin
   CanShowHintTip := False;
   TimerHintTipEvent.Enabled := False;
   sheet := TSourceFileSheet(TComponent(Sender).Owner);
-  // Link click
-  if ([ssCtrl] = Shift) and (Key = VK_CONTROL) then
-    sheet.Editor.SetLinkClick(True)
-  else if ([ssCtrl] = Shift) and (Key = Ord('J')) then
+  if ([ssCtrl] = Shift) and (Key = Ord('J')) then
   begin
     AutoComplete.Execute(sheet.Editor);
     // show parameters hit
@@ -5671,16 +5666,6 @@ begin
   end
   else if ([ssCtrl] = Shift) and (Key = ' ') then
     Key := #0;
-end;
-
-procedure TFrmFalconMain.TextEditorKeyUp(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
-var
-  sheet: TSourceFileSheet;
-begin
-  sheet := TSourceFileSheet(TComponent(Sender).Owner);
-  if ([] = Shift) and (Key = VK_CONTROL) then
-    sheet.Editor.SetLinkClick(False);
 end;
 
 procedure TFrmFalconMain.TextEditorMouseDown(Sender: TObject;
@@ -8721,36 +8706,24 @@ procedure TFrmFalconMain.FilePrintClick(Sender: TObject);
 var
   sheet: TSourceFileSheet;
   // AFont: TFont;
+  EditorPrint: TEditorPrint;
 begin
   if not GetActiveSheet(sheet) then
     Exit;
   PageControlEditor.CancelDragging;
-  // TODO: commented
-  // if PrintDialog.Execute(Handle) then
-  // begin
-  // EditorPrint.Highlighter := sheet.Editor.Highlighter;
-  // EditorPrint.SynEdit := sheet.Editor;
-  // EditorPrint.DocTitle := Sheet.SourceFile.Name;
-  // AFont := TFont.Create;
-  // with EditorPrint.Header do
-  // begin
-  // Clear;
-  // AFont.Assign(DefaultFont);
-  // AFont.Size := 7;
-  // AFont.Style := [fsBold];
-  // Add(Sheet.SourceFile.FileName, AFont, taLeftJustify, 1);
-  // Add(FormatDateTime(STR_FRM_MAIN[38], Now), AFont, taRightJustify, 1);
-  // end;
-  // with EditorPrint.Footer do
-  // begin
-  // Clear;
-  // AFont.Assign(DefaultFont);
-  // AFont.Size := 8;
-  // Add('-$PAGENUM$-', AFont, taCenter, 1);
-  // end;
-  // EditorPrint.Print;
-  // AFont.Free;
-  // end;
+
+  EditorPrint := TEditorPrint.Create(nil);
+  if not EditorPrint.Execute(Handle) then
+  begin
+    EditorPrint.Free;
+    Exit;
+  end;
+  EditorPrint.Editor := sheet.Editor;
+  EditorPrint.DocTitle := Sheet.SourceFile.Name;
+  EditorPrint.FileName := Sheet.SourceFile.FileName;
+  EditorPrint.CurrentTime := FormatDateTime(STR_FRM_MAIN[38], Now);
+  EditorPrint.Print;
+  EditorPrint.Free;
 end;
 
 procedure TFrmFalconMain.PageControlMsgClose(Sender: TObject;

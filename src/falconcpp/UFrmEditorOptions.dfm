@@ -73,7 +73,6 @@ object FrmEditorOptions: TFrmEditorOptions
           Caption = 'Use Tab Character'
           TabOrder = 1
           OnClick = EditorOptionsChanged
-          ExplicitLeft = 248
         end
         object ChbTabUnOrIndt: TCheckBox
           Left = 247
@@ -84,7 +83,6 @@ object FrmEditorOptions: TFrmEditorOptions
           Caption = 'Tab Indent/Unindent'
           TabOrder = 2
           OnClick = EditorOptionsChanged
-          ExplicitLeft = 248
         end
         object ChbInsMode: TCheckBox
           Left = 8
@@ -128,7 +126,6 @@ object FrmEditorOptions: TFrmEditorOptions
           Caption = 'Smart Tabs'
           TabOrder = 6
           OnClick = EditorOptionsChanged
-          ExplicitLeft = 248
         end
         object ChbEnhHomeKey: TCheckBox
           Left = 247
@@ -139,7 +136,6 @@ object FrmEditorOptions: TFrmEditorOptions
           Caption = 'Enhanced Home Key'
           TabOrder = 7
           OnClick = EditorOptionsChanged
-          ExplicitLeft = 248
         end
         object ChbShowSpaceChars: TCheckBox
           Left = 8
@@ -255,7 +251,6 @@ object FrmEditorOptions: TFrmEditorOptions
           OnChange = EditorOptionsChanged
           Items.Strings = (
             '80')
-          ExplicitLeft = 288
         end
         object ChbShowLnNumb: TCheckBox
           Left = 8
@@ -618,6 +613,10 @@ object FrmEditorOptions: TFrmEditorOptions
         object TSFormatterIndentation: TTabSheet
           Caption = 'Indentation'
           ImageIndex = 1
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
           object CheckBoxForceUsingTabs: TCheckBox
             Left = 6
             Top = 8
@@ -754,6 +753,10 @@ object FrmEditorOptions: TFrmEditorOptions
         object TSFormatterPadding: TTabSheet
           Caption = 'Padding'
           ImageIndex = 4
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
           object CheckBoxPadEmptyLines: TCheckBox
             Left = 6
             Top = 8

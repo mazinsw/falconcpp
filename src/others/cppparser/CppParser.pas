@@ -1180,8 +1180,14 @@ end;
 procedure TCppParser.ProcessEnumFields;
 var
   TokenName, TokenDestr: PToken;
-  ItemStr, ScopeStr: string;
+  ItemStr, ScopeStr, Flag: string;
+  ComplexEnum: Boolean;
+  LastAdded: TTokenClass;
+  CurrentValue: Integer;
 begin
+  ComplexEnum := False;
+  LastAdded := nil;
+  CurrentValue := 0;
   repeat
     case FCurrent^.Token of
       tkxIdentifier, tkxGlobalScope:
@@ -1190,14 +1196,40 @@ begin
         ItemStr := TokenString(FStartPtr, TokenName);
         if TokenName = nil then
           Continue;
-        AddToken(ItemStr, '', tkEnumItem, TokenName^.Line, TokenName^.StartPosition,
+        Flag := '';
+        if not ComplexEnum then
+          Flag := IntToStr(CurrentValue);
+        LastAdded := AddToken(ItemStr, Flag, tkEnumItem, TokenName^.Line, TokenName^.StartPosition,
           TokenName^.EndPosition - TokenName^.StartPosition, FLevel);
+        Inc(CurrentValue);
         Continue;
       end;
       tkxAssign:
       begin
+        Next;
+        Flag := '';
+        if (FCurrent <> nil) and (FCurrent^.Token = tkxNumber) then
+        begin
+          ItemStr := TokenString(FStartPtr, FCurrent);
+          if IsNumber(ItemStr) then
+          begin
+            CurrentValue := StrToIntDef(ItemStr, 0);
+            Flag := IntToStr(CurrentValue);
+            Inc(CurrentValue);
+          end
+          else
+            ComplexEnum := True;
+        end
+        else
+          ComplexEnum := True;
+        if LastAdded <> nil then
+          LastAdded.Flag := Flag;
         SkipInstruction(True);
         Continue;
+      end;
+      tkxOpenBraces:
+      begin
+        Inc(FLevel);
       end;
       tkxCloseBraces:
       begin

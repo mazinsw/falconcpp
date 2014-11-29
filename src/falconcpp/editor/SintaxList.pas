@@ -690,7 +690,7 @@ begin
   Stx.AddSintaxType(HL_Style_String, $000076EC);
   Stx.AddSintaxType(HL_Style_Symbol, $00B7E2E8);
   Stx.AddSintaxType(STY_PROP_GUTTER, $0088806A, $003C382F);
-  Stx.AddSintaxType(STY_PROP_CARETLINE, clWhite, clGray);
+  Stx.AddSintaxType(STY_PROP_CARETLINE, clWhite, clBlack);
   Stx.AddSintaxType(STY_PROP_SELECTION, clWhite, $00514E40);
   Stx.AddSintaxType(STY_PROP_BREAKPOINT, clNone, clRed);   
   Stx.AddSintaxType(STY_PROP_EXECPOINT, clNone, clOlive);

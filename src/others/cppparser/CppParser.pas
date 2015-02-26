@@ -379,11 +379,12 @@ end;
 
 function TCppParser.ProcessStruct(Token: TTkType): TTokenClass;
 var
-  NameToken, SaveCurrent, TokenDestr: PToken;
+  NameToken, SaveCurrent, TokenDestr, SaveToken: PToken;
   Flag, Name: string;
   Scope: TTokenClass;
 begin
   Result := nil;
+  SaveToken := FCurrent;
   NameToken := FCurrent; // struct or class
   Next;
   SaveCurrent := FCurrent;
@@ -431,7 +432,11 @@ begin
   else
     Name := UnnamedBlockStr;
   if (FCurrent = nil) or (FCurrent^.Token <> tkxOpenBraces) then
+  begin
+    if FCurrent <> nil then
+      FCurrent := SaveToken; // revert
     Exit;
+  end;
   Result := AddToken(Name, Flag, Token, NameToken^.Line,
     NameToken^.StartPosition, NameToken^.EndPosition - NameToken^.StartPosition,
     FLevel);
@@ -1246,7 +1251,7 @@ procedure TCppParser.ProcessIdentifier(Fields: Boolean);
 var
   TokenName, TokenScope, TokenDestr: PToken;
   ScopeToken, UsingToken, StructToken: TTokenClass;
-  UsingName, ScopeStr, FriendTypeStr, FriendClassName: string;
+  UsingName, ScopeStr, FriendTypeStr, FriendClassName, TypeStr: string;
 begin
   if (FCurrent^.Token = tkxGlobalScope)  then
     ProcessVariableOrFunction(Fields)
@@ -1321,32 +1326,72 @@ begin
   else if TokenMatch(FStartPtr, 'struct', FCurrent) then
   begin
     StructToken := ProcessStruct(tkStruct);
-    if (FCurrent <> nil) and (StructToken <> nil) and (FCurrent^.Token <> tkxSemicolon) then
-      ProcessVariableOrFunctionEx(StructToken.Name, '', nil, nil, False);
+    if FCurrent <> nil then
+    begin
+      if StructToken <> nil then
+        TypeStr := StructToken.Name
+      else
+      begin
+        TypeStr := 'struct';
+        Next;
+      end;
+      if (FCurrent <> nil) and (FCurrent^.Token <> tkxSemicolon) then
+        ProcessVariableOrFunctionEx(TypeStr, '', nil, nil, False);
+    end;
     if (FCurrent <> nil) and (FCurrent^.Token = tkxSemicolon) then
       Next; // skip ;
   end
   else if TokenMatch(FStartPtr, 'class', FCurrent) then
   begin
     StructToken := ProcessStruct(tkClass);
-    if (FCurrent <> nil) and (StructToken <> nil) and (FCurrent^.Token <> tkxSemicolon) then
-      ProcessVariableOrFunctionEx(StructToken.Name, '', nil, nil, False);
+    if FCurrent <> nil then
+    begin
+      if StructToken <> nil then
+        TypeStr := StructToken.Name
+      else
+      begin
+        TypeStr := 'class';
+        Next;
+      end;
+      if (FCurrent <> nil) and (FCurrent^.Token <> tkxSemicolon) then
+        ProcessVariableOrFunctionEx(TypeStr, '', nil, nil, False);
+    end;
     if (FCurrent <> nil) and (FCurrent^.Token = tkxSemicolon) then
       Next; // skip ;
   end
   else if TokenMatch(FStartPtr, 'union', FCurrent) then
   begin
     StructToken := ProcessStruct(tkUnion);
-    if (FCurrent <> nil) and (StructToken <> nil) and (FCurrent^.Token <> tkxSemicolon) then
-      ProcessVariableOrFunctionEx(StructToken.Name, '', nil, nil, False);
+    if FCurrent <> nil then
+    begin
+      if StructToken <> nil then
+        TypeStr := StructToken.Name
+      else
+      begin
+        TypeStr := 'union';
+        Next;
+      end;
+      if (FCurrent <> nil) and (FCurrent^.Token <> tkxSemicolon) then
+        ProcessVariableOrFunctionEx(TypeStr, '', nil, nil, False);
+    end;
     if (FCurrent <> nil) and (FCurrent^.Token = tkxSemicolon) then
       Next; // skip ;
   end
   else if TokenMatch(FStartPtr, 'enum', FCurrent) then
   begin
     StructToken := ProcessStruct(tkEnum);
-    if (FCurrent <> nil) and (StructToken <> nil) and (FCurrent^.Token <> tkxSemicolon) then
-      ProcessVariableOrFunctionEx(StructToken.Name, '', nil, nil, False);
+    if FCurrent <> nil then
+    begin
+      if StructToken <> nil then
+        TypeStr := StructToken.Name
+      else
+      begin
+        TypeStr := 'enum';
+        Next;
+      end;
+      if (FCurrent <> nil) and (FCurrent^.Token <> tkxSemicolon) then
+        ProcessVariableOrFunctionEx(TypeStr, '', nil, nil, False);
+    end;
     if (FCurrent <> nil) and (FCurrent^.Token = tkxSemicolon) then
       Next; // skip ;
   end

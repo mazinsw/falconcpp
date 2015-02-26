@@ -12,7 +12,7 @@
   !define MUI_FINISHPAGE_RUN_TEXT "Falcon C++"
   !define MUI_FINISHPAGE_RUN_FUNCTION "LaunchLink"
 
-!addplugindir "..\..\res\plugin\"
+!addplugindir /x86-unicode "..\..\res\plugin\"
 ;--------------------------------
 ; define
   !define PROJECT_NAME "Falcon C++"
@@ -355,6 +355,7 @@ SectionGroup "${PROJECT_NAME}" GroupFalcon
     SetOutPath "$INSTDIR\Lang" 
     File "..\..\res\Lang\Portuguese.lng"
     File "..\..\res\Lang\Italian.lng"
+    File "..\..\res\Lang\Simplified Chinese.lng"
   SectionEnd
   Section "$(NAME_SecDeskScut)" SecDeskScut 
     SetOutPath "$INSTDIR"
@@ -431,6 +432,7 @@ Section "Un.Falcon C++" UnSecCore
   
   ;delete languages files
   Delete "$INSTDIR\Lang\Portuguese.lng"
+  Delete "$INSTDIR\Lang\Simplified Chinese.lng"
   Delete "$INSTDIR\Lang\Italian.lng"
   RMDir  "$INSTDIR\Lang"
   

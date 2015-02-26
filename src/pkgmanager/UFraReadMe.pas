@@ -3,15 +3,15 @@ unit UFraReadMe;
 interface
 
 uses
-  Windows, Messages, StdCtrls, ExtCtrls, RichEditViewer, UFrmWizard, Classes,
-  Controls, Forms;
+  Windows, Messages, StdCtrls, ExtCtrls, RichEdit, UFrmWizard, Classes,
+  Controls, Forms, ComCtrls;
 
 type
   TFraReadMe = class(TFrame)
     PainelAll: TPanel;
     Label5: TLabel;
     TextGuide: TLabel;
-    TextReadMe: TRichEditViewer;
+    TextReadMe: TRichEdit;
     procedure UpdateStep;
     procedure WMUpdateStep(var Message: TMessage); message WM_UPDATESTEP;
   private

@@ -3,7 +3,7 @@ library NSIS_EnvSet;
 uses
   Windows, Messages, SysUtils, NSIS, Registry;
 
-function SetGlobalEnvironmentA(const Name, Value: string;
+function InternalSetGlobalEnvironment(const Name, Value: string;
   const User: Boolean = True): Boolean;
 var
   rv: DWORD;
@@ -27,9 +27,9 @@ begin
     finally
       Free;
     end;
-end; { SetGlobalEnvironmentA }
+end;
 
-function GetEnvironmentVariableA(const Name: String): String;
+function InternalGetEnvironmentVariable(const Name: String): String;
 begin
   with TRegistry.Create do
   try
@@ -40,9 +40,9 @@ begin
   finally
     Free;
   end;
-end; { GetEnvironmentVariableA }
+end;
 
-function DeleteEnvironmentVariableA(const Name: String): Boolean;
+function InternalDeleteEnvironmentVariable(const Name: String): Boolean;
 begin
   with TRegistry.Create do
   try
@@ -53,27 +53,27 @@ begin
   finally
     Free;
   end;
-end; { DeleteEnvironmentVariableA }
+end;
 
-function AddVariableToPathA(const Value: String): Boolean;
+function InternalAddVariableToPath(const Value: String): Boolean;
 var
   Path: String;
   I: Integer;
 begin
   Result := False;
-  Path := GetEnvironmentVariableA('PATH');
+  Path := InternalGetEnvironmentVariable('PATH');
   I := Pos(UpperCase(Value), UpperCase(Path));
   if I = 0 then
-    Result := SetGlobalEnvironmentA('PATH', Value + ';' + Path, False);
-end; { AddVariableToPathA }
+    Result := InternalSetGlobalEnvironment('PATH', Value + ';' + Path, False);
+end;
 
-function DelVariableOfPathA(const Value: String): Boolean;
+function InternalDelVariableOfPath(const Value: String): Boolean;
 var
   Path: String;
   I, Len: Integer;
 begin
   Result := False;
-  Path := GetEnvironmentVariableA('PATH');
+  Path := InternalGetEnvironmentVariable('PATH');
   I := Pos(Value, Path);
   if I > 0 then
   begin
@@ -84,9 +84,9 @@ begin
     Dec(I);
     if (I > 0) and (Length(Path) = I) and (Path[I] = ';') then// ...;
       Delete(Path, I, 1);// ...
-    Result := SetGlobalEnvironmentA('PATH', Path, False);
+    Result := InternalSetGlobalEnvironment('PATH', Path, False);
   end;
-end; { DelVariableOfPathA }
+end;
 
 procedure SetGlobalEnvironment(const hwndParent: HWND; const string_size: integer;
   const variables: PChar; const stacktop: pointer); cdecl;
@@ -96,12 +96,12 @@ var
   User: String;
   SResult: Boolean;
 begin
-  Init(hwndParent, string_size, variables, stacktop);
-  Name := PopString;
-  Value := PopString;
-  User := PopString;
-  SResult := SetGlobalEnvironmentA(Name, Value, StrToBoolDef(User, True));
-  PushString(BoolToStr(SResult));
+  InitW(hwndParent, string_size, variables, stacktop);
+  Name := PopStringW;
+  Value := PopStringW;
+  User := PopStringW;
+  SResult := InternalSetGlobalEnvironment(Name, Value, StrToBoolDef(User, True));
+  PushStringW(BoolToStr(SResult));
 end;
 
 procedure GetEnvironmentVariable(const hwndParent: HWND; const string_size: integer;
@@ -110,10 +110,10 @@ var
   Name: String;
   SResult: String;
 begin
-  Init(hwndParent, string_size, variables, stacktop);
-  Name := PopString;
-  SResult := GetEnvironmentVariableA(Name);
-  PushString(SResult);
+  InitW(hwndParent, string_size, variables, stacktop);
+  Name := PopStringW;
+  SResult := InternalGetEnvironmentVariable(Name);
+  PushStringW(SResult);
 end;
 
 procedure DeleteEnvironmentVariable(const hwndParent: HWND; const string_size: integer;
@@ -122,10 +122,10 @@ var
   Name: String;
   SResult: Boolean;
 begin
-  Init(hwndParent, string_size, variables, stacktop);
-  Name := PopString;
-  SResult := DeleteEnvironmentVariableA(Name);
-  PushString(BoolToStr(SResult));
+  InitW(hwndParent, string_size, variables, stacktop);
+  Name := PopStringW;
+  SResult := InternalDeleteEnvironmentVariable(Name);
+  PushStringW(BoolToStr(SResult));
 end;
 
 procedure AddVariableToPath(const hwndParent: HWND; const string_size: integer;
@@ -134,10 +134,10 @@ var
   Value: String;
   SResult: Boolean;
 begin
-  Init(hwndParent, string_size, variables, stacktop);
-  Value := PopString;
-  SResult := AddVariableToPathA(Value);
-  PushString(BoolToStr(SResult));
+  InitW(hwndParent, string_size, variables, stacktop);
+  Value := PopStringW;
+  SResult := InternalAddVariableToPath(Value);
+  PushStringW(BoolToStr(SResult));
 end;
 
 procedure DelVariableOfPath(const hwndParent: HWND; const string_size: integer;
@@ -146,10 +146,10 @@ var
   Value: String;
   SResult: Boolean;
 begin
-  Init(hwndParent, string_size, variables, stacktop);
-  Value := PopString;
-  SResult := DelVariableOfPathA(Value);
-  PushString(BoolToStr(SResult));
+  InitW(hwndParent, string_size, variables, stacktop);
+  Value := PopStringW;
+  SResult := InternalDelVariableOfPath(Value);
+  PushStringW(BoolToStr(SResult));
 end;
 
 exports SetGlobalEnvironment;

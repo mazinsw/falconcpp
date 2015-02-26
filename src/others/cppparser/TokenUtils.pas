@@ -124,7 +124,7 @@ begin
   if Assigned(func.Parent) and Assigned(func.Parent.Parent) and
     (func.Parent.Parent.Token = tkClass) and not ExcludeScope then
   begin
-    IndentStr := GetLeftSpacing(TabWidth * (Level - 2), TabWidth, WantTabs);
+    IndentStr := GetLeftSpacing(TabWidth * (Level - 1), TabWidth, WantTabs);
     if func.Token in [tkDestructor] then
       Scope := func.Parent.Parent.Name + '::~'
     else
@@ -210,6 +210,7 @@ begin
   end;
   for I := 0 to TempFuncList.Count - 1 do
     DiffFuncList.AddObject('func', TempFuncList.Objects[I]);
+  TempFuncList.Free;
 end;
 
 procedure GenerateFunctions(TokenFile: TTokenFile; Source: TStrings;
@@ -1490,7 +1491,8 @@ begin
     end;
     Break;
   end;
-  Result := GetTreeHierarchy(Token, True, True) + Result;
+  { TODO -oMazin -c : hierarchy commented 26/02/2015 02:19:58 }
+  Result := {GetTreeHierarchy(Token, True, True) +} Result;
 end;
 
 function StringToScopeClass(const S: string): TScopeClass;

@@ -576,8 +576,10 @@ var
   FileName: string;
   FileProp: TSourceFile;
   I, J, Results, Line, Column, EndColumn: Integer;
+  // TODO: commented
   //Search: TSynEditSearchCustom;
   SourceSheet: TSourceFileSheet;
+  // TODO: commented
   //SearchFlags: TSynSearchOptions;
   Lines: TStrings;
 
@@ -586,6 +588,7 @@ var
     if FindFilesCanceled then
     begin
       Files.Free;
+  // TODO: commented
       //Search.Free;
       FinishFindAll(OriFindText, Results, FindFilesCanceled);
       Exit;
@@ -593,6 +596,7 @@ var
   end;
 
 begin
+  // TODO: commented
   //SearchFlags := [];
   //if Sensitive then
   //  SearchFlags := SearchFlags + [ssoMatchCase];
@@ -601,11 +605,13 @@ begin
   Result := False;
   Results := 0;
   Files := TStringList.Create;
+  // TODO: commented
   //if RegExp then
   //  Search := TSynEditRegexSearch.Create(nil)
   //else
   //  Search := TSynEditSearch.Create(nil);
   CheckIfCanceled;
+  // TODO: commented
   //Search.Options := SearchFlags;
   //Search.Pattern := aText;
   FrmFalconMain.ListViewMsg.Clear;
@@ -625,8 +631,10 @@ begin
       Lines.Assign(SourceSheet.Editor.Lines)
     else
       FileProp.LoadFile(Lines);
+  // TODO: commented
     //Results := Results + Search.FindAll(Lines.Text);
     CheckIfCanceled;
+  // TODO: commented
 //    for J := 0 to Search.ResultCount - 1 do
 //    begin
 //      GetRowColFromCharIndex(Search.Results[J], Lines, Line, Column);
@@ -641,6 +649,7 @@ begin
     Application.ProcessMessages;
   end;
   Lines.Free;
+  // TODO: commented
   //Search.Free;
   Files.Free;
   FinishFindAll(OriFindText, Results, FindFilesCanceled);

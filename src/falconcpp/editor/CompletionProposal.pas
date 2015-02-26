@@ -181,8 +181,6 @@ type
     FDefaultKind: SynCompletionType;
     FEndOfTokenChr: string;
     FTriggerChars: string;
-    // TODO: commented
-    // OldShowCaret    : Boolean;
     FHeightBuffer: Integer;
     FColumns: TProposalColumns;
     procedure SetCurrentString(const Value: string);
@@ -1735,14 +1733,6 @@ end;
 procedure TSynBaseCompletionProposalForm.ScrollbarOnScroll(Sender: TObject;
   ScrollCode: TScrollCode; var ScrollPos: Integer);
 begin
-  with CurrentEditor as TEditor do
-  begin
-    // This tricks the caret into showing itself again.
-    // TODO: commented
-    // AlwaysShowCaret := False;
-    // AlwaysShowCaret := True;
-    // UpdateCaret;
-  end;
 end;
 
 procedure TSynBaseCompletionProposalForm.ScrollbarOnEnter(Sender: TObject);
@@ -2056,9 +2046,6 @@ procedure TSynBaseCompletionProposalForm.DoFormHide(Sender: TObject);
 begin
   if CurrentEditor <> nil then
   begin
-    // TODO: commented
-    // (CurrentEditor as TEditor).AlwaysShowCaret := OldShowCaret;
-    // (CurrentEditor as TEditor).UpdateCaret;
     if DisplayType = ctCode then
     begin (Owner as TSynBaseCompletionProposal)
       .FWidth := Width; (Owner as TSynBaseCompletionProposal)
@@ -2072,16 +2059,6 @@ end;
 
 procedure TSynBaseCompletionProposalForm.DoFormShow(Sender: TObject);
 begin
-  if Assigned(CurrentEditor) then
-  begin
-    with CurrentEditor as TEditor do
-    begin
-      // TODO: commented
-      // OldShowCaret := AlwaysShowCaret;
-      // AlwaysShowCaret := Focused;
-      // UpdateCaret;
-    end;
-  end;
   // GBN 28/08/2002
   if Assigned((Owner as TSynBaseCompletionProposal).OnShow) then
   (Owner as TSynBaseCompletionProposal)
@@ -2975,8 +2952,6 @@ begin
           // sending a WM_MOUSEDOWN message. The problem with the mouse down is
           // that the editor would bounce back to the left margin, very irritating
           InternalCancelCompletion;
-          // TODO: commented
-          // EnsureCursorPosVisible; //GBN 25/02/2002
           CaretXY := BlockEnd;
           if OffsetCaret <> 0 then
             SetCurrentPos(GetCurrentPos + OffsetCaret);
@@ -3001,9 +2976,6 @@ begin
   F := Sender as TSynBaseCompletionProposalForm;
   if F.CurrentEditor <> nil then
   begin
-    // TODO: commented
-    // with F.CurrentEditor as TEditor do
-    // CommandProcessor(ecChar, Key, nil);
     // GBN 22/11/2001
     // Daisy chain completions
     Application.ProcessMessages;
@@ -3243,10 +3215,6 @@ procedure TCompletionProposal.DoExecute(AEditor: TEditor);
   procedure CopyWordBreakCharsToCharSet(const AEditor: TEditor;
     var ACharSet: TSynIdentChars);
   begin
-    // TODO: commented
-    // if Assigned(AEditor) and Assigned(AEditor.Highlighter) then
-    // ACharSet := ACharSet + AEditor.Highlighter.WordBreakChars
-    // else
     ACharSet := ACharSet + TSynWordBreakChars;
   end;
 

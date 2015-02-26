@@ -9,6 +9,9 @@
 			<Projects Include="..\pkgmanager\PkgManager.dproj">
 				<Dependencies/>
 			</Projects>
+			<Projects Include="..\..\res\plugin\NSIS_EnvSet\NSIS_EnvSet.dproj">
+				<Dependencies/>
+			</Projects>
 			<Projects Include="Falcon.dproj">
 				<Dependencies/>
 			</Projects>
@@ -38,6 +41,15 @@
 		<Target Name="PkgManager:Make">
 			<MSBuild Targets="Make" Projects="..\pkgmanager\PkgManager.dproj"/>
 		</Target>
+		<Target Name="NSIS_EnvSet">
+			<MSBuild Projects="..\..\res\plugin\NSIS_EnvSet\NSIS_EnvSet.dproj"/>
+		</Target>
+		<Target Name="NSIS_EnvSet:Clean">
+			<MSBuild Targets="Clean" Projects="..\..\res\plugin\NSIS_EnvSet\NSIS_EnvSet.dproj"/>
+		</Target>
+		<Target Name="NSIS_EnvSet:Make">
+			<MSBuild Targets="Make" Projects="..\..\res\plugin\NSIS_EnvSet\NSIS_EnvSet.dproj"/>
+		</Target>
 		<Target Name="Falcon">
 			<MSBuild Projects="Falcon.dproj"/>
 		</Target>
@@ -48,13 +60,13 @@
 			<MSBuild Targets="Make" Projects="Falcon.dproj"/>
 		</Target>
 		<Target Name="Build">
-			<CallTarget Targets="Updater;PkgManager;Falcon"/>
+			<CallTarget Targets="Updater;PkgManager;NSIS_EnvSet;Falcon"/>
 		</Target>
 		<Target Name="Clean">
-			<CallTarget Targets="Updater:Clean;PkgManager:Clean;Falcon:Clean"/>
+			<CallTarget Targets="Updater:Clean;PkgManager:Clean;NSIS_EnvSet:Clean;Falcon:Clean"/>
 		</Target>
 		<Target Name="Make">
-			<CallTarget Targets="Updater:Make;PkgManager:Make;Falcon:Make"/>
+			<CallTarget Targets="Updater:Make;PkgManager:Make;NSIS_EnvSet:Make;Falcon:Make"/>
 		</Target>
 		<Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 	</Project>

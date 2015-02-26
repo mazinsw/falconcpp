@@ -1,37 +1,37 @@
 program PkgManager;
-
 {$I Falcon.inc}
 {$IF CompilerVersion >= 21.0}
 {$WEAKLINKRTTI ON}
 {$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
 {$IFEND}
+
 uses
   FastMM4 in '..\others\fastmm\FastMM4.pas',
   FastMM4Messages in '..\others\fastmm\FastMM4Messages.pas',
   Windows,
   SysUtils,
   Forms,
-  UFraFnsh in 'UFraFnsh.pas' {FraFnsh: TFrame},
-  UFraReadMe in 'UFraReadMe.pas' {FraReadMe: TFrame},
-  UFraPrgs in 'UFraPrgs.pas' {FraPrgs: TFrame},
-  UFraSteps in 'UFraSteps.pas' {FraSteps: TFrame},
-  UFraWelcome in 'UFraWelcome.pas' {FraWelc: TFrame},
-  UFrmWizard in 'UFrmWizard.pas' {FrmWizard},
-  UFraDesc in 'UFraDesc.pas' {FraDesc: TFrame},
-  UFraAgrmt in 'UFraAgrmt.pas' {FraAgrmt: TFrame},
+  UFraFnsh in 'UFraFnsh.pas' { FraFnsh: TFrame } ,
+  UFraReadMe in 'UFraReadMe.pas' { FraReadMe: TFrame } ,
+  UFraPrgs in 'UFraPrgs.pas' { FraPrgs: TFrame } ,
+  UFraSteps in 'UFraSteps.pas' { FraSteps: TFrame } ,
+  UFraWelcome in 'UFraWelcome.pas' { FraWelc: TFrame } ,
+  UFrmWizard in 'UFrmWizard.pas' { FrmWizard } ,
+  UFraDesc in 'UFraDesc.pas' { FraDesc: TFrame } ,
+  UFraAgrmt in 'UFraAgrmt.pas' { FraAgrmt: TFrame } ,
   UInstaller in 'UInstaller.pas',
-  UFrmLoad in 'UFrmLoad.pas' {FrmLoad},
-  UFrmPkgMan in 'UFrmPkgMan.pas' {FrmPkgMan},
+  UFrmLoad in 'UFrmLoad.pas' { FrmLoad } ,
+  UFrmPkgMan in 'UFrmPkgMan.pas' { FrmPkgMan } ,
   LoadImage in 'LoadImage.pas',
-  UFrmUninstall in 'UFrmUninstall.pas' {FrmUninstall},
+  UFrmUninstall in 'UFrmUninstall.pas' { FrmUninstall } ,
   UUninstaller in 'UUninstaller.pas',
   BZip2 in '..\others\bzip2\BZip2.pas',
   LibTar in '..\others\libtar\LibTar.pas',
   CompressUtils in '..\others\compressutils\CompressUtils.pas',
   StrMatch in '..\others\compressutils\StrMatch.pas',
-  UFrmPkgDownload in 'UFrmPkgDownload.pas' {FrmPkgDownload},
+  UFrmPkgDownload in 'UFrmPkgDownload.pas' { FrmPkgDownload } ,
   UPkgClasses in 'UPkgClasses.pas',
-  UFrmHelp in 'UFrmHelp.pas' {FrmHelp},
+  UFrmHelp in 'UFrmHelp.pas' { FrmHelp } ,
   rbtree in '..\falconcpp\rbtree.pas',
   FastcodePatch in '..\others\nativehint\FastcodePatch.pas',
   NativeHintWindow in '..\others\nativehint\NativeHintWindow.pas',
@@ -51,9 +51,11 @@ uses
   GB2312Freq in '..\others\encoding\chsdet\src\GB2312Freq.pas',
   JISFreq in '..\others\encoding\chsdet\src\JISFreq.pas',
   JpCntx in '..\others\encoding\chsdet\src\JpCntx.pas',
-  MBUnicodeMultiProber in '..\others\encoding\chsdet\src\MBUnicodeMultiProber.pas',
+  MBUnicodeMultiProber in
+  '..\others\encoding\chsdet\src\MBUnicodeMultiProber.pas',
   MultiModelProber in '..\others\encoding\chsdet\src\MultiModelProber.pas',
-  nsCodingStateMachine in '..\others\encoding\chsdet\src\nsCodingStateMachine.pas',
+  nsCodingStateMachine in
+  '..\others\encoding\chsdet\src\nsCodingStateMachine.pas',
   nsCore in '..\others\encoding\chsdet\src\nsCore.pas',
   nsEscCharsetProber in '..\others\encoding\chsdet\src\nsEscCharsetProber.pas',
   nsGroupProber in '..\others\encoding\chsdet\src\nsGroupProber.pas',
@@ -63,30 +65,34 @@ uses
   nsPkg in '..\others\encoding\chsdet\src\nsPkg.pas',
   nsSBCharSetProber in '..\others\encoding\chsdet\src\nsSBCharSetProber.pas',
   nsSBCSGroupProber in '..\others\encoding\chsdet\src\nsSBCSGroupProber.pas',
-  nsUniversalDetector in '..\others\encoding\chsdet\src\nsUniversalDetector.pas',
+  nsUniversalDetector in '..\others\encoding\chsdet\src\nsUniversalDetector.pas'
+  ,
   vi in '..\others\encoding\chsdet\src\vi.pas',
-  LangBulgarianModel in '..\others\encoding\chsdet\src\sbseq\LangBulgarianModel.pas',
-  LangCyrillicModel in '..\others\encoding\chsdet\src\sbseq\LangCyrillicModel.pas',
+  LangBulgarianModel in
+  '..\others\encoding\chsdet\src\sbseq\LangBulgarianModel.pas',
+  LangCyrillicModel in
+  '..\others\encoding\chsdet\src\sbseq\LangCyrillicModel.pas',
   LangGreekModel in '..\others\encoding\chsdet\src\sbseq\LangGreekModel.pas',
   LangHebrewModel in '..\others\encoding\chsdet\src\sbseq\LangHebrewModel.pas',
   AppConst in '..\falconcpp\AppConst.pas';
 
-//{$DEFINE PKGMAN_RUNAS}
+// {$DEFINE PKGMAN_RUNAS}
 {$IFDEF FALCON_PORTABLE}
-    {$R resources_portable.RES}
+{$R resources_portable.RES}
 {$ELSE}
-  {$IFDEF PKGMAN_RUNAS}
-    {$R resources_runas.RES}
-  {$ELSE}
-    {$R resources.RES}
-  {$ENDIF}
+{$IFDEF PKGMAN_RUNAS}
+{$R resources_runas.RES}
+{$ELSE}
+{$R resources.RES}
+{$ENDIF}
 {$ENDIF}
 
 var
   Silent: Boolean;
   Install: Boolean;
-  InstallFileName: String;
+  InstallFileName: string;
   I: Integer;
+
 begin
   Install := True;
   Silent := False;
@@ -96,11 +102,10 @@ begin
   begin
     if StringIn(ParamStr(I), ['/S', '/silent', '-S', '--silent']) then
       Silent := True
-    else
-    if StringIn(ParamStr(I), ['/I', '/install', '-I', '--install']) then
+    else if StringIn(ParamStr(I), ['/I', '/install', '-I', '--install']) then
       Install := True
-    else
-    if StringIn(ParamStr(I), ['/U', '/uninstall', '-U', '--uninstall']) then
+    else if StringIn(ParamStr(I), ['/U', '/uninstall', '-U', '--uninstall'])
+      then
       Install := False
     else
       InstallFileName := ParamStr(I);
@@ -111,24 +116,27 @@ begin
   begin
     if LoadPackageFile(0, InstallFileName, Silent) then
     begin
-      if Silent then Exit;
+      if Silent then
+        Exit;
       Application.Initialize;
-	    Application.Title := 'Falcon C++ Install Wizard';
+      Application.Title := 'Falcon C++ Install Wizard';
       Application.CreateForm(TFrmWizard, FrmWizard);
-  Application.Run;
+      Application.Run;
     end
     else
       ExitCode := 1;
   end
   else if not Install then
   begin
-    if not UninstallPackage(InstallFileName, 0, Silent) then ExitCode := 1;
+    if not UninstallPackage(InstallFileName, 0, Silent) then
+      ExitCode := 1;
   end
   else
   begin
     Application.Initialize;
-	  Application.Title := 'Package Manager';
+    Application.Title := 'Package Manager';
     Application.CreateForm(TFrmPkgMan, FrmPkgMan);
-	  Application.Run;
+    Application.Run;
   end;
+
 end.

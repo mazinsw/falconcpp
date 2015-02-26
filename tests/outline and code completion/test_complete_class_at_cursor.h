@@ -16,7 +16,6 @@ namespace NameSpace
 		public:
 			void* public_function(char* param1, int param2);
 		};
-
 	}
 }
 #endif /* _MAIN_H_ */

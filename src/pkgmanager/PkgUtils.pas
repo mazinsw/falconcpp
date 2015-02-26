@@ -18,7 +18,7 @@ implementation
 
 uses
   Forms, Classes, SysUtils, ShlObj, CommCtrl, Controls, Consts, UxTheme,
-  SystemUtils;
+  SystemUtils, Registry;
 
 procedure SetExplorerTheme(Handle: HWND);
 begin
@@ -28,8 +28,20 @@ end;
 function GetFalconDir: String;
 begin
   Result := ExtractFilePath(Application.ExeName);
+{$IFDEF FALCON_PORTABLE}
+{$ELSE}
+  with TRegistry.Create do
+  begin
+    RootKey := HKEY_LOCAL_MACHINE;
+    if OpenKeyReadOnly('Software\Falcon') then
+      Result := IncludeTrailingPathDelimiter(ReadString(''));
+    Free;
+  end;
   if not FileExists(Result + 'Falcon.exe') then
     Result := GetSpecialFolderPath(CSIDL_PROGRAM_FILES) + '\Falcon\';
+  if not FileExists(Result + 'Falcon.exe') then
+    Result := ExtractFilePath(Application.ExeName);
+{$ENDIF}
 end;
 
 function GetConfigDir(const FalconDir: string): String;

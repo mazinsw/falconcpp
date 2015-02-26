@@ -3,7 +3,7 @@ unit UFrmWizard;
 interface
 
 uses
-    Windows, Messages, StdCtrls, ExtCtrls, RichEditViewer, Classes, SysUtils,
+    Windows, Messages, StdCtrls, ExtCtrls, Classes, SysUtils,
     Controls, Forms, UInstaller, LoadImage, FormEffect, PNGImage;
 
 const

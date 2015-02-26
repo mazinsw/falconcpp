@@ -3,15 +3,15 @@ unit UFraAgrmt;
 interface
 
 uses
-  Windows, Messages, StdCtrls, ExtCtrls, RichEditViewer, UFrmWizard, Classes,
-  Controls, Forms, SysUtils;
+  Windows, Messages, StdCtrls, ExtCtrls, RichEdit, UFrmWizard, Classes,
+  Controls, Forms, SysUtils, ComCtrls;
 
 type
   TFraAgrmt = class(TFrame)
     PainelAll: TPanel;
     Label5: TLabel;
     TextAnswer: TLabel;
-    TextLicense: TRichEditViewer;
+    TextLicense: TRichEdit;
     procedure UpdateStep;
     procedure WMUpdateStep(var Message: TMessage); message WM_UPDATESTEP;
   private

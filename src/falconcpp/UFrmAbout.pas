@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, RichEditViewer, ComCtrls, XPPanels, ULanguages;
+  Dialogs, StdCtrls, ExtCtrls, ComCtrls, XPPanels, ULanguages;
 
 type
   TFormAbout = class(TForm)

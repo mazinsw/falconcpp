@@ -42,46 +42,46 @@
 			<DCCReference Include="..\others\fastmm\FastMM4.pas"/>
 			<DCCReference Include="..\others\fastmm\FastMM4Messages.pas"/>
 			<DCCReference Include="UFraFnsh.pas">
-				<Form>FraFnsh</Form>
+				<Form> FraFnsh</Form>
 				<DesignClass>TFrame</DesignClass>
 			</DCCReference>
 			<DCCReference Include="UFraReadMe.pas">
-				<Form>FraReadMe</Form>
+				<Form> FraReadMe</Form>
 				<DesignClass>TFrame</DesignClass>
 			</DCCReference>
 			<DCCReference Include="UFraPrgs.pas">
-				<Form>FraPrgs</Form>
+				<Form> FraPrgs</Form>
 				<DesignClass>TFrame</DesignClass>
 			</DCCReference>
 			<DCCReference Include="UFraSteps.pas">
-				<Form>FraSteps</Form>
+				<Form> FraSteps</Form>
 				<DesignClass>TFrame</DesignClass>
 			</DCCReference>
 			<DCCReference Include="UFraWelcome.pas">
-				<Form>FraWelc</Form>
+				<Form> FraWelc</Form>
 				<DesignClass>TFrame</DesignClass>
 			</DCCReference>
 			<DCCReference Include="UFrmWizard.pas">
-				<Form>FrmWizard</Form>
+				<Form> FrmWizard </Form>
 			</DCCReference>
 			<DCCReference Include="UFraDesc.pas">
-				<Form>FraDesc</Form>
+				<Form> FraDesc</Form>
 				<DesignClass>TFrame</DesignClass>
 			</DCCReference>
 			<DCCReference Include="UFraAgrmt.pas">
-				<Form>FraAgrmt</Form>
+				<Form> FraAgrmt</Form>
 				<DesignClass>TFrame</DesignClass>
 			</DCCReference>
 			<DCCReference Include="UInstaller.pas"/>
 			<DCCReference Include="UFrmLoad.pas">
-				<Form>FrmLoad</Form>
+				<Form> FrmLoad </Form>
 			</DCCReference>
 			<DCCReference Include="UFrmPkgMan.pas">
-				<Form>FrmPkgMan</Form>
+				<Form> FrmPkgMan </Form>
 			</DCCReference>
 			<DCCReference Include="LoadImage.pas"/>
 			<DCCReference Include="UFrmUninstall.pas">
-				<Form>FrmUninstall</Form>
+				<Form> FrmUninstall </Form>
 			</DCCReference>
 			<DCCReference Include="UUninstaller.pas"/>
 			<DCCReference Include="..\others\bzip2\BZip2.pas"/>
@@ -89,11 +89,11 @@
 			<DCCReference Include="..\others\compressutils\CompressUtils.pas"/>
 			<DCCReference Include="..\others\compressutils\StrMatch.pas"/>
 			<DCCReference Include="UFrmPkgDownload.pas">
-				<Form>FrmPkgDownload</Form>
+				<Form> FrmPkgDownload </Form>
 			</DCCReference>
 			<DCCReference Include="UPkgClasses.pas"/>
 			<DCCReference Include="UFrmHelp.pas">
-				<Form>FrmHelp</Form>
+				<Form> FrmHelp </Form>
 			</DCCReference>
 			<DCCReference Include="..\falconcpp\rbtree.pas"/>
 			<DCCReference Include="..\others\nativehint\FastcodePatch.pas"/>

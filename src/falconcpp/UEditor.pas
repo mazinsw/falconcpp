@@ -221,6 +221,7 @@ type
     procedure DeleteBreakpoint(Line: Integer);
     procedure SetActiveLine(Line: Integer);
     procedure RemoveActiveLine(Line: Integer);
+    procedure ToggleLineComment;
 
     property SearchEngine: TSearchEngine read FSearchEngine write FSearchEngine;
     property Font: TFont read GetFont write SetFont;
@@ -899,9 +900,10 @@ end;
 
 function TEditor.PrevWordPos: TBufferCoord;
 begin
-  // TODO:
+  // TODO: remove this function
 end;
 
+{ TODO -oMazin -c : incorrect CR LF detecting 25/02/2015 22:59:32 }
 function TEditor.RowColToCharIndex(const rowcol: TBufferCoord): Integer;
 var
   I, LineBreakLen: Integer;
@@ -915,6 +917,7 @@ begin
   Inc(Result, rowcol.Char - 1);
 end;
 
+{ TODO -oMazin -c : incorrect CR LF detecting 25/02/2015 23:03:42 }
 function TEditor.RelativePosition(APosition: Integer): Integer;
 var
   I, Line, LineStartPosition, LineBreakLen: Integer;
@@ -934,7 +937,7 @@ function TEditor.RowColumnToPixels(const Display: TDisplayCoord): TPoint;
 var
   Position: Integer;
 begin
-  // FIX: incompatible conversion on middle of tab character
+  { TODO -oMazin -c : FIX: incompatible conversion on middle of tab character 25/02/2015 23:04:15 }
   Position := FindColumn(Display.Row - 1, Display.Column - 1);
   Result.X := PointXFromPosition(Position);
   Result.Y := PointYFromPosition(Position);
@@ -1057,6 +1060,138 @@ procedure TEditor.SetZoomUpdate(const Value: Integer);
 begin
   SetZoom(Value);
   UpdateLineMargin;
+end;
+
+procedure TEditor.ToggleLineComment;
+var
+  I, J, MinStart, cmmLines: Integer;
+  s: string;
+  ptr: PChar;
+  BS, BE, BC, p, p2: TBufferCoord;
+begin
+  cmmLines := 0;
+  BeginUndoAction;
+  if SelAvail then
+  begin
+    BS := BlockBegin;
+    BE := BlockEnd;
+    BC := CaretXY;
+  end
+  else
+  begin
+    BS := CaretXY;
+    BE := CaretXY;
+    BC := CaretXY;
+  end;
+  MinStart := -1;
+  // detect if is commented
+  for I := BS.Line to BE.Line do
+  begin
+    s := Lines[I - 1];
+    J := 0;
+    // get start of comment
+    ptr := PChar(s);
+    if ptr^ <> #0 then
+      repeat
+        if not CharInSet(ptr^, [#9, #32]) then
+          Break;
+        Inc(J);
+        Inc(ptr);
+      until ptr^ = #0;
+    if (ptr^ = '/') and ((ptr + 1)^ = '/') then
+    begin
+      Inc(cmmLines);
+    end
+    else if (ptr^ <> #0) and ((MinStart < 0) or (J < MinStart)) then
+      MinStart := J;
+  end;
+  Inc(MinStart);
+  if MinStart = 0 then
+    Inc(MinStart);
+  // few lines commented. comment!
+  if cmmLines <= (BE.Line - BS.Line + 1) div 2 then
+  begin
+    for I := BS.Line to BE.Line do
+    begin
+      // skip already commented lines
+      if cmmLines > 0 then
+      begin
+        s := Lines[I - 1];
+        // get start of comment
+        ptr := PChar(s);
+        if ptr^ <> #0 then
+          repeat
+            if not CharInSet(ptr^, [#9, #32]) then
+              Break;
+            Inc(ptr);
+          until ptr^ = #0;
+        if (ptr^ = '/') and ((ptr + 1)^ = '/') then
+        begin
+          Dec(cmmLines);
+          Continue;
+        end;
+      end;
+      p.Line := I;
+      p.Char := MinStart;
+      CaretXY := p;
+      SelText := '// ';
+      if (p.Line = BS.Line) and (p.Char < BS.Char) then
+        Inc(BS.Char, 3);
+      if (p.Line = BE.Line) and (p.Char < BE.Char)  then
+        Inc(BE.Char, 3);
+    end;
+  end
+  else // uncomment
+  begin
+    for I := BS.Line to BE.Line do
+    begin
+      // skip uncommented lines
+      s := Lines[I - 1];
+      J := 0;
+      // get start of comment
+      ptr := PChar(s);
+      if ptr^ <> #0 then
+        repeat
+          if not CharInSet(ptr^, [#9, #32]) then
+            Break;
+          Inc(J);
+          Inc(ptr);
+        until ptr^ = #0;
+      if (ptr^ = '/') and ((ptr + 1)^ = '/') then
+      begin
+        Dec(cmmLines);
+        Inc(J);
+        p.Line := I;
+        p.Char := J;
+        p2.Line := I;
+        p2.Char := J + 2;
+        if (ptr + 2)^ = ' ' then
+          Inc(p2.Char);
+        SetCaretAndSelection(p2, p, p2);
+        SelText := '';
+        if (p.Line = BS.Line) and (p.Char <= BS.Char) then
+        begin
+          Dec(BS.Char, p2.Char - p.Char);
+          if BS.Char <= 0 then
+            BS.Char := 1;
+        end;
+        if (p.Line = BE.Line) and (p.Char <= BE.Char)  then
+        begin
+          Dec(BE.Char, p2.Char - p.Char);
+          if BE.Char <= 0 then
+            BE.Char := 1;
+        end;
+        if cmmLines = 0 then
+          Break;
+      end;
+    end;
+  end;
+  if BC.Line = BS.Line then
+    BC.Char := BS.Char
+  else
+    BC.Char := BE.Char;
+  SetCaretAndSelection(BC, BS, BE);
+  EndUndoAction;
 end;
 
 function TEditor.GetReadOnly: Boolean;

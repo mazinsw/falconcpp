@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Controls, Forms, Graphics,
   Dialogs, Menus, ComCtrls, ToolWin, ImgList, StdCtrls, PNGImage,
-  RichEditViewer, FormEffect, IniFiles, ShellApi, ExtCtrls, Clipbrd;
+  RichEdit, FormEffect, IniFiles, ShellApi, ExtCtrls, Clipbrd;
 
 const
   WM_RELOADPKG  = WM_USER + $0112;
@@ -62,7 +62,7 @@ type
     ImgListToolbar: TImageList;
     PanelLblDesc: TPanel;
     Label5: TLabel;
-    TextDesc: TRichEditViewer;
+    TextDesc: TRichEdit;
     ImgPkgList: TImageList;
     LblSite: TLabel;
     PopupMenu1: TPopupMenu;

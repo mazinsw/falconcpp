@@ -23,6 +23,10 @@ type
     EnhancedHomeKey: Boolean;
 
     TabWidth: Integer;
+    DefaultEncoding: Integer;
+    EncodingWithBOM: Boolean;
+    DefaultLineEnding: Integer;
+
     //display
     FontName: string;
     FontSize: Integer;
@@ -317,6 +321,9 @@ begin
     AutoCloseBrackets := ini.ReadBool('EditorOptions', 'AutoCloseBrackets', True);
 
     TabWidth := ini.ReadInteger('EditorOptions', 'TabWidth', 4);
+    DefaultEncoding := ini.ReadInteger('EditorOptions', 'DefaultEncoding', 0);
+    EncodingWithBOM := ini.ReadBool('EditorOptions', 'EncodingWithBOM', False);
+    DefaultLineEnding := ini.ReadInteger('EditorOptions', 'DefaultLineEnding', 0);
     //display
     FontName := ini.ReadString('EditorOptions', 'FontName', 'Courier New');
     FontSize := ini.ReadInteger('EditorOptions', 'FontSize', 10);
@@ -611,6 +618,9 @@ begin
     ini.WriteBool('EditorOptions', 'AutoCloseBrackets', AutoCloseBrackets);
 
     ini.WriteInteger('EditorOptions', 'TabWidth', TabWidth);
+    ini.WriteInteger('EditorOptions', 'DefaultEncoding', DefaultEncoding);
+    ini.WriteBool('EditorOptions', 'EncodingWithBOM', EncodingWithBOM);
+    ini.WriteInteger('EditorOptions', 'DefaultLineEnding', DefaultLineEnding);
     //display
     ini.WriteString('EditorOptions', 'FontName', FontName);
     ini.WriteInteger('EditorOptions', 'FontSize', FontSize);

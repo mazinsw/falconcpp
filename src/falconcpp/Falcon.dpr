@@ -119,7 +119,8 @@ uses
   StyleExporter in 'editor\StyleExporter.pas',
   ExporterHTML in 'editor\ExporterHTML.pas',
   ExporterRTF in 'editor\ExporterRTF.pas',
-  EditorPrint in 'editor\EditorPrint.pas';
+  EditorPrint in 'editor\EditorPrint.pas',
+  ExporterTeX in 'editor\ExporterTeX.pas';
 
 function OpenWithOther: Boolean;
 var

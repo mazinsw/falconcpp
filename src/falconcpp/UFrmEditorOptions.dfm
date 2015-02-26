@@ -55,6 +55,20 @@ object FrmEditorOptions: TFrmEditorOptions
           Height = 13
           Caption = 'Tab Width:'
         end
+        object Label1: TLabel
+          Left = 120
+          Top = 120
+          Width = 48
+          Height = 13
+          Caption = 'Encoding:'
+        end
+        object Label2: TLabel
+          Left = 360
+          Top = 120
+          Width = 58
+          Height = 13
+          Caption = 'Line ending:'
+        end
         object ChbAutoIndt: TCheckBox
           Left = 8
           Top = 16
@@ -71,7 +85,7 @@ object FrmEditorOptions: TFrmEditorOptions
           Height = 17
           Anchors = [akTop, akRight]
           Caption = 'Use Tab Character'
-          TabOrder = 1
+          TabOrder = 5
           OnClick = EditorOptionsChanged
         end
         object ChbTabUnOrIndt: TCheckBox
@@ -81,7 +95,7 @@ object FrmEditorOptions: TFrmEditorOptions
           Height = 17
           Anchors = [akTop, akRight]
           Caption = 'Tab Indent/Unindent'
-          TabOrder = 2
+          TabOrder = 1
           OnClick = EditorOptionsChanged
         end
         object ChbInsMode: TCheckBox
@@ -90,7 +104,7 @@ object FrmEditorOptions: TFrmEditorOptions
           Width = 220
           Height = 17
           Caption = 'Insert Mode'
-          TabOrder = 3
+          TabOrder = 2
           OnClick = EditorOptionsChanged
         end
         object ChbGrpUnd: TCheckBox
@@ -105,11 +119,11 @@ object FrmEditorOptions: TFrmEditorOptions
         object CboTabWdt: TComboBox
           Left = 8
           Top = 134
-          Width = 81
+          Width = 105
           Height = 21
           ItemIndex = 1
           MaxLength = 2
-          TabOrder = 5
+          TabOrder = 9
           Text = '4'
           OnChange = EditorOptionsChanged
           Items.Strings = (
@@ -124,7 +138,7 @@ object FrmEditorOptions: TFrmEditorOptions
           Height = 17
           Anchors = [akTop, akRight]
           Caption = 'Smart Tabs'
-          TabOrder = 6
+          TabOrder = 3
           OnClick = EditorOptionsChanged
         end
         object ChbEnhHomeKey: TCheckBox
@@ -143,7 +157,7 @@ object FrmEditorOptions: TFrmEditorOptions
           Width = 220
           Height = 17
           Caption = 'Show Space and Tab Characters'
-          TabOrder = 8
+          TabOrder = 6
           OnClick = EditorOptionsChanged
         end
         object ChbAutoCloseBrackets: TCheckBox
@@ -152,7 +166,49 @@ object FrmEditorOptions: TFrmEditorOptions
           Width = 220
           Height = 17
           Caption = 'Auto close brackets/parentheses'
-          TabOrder = 9
+          TabOrder = 8
+          OnClick = EditorOptionsChanged
+        end
+        object CboDefEnc: TComboBox
+          Left = 120
+          Top = 134
+          Width = 105
+          Height = 21
+          Style = csDropDownList
+          ItemIndex = 0
+          MaxLength = 2
+          TabOrder = 10
+          Text = 'ANSI'
+          OnChange = EditorOptionsChanged
+          OnSelect = CboDefEncSelect
+          Items.Strings = (
+            'ANSI'
+            'UTF-8'
+            'USC-2')
+        end
+        object CboDefLineEnd: TComboBox
+          Left = 360
+          Top = 134
+          Width = 105
+          Height = 21
+          Style = csDropDownList
+          ItemIndex = 0
+          MaxLength = 2
+          TabOrder = 12
+          Text = 'Windows'
+          OnChange = EditorOptionsChanged
+          Items.Strings = (
+            'Windows'
+            'Linux'
+            'Mac')
+        end
+        object ChbWithBOM: TCheckBox
+          Left = 235
+          Top = 135
+          Width = 119
+          Height = 17
+          Caption = 'With BOM'
+          TabOrder = 11
           OnClick = EditorOptionsChanged
         end
       end
@@ -237,7 +293,6 @@ object FrmEditorOptions: TFrmEditorOptions
           State = cbChecked
           TabOrder = 1
           OnClick = EditorOptionsChanged
-          ExplicitLeft = 288
         end
         object CboRMrg: TComboBox
           Left = 292
@@ -613,10 +668,6 @@ object FrmEditorOptions: TFrmEditorOptions
         object TSFormatterIndentation: TTabSheet
           Caption = 'Indentation'
           ImageIndex = 1
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
           object CheckBoxForceUsingTabs: TCheckBox
             Left = 6
             Top = 8
@@ -753,10 +804,6 @@ object FrmEditorOptions: TFrmEditorOptions
         object TSFormatterPadding: TTabSheet
           Caption = 'Padding'
           ImageIndex = 4
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
           object CheckBoxPadEmptyLines: TCheckBox
             Left = 6
             Top = 8
@@ -1464,7 +1511,7 @@ object FrmEditorOptions: TFrmEditorOptions
           Left = 10
           Top = 34
           Width = 399
-          Height = 22
+          Height = 21
           Anchors = [akLeft, akTop, akRight]
           TabOrder = 0
           OnChange = EditCodeTemplateChange

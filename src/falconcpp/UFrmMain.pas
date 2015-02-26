@@ -925,7 +925,7 @@ uses
   UFrmGotoFunction, UFrmGotoLine, TBXThemes, Makefile, CodeTemplate,
   StrUtils, UFrmVisualCppOptions,
   PluginConst, Math, Highlighter, DScintilla, PluginWidgetMap, AppConst,
-  ExporterHTML, ExporterRTF, EditorPrint;
+  ExporterHTML, ExporterRTF, ExporterTeX, EditorPrint;
 {$R *.dfm}
 
 var
@@ -2579,11 +2579,8 @@ begin
   if (PageControlEditor.ActivePageIndex >= 0) then
   begin
     sheet := TSourceFileSheet(PageControlEditor.ActivePage);
-    if (sheet.Editor.Focused) then
-    begin
+    if sheet.Editor.Focused then
       sheet.Editor.Undo;
-      sheet.Caption := sheet.SourceFile.Caption;
-    end;
   end;
 end;
 
@@ -2596,11 +2593,8 @@ begin
   if (PageControlEditor.ActivePageIndex >= 0) then
   begin
     sheet := TSourceFileSheet(PageControlEditor.ActivePage);
-    if (sheet.Editor.Focused) then
-    begin
+    if sheet.Editor.Focused then
       sheet.Editor.Redo;
-      sheet.Caption := sheet.SourceFile.Caption;
-    end;
   end;
 end;
 
@@ -3685,6 +3679,9 @@ begin
   Result.OnTypeChanged := DoTypeChangedSource;
   Result.Project := Result;
   Result.FileType := FileType;
+  Result.Encoding := Config.Editor.DefaultEncoding;
+  Result.WithBOM := Config.Editor.EncodingWithBOM;
+  Result.LineEnding := Config.Editor.DefaultLineEnding;
 
   Node.Data := Result;
   if FileType <> FILE_TYPE_PROJECT then
@@ -3705,6 +3702,9 @@ begin
   Result.OnRename := DoRenameSource;
   Result.OnTypeChanged := DoTypeChangedSource;
   Result.Project := TSourceFile(ParentNode.Data).Project;
+  Result.Encoding := Config.Editor.DefaultEncoding;
+  Result.WithBOM := Config.Editor.EncodingWithBOM;
+  Result.LineEnding := Config.Editor.DefaultLineEnding;
 
   Node.Data := Result;
   FLastPathInclude := '';
@@ -5026,17 +5026,11 @@ var
 begin
   if not GetActiveSheet(sheet) then
     Exit;
-  case TComponent(Sender).Tag of
-    1:
-      Eol := SC_EOL_LF; // linux
-    2:
-      Eol := SC_EOL_CR; // mac
-  else
-    Eol := SC_EOL_CRLF; // windows
-  end;
+  Eol := TSourceFile.GetEditorEolMode(TComponent(Sender).Tag);
   if sheet.Editor.GetEOLMode <> Eol then
     sheet.Editor.ConvertEOLs(Eol);
   sheet.Editor.SetEOLMode(Eol);
+  sheet.SourceFile.LineEnding := TComponent(Sender).Tag;
   UpdateStatusbar;
 end;
 
@@ -5054,7 +5048,7 @@ begin
   UpdateMenuItems([rmFile, rmEdit, rmSearch, rmRun]); { rmRun for Breakpoint }
   sheet := TSourceFileSheet(Editor.Owner);
   FilePrp := sheet.SourceFile;
-  sheet.Caption := FilePrp.Caption;
+  FilePrp.Changed;
   CanShowHintTip := False;
   TimerHintTipEvent.Enabled := False;
   HintTip.Cancel;
@@ -8857,28 +8851,26 @@ end;
 procedure TFrmFalconMain.FileExportTeXClick(Sender: TObject);
 var
   sheet: TSourceFileSheet;
+  ExporterTeX: TExporterTeX;
 begin
   if not GetActiveSheet(sheet) then
     Exit;
-  // TODO: commented
-  // ExporterTeX.Highlighter := sheet.Editor.Highlighter;
-  // ExporterTeX.Title := Sheet.SourceFile.Name;
-  // ExporterTeX.TabWidth := sheet.Editor.TabWidth;
-  // TODO: commented
-  // ExporterTeX.ExportAll(sheet.Editor.Lines);
-
+  ExporterTeX := TExporterTeX.Create;
+  ExporterTeX.Title := Sheet.SourceFile.Name;
   with TSaveDialog.Create(Self) do
   begin
-    // Filter := ExporterTeX.DefaultFilter;
+    Filter := ExporterTeX.DefaultFilter;
     DefaultExt := '.tex';
     Options := Options + [ofOverwritePrompt];
-    FileName := ChangeFileExt(sheet.SourceFile.name, '.tex');
+    FileName := ChangeFileExt(ExporterTeX.Title, '.tex');
     if Execute(Self.Handle) then
     begin
-      // ExporterTeX.SaveToFile(FileName);
+      ExporterTeX.ExportAll(sheet.Editor);
+      ExporterTeX.SaveToFile(FileName);
     end;
     Free;
   end;
+  ExporterTeX.Free;
 end;
 
 procedure TFrmFalconMain.PopTabsCloseAllOthersClick(Sender: TObject);
@@ -9351,8 +9343,7 @@ var
 begin
   if not GetActiveSheet(sheet) then
     Exit;
-  // TODO: commented
-  // sheet.Editor.CommandProcessor(ecBlockIndent, #0, nil);
+  sheet.Editor.SendEditor(SCI_TAB);
 end;
 
 procedure TFrmFalconMain.EditUnindentClick(Sender: TObject);
@@ -9361,8 +9352,7 @@ var
 begin
   if not GetActiveSheet(sheet) then
     Exit;
-  // TODO: commented
-  // sheet.Editor.CommandProcessor(ecBlockUnindent, #0, nil);
+  sheet.Editor.SendEditor(SCI_BACKTAB);
 end;
 
 procedure TFrmFalconMain.EditToggleCommentClick(Sender: TObject);
@@ -9371,8 +9361,7 @@ var
 begin
   if not GetActiveSheet(sheet) then
     Exit;
-  // TODO: commented
-  // sheet.Editor.ToggleLineComment;
+  sheet.Editor.ToggleLineComment;
 end;
 
 procedure TFrmFalconMain.IncLoading;
@@ -10051,7 +10040,10 @@ begin
     Editor.UncollapseLine(BS.Line);
     Editor.BeginUpdate;
     Editor.CaretXY := BS;
-    Editor.SelText := FuncList.Text;
+    LastLineText := FuncList.Strings[0];
+    for I := 1 to FuncList.Count - 1 do
+      LastLineText := LastLineText + Editor.GetLineChars + FuncList.Strings[I];
+    Editor.SelText := LastLineText;
     Editor.EndUpdate;
   end;
   if ClassFuncList.Count > 0 then

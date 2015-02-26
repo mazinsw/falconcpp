@@ -22,15 +22,16 @@ object FraReadMe: TFraReadMe
     object TextGuide: TLabel
       Left = 24
       Top = 200
-      Width = 107
+      Width = 108
       Height = 13
       Caption = 'Click Next to continue.'
     end
-    object TextReadMe: TRichEditViewer
+    object TextReadMe: TRichEdit
       Left = 24
       Top = 40
       Width = 449
       Height = 153
+      ParentFont = False
       ReadOnly = True
       TabOrder = 0
     end

@@ -126,6 +126,7 @@ type
     procedure Save; virtual;
     procedure DeleteOfDisk; virtual;
     procedure Delete; virtual;
+    procedure Changed; virtual;
   public
     property Project: TProjectFile read FProject write SetProject;
     property Node: TTreeNode read FNode;
@@ -149,12 +150,14 @@ type
     FEncoding: Integer;
     FEndian: Integer;
     FWithBOM: Boolean;
-    function GetCaption: string;
+    FLineEnding: Integer;
     procedure SetEncoding(const Value: Integer);
     procedure SetEndian(const Value: Integer);
     procedure AdjustEncoding(Encoding: TEncoding);
     function GetEncodingProcessor: TEncoding;
     procedure SetWithBOM(const Value: Boolean);
+    procedure SetLineEnding(const Value: Integer);
+    procedure UpdateSheetStatus(Modified: Boolean);
   protected
     procedure SetProject(Value: TProjectFile); override;
     procedure SetFileType(Value: Integer); override;
@@ -163,11 +166,13 @@ type
     function GetFileName: string; override;
     procedure SetFileName(Value: string); override;
   public
+    class function GetEditorEolMode(LineEnding: Integer): Integer;
     procedure MoveFileTo(const Path: string);
     procedure CopyFileTo(const Path: string);
     procedure DeleteOfDisk; override;
     procedure Delete; override;
     procedure Save; override;
+    procedure Changed; override;
     procedure Close;
     function Open: Boolean;
     function Edit(SelectTab: Boolean = True): TSourceFileSheet;
@@ -193,8 +198,7 @@ type
     property Encoding: Integer read FEncoding write SetEncoding;
     property Endian: Integer read FEndian write SetEndian;
     property WithBOM: Boolean read FWithBOM write SetWithBOM;
-  public
-    property Caption: string read GetCaption;
+    property LineEnding: Integer read FLineEnding write SetLineEnding;
   end;
 
   IContainer = interface
@@ -364,6 +368,10 @@ begin
   FOnTypeChanged := Value.FOnTypeChanged;
 end;
 
+procedure TSourceBase.Changed;
+begin
+end;
+
 constructor TSourceBase.Create(Node: TTreeNode);
 begin
   FNode := Node;
@@ -462,14 +470,6 @@ begin
     Result := FFileName;
 end;
 
-function TSourceFile.GetCaption: string;
-begin
-  if IsModified then
-    Result := '*' + Name
-  else
-    Result := Name;
-end;
-
 procedure TSourceFile.DeleteOfDisk;
 begin
   if (FFileType <> FILE_TYPE_FOLDER) then
@@ -548,6 +548,18 @@ begin
   end
 end;
 
+class function TSourceFile.GetEditorEolMode(LineEnding: Integer): Integer;
+begin
+  case LineEnding of
+    LINE_ENDING_LINUX:
+      Result := SC_EOL_LF; // linux
+    LINE_ENDING_MAC:
+      Result := SC_EOL_CR; // mac
+  else
+    Result := SC_EOL_CRLF; // windows
+  end;
+end;
+
 function TSourceFile.GetEncodingProcessor: TEncoding;
 begin
   if Encoding = ENCODING_UTF8 then
@@ -577,6 +589,12 @@ begin
     sheet.Editor.SetEOLMode(SC_EOL_LF)
   else
     sheet.Editor.SetEOLMode(SC_EOL_CRLF);
+  case sheet.Editor.GetEOLMode of
+    SC_EOL_LF: LineEnding := LINE_ENDING_LINUX;
+    SC_EOL_CR: LineEnding := LINE_ENDING_MAC;
+  else // SC_EOL_CRLF
+    LineEnding := LINE_ENDING_WINDOWS;
+  end;
   WithBOM := BOM;
   sheet.Editor.EmptyUndoBuffer;
 end;
@@ -670,6 +688,7 @@ procedure TSourceFile.Assign(Value: TSourceFile);
 begin
   inherited Assign(Value);
   FFileDateTime := Value.FFileDateTime;
+  FEncoding := Value.FEncoding;
   FSheet := Value.FSheet;
   FBreakpoint.Assign(Value.FBreakpoint);
 end;
@@ -678,15 +697,6 @@ procedure TSourceFile.SetProject(Value: TProjectFile);
 begin
   if (Value <> FProject) then
     FProject := Value;
-end;
-
-procedure TSourceFile.SetWithBOM(const Value: Boolean);
-begin
-  if (FWithBOM = Value) then
-    Exit;
-  if Value and (Encoding = ENCODING_ANSI) then
-    Exit;
-  FWithBOM := Value;
 end;
 
 procedure TSourceFile.SetEncoding(const Value: Integer);
@@ -703,10 +713,25 @@ begin
   FEndian := Value;
 end;
 
+procedure TSourceFile.SetWithBOM(const Value: Boolean);
+begin
+  if (FWithBOM = Value) then
+    Exit;
+  if Value and (Encoding = ENCODING_ANSI) then
+    Exit;
+  FWithBOM := Value;
+end;
+
+procedure TSourceFile.SetLineEnding(const Value: Integer);
+begin
+  if FLineEnding = Value then
+    Exit;
+  FLineEnding := Value;
+end;
+
 procedure TSourceFile.SetFileName(Value: string);
 var
   Temp: string;
-  Sheet: TSourceFileSheet;
 begin
   if (Name = Value) or (Value = '') then
     Exit;
@@ -737,8 +762,7 @@ begin
   end;
   inherited SetFileName(Value);
   Node.Text := Name;
-  if GetSheet(Sheet) then
-    Sheet.Caption := Caption;
+  UpdateSheetStatus(IsModified);
 end;
 
 procedure TSourceFile.SetFileType(Value: Integer);
@@ -768,7 +792,7 @@ begin
     Exit;
   end;
   Sheet := TSourceFileSheet.CreateEditor(Self, FrmFalconMain.PageControlEditor, SelectTab);
-  Sheet.Caption := Caption;
+  Sheet.Caption := Name;
   Sheet.ImageIndex := FILE_IMG_LIST[FileType];
   if Saved then
   begin
@@ -780,6 +804,12 @@ begin
       sheet.Editor.SetEOLMode(SC_EOL_LF)
     else
       sheet.Editor.SetEOLMode(SC_EOL_CRLF);
+    case sheet.Editor.GetEOLMode of
+      SC_EOL_LF: LineEnding := LINE_ENDING_LINUX;
+      SC_EOL_CR: LineEnding := LINE_ENDING_MAC;
+    else // SC_EOL_CRLF
+      LineEnding := LINE_ENDING_WINDOWS;
+    end;
     WithBOM := BOM;
     sheet.Editor.EmptyUndoBuffer;
     Sheet.Editor.ReadOnly := ReadOnly;
@@ -929,6 +959,26 @@ begin
   Result := FModified;
 end;
 
+procedure TSourceFile.Changed;
+begin
+  inherited;
+  UpdateSheetStatus(IsModified);
+end;
+
+procedure TSourceFile.UpdateSheetStatus(Modified: Boolean);
+var
+  Sheet: TSourceFileSheet;
+begin
+  if not GetSheet(Sheet) then
+    Exit;
+  if ReadOnly then
+    Sheet.Font.Color := clGrayText
+  else if Modified then
+    Sheet.Font.Color := clRed
+  else
+    Sheet.Font.Color := clWindowText;
+end;
+
 procedure TSourceFile.Close;
 var
   Sheet: TSourceFileSheet;
@@ -1002,7 +1052,7 @@ begin
     if GetSheet(Sheet) then
     begin
       UpdateMenuItems([rmFile]);
-      Sheet.Caption := Self.Caption;
+      UpdateSheetStatus(IsModified);
     end;
     if Node.Text <> Self.Name then
       Node.Text := Self.Name;
@@ -2399,7 +2449,6 @@ end;
 
 procedure TProjectFile.SetFileName(Value: string);
 var
-  Sheet: TSourceFileSheet;
   OldFileName, OldName: string;
 begin
   if (FileName = Value) or (Value = '') then
@@ -2418,8 +2467,7 @@ begin
   if OldName <> '' then
     DoRename(OldFileName);
   Node.Text := Name;
-  if GetSheet(Sheet) then
-    Sheet.Caption := Caption;
+  UpdateSheetStatus(IsModified);
 end;
 
 function TProjectFile.ConvertToSourceFile(Project: TProjectFile): TSourceFile;
@@ -2515,8 +2563,6 @@ constructor TSourceFileSheet.CreateEditor(SourceFile: TSourceFile;
 begin
   inherited Create(PageCtrl);
   ParentBackground := False;
-  if SourceFile.ReadOnly then
-    Font.Color := clGrayText;
   FSourceFile := SourceFile;
   FSourceFile.FSheet := Self;
   FSheetType := SHEET_TYPE_FILE;
@@ -2525,6 +2571,8 @@ begin
   FEditor.Align := alClient;
   FEditor.WantTabs := True;
   FEditor.ReadOnly := SourceFile.ReadOnly;
+  SourceFile.UpdateSheetStatus(SourceFile.IsModified);
+  FEditor.SetEOLMode(TSourceFile.GetEditorEolMode(SourceFile.LineEnding));
   FEditor.SearchEngine := FrmFalconMain.SearchEngine;
   FEditor.ImageList := FrmFalconMain.ImageListGutter;
   FEditor.PopupMenu := FrmFalconMain.PopupEditor;
@@ -2565,8 +2613,7 @@ begin
     P := Editor.DisplayToBufferPos(Editor.PixelsToRowColumn(X, Y));
     if (P.Char > 0) and (P.Line > 0) and (Editor.CanPaste) then
     begin
-      // TODO: commented
-      // Editor.ExecuteCommand(ecGotoXY, #0, @P);
+      Editor.CaretXY := P;
       Editor.PasteFromClipboard;
     end;
   end;

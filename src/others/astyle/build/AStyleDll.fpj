@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Project>
 	<VersionInfo>
-		<VersionNumbers Major="2" Minor="0" Release="4" Build="0"/>
+		<VersionNumbers Major="2" Minor="0" Release="5" Build="1"/>
 		<LanguageID Value="1046"/>
 		<CharsetID Value="1252"/>
 		<CompanyName Value="Jim Pattee"/>
-		<FileVersion Value="2.0.4.0"/>
+		<FileVersion Value="2.0.5.1"/>
 		<FileDescription Value="Artistic Style"/>
 		<InternalName Value="AStyle.dll"/>
 		<LegalCopyright Value=""/>
 		<LegalTrademarks Value=""/>
 		<OriginalFilename Value="AStyle.dll"/>
-		<ProductName Value="2.0.4.0"/>
-		<ProductVersion Value=""/>
+		<ProductName Value="AStyle"/>
+		<ProductVersion Value="2.0.5.1"/>
 		<AutoIncrementBuild Value="No"/>
 	</VersionInfo>
 	<Libs Value="-shared -Wl,--kill-at"/>
@@ -22,8 +22,8 @@
 	<CompilerOptions Value="-Wall -s -O2"/>
 	<DeleteObjectsBefore Value="Yes"/>
 	<DeleteObjectsAfter Value="Yes"/>
-	<DeleteMakefileAfter Value="Yes"/>
-	<DeleteResourcesAfter Value="Yes"/>
+	<DeleteMakefileAfter Value="No"/>
+	<DeleteResourcesAfter Value="No"/>
 	<EnableTheme Value="No"/>
 	<RequiresAdmin Value="No"/>
 	<CompilerType Value="CPP"/>

@@ -3,7 +3,7 @@ unit UFraSteps;
 interface
 
 uses
-  Windows, Messages, StdCtrls, ExtCtrls, RichEditViewer, UFrmWizard, Classes,
+  Windows, Messages, StdCtrls, ExtCtrls, UFrmWizard, Classes,
   Controls, Forms, PNGImage;
 
 type

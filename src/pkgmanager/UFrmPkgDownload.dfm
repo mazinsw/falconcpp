@@ -283,7 +283,7 @@ object FrmPkgDownload: TFrmPkgDownload
       Width = 3
       Height = 13
     end
-    object TextDesc: TRichEditViewer
+    object TextDesc: TRichEdit
       Left = 7
       Top = 146
       Width = 205

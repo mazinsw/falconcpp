@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, VirtualTrees, ImgList, ExtCtrls, StdCtrls, ComCtrls,
-  RichEditViewer, FileDownload, XMLDoc, XMLIntf, UPkgClasses, rbtree, Contnrs,
+  RichEdit, FileDownload, XMLDoc, XMLIntf, UPkgClasses, rbtree, Contnrs,
   ThreadFileDownload, FormEffect, PNGImage;
 
 const
@@ -79,7 +79,7 @@ type
     LabelProgresss: TLabel;
     GroupBox2: TGroupBox;
     Image1: TImage;
-    TextDesc: TRichEditViewer;
+    TextDesc: TRichEdit;
     Label5: TLabel;
     LblSite: TLabel;
     Label2: TLabel;

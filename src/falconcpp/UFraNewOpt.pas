@@ -9,11 +9,14 @@ uses
 
 type
   TFraPrjOpt = class(TFrame)
-    PanelControls: TPanel;
-    GrbProj: TGroupBox;
+    PUMIcon: TPopupMenu;
+    ChangeIcon1: TMenuItem;
+    RemoveIcon1: TMenuItem;
+    OpenIcon: TIconDialog;
     GrbApp: TGroupBox;
-    PanelIcon: TPanel;
     LblDescIcon: TLabel;
+    PanelIcon: TPanel;
+    ImgIcon: TImage;
     BtnChgIcon: TButton;
     CHBInc: TCheckBox;
     GrBInfo: TGroupBox;
@@ -21,23 +24,19 @@ type
     LblDesc: TLabel;
     LblVers: TLabel;
     LblProdName: TLabel;
-    PUMIcon: TPopupMenu;
-    ChangeIcon1: TMenuItem;
-    RemoveIcon1: TMenuItem;
-    ImgIcon: TImage;
+    Bevel2: TBevel;
+    EditComp: TEdit;
+    EditDesc: TEdit;
+    EditVer: TEdit;
+    EditProdName: TEdit;
+    GrbProj: TGroupBox;
+    LblName: TLabel;
     RGrpType: TRadioGroup;
     EditProjName: TEdit;
-    LblName: TLabel;
     GrbOptmz: TGroupBox;
     CHBMinSize: TCheckBox;
     CHBShowWar: TCheckBox;
     CHBOptSpd: TCheckBox;
-    OpenIcon: TIconDialog;
-    EditComp: TEdit;
-    Bevel2: TBevel;
-    EditDesc: TEdit;
-    EditVer: TEdit;
-    EditProdName: TEdit;
     procedure BtnChgIconClick(Sender: TObject);
     procedure RemoveIcon1Click(Sender: TObject);
     procedure CHBIncClick(Sender: TObject);

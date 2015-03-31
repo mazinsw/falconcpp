@@ -764,7 +764,7 @@ begin
   Result := -1;
   for I := 0 to Count - 1 do
   begin
-    if CompareText(S, Items[I].Name) = 0 then
+    if SameText(S, Items[I].Name) then
     begin
       Result := I;
       Exit;

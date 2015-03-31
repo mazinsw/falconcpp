@@ -8,11 +8,10 @@ uses
 
 type
   TFraProjs = class(TFrame)
-    PanelControls: TPanel;
-    GrBoxDesc: TGroupBox;
     ImageList: TImageList;
-    MemoDesc: TMemo;
+    GrBoxDesc: TGroupBox;
     ImageProj: TImage;
+    MemoDesc: TMemo;
     MemoCap: TMemo;
     PageControl: TModernPageControl;
     procedure ProjectListSelectItem(Sender: TObject; Item: TListItem;

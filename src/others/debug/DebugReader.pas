@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Classes, Dialogs, VirtualTrees,
-  TokenList, TokenUtils, PerlRegEx;
+  TokenList, TokenUtils, RegularExpressionsCore;
 
 type
   TDebugCmd = (dcPrint, dcLocalize, dcNextLine, dcWatch, dcOnBreak,

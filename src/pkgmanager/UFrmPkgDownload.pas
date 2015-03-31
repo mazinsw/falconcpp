@@ -592,8 +592,8 @@ begin
   Canceled := False;
   LoadInternetConfiguration;
   ApplyTranslation;
+  TreeViewPackages.NodeDataSize := SizeOf(Pointer);
   PkgImg := GetPNGResource('PKGIMG');
-  ConvertTo32BitImageList(ImageList16x16);
   AddImages(ImageList16x16, 'IMAGES_16x16');
   ConfigRoot := GetConfigDir(GetFalconDir);
   DownloadedPackagesRoot := ConfigRoot + 'Downloaded packages\';

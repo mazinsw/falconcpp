@@ -128,6 +128,7 @@ type
   TCompilerOptions = class
   public
     Path: string; //path of compiler
+    Name: string;
     Version: string; //version of used compiler
     ActiveConfiguration: string;
     ReverseDebugging: Boolean;
@@ -410,6 +411,7 @@ begin
     if not DirectoryExists(Path) then
       Path := TFrmFalconMain(Form).AppRoot + 'MinGW';
     Path := ExcludeTrailingPathDelimiter(Path);
+    Name := ini.ReadString('CompilerOptions', 'Name', '');
     Version := ini.ReadString('CompilerOptions', 'Version', '');
     ReverseDebugging := ini.ReadBool('CompilerOptions', 'ReverseDebugging', False);
   end;
@@ -486,7 +488,7 @@ begin
 
     //Tab Orientation
     TabOri := ini.ReadString('TABS', 'Orientation', 'Top');
-    if CompareText(TabOri, 'bottom') = 0 then
+    if SameText(TabOri, 'bottom') then
     begin
       PageControlEditor.TabPosition := mtpBottom;
       PopTabsTabsAtTop.Enabled := True;
@@ -737,6 +739,7 @@ begin
   with Compiler do
   begin
     ini.WriteString('CompilerOptions', 'Path', ExtractRelativePathOpt(TFrmFalconMain(Form).AppRoot, Path));
+    ini.WriteString('CompilerOptions', 'Name', Name);
     ini.WriteString('CompilerOptions', 'Version', Version);
     ini.WriteBool('CompilerOptions', 'ReverseDebugging', ReverseDebugging);
   end;

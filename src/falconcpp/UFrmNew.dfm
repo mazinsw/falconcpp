@@ -27,7 +27,6 @@ object FrmNewProj: TFrmNewProj
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
-    ExplicitHeight = 351
   end
   object PainelBtns: TPanel
     Left = 0
@@ -56,7 +55,6 @@ object FrmNewProj: TFrmNewProj
       ParentFont = False
       TabOrder = 0
       OnClick = BtnProxClick
-      ExplicitTop = 20
     end
     object BtnCan: TButton
       Left = 436
@@ -73,7 +71,6 @@ object FrmNewProj: TFrmNewProj
       ParentFont = False
       TabOrder = 1
       OnClick = BtnCanClick
-      ExplicitTop = 20
     end
     object BtnVoltar: TButton
       Left = 187
@@ -91,7 +88,6 @@ object FrmNewProj: TFrmNewProj
       TabOrder = 2
       Visible = False
       OnClick = BtnVoltarClick
-      ExplicitTop = 20
     end
     object BtnFnsh: TButton
       Left = 348
@@ -109,7 +105,6 @@ object FrmNewProj: TFrmNewProj
       ParentFont = False
       TabOrder = 3
       OnClick = BtnFnshClick
-      ExplicitTop = 20
     end
     object Panel1: TPanel
       Left = 0
@@ -120,7 +115,6 @@ object FrmNewProj: TFrmNewProj
       BevelOuter = bvNone
       BorderWidth = 3
       TabOrder = 4
-      ExplicitTop = 318
       object LblWidz: TLabel
         Left = 3
         Top = 3

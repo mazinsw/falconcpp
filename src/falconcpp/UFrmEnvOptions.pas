@@ -367,7 +367,7 @@ begin
     if (AlternativeConfFile <> CheckBoxUseAltConfFile.Checked) or
       ((AlternativeConfFile = CheckBoxUseAltConfFile.Checked) and
       FileExists(EditAltConfFile.Text) and AlternativeConfFile and
-      (CompareText(ConfigurationFile, EditAltConfFile.Text) <> 0)) then
+      not SameText(ConfigurationFile, EditAltConfFile.Text)) then
     begin
       MessageBox(Handle, PChar(STR_FRM_ENV_OPT[35]), 'Falcon C++',
         MB_ICONINFORMATION);
@@ -404,7 +404,7 @@ begin
     end;
     LanguageDir := IncludeTrailingPathDelimiter(LanguageDir);
     //reload languages
-    if CompareText(OldLanguageDir, LanguageDir) <> 0 then
+    if not SameText(OldLanguageDir, LanguageDir) then
     begin
       FrmFalconMain.Config.Environment.Langs.LangDir := LanguageDir;
       FrmFalconMain.Config.Environment.Langs.Load;
@@ -430,7 +430,7 @@ begin
     end;
     FrmFalconMain.Config.Save(FrmFalconMain.IniConfigFile, FrmFalconMain);
     //reload templates
-    if CompareText(OldTemplatesDir, TemplatesDir) <> 0 then
+    if not SameText(OldTemplatesDir, TemplatesDir) then
     begin
       FrmFalconMain.ReloadTemplates(msg);
       Exit;

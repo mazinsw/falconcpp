@@ -328,6 +328,7 @@ object FrmFalconMain: TFrmFalconMain
       Caption = 'Menu Bar'
       CloseButton = False
       DockMode = dmCannotFloatOrChangeDocks
+      DockPos = 0
       DragHandleStyle = dhNone
       FullSize = True
       Images = ImgListMenus
@@ -1175,10 +1176,6 @@ object FrmFalconMain: TFrmFalconMain
           Caption = 'Messages'
           ImageIndex = 0
           PageControl = PageControlMessages
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
           object ListViewMsg: TListView
             Left = 0
             Top = 0
@@ -1314,20 +1311,16 @@ object FrmFalconMain: TFrmFalconMain
       FocusedColor = 16185078
       Images = ImgListMenus
       ParentColor = False
-      ShowCloseButton = False
       TabIndex = 0
       TabOrder = 0
       TabStop = True
       FixedTabWidth = True
+      OnClose = PageControlProjectsClose
       object TSProjects: TModernTabSheet
         Color = 16185078
         Caption = 'Projects'
         ImageIndex = 1
         PageControl = PageControlProjects
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object TreeViewProjects: TTreeView
           Left = 0
           Top = 0
@@ -1384,20 +1377,16 @@ object FrmFalconMain: TFrmFalconMain
       FocusedColor = 15973017
       Images = ImgListMenus
       ParentColor = False
-      ShowCloseButton = False
       TabIndex = 0
       TabOrder = 0
       TabStop = True
       FixedTabWidth = True
+      OnClose = PageControlOutlineClose
       object TSOutline: TModernTabSheet
         Color = 16185078
         Caption = 'Outline'
         ImageIndex = 56
         PageControl = PageControlOutline
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object TreeViewOutline: TVirtualStringTree
           Left = 0
           Top = 0
@@ -1418,7 +1407,7 @@ object FrmFalconMain: TFrmFalconMain
           Header.Font.Style = []
           Header.MainColumn = -1
           Images = ImgListOutLine
-          NodeDataSize = 4
+          NodeDataSize = 0
           ParentFont = False
           TabOrder = 0
           TextMargin = 1
@@ -1501,6 +1490,7 @@ object FrmFalconMain: TFrmFalconMain
     Top = 209
   end
   object ImgListOutLine: TImageList
+    ColorDepth = cd32Bit
     Width = 24
     Left = 810
     Top = 152
@@ -1689,11 +1679,13 @@ object FrmFalconMain: TFrmFalconMain
     Top = 328
   end
   object ImgListMenus: TTBImageList
+    ColorDepth = cd32Bit
     DisabledImages = DisImgListMenus
     Left = 699
     Top = 4
   end
   object DisImgListMenus: TTBImageList
+    ColorDepth = cd32Bit
     Left = 787
     Top = 4
   end
@@ -1796,15 +1788,18 @@ object FrmFalconMain: TFrmFalconMain
     end
   end
   object ImageListGutter: TImageList
+    ColorDepth = cd32Bit
     Left = 300
     Top = 243
   end
   object ImgListCountry: TImageList
+    ColorDepth = cd32Bit
     Height = 11
     Left = 76
     Top = 282
   end
   object ImageListDebug: TImageList
+    ColorDepth = cd32Bit
     Left = 404
     Top = 243
   end

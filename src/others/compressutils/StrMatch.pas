@@ -48,7 +48,7 @@ var
 begin
   Result := True;
   for I := Low(List) to High(List) do
-    if CompareText(List[I], S) = 0 then
+    if SameText(List[I], S) then
       Exit;
   Result := False;
 end;
@@ -211,7 +211,7 @@ begin
   ExtnFinish := nil;
   // at start of text or spec
   MainStart := idx;
-  MainFinish := nil; // keep compiler happy
+  MainFinish := nil;
   while True do
   begin
     c := idx^;

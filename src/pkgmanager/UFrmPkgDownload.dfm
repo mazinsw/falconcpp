@@ -73,7 +73,7 @@ object FrmPkgDownload: TFrmPkgDownload
       Header.Options = [hoColumnResize, hoHotTrack, hoShowImages, hoShowSortGlyphs, hoVisible]
       Images = ImageList16x16
       LineStyle = lsSolid
-      NodeDataSize = 4
+      NodeDataSize = 0
       TabOrder = 1
       TreeOptions.AutoOptions = [toAutoScrollOnExpand, toAutoTristateTracking, toAutoHideButtons, toAutoDeleteMovedNodes, toAutoChangeScale]
       TreeOptions.MiscOptions = [toCheckSupport, toFullRepaintOnResize, toInitOnSave, toReportMode, toToggleOnDblClick, toWheelPanning]
@@ -288,11 +288,18 @@ object FrmPkgDownload: TFrmPkgDownload
       Top = 146
       Width = 205
       Height = 155
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'MS Sans Serif'
+      Font.Style = []
+      ParentFont = False
       ReadOnly = True
       TabOrder = 0
     end
   end
   object ImageList16x16: TImageList
+    ColorDepth = cd32Bit
     Left = 704
     Top = 304
   end

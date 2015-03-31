@@ -36,6 +36,8 @@ object FrmCompOptions: TFrmCompOptions
     ExplicitHeight = 428
     object TSCompiler: TTabSheet
       Caption = 'Compiler'
+      ExplicitLeft = 0
+      ExplicitTop = 0
       ExplicitWidth = 489
       ExplicitHeight = 400
       DesignSize = (
@@ -199,6 +201,8 @@ object FrmCompOptions: TFrmCompOptions
         ExplicitHeight = 339
         object TabSheet1: TTabSheet
           Caption = 'General'
+          ExplicitLeft = 0
+          ExplicitTop = 0
           ExplicitWidth = 473
           ExplicitHeight = 311
           DesignSize = (
@@ -282,7 +286,6 @@ object FrmCompOptions: TFrmCompOptions
             Anchors = [akLeft, akTop, akRight]
             TabOrder = 0
             OnSelect = ComboBoxCompilerPathSelect
-            ExplicitWidth = 430
           end
           object GroupBox1: TGroupBox
             Left = 5
@@ -418,6 +421,8 @@ object FrmCompOptions: TFrmCompOptions
         object TabSheet3: TTabSheet
           Caption = 'Compiler options'
           ImageIndex = 2
+          ExplicitLeft = 0
+          ExplicitTop = 0
           ExplicitWidth = 473
           ExplicitHeight = 311
           DesignSize = (
@@ -527,6 +532,8 @@ object FrmCompOptions: TFrmCompOptions
         object TabSheet2: TTabSheet
           Caption = 'Linker options'
           ImageIndex = 1
+          ExplicitLeft = 0
+          ExplicitTop = 0
           ExplicitWidth = 473
           ExplicitHeight = 311
           DesignSize = (
@@ -638,6 +645,8 @@ object FrmCompOptions: TFrmCompOptions
     object TSDebugger: TTabSheet
       Caption = 'Debugger'
       ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
       ExplicitWidth = 489
       ExplicitHeight = 400
       DesignSize = (
@@ -740,6 +749,8 @@ object FrmCompOptions: TFrmCompOptions
     object TSDirectories: TTabSheet
       Caption = 'Directories'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
       ExplicitWidth = 489
       ExplicitHeight = 400
       object GroupBox3: TGroupBox
@@ -1030,7 +1041,6 @@ object FrmCompOptions: TFrmCompOptions
           Anchors = [akLeft, akTop, akRight, akBottom]
           ItemHeight = 13
           TabOrder = 0
-          ExplicitHeight = 134
         end
         object Edit5: TEdit
           Left = 10
@@ -1330,7 +1340,6 @@ object FrmCompOptions: TFrmCompOptions
           Anchors = [akLeft, akTop, akRight, akBottom]
           ItemHeight = 13
           TabOrder = 0
-          ExplicitHeight = 155
         end
         object Edit6: TEdit
           Left = 10
@@ -1346,6 +1355,8 @@ object FrmCompOptions: TFrmCompOptions
     object TSPrograms: TTabSheet
       Caption = 'Programs'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
       ExplicitWidth = 489
       ExplicitHeight = 400
       DesignSize = (

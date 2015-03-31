@@ -3,11 +3,10 @@ unit ThreadExtract;
 interface
 
 uses
-{$IFDEF WIN32}
-  Windows, Classes;
-{$ENDIF}
 {$IFDEF LINUX}
   Classes;
+{$ELSE}
+  Windows, Classes;
 {$ENDIF}
 
 type

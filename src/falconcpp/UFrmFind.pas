@@ -37,8 +37,7 @@ type
     procedure FormDeactivate(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure FormKeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure BtnMoreClick(Sender: TObject);
     procedure TabCtrlChange(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -66,21 +65,22 @@ type
     procedure UpdateSearchHistoryList(Search: string);
   public
     { Public declarations }
-    procedure ProgressFindFile(const FileName, Msg: string; Line,
-      Column, EndColumn: Integer);
-    procedure FinishFindAll(const aSearch: string; Results: Integer; Canceled: Boolean);
-    function StartFindAll(const OriFindText, aText: string; RegExp, Sensitive,
-      WholeWord: Boolean): Boolean;
+    procedure ProgressFindFile(const FileName, Msg: string;
+      Line, Column, EndColumn: Integer);
+    procedure FinishFindAll(const aSearch: string; Results: Integer;
+      Canceled: Boolean);
+    function StartFindAll(const OriFindText, aText: string;
+      RegExp, Sensitive, WholeWord: Boolean): Boolean;
   end;
 
 var
   FrmFind: TFrmFind = nil;
 
-procedure StartFindText(frm: TFrmFalconMain);
-procedure StartFindNextText(frm: TFrmFalconMain; LastSearch: TSearchItem);
-procedure StartFindPrevText(frm: TFrmFalconMain; LastSearch: TSearchItem);
-procedure StartReplaceText(frm: TFrmFalconMain);
-procedure StartFindFilesText(frm: TFrmFalconMain);
+procedure StartFindText(Frm: TFrmFalconMain);
+procedure StartFindNextText(Frm: TFrmFalconMain; LastSearch: TSearchItem);
+procedure StartFindPrevText(Frm: TFrmFalconMain; LastSearch: TSearchItem);
+procedure StartReplaceText(Frm: TFrmFalconMain);
+procedure StartFindFilesText(Frm: TFrmFalconMain);
 
 function ResolveStr(const S: string): string;
 function EncodeStr(const S: string): string;
@@ -91,17 +91,17 @@ uses USourceFile, ULanguages, UUtils, UParseMsgs, UEditor;
 
 {$R *.dfm}
 
-procedure StartFindPrevText(frm: TFrmFalconMain; LastSearch: TSearchItem);
+procedure StartFindPrevText(Frm: TFrmFalconMain; LastSearch: TSearchItem);
 var
   prop: TSourceFile;
   SourceSheet: TSourceFileSheet;
   Editor: TEditor;
   SearchFlags: Integer;
-  SearchResultStart, SearchResultEnd,
-  SearchResultCount, CurrentPosition: Integer;
+  SearchResultStart, SearchResultEnd, SearchResultCount,
+    CurrentPosition: Integer;
   UsingResearch: Boolean;
 begin
-  if not frm.GetActiveFile(prop) then
+  if not Frm.GetActiveFile(prop) then
     Exit;
   if not prop.GetSheet(SourceSheet) then
     Exit;
@@ -123,10 +123,11 @@ begin
   else if Editor.SelAvail then
   begin
     CurrentPosition := Editor.GetSelectionStart;
-    if (LastSearch.SearchMode <> 2) or (Editor.SearchTextEx(LastSearch.Search,
-      SearchFlags, 0, Editor.GetSelectionStart, False,
-      sdDown, SearchResultStart, SearchResultEnd, UsingResearch,
-      Editor.GetSelectionStart, Editor.GetSelectionEnd) = 0) then
+    if (LastSearch.SearchMode <> 2) or
+      (Editor.SearchTextEx(LastSearch.Search, SearchFlags, 0,
+      Editor.GetSelectionStart, False, sdDown, SearchResultStart,
+      SearchResultEnd, UsingResearch, Editor.GetSelectionStart,
+      Editor.GetSelectionEnd) = 0) then
     begin
       LastSearch.Search := Editor.SelText;
       if LastSearch.SearchMode = 2 then
@@ -145,20 +146,20 @@ begin
   end;
   if UsingResearch then
     MessageBeep(64);
-  frm.SelectFromPosition(SearchResultStart, SearchResultEnd, Editor);
+  Frm.SelectFromPosition(SearchResultStart, SearchResultEnd, Editor);
 end;
 
-procedure StartFindNextText(frm: TFrmFalconMain; LastSearch: TSearchItem);
+procedure StartFindNextText(Frm: TFrmFalconMain; LastSearch: TSearchItem);
 var
   prop: TSourceFile;
   SourceSheet: TSourceFileSheet;
   Editor: TEditor;
   SearchFlags: Integer;
-  SearchResultStart, SearchResultEnd,
-  SearchResultCount, CurrentPosition: Integer;
+  SearchResultStart, SearchResultEnd, SearchResultCount,
+    CurrentPosition: Integer;
   UsingResearch: Boolean;
 begin
-  if not frm.GetActiveFile(prop) then
+  if not Frm.GetActiveFile(prop) then
     Exit;
   if not prop.GetSheet(SourceSheet) then
     Exit;
@@ -179,10 +180,11 @@ begin
   end
   else if Editor.SelAvail then
   begin
-    if (LastSearch.SearchMode <> 2) or (Editor.SearchTextEx(LastSearch.Search,
-      SearchFlags, 0, Editor.GetSelectionStart, False,
-      sdDown, SearchResultStart, SearchResultEnd, UsingResearch,
-      Editor.GetSelectionStart, Editor.GetSelectionEnd) = 0) then
+    if (LastSearch.SearchMode <> 2) or
+      (Editor.SearchTextEx(LastSearch.Search, SearchFlags, 0,
+      Editor.GetSelectionStart, False, sdDown, SearchResultStart,
+      SearchResultEnd, UsingResearch, Editor.GetSelectionStart,
+      Editor.GetSelectionEnd) = 0) then
     begin
       LastSearch.Search := Editor.SelText;
       if LastSearch.SearchMode = 2 then
@@ -192,8 +194,8 @@ begin
   end
   else
     CurrentPosition := Editor.GetCurrentPos;
-  SearchResultCount := Editor.SearchTextEx(LastSearch.Search, SearchFlags,
-    0, CurrentPosition, True, sdDown, SearchResultStart, SearchResultEnd,
+  SearchResultCount := Editor.SearchTextEx(LastSearch.Search, SearchFlags, 0,
+    CurrentPosition, True, sdDown, SearchResultStart, SearchResultEnd,
     UsingResearch);
   if SearchResultCount = 0 then
   begin
@@ -202,84 +204,84 @@ begin
   end;
   if UsingResearch then
     MessageBeep(64);
-  frm.SelectFromPosition(SearchResultStart, SearchResultEnd, Editor);
+  Frm.SelectFromPosition(SearchResultStart, SearchResultEnd, Editor);
 end;
 
-procedure StartFindText(frm: TFrmFalconMain);
+procedure StartFindText(Frm: TFrmFalconMain);
 var
   prop: TSourceFile;
   SourceSheet: TSourceFileSheet;
   Editor: TEditor;
-  seltext: string;
+  SelText: string;
 begin
-  if not frm.GetActiveFile(prop) then
+  if not Frm.GetActiveFile(prop) then
     Exit;
   if not prop.GetSheet(SourceSheet) then
     Exit;
   Editor := SourceSheet.Editor;
-  seltext := Editor.SelText;
+  SelText := Editor.SelText;
   if not Editor.SelAvail then
-    seltext := Editor.GetWordAtRowCol(Editor.PrevWordPos);
+    SelText := Editor.GetWordAtRowCol(Editor.PrevWordPos);
 
   if FrmFind = nil then
-    FrmFind := TFrmFind.Create(frm);
-  FrmFind.Frm := frm;
+    FrmFind := TFrmFind.Create(Frm);
+  FrmFind.Frm := Frm;
   FrmFind.TabCtrl.TabIndex := 0;
   FrmFind.TabCtrlChange(FrmFind.TabCtrl);
-  FrmFind.CboFind.Text := seltext;
+  FrmFind.CboFind.Text := SelText;
   FrmFind.CboFindChange(FrmFind.CboFind);
   FrmFind.Show;
 end;
 
-procedure StartFindFilesText(frm: TFrmFalconMain);
+procedure StartFindFilesText(Frm: TFrmFalconMain);
 var
   prop: TSourceFile;
   SourceSheet: TSourceFileSheet;
   Editor: TEditor;
-  seltext: string;
+  SelText: string;
 begin
-  seltext := '';
-  if frm.GetActiveFile(prop) then
+  SelText := '';
+  if Frm.GetActiveFile(prop) then
   begin
     if prop.GetSheet(SourceSheet) then
     begin
       Editor := SourceSheet.Editor;
-      seltext := Editor.SelText;
+      SelText := Editor.SelText;
       if not Editor.SelAvail then
-        seltext := Editor.GetWordAtRowCol(Editor.PrevWordPos);
+        SelText := Editor.GetWordAtRowCol(Editor.PrevWordPos);
     end;
   end;
   if FrmFind = nil then
-    FrmFind := TFrmFind.Create(frm);
-  FrmFind.Frm := frm;
+    FrmFind := TFrmFind.Create(Frm);
+  FrmFind.Frm := Frm;
   FrmFind.TabCtrl.TabIndex := 2;
   FrmFind.TabCtrlChange(FrmFind.TabCtrl);
-  FrmFind.CboFind.Text := seltext;
+  FrmFind.CboFind.Text := SelText;
   FrmFind.CboFindChange(FrmFind.CboFind);
   FrmFind.Show;
 end;
 
-procedure StartReplaceText(frm: TFrmFalconMain);
+procedure StartReplaceText(Frm: TFrmFalconMain);
 var
   prop: TSourceFile;
   SourceSheet: TSourceFileSheet;
   Editor: TEditor;
-  seltext: string;
+  SelText: string;
 begin
-  if not frm.GetActiveFile(prop) then
+  if not Frm.GetActiveFile(prop) then
     Exit;
   if not prop.GetSheet(SourceSheet) then
     Exit;
   Editor := SourceSheet.Editor;
-  seltext := Editor.SelText;
+  SelText := Editor.SelText;
   if not Editor.SelAvail then
-    seltext := Editor.GetWordAtRowCol(Editor.PrevWordPos);
+    SelText := Editor.GetWordAtRowCol(Editor.PrevWordPos);
   if FrmFind = nil then
-    FrmFind := TFrmFind.Create(frm);
-  FrmFind.Frm := frm;
+    FrmFind := TFrmFind.Create(Frm);
+  FrmFind.Frm := Frm;
   FrmFind.TabCtrl.TabIndex := 1;
   FrmFind.TabCtrlChange(FrmFind.TabCtrl);
-  FrmFind.CboFind.Text := seltext;
+  FrmFind.CboFind.Text := SelText;
   FrmFind.CboFindChange(FrmFind.CboFind);
   FrmFind.Show;
 end;
@@ -300,7 +302,7 @@ end;
 
 procedure TFrmFind.FormDeactivate(Sender: TObject);
 begin
-  frm.MenuBar.ProcessShortCuts := True;
+  Frm.MenuBar.ProcessShortCuts := True;
   if ChbTransp.Checked then
   begin
     AlphaBlendValue := 55 + TrkBar.Position;
@@ -318,7 +320,7 @@ begin
   AlphaBlend := False;
   AlphaBlendValue := 255;
   CboFind.SetFocus;
-  frm.MenuBar.ProcessShortCuts := False;
+  Frm.MenuBar.ProcessShortCuts := False;
 end;
 
 procedure TFrmFind.FormCreate(Sender: TObject);
@@ -343,7 +345,7 @@ begin
   // Search history
   CboFind.Items.Assign(FrmFalconMain.SearchList);
   CboReplace.Items.Assign(FrmFalconMain.ReplaceList);
-  //****************** translate ************************//
+  // ****************** translate ************************//
   Caption := STR_FRM_FIND[1];
   TabCtrl.Tabs.Strings[0] := STR_FRM_FIND[2];
   TabCtrl.Tabs.Strings[1] := STR_FRM_FIND[3];
@@ -408,14 +410,14 @@ begin
     GBoxDirection.Visible := TabCtrl.TabIndex <> 2;
     RdbtUp.Enabled := TabCtrl.TabIndex < 1;
     GBoxTransp.Visible := True;
-    ClientHeight := RGrpSearchMode.Top + RGrpSearchMode.Height +
-      TabCtrl.Top + 2 * TabCtrl.Left;
+    ClientHeight := RGrpSearchMode.Top + RGrpSearchMode.Height + TabCtrl.Top + 2
+      * TabCtrl.Left;
     BtnMore.Tag := 1;
     bmp.LoadFromResourceName(HInstance, 'moreup');
     BtnMore.Glyph.Assign(bmp);
     BtnMore.Caption := STR_FRM_FIND[11];
   end;
-  bmp.Free;
+  bmp.free;
 end;
 
 procedure TFrmFind.TabCtrlChange(Sender: TObject);
@@ -433,7 +435,8 @@ begin
         ChbCircSearch.Visible := BtnMore.Tag = 1;
         GBoxDirection.Visible := BtnMore.Tag = 1;
         RdbtUp.Enabled := True;
-        BtnMore.Left := BtnFind.Left - BtnMore.Width - (BtnCancel.Left - BtnFind.Left - BtnFind.Width);
+        BtnMore.Left := BtnFind.Left - BtnMore.Width -
+          (BtnCancel.Left - BtnFind.Left - BtnFind.Width);
         BtnMore.Visible := True;
         if Visible then
           CboFind.SetFocus;
@@ -444,8 +447,11 @@ begin
         LblRep.Caption := STR_FRM_FIND[6];
         BtnFind.Caption := STR_FRM_FIND[12];
         BtnMore.Left := ChbDiffCase.Left;
-        BtnReplace.Left := BtnMore.Left + BtnMore.Width + (BtnCancel.Left - BtnFind.Left - BtnFind.Width);
-        GBoxRplcAll.Left := BtnReplace.Left + BtnReplace.Width + (BtnFind.Left - BtnReplace.Left - BtnReplace.Width - GBoxRplcAll.Width) div 2;
+        BtnReplace.Left := BtnMore.Left + BtnMore.Width +
+          (BtnCancel.Left - BtnFind.Left - BtnFind.Width);
+        GBoxRplcAll.Left := BtnReplace.Left + BtnReplace.Width +
+          (BtnFind.Left - BtnReplace.Left - BtnReplace.Width -
+          GBoxRplcAll.Width) div 2;
         LblRep.Visible := True;
         CboReplace.Visible := True;
         BtnReplace.Visible := True;
@@ -480,7 +486,8 @@ begin
         ChbCircSearch.Visible := False;
         GBoxDirection.Visible := False;
         BtnMore.Visible := not FindFilesRunning;
-        BtnMore.Left := BtnFind.Left - BtnMore.Width - (BtnCancel.Left - BtnFind.Left - BtnFind.Width);
+        BtnMore.Left := BtnFind.Left - BtnMore.Width -
+          (BtnCancel.Left - BtnFind.Left - BtnFind.Width);
         if Visible then
           CboFind.SetFocus;
       end;
@@ -542,7 +549,8 @@ begin
     Column, EndColumn, mitFound, False);
 end;
 
-procedure TFrmFind.FinishFindAll(const aSearch: string; Results: Integer; Canceled: Boolean);
+procedure TFrmFind.FinishFindAll(const aSearch: string; Results: Integer;
+  Canceled: Boolean);
 begin
   TabCtrl.TabIndex := 2;
   FindFilesRunning := False;
@@ -569,27 +577,27 @@ begin
   Close;
 end;
 
-function TFrmFind.StartFindAll(const OriFindText, aText: string; RegExp, Sensitive,
-  WholeWord: Boolean): Boolean;
+function TFrmFind.StartFindAll(const OriFindText, aText: string;
+  RegExp, Sensitive, WholeWord: Boolean): Boolean;
 var
   Files: TStrings;
   FileName: string;
   FileProp: TSourceFile;
   I, J, Results, Line, Column, EndColumn: Integer;
   // TODO: commented
-  //Search: TSynEditSearchCustom;
+  // Search: TSynEditSearchCustom;
   SourceSheet: TSourceFileSheet;
   // TODO: commented
-  //SearchFlags: TSynSearchOptions;
+  // SearchFlags: TSynSearchOptions;
   Lines: TStrings;
 
   procedure CheckIfCanceled;
   begin
     if FindFilesCanceled then
     begin
-      Files.Free;
-  // TODO: commented
-      //Search.Free;
+      Files.free;
+      // TODO: commented
+      // Search.Free;
       FinishFindAll(OriFindText, Results, FindFilesCanceled);
       Exit;
     end;
@@ -597,23 +605,23 @@ var
 
 begin
   // TODO: commented
-  //SearchFlags := [];
-  //if Sensitive then
-  //  SearchFlags := SearchFlags + [ssoMatchCase];
-  //if WholeWord then
-  //  SearchFlags := SearchFlags + [ssoWholeWord];
+  // SearchFlags := [];
+  // if Sensitive then
+  // SearchFlags := SearchFlags + [ssoMatchCase];
+  // if WholeWord then
+  // SearchFlags := SearchFlags + [ssoWholeWord];
   Result := False;
   Results := 0;
   Files := TStringList.Create;
   // TODO: commented
-  //if RegExp then
-  //  Search := TSynEditRegexSearch.Create(nil)
-  //else
-  //  Search := TSynEditSearch.Create(nil);
+  // if RegExp then
+  // Search := TSynEditRegexSearch.Create(nil)
+  // else
+  // Search := TSynEditSearch.Create(nil);
   CheckIfCanceled;
   // TODO: commented
-  //Search.Options := SearchFlags;
-  //Search.Pattern := aText;
+  // Search.Options := SearchFlags;
+  // Search.Pattern := aText;
   FrmFalconMain.ListViewMsg.Clear;
   I := FrmFalconMain.GetSourcesFiles(Files, True);
   ProgressBarFindFiles.Max := I;
@@ -624,34 +632,35 @@ begin
     ProgressBarFindFiles.Position := I + 1;
     FileProp := TSourceFile(Files.Objects[I]);
     FileName := FileProp.FileName;
-    LastFindFilesDescription := Format(STR_FRM_FIND[33], [OriFindText, FileProp.Name]);
+    LastFindFilesDescription := Format(STR_FRM_FIND[33],
+      [OriFindText, FileProp.Name]);
     LblRep.Caption := LastFindFilesDescription;
 
     if FileProp.GetSheet(SourceSheet) then
       Lines.Assign(SourceSheet.Editor.Lines)
     else
       FileProp.LoadFile(Lines);
-  // TODO: commented
-    //Results := Results + Search.FindAll(Lines.Text);
+    // TODO: commented
+    // Results := Results + Search.FindAll(Lines.Text);
     CheckIfCanceled;
-  // TODO: commented
-//    for J := 0 to Search.ResultCount - 1 do
-//    begin
-//      GetRowColFromCharIndex(Search.Results[J], Lines, Line, Column);
-//      if Column > 1 then
-//        Dec(Column);
-//      EndColumn := Column + Search.Lengths[J];
-//      ProgressFindFile(FileName, Format(STR_FRM_FIND[34],
-//        [OriFindText, Line, Column]), Line, Column, EndColumn);
-//      Application.ProcessMessages;
-//      CheckIfCanceled;
-//    end;
+    // TODO: commented
+    // for J := 0 to Search.ResultCount - 1 do
+    // begin
+    // GetRowColFromCharIndex(Search.Results[J], Lines, Line, Column);
+    // if Column > 1 then
+    // Dec(Column);
+    // EndColumn := Column + Search.Lengths[J];
+    // ProgressFindFile(FileName, Format(STR_FRM_FIND[34],
+    // [OriFindText, Line, Column]), Line, Column, EndColumn);
+    // Application.ProcessMessages;
+    // CheckIfCanceled;
+    // end;
     Application.ProcessMessages;
   end;
-  Lines.Free;
+  Lines.free;
   // TODO: commented
-  //Search.Free;
-  Files.Free;
+  // Search.Free;
+  Files.free;
   FinishFindAll(OriFindText, Results, FindFilesCanceled);
 end;
 
@@ -674,9 +683,10 @@ begin
     BtnMore.Tag := 1;
     BtnMoreClick(BtnMore);
     Search := CboFind.Text;
-    if RGrpSearchMode.ItemIndex = 1 then //resolve \n \r \t
+    if RGrpSearchMode.ItemIndex = 1 then // resolve \n \r \t
       Search := ResolveStr(Search);
-    StartFindAll(CboFind.Text, Search, RGrpSearchMode.ItemIndex = 2, ChbDiffCase.Checked, ChbFullWord.Checked);
+    StartFindAll(CboFind.Text, Search, RGrpSearchMode.ItemIndex = 2,
+      ChbDiffCase.Checked, ChbFullWord.Checked);
   end
   else
   begin
@@ -757,7 +767,7 @@ begin
     FindInFiles;
     Exit;
   end;
-  if not frm.GetActiveSheet(SourceSheet) then
+  if not Frm.GetActiveSheet(SourceSheet) then
     Exit;
   Editor := SourceSheet.Editor;
   if Editor.SelAvail then
@@ -771,7 +781,7 @@ begin
     EndPosition := StartPosition;
   end;
   Search := CboFind.Text;
-  if RGrpSearchMode.ItemIndex = 1 then //resolve \n \r \t
+  if RGrpSearchMode.ItemIndex = 1 then // resolve \n \r \t
     Search := ResolveStr(Search);
   SearchFlags := 0;
   if ChbDiffCase.Checked then
@@ -796,28 +806,30 @@ begin
     Exit;
   end;
   FrmFalconMain.SelectFromPosition(SearchResultStart, SearchResultEnd, Editor);
-  frm.LastSearch.Search := Search;
-  frm.LastSearch.SearchMode := RGrpSearchMode.ItemIndex;
-  frm.LastSearch.DiffCase := ChbDiffCase.Checked;
-  frm.LastSearch.FullWord := ChbFullWord.Checked;
+  Frm.LastSearch.Search := Search;
+  Frm.LastSearch.SearchMode := RGrpSearchMode.ItemIndex;
+  Frm.LastSearch.DiffCase := ChbDiffCase.Checked;
+  Frm.LastSearch.FullWord := ChbFullWord.Checked;
   if ChbTransp.Checked then
   begin
-    selRect.TopLeft := Editor.RowColumnToPixels(Editor.BufferToDisplayPos(Editor.BlockBegin));
-    selRect.BottomRight := Editor.RowColumnToPixels(Editor.BufferToDisplayPos(Editor.BlockEnd));
+    selRect.TopLeft := Editor.RowColumnToPixels
+      (Editor.BufferToDisplayPos(Editor.BlockBegin));
+    selRect.BottomRight := Editor.RowColumnToPixels
+      (Editor.BufferToDisplayPos(Editor.BlockEnd));
     Inc(selRect.Bottom, Editor.LineHeight);
     selRect.TopLeft := Editor.ClientToScreen(selRect.TopLeft);
     selRect.BottomRight := Editor.ClientToScreen(selRect.BottomRight);
     GetWindowRect(Handle, rect);
-    isAbove := PtInRect(rect, selRect.TopLeft) = TRUE;
+    isAbove := PtInRect(rect, selRect.TopLeft) = True;
     if not isAbove then
-      isAbove := PtInRect(rect, selRect.BottomRight) = TRUE;
+      isAbove := PtInRect(rect, selRect.BottomRight) = True;
     if not isAbove then
     begin
       Inc(selRect.Top, Editor.LineHeight);
       Dec(selRect.Bottom, Editor.LineHeight);
-      isAbove := PtInRect(rect, selRect.TopLeft) = TRUE;
+      isAbove := PtInRect(rect, selRect.TopLeft) = True;
       if not isAbove then
-        isAbove := PtInRect(rect, selRect.BottomRight) = TRUE;
+        isAbove := PtInRect(rect, selRect.BottomRight) = True;
     end;
     if isAbove then
     begin
@@ -841,13 +853,13 @@ procedure TFrmFind.BtnReplaceClick(Sender: TObject);
 var
   SourceSheet: TSourceFileSheet;
   Editor: TEditor;
-  Search, Replace, text: string;
+  Search, Replace: string;
   StartPosition, EndPosition: Integer;
   SearchResultStart, SearchResultEnd, SearchResultCount, ReplaceLength: Integer;
   UsingResearch: Boolean;
   SearchFlags: Integer;
 begin
-  if not frm.GetActiveSheet(SourceSheet) then
+  if not Frm.GetActiveSheet(SourceSheet) then
     Exit;
   UpdateReplaceHistoryList(CboReplace.Text);
   Editor := SourceSheet.Editor;
@@ -863,9 +875,9 @@ begin
   end;
   Search := CboFind.Text;
   Replace := CboReplace.Text;
-  if RGrpSearchMode.ItemIndex = 1 then //resolve \n \r \t
+  if RGrpSearchMode.ItemIndex = 1 then // resolve \n \r \t
     Search := ResolveStr(Search);
-  if RGrpSearchMode.ItemIndex = 1 then //resolve \n \r \t
+  if RGrpSearchMode.ItemIndex = 1 then // resolve \n \r \t
     Replace := ResolveStr(Replace);
   SearchFlags := 0;
   if ChbDiffCase.Checked then
@@ -874,8 +886,7 @@ begin
     SearchFlags := SearchFlags or SCFIND_WHOLEWORD;
   if RGrpSearchMode.ItemIndex = 2 then
     SearchFlags := SearchFlags or SCFIND_REGEXP;
-  //compare and Replace **********
-  text := Editor.SelText;
+  // compare and Replace **********
   SearchResultCount := Editor.SearchTextEx(Search, SearchFlags, StartPosition,
     EndPosition, ChbCircSearch.Checked, sdDown, SearchResultStart,
     SearchResultEnd, UsingResearch, StartPosition, EndPosition);
@@ -889,42 +900,72 @@ begin
       ReplaceLength := Editor.ReplaceTarget(Replace);
     Editor.SetCurrentPos(SearchResultStart + ReplaceLength);
   end;
-  //******************************
+  // ******************************
   BtnFindClick(Sender);
 end;
 
 procedure TFrmFind.BtnReplAllClick(Sender: TObject);
 var
   SourceSheet: TSourceFileSheet;
+  Editor: TEditor;
   Search, Replace: string;
-  Count: Integer;
-  //SearchFlags: TSynSearchOptions;
+  StartPosition, EndPosition: Integer;
+  SearchResultStart, SearchResultEnd, SearchResultCount, ReplaceLength: Integer;
+  UsingResearch: Boolean;
+  SearchFlags: Integer;
+  ReplaceCount: Integer;
 begin
-  if not frm.GetActiveSheet(SourceSheet) then
+  if not Frm.GetActiveSheet(SourceSheet) then
     Exit;
   UpdateReplaceHistoryList(CboReplace.Text);
+  Editor := SourceSheet.Editor;
+  if ChbReplSel.Checked and Editor.SelAvail then
+  begin
+    StartPosition := Editor.GetSelectionStart;
+    EndPosition := Editor.GetSelectionEnd;
+  end
+  else
+  begin
+    StartPosition := Editor.GetCurrentPos;
+    if ChbReplSel.Checked then
+      EndPosition := StartPosition
+    else
+      EndPosition := -1;
+  end;
   Search := CboFind.Text;
   Replace := CboReplace.Text;
-  if RGrpSearchMode.ItemIndex = 1 then //resolve \n \r \t
+  if RGrpSearchMode.ItemIndex = 1 then // resolve \n \r \t
     Search := ResolveStr(Search);
-  if RGrpSearchMode.ItemIndex = 1 then //resolve \n \r \t
+  if RGrpSearchMode.ItemIndex = 1 then // resolve \n \r \t
     Replace := ResolveStr(Replace);
-  // TODO: commented
-//  if RGrpSearchMode.ItemIndex = 2 then
-//    Editor.SearchEngine := FrmFalconMain.EditorRegexSearch
-//  else
-//    Editor.SearchEngine := FrmFalconMain.EditorSearch;
-//  SearchFlags := [ssoReplaceAll];
-//  if ChbReplSel.Checked then
-//    SearchFlags := SearchFlags + [ssoSelectedOnly]
-//  else if ChbCircSearch.Checked then
-//    SearchFlags := SearchFlags + [ssoEntireScope];
-//  if ChbDiffCase.Checked then
-//    SearchFlags := SearchFlags + [ssoMatchCase];
-//  if ChbFullWord.Checked then
-//    SearchFlags := SearchFlags + [ssoWholeWord];
-  //Count := Editor.SearchReplace(Search, Replace, SearchFlags);
-  MessageBox(Handle, PChar(Format(STR_FRM_FIND[31], [Count])),
+  SearchFlags := 0;
+  if ChbDiffCase.Checked then
+    SearchFlags := SearchFlags or SCFIND_MATCHCASE;
+  if ChbFullWord.Checked then
+    SearchFlags := SearchFlags or SCFIND_WHOLEWORD;
+  if RGrpSearchMode.ItemIndex = 2 then
+    SearchFlags := SearchFlags or SCFIND_REGEXP;
+  ReplaceCount := 0;
+  // compare and Replace **********
+  Editor.BeginUndoAction;
+  repeat
+    SearchResultCount := Editor.SearchTextEx(Search, SearchFlags, StartPosition,
+      EndPosition, ChbCircSearch.Checked, sdDown, SearchResultStart,
+      SearchResultEnd, UsingResearch, StartPosition, EndPosition);
+    if SearchResultCount <> 1 then
+      Break;
+    Editor.SetTargetStart(SearchResultStart);
+    Editor.SetTargetEnd(SearchResultEnd);
+    if (SearchFlags and SCFIND_REGEXP) = SCFIND_REGEXP then
+      ReplaceLength := Editor.ReplaceTargetRE(Replace)
+    else
+      ReplaceLength := Editor.ReplaceTarget(Replace);
+    StartPosition := SearchResultStart + ReplaceLength;
+    Editor.SetEmptySelection(StartPosition);
+    Inc(ReplaceCount);
+  until False;
+  Editor.EndUndoAction;
+  MessageBox(Handle, PChar(Format(STR_FRM_FIND[31], [ReplaceCount])),
     PChar(STR_FRM_FIND[9]), MB_OK);
 end;
 

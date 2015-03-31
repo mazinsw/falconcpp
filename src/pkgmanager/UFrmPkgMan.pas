@@ -308,10 +308,6 @@ begin
 
   PageControl.DoubleBuffered := True;
   Screen.Cursors[crHandPoint] := LoadCursor(0, IDC_HAND);
-  ConvertTo32BitImageList(ImgListToolbar);
-  ConvertTo32BitImageList(HotImgListToolbar);
-  ConvertTo32BitImageList(ImgPkgList);
-  ConvertTo32BitImageList(ImgListMenu);
 
   addimages(ImgListToolbar, 'NORIMG');
   addimages(HotImgListToolbar, 'HOTIMG');

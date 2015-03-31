@@ -349,7 +349,7 @@ begin
   Result := True;
   for I := 1 to FalconHelp.Count - 1 do
   begin
-    if CompareText(S, FalconHelp.Items[I].Caption) = 0 then
+    if SameText(S, FalconHelp.Items[I].Caption) then
     begin
       if FalconHelp.Items[I] is TDataSubMenuItem then
       begin
@@ -362,7 +362,7 @@ begin
   begin
     for I := 1 to aHelpMenu.Count - 1 do
     begin
-      if CompareText(S, aHelpMenu.Items[I].Caption) = 0 then
+      if SameText(S, aHelpMenu.Items[I].Caption) then
       begin
         if aHelpMenu.Items[I] is TDataSubMenuItem then
         begin
@@ -439,7 +439,7 @@ var
       Exit;
     end;
     //check for icon image with the extension
-    if CompareText(ExtractFileExt(ImageName), '.ico') = 0 then
+    if SameText(ExtractFileExt(ImageName), '.ico') then
     begin
       AIcon := TIcon.Create;
       try
@@ -483,7 +483,7 @@ var
       ini.ReadSection('Files', List);
       for X := 0 to List.Count - 1 do
       begin
-        if CompareText(List.Strings[X], 'Default') = 0 then
+        if SameText(List.Strings[X], 'Default') then
         begin
           Temp := ini.ReadString('Files', List.Strings[X], '');
           Temp := ini.ReadString('Files', Temp, '');
@@ -504,7 +504,7 @@ var
       ini.ReadSection('FilesCpp', List);
       for X := 0 to List.Count - 1 do
       begin
-        if CompareText(List.Strings[X], 'Default') = 0 then
+        if SameText(List.Strings[X], 'Default') then
         begin
           Temp := ini.ReadString('FilesCpp', List.Strings[X], '');
           Temp := ini.ReadString('FilesCpp', Temp, '');
@@ -628,17 +628,17 @@ begin
   FDescription := ini.ReadString('Falcon', 'Description', '');
   FCaption := ini.ReadString('Falcon', 'Caption', '');
   compiler := ini.ReadString('Falcon', 'Type', 'C');
-  if (CompareText(compiler, 'C') = 0) or (CompareText(compiler, 'CC') = 0) then
+  if SameText(compiler, 'C') or SameText(compiler, 'CC') then
     FCompilerType := COMPILER_C
-  else if (CompareText(compiler, 'CPP') = 0) or
-    (CompareText(compiler, 'C++') = 0) or
-    (CompareText(compiler, 'CXX') = 0) then
+  else if SameText(compiler, 'CPP') or
+    SameText(compiler, 'C++') or
+    SameText(compiler, 'CXX') then
     FCompilerType := COMPILER_CPP
-  else if (CompareText(compiler, 'RC') = 0) then
+  else if SameText(compiler, 'RC') then
     FCompilerType := COMPILER_RC
-  else if (CompareText(compiler, 'USER_DEFINED') = 0) or
-    (CompareText(compiler, 'USER') = 0) or
-    (CompareText(compiler, 'DEFINED') = 0) then
+  else if SameText(compiler, 'USER_DEFINED') or
+    SameText(compiler, 'USER') or
+    SameText(compiler, 'DEFINED') then
     FCompilerType := USER_DEFINED
   else
     FCompilerType := NO_COMPILER;
@@ -796,8 +796,8 @@ begin
   Result := nil;
   for I := 0 to Count - 1 do
   begin
-    if (CompareText(Sheet, Templates[I].Sheet) = 0) and
-      (CompareText(Caption, Templates[I].Caption) = 0) then
+    if SameText(Sheet, Templates[I].Sheet) and
+       SameText(Caption, Templates[I].Caption) then
     begin
       Result := Templates[I];
       Exit;

@@ -11,30 +11,27 @@ uses
   Windows,
   SysUtils,
   Forms,
-  UFraFnsh in 'UFraFnsh.pas' { FraFnsh: TFrame } ,
-  UFraReadMe in 'UFraReadMe.pas' { FraReadMe: TFrame } ,
-  UFraPrgs in 'UFraPrgs.pas' { FraPrgs: TFrame } ,
-  UFraSteps in 'UFraSteps.pas' { FraSteps: TFrame } ,
-  UFraWelcome in 'UFraWelcome.pas' { FraWelc: TFrame } ,
-  UFrmWizard in 'UFrmWizard.pas' { FrmWizard } ,
-  UFraDesc in 'UFraDesc.pas' { FraDesc: TFrame } ,
-  UFraAgrmt in 'UFraAgrmt.pas' { FraAgrmt: TFrame } ,
+  UFraFnsh in 'UFraFnsh.pas' {FraFnsh: TFrame},
+  UFraReadMe in 'UFraReadMe.pas' {FraReadMe: TFrame},
+  UFraPrgs in 'UFraPrgs.pas' {FraPrgs: TFrame},
+  UFraSteps in 'UFraSteps.pas' {FraSteps: TFrame},
+  UFraWelcome in 'UFraWelcome.pas' {FraWelc: TFrame},
+  UFrmWizard in 'UFrmWizard.pas' {FrmWizard},
+  UFraDesc in 'UFraDesc.pas' {FraDesc: TFrame},
+  UFraAgrmt in 'UFraAgrmt.pas' {FraAgrmt: TFrame},
   UInstaller in 'UInstaller.pas',
-  UFrmLoad in 'UFrmLoad.pas' { FrmLoad } ,
-  UFrmPkgMan in 'UFrmPkgMan.pas' { FrmPkgMan } ,
+  UFrmLoad in 'UFrmLoad.pas' {FrmLoad},
+  UFrmPkgMan in 'UFrmPkgMan.pas' {FrmPkgMan},
   LoadImage in 'LoadImage.pas',
-  UFrmUninstall in 'UFrmUninstall.pas' { FrmUninstall } ,
+  UFrmUninstall in 'UFrmUninstall.pas' {FrmUninstall},
   UUninstaller in 'UUninstaller.pas',
-  BZip2 in '..\others\bzip2\BZip2.pas',
   LibTar in '..\others\libtar\LibTar.pas',
   CompressUtils in '..\others\compressutils\CompressUtils.pas',
   StrMatch in '..\others\compressutils\StrMatch.pas',
-  UFrmPkgDownload in 'UFrmPkgDownload.pas' { FrmPkgDownload } ,
+  UFrmPkgDownload in 'UFrmPkgDownload.pas' {FrmPkgDownload},
   UPkgClasses in 'UPkgClasses.pas',
-  UFrmHelp in 'UFrmHelp.pas' { FrmHelp } ,
+  UFrmHelp in 'UFrmHelp.pas' {FrmHelp},
   rbtree in '..\falconcpp\rbtree.pas',
-  FastcodePatch in '..\others\nativehint\FastcodePatch.pas',
-  NativeHintWindow in '..\others\nativehint\NativeHintWindow.pas',
   ULanguages in 'ULanguages.pas',
   PkgUtils in 'PkgUtils.pas',
   KAZip in '..\others\zip\KAZip.pas',
@@ -51,11 +48,9 @@ uses
   GB2312Freq in '..\others\encoding\chsdet\src\GB2312Freq.pas',
   JISFreq in '..\others\encoding\chsdet\src\JISFreq.pas',
   JpCntx in '..\others\encoding\chsdet\src\JpCntx.pas',
-  MBUnicodeMultiProber in
-  '..\others\encoding\chsdet\src\MBUnicodeMultiProber.pas',
+  MBUnicodeMultiProber in '..\others\encoding\chsdet\src\MBUnicodeMultiProber.pas',
   MultiModelProber in '..\others\encoding\chsdet\src\MultiModelProber.pas',
-  nsCodingStateMachine in
-  '..\others\encoding\chsdet\src\nsCodingStateMachine.pas',
+  nsCodingStateMachine in '..\others\encoding\chsdet\src\nsCodingStateMachine.pas',
   nsCore in '..\others\encoding\chsdet\src\nsCore.pas',
   nsEscCharsetProber in '..\others\encoding\chsdet\src\nsEscCharsetProber.pas',
   nsGroupProber in '..\others\encoding\chsdet\src\nsGroupProber.pas',
@@ -65,18 +60,15 @@ uses
   nsPkg in '..\others\encoding\chsdet\src\nsPkg.pas',
   nsSBCharSetProber in '..\others\encoding\chsdet\src\nsSBCharSetProber.pas',
   nsSBCSGroupProber in '..\others\encoding\chsdet\src\nsSBCSGroupProber.pas',
-  nsUniversalDetector in '..\others\encoding\chsdet\src\nsUniversalDetector.pas'
-  ,
+  nsUniversalDetector in '..\others\encoding\chsdet\src\nsUniversalDetector.pas',
   vi in '..\others\encoding\chsdet\src\vi.pas',
-  LangBulgarianModel in
-  '..\others\encoding\chsdet\src\sbseq\LangBulgarianModel.pas',
-  LangCyrillicModel in
-  '..\others\encoding\chsdet\src\sbseq\LangCyrillicModel.pas',
+  LangBulgarianModel in '..\others\encoding\chsdet\src\sbseq\LangBulgarianModel.pas',
+  LangCyrillicModel in '..\others\encoding\chsdet\src\sbseq\LangCyrillicModel.pas',
   LangGreekModel in '..\others\encoding\chsdet\src\sbseq\LangGreekModel.pas',
   LangHebrewModel in '..\others\encoding\chsdet\src\sbseq\LangHebrewModel.pas',
   AppConst in '..\falconcpp\AppConst.pas';
 
-// {$DEFINE PKGMAN_RUNAS}
+{.$DEFINE PKGMAN_RUNAS}
 {$IFDEF FALCON_PORTABLE}
 {$R resources_portable.RES}
 {$ELSE}
@@ -121,7 +113,7 @@ begin
       Application.Initialize;
       Application.Title := 'Falcon C++ Install Wizard';
       Application.CreateForm(TFrmWizard, FrmWizard);
-      Application.Run;
+  Application.Run;
     end
     else
       ExitCode := 1;

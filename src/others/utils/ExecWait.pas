@@ -22,11 +22,10 @@ unit ExecWait;
 interface
 
 uses
-{$IFDEF WIN32}
-  Windows, Classes;
-{$ENDIF}
 {$IFDEF LINUX}
-Classes;
+  Classes;
+{$ELSE}
+  Windows, Classes;
 {$ENDIF}
 
 type

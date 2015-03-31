@@ -31,7 +31,7 @@ function ResolveUnixFileName(const Str: string): string;
 
 implementation
 
-uses StrUtils, UFrmMain, ULanguages, TokenUtils, PerlRegEx;
+uses StrUtils, UFrmMain, ULanguages, TokenUtils, RegularExpressionsCore;
 
 constructor TMessageItem.Create;
 begin

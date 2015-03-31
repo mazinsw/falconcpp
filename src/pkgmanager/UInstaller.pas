@@ -225,7 +225,6 @@ begin
     Error := Format(STR_FRM_WIZARD[12], [ADest]);
     Exit;
   end;
-
   Decomp := nil;
   try
     Size := Source.Size;

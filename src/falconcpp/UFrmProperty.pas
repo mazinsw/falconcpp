@@ -605,7 +605,7 @@ begin
         end
         else
         begin
-          if CompareText(ExtractFileExt(FileName), '.a') = 0 then
+          if SameText(ExtractFileExt(FileName), '.a') then
           begin
             CBLibs.Text := StringReplace(ExtractName(FileName),
               'lib', '-l', []);

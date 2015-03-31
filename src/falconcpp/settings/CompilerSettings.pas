@@ -133,7 +133,7 @@ begin
   for I := 0 to Variables.Count - 1 do
   begin
     Variable := TVariable(Variables[I]);
-    if CompareText(Variable.Name, Key) = 0 then
+    if SameText(Variable.Name, Key) then
     begin
       Result := Variable.Value;
       Break;
@@ -243,7 +243,7 @@ begin
   FLinker.Free;
   FMake.Free;
   for I := High(TCompilerType) downto Low(TCompilerType) do
-    FCompilers[I] := TCompilerTool.Create;
+    FCompilers[I].Free;
   inherited;
 end;
 
@@ -333,7 +333,7 @@ end;
 
 function TMakeTool.FindValue(const Key: string; Variables: TList): string;
 begin
-  if CompareText(Key, 'processors') = 0 then
+  if SameText(Key, 'processors') then
     Result := IntToStr(FJobs)
   else
     inherited FindValue(Key, Variables);
@@ -343,7 +343,7 @@ end;
 
 function TCompilerTool.FindValue(const Key: string; Variables: TList): string;
 begin
-  if CompareText(Key, 'compiler') = 0 then
+  if SameText(Key, 'compiler') then
     Result := Executable
   else
     inherited FindValue(Key, Variables);

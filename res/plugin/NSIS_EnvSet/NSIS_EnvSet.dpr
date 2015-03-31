@@ -6,7 +6,7 @@ uses
 function InternalSetGlobalEnvironment(const Name, Value: string;
   const User: Boolean = True): Boolean;
 var
-  rv: DWORD;
+  rv: DWORD_PTR;
 begin
   with TRegistry.Create do
     try
@@ -22,7 +22,7 @@ begin
       begin
         WriteExpandString(Name, Value);
         SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE,
-          0, Integer(PChar('Environment')), SMTO_ABORTIFHUNG, 5000, rv);
+          0, Integer(PChar('Environment')), SMTO_ABORTIFHUNG, 5000, @rv);
       end;
     finally
       Free;

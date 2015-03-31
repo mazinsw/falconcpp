@@ -51,11 +51,13 @@
 
 class nsSJISProber: public nsCharSetProber {
 public:
-  nsSJISProber(void){mCodingSM = new nsCodingStateMachine(&SJISSMModel);
-                      Reset();}
+  nsSJISProber(PRBool aIsPreferredLanguage)
+    :mIsPreferredLanguage(aIsPreferredLanguage)
+  {mCodingSM = new nsCodingStateMachine(&SJISSMModel);
+    Reset();}
   virtual ~nsSJISProber(void){delete mCodingSM;}
   nsProbingState HandleData(const char* aBuf, PRUint32 aLen);
-  const char* GetCharSetName() {return "Shift_JIS";}
+  const char* GetCharSetName() {return "SHIFT_JIS";}
   nsProbingState GetState(void) {return mState;}
   void      Reset(void);
   float     GetConfidence(void);
@@ -69,6 +71,7 @@ protected:
   SJISDistributionAnalysis mDistributionAnalyser;
 
   char mLastChar[2];
+  PRBool mIsPreferredLanguage;
 
 };
 

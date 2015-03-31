@@ -102,7 +102,7 @@ begin
   end;
   FPluginGetVersion := FuncPtr;
   sptr := FPluginGetVersion();
-  if CompareText(string(StrPas(sptr)), Plugin_Version) <> 0 then
+  if not SameText(string(StrPas(sptr)), Plugin_Version) then
   begin
     FreeLibrary(FHandle);
     FHandle := 0;

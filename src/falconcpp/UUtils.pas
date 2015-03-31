@@ -108,7 +108,7 @@ function StartsWith(const S, Token: string): Boolean;
 implementation
 
 uses UFrmMain, ULanguages, UConfig, TokenUtils, StrUtils,
-  UxTheme, icoformat, PerlRegEx, SystemUtils;
+  UxTheme, icoformat, RegularExpressionsCore, SystemUtils;
 
 { ---------- Font Methods ---------- }
 
@@ -230,7 +230,7 @@ procedure SearchCompilers(List: TStrings; var PathCompiler: string);
     Result := -1;
     for I := 0 to aList.Count - 1 do
     begin
-      if CompareText(aList.Strings[I], S) = 0 then
+      if SameText(aList.Strings[I], S) then
       begin
         Result := I;
         Break;
@@ -276,6 +276,12 @@ begin
 
   //MinGW
   BaseDir := ExtractFileDrive(ProgFiles) + '\MinGW';
+  if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
+    (findString(BaseDir, List) < 0) then
+    List.Add(BaseDir);
+
+  //TDM-GCC-64
+  BaseDir := ExtractFileDrive(ProgFiles) + '\TDM-GCC-64';
   if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
     (findString(BaseDir, List) < 0) then
     List.Add(BaseDir);
@@ -757,7 +763,7 @@ begin
       if CompareStr(S, Strings[I]) = 0 then
         Exit;
     end
-    else if CompareText(S, Strings[I]) = 0 then
+    else if SameText(S, Strings[I]) then
       Exit;
   end;
   Result := False;
@@ -769,15 +775,15 @@ var
 begin
   Result := FILE_TYPE_UNKNOW;
   Ext := ExtractFileExt(AFileName);
-  if CompareText(Ext, '.fpj') = 0 then
+  if SameText(Ext, '.fpj') then
     Result := FILE_TYPE_PROJECT
-  else if CompareText(Ext, '.c') = 0 then
+  else if SameText(Ext, '.c') then
     Result := FILE_TYPE_C
   else if InStrCmp(Ext, ['.cpp', '.cc', '.cxx', '.c++', '.cp']) then
     Result := FILE_TYPE_CPP
   else if InStrCmp(Ext, ['.h', '.hpp', '.rh', '.hh']) then
     Result := FILE_TYPE_H
-  else if CompareText(Ext, '.rc') = 0 then
+  else if SameText(Ext, '.rc') then
     Result := FILE_TYPE_RC;
 end;
 
@@ -1085,7 +1091,7 @@ end;
 
 function HumanToBool(Resp: string): Boolean;
 begin
-  if (CompareText(Resp, 'Yes') = 0) or (Resp = '1') then
+  if SameText(Resp, 'Yes') or (Resp = '1') then
     Result := True
   else
     Result := False;
@@ -1123,7 +1129,7 @@ begin
   begin
     Node := FrmFalconMain.TreeViewProjects.Items.Item[I];
     ActFile := TSourceFile(Node.Data);
-    if CompareText(ActFile.FileName, FileName) = 0 then
+    if SameText(ActFile.FileName, FileName) then
     begin
       Result := True;
       FileProp := ActFile;
@@ -1179,7 +1185,7 @@ begin
   for I := List.Count - 1 downto 0 do
   begin
     Ext := ExtractFileExt(List.Strings[I]);
-    if CompareText(Ext, '.RC') = 0 then
+    if SameText(Ext, '.RC') then
     begin
       Result := True;
       List.Delete(I);
@@ -1199,7 +1205,7 @@ function NextProjectName(FirstName, Ext: string; Nodes: TTreeNodes): string;
     while Node <> nil do
     begin
       Caption := ExtractFileName(TSourceFile(Node.Data).FileName);
-      if CompareText(Caption, FileName) = 0 then
+      if SameText(Caption, FileName) then
       begin
         Result := True;
         Exit;

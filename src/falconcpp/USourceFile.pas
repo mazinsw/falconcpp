@@ -662,7 +662,7 @@ begin
   for I := 0 to Node.Count - 1 do
   begin
     fp := TSourceFile(Node.Item[I].Data);
-    if CompareText(fp.Name, Name) = 0 then
+    if SameText(fp.Name, Name) then
     begin
       FileProp := fp;
       Result := True;
@@ -977,6 +977,7 @@ begin
     Sheet.Font.Color := clRed
   else
     Sheet.Font.Color := clWindowText;
+  Sheet.Caption := Name;
 end;
 
 procedure TSourceFile.Close;
@@ -1707,7 +1708,7 @@ begin
     Node := FilesNode.ChildNodes.First;
     while Node <> nil do
     begin
-      if CompareText(Node.NodeName, 'File') = 0 then
+      if SameText(Node.NodeName, 'File') then
       begin
         if not Node.HasAttribute('Name') then
         begin
@@ -2101,7 +2102,7 @@ procedure TProjectFile.SaveAs(const FileName: string);
 var
   OldFileName, OldName: string;
 begin
-  if CompareText(FileName, FFileName) <> 0 then
+  if not SameText(FileName, FFileName) then
   begin
     if Saved and not Editing and FileExists(FFileName) then
     begin
@@ -2430,7 +2431,7 @@ begin
 // update equal target
   if (AppType = APPTYPE_LIB) then
   begin
-    if CompareText('lib' + ExtractName(FileName), ExtractName(Target)) = 0 then
+    if SameText('lib' + ExtractName(FileName), ExtractName(Target)) then
     begin
       Target := 'lib' + ExtractName(Value) + ExtractFileExt(Target);
       PropertyChanged := True;
@@ -2439,7 +2440,7 @@ begin
   else
   begin
     if (Target <> '') and
-      (CompareText(ExtractName(FileName), ExtractName(Target)) = 0) then
+      SameText(ExtractName(FileName), ExtractName(Target)) then
     begin
       Target := ExtractName(Value) + ExtractFileExt(Target);
       PropertyChanged := True;
@@ -2490,7 +2491,6 @@ begin
   FListView := TListView.Create(Self);
   FListView.Parent := Self;
   FListView.Align := alClient;
-  //FListView.BorderStyle := bsNone;
   FListView.DoubleBuffered := True;
   FListView.HideSelection := False;
   FListView.ReadOnly := True;
@@ -2517,25 +2517,7 @@ begin
     SynMemo.Folding := True;
     SynMemo.ShowIndentGuides := True;
     //------------ General --------------------------//
-//    if AutoIndent then
-//      Include(Options, eoAutoIndent)
-//    else
-//      Exclude(Options, eoAutoIndent);
-    //find text at cursor
     SynMemo.InsertMode := InsertMode;
-//    if GroupUndo then
-//      Include(Options, eoGroupUndo)
-//    else
-//      Exclude(Options, eoGroupUndo);
-    //remove file on close
-//    if TabIndentUnindent then
-//      Include(Options, eoTabIndent)
-//    else
-//      Exclude(Options, eoTabIndent);
-//    if SmartTabs then
-//      Include(Options, eoSmartTabs)
-//    else
-//      Exclude(Options, eoSmartTabs);
     SynMemo.SetUseTabs(UseTabChar);
     if ShowSpaceChars then
       SynMemo.SetViewWS(SCWS_VISIBLEALWAYS)
@@ -2553,7 +2535,6 @@ begin
       SynMemo.SetEdgeMode(EDGE_NONE);
     SynMemo.ShowGutter := ShowGutter;
     SynMemo.ShowLineNumber := ShowLineNumber;
-    //-------------- Colors -------------------------//
   end;
   SynMemo.EndUpdate;
 end;

@@ -2,7 +2,7 @@
 <Project>
 	<VersionInfo>
 		<VersionNumbers Major="2" Minor="0" Release="5" Build="1"/>
-		<LanguageID Value="1046"/>
+		<LanguageID Value="1033"/>
 		<CharsetID Value="1252"/>
 		<CompanyName Value="Jim Pattee"/>
 		<FileVersion Value="2.0.5.1"/>
@@ -15,15 +15,15 @@
 		<ProductVersion Value="2.0.5.1"/>
 		<AutoIncrementBuild Value="No"/>
 	</VersionInfo>
-	<Libs Value="-shared -Wl,--kill-at"/>
-	<Flags Value="-DASTYLE_LIB -DNDEBUG"/>
-	<Target Value="../../../../bin/AStyle.dll"/>
+	<Libs Value="-shared -Wl,--kill-at -m32"/>
+	<Flags Value="-DASTYLE_LIB -DNDEBUG -m32"/>
+	<Target Value="../../../../bin/x86/AStyle.dll"/>
 	<CommandLine Value=""/>
 	<CompilerOptions Value="-Wall -s -O2"/>
 	<DeleteObjectsBefore Value="Yes"/>
 	<DeleteObjectsAfter Value="Yes"/>
-	<DeleteMakefileAfter Value="No"/>
-	<DeleteResourcesAfter Value="No"/>
+	<DeleteMakefileAfter Value="Yes"/>
+	<DeleteResourcesAfter Value="Yes"/>
 	<EnableTheme Value="No"/>
 	<RequiresAdmin Value="No"/>
 	<CompilerType Value="CPP"/>

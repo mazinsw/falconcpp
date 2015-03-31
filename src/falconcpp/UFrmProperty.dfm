@@ -32,6 +32,10 @@ object FrmProperty: TFrmProperty
     TabOrder = 0
     object TSApp: TTabSheet
       Caption = 'Application'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         489
         400)
@@ -167,6 +171,10 @@ object FrmProperty: TFrmProperty
     object TSVersion: TTabSheet
       Caption = 'Version Info'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         489
         400)
@@ -428,6 +436,10 @@ object FrmProperty: TFrmProperty
     object TSCompiler: TTabSheet
       Caption = 'Compiler'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         489
         400)
@@ -442,6 +454,10 @@ object FrmProperty: TFrmProperty
         object GrbLibs: TTabSheet
           Caption = 'Libraries'
           ImageIndex = -1
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
           DesignSize = (
             465
             188)
@@ -805,6 +821,10 @@ object FrmProperty: TFrmProperty
         object GrbIncs: TTabSheet
           Caption = 'Includes'
           ImageIndex = -1
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
           DesignSize = (
             465
             188)
@@ -1261,6 +1281,10 @@ object FrmProperty: TFrmProperty
     object TSRun: TTabSheet
       Caption = 'Run'
       ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         489
         400)

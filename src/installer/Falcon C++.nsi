@@ -4,6 +4,8 @@
 
   !include "MUI2.nsh"
   !include "FileFunc.nsh"
+  !include "x64.nsh"
+  !include "LogicLib.nsh"
 
   !define MUI_ICON "${NSISDIR}\Contrib\Graphics\Icons\orange-install.ico"
   !define MUI_HEADERIMAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Header\orange.bmp"
@@ -12,11 +14,13 @@
   !define MUI_FINISHPAGE_RUN_TEXT "Falcon C++"
   !define MUI_FINISHPAGE_RUN_FUNCTION "LaunchLink"
 
-!addplugindir /x86-unicode "..\..\res\plugin\"
+!addplugindir /x86-unicode "..\..\res\plugin\x86"
+;!addplugindir /x64-unicode "..\..\res\plugin\x64"
 ;--------------------------------
 ; define
   !define PROJECT_NAME "Falcon C++"
-  !define REG_UNINSTALL "Software\Microsoft\Windows\CurrentVersion\Uninstall\Falcon"
+  !define PROGRAM_NAME "Falcon"
+  !define REG_UNINSTALL "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROGRAM_NAME}"
   !define SHCNE_ASSOCCHANGED 0x08000000
   !define SHCNF_IDLIST 0
   !define MAJ_VERSION "3.3"
@@ -39,16 +43,16 @@
   Name "${PROJECT_NAME}"
 ;!define WITH_MINGW
 !ifdef WITH_MINGW
-  OutFile "..\..\bin\Falcon C++-${APP_VERSION}-Setup.exe"
+  OutFile "..\..\bin\${ARCH}\Falcon C++-${APP_VERSION}-${ARCH_NAME}-Setup.exe"
 !else  
-  OutFile "..\..\bin\Falcon C++-${APP_VERSION}-No-MinGW-Setup.exe"
+  OutFile "..\..\bin\${ARCH}\Falcon C++-${APP_VERSION}-No-MinGW-${ARCH_NAME}-Setup.exe"
 !endif
 
   ;Default installation folder
-  InstallDir "$PROGRAMFILES\Falcon"
+  InstallDir "$PROGRAMFILES\${PROGRAM_NAME}"
 
   ;Get installation folder from registry if available
-  InstallDirRegKey HKLM "Software\Falcon" ""
+  InstallDirRegKey HKLM "Software\${PROGRAM_NAME}" ""
   
   RequestExecutionLevel admin
   
@@ -74,7 +78,7 @@
 
   ;Remember the installer language
   !define MUI_LANGDLL_REGISTRY_ROOT "HKLM" 
-  !define MUI_LANGDLL_REGISTRY_KEY "Software\Falcon" 
+  !define MUI_LANGDLL_REGISTRY_KEY "Software\${PROGRAM_NAME}" 
   !define MUI_LANGDLL_REGISTRY_VALUENAME "Installer Language"
 
 ;--------------------------------
@@ -233,18 +237,12 @@ SectionGroup "${PROJECT_NAME}" GroupFalcon
     diffexe:
     ;goto here if not equal
 
-    File "..\..\bin\Falcon.exe"
-    File "..\..\bin\SciLexer.dll"
-    File "..\..\bin\Updater.exe"
-    File "..\..\bin\AStyle.dll"
-    File "..\..\bin\ConsoleRunner.exe"
-    
-    StrCmp "$INSTDIR" "$PROGRAMFILES\Falcon" 0 noadm
-      File "..\..\bin\PkgManager.exe"
-      Goto endadm
-    noadm: 
-      File "/oname=$INSTDIR\PkgManager.exe" "..\..\bin\PkgManager_no_adm.exe"
-    endadm:
+    File "..\..\bin\${ARCH}\Falcon.exe"
+    File "..\..\bin\${ARCH}\SciLexer.dll"
+    File "..\..\bin\${ARCH}\Updater.exe"
+    File "..\..\bin\${ARCH}\AStyle.dll"
+    File "..\..\bin\${ARCH}\ConsoleRunner.exe"
+    File "..\..\bin\${ARCH}\PkgManager.exe"
     
     ;Create uninstaller
     WriteUninstaller "$INSTDIR\Uninstall.exe"
@@ -276,23 +274,23 @@ SectionGroup "${PROJECT_NAME}" GroupFalcon
     WriteRegStr   HKLM "${REG_UNINSTALL}" "UninstallString" "$INSTDIR\Uninstall.exe"
     
     ; save install dir
-    WriteRegStr HKLM "Software\Falcon" "" $INSTDIR
-    WriteRegStr HKLM "Software\Falcon" "Version" "${APP_VERSION}"
+    WriteRegStr HKLM "Software\${PROGRAM_NAME}" "" $INSTDIR
+    WriteRegStr HKLM "Software\${PROGRAM_NAME}" "Version" "${APP_VERSION}"
 
     ;write language id
     SetShellVarContext current
-    CreateDirectory "$APPDATA\Falcon"
-    WriteINIStr "$APPDATA\Falcon\Config.ini" "EnvironmentOptions" "LanguageID" $LANGUAGE
+    CreateDirectory "$APPDATA\${PROGRAM_NAME}"
+    WriteINIStr "$APPDATA\${PROGRAM_NAME}\Config.ini" "EnvironmentOptions" "LanguageID" $LANGUAGE
     
     ;Custom Code Template
-    SetOutPath "$APPDATA\Falcon"
-    IfFileExists "$APPDATA\Falcon\CustomAutoComplete.txt" file_found 0
+    SetOutPath "$APPDATA\${PROGRAM_NAME}"
+    IfFileExists "$APPDATA\${PROGRAM_NAME}\CustomAutoComplete.txt" file_found 0
       File "..\..\res\CustomAutoComplete.txt"
     file_found:
     SetOutPath "$INSTDIR"
    
    ;reaload all source files to cache
-    WriteINIStr "$APPDATA\Falcon\Config.ini" "Packages" "NewInstalled" -1
+    WriteINIStr "$APPDATA\${PROGRAM_NAME}\Config.ini" "Packages" "NewInstalled" -1
  
     ; fpj Falcon C++ Project File
     !insertmacro ADD_EXT_CMD "fpj" "$(DESC_Assoc_FPJ)" "Falcon.exe" "Falcon.exe"
@@ -404,7 +402,7 @@ Section "$(NAME_SecMinGW)" SecMinGW
   
   ;write compiler path
   SetShellVarContext current
-  WriteINIStr "$APPDATA\Falcon\Config.ini" "CompilerOptions" "Path" "$INSTDIR\MinGW"
+  WriteINIStr "$APPDATA\${PROGRAM_NAME}\Config.ini" "CompilerOptions" "Path" "$INSTDIR\MinGW"
   
   DetailPrint "$(DESC_AdjEnvVar)"
   NSIS_EnvSet::AddVariableToPath "$INSTDIR\MinGW\bin"
@@ -453,7 +451,7 @@ Section "Un.Falcon C++" UnSecCore
   Delete "$INSTDIR\PkgManager.exe"
   Delete "$INSTDIR\Updater.exe"
   ;delete tools
-  Delete "$INSTDIR\astyle.dll"
+  Delete "$INSTDIR\AStyle.dll"
   Delete "$INSTDIR\ConsoleRunner.exe"
   Delete "$INSTDIR\Uninstall.exe"
   RMDir  "$INSTDIR"
@@ -466,7 +464,7 @@ Section "Un.Falcon C++" UnSecCore
   DeleteRegKey HKCR "ftm.file"
   DeleteRegKey HKCR ".fpk"
   DeleteRegKey HKCR "fpk.file"
-  DeleteRegKey HKLM "Software\Falcon"
+  DeleteRegKey HKLM "Software\${PROGRAM_NAME}"
   Call Un.RefreshShellIcons
   
 SectionEnd
@@ -487,7 +485,7 @@ SectionEnd
 Function .onInit
 
   !insertmacro MUI_LANGDLL_DISPLAY
-  ReadRegStr $2 HKLM "Software\Falcon" ""
+  ReadRegStr $2 HKLM "Software\${PROGRAM_NAME}" ""
   ${If} $2 == ""
     ReadRegStr $2 HKLM "${REG_UNINSTALL}" "UninstallString"
     ${If} $2 != ""
@@ -495,6 +493,12 @@ Function .onInit
       StrCpy $INSTDIR $0
     ${EndIf}
   ${EndIf}
+
+  ${If} ${ARCH} == "x64"
+    StrCpy $InstDir "$PROGRAMFILES64\${PROGRAM_NAME}"
+  ${Else}
+    StrCpy $InstDir "$PROGRAMFILES32\${PROGRAM_NAME}"
+  ${Endif}
 
 FunctionEnd
 
@@ -541,7 +545,7 @@ FunctionEnd
 ;Launch after instalation function
 
 Function LaunchLink
-  SetOutPath "$INSTDIR"  
+  SetOutPath "$INSTDIR"
   ExecShell "open" "$INSTDIR\Falcon.exe"
 FunctionEnd
 

@@ -1,0 +1,44 @@
+CPP    = g++
+WINDRES= windres
+RM     = rm -f
+OBJS   = ../src/astyle_main.o \
+         ../src/ASResource.o \
+         ../src/ASFormatter.o \
+         ../src/ASEnhancer.o \
+         ../src/ASBeautifier.o \
+         AppResource.res
+
+LIBS   = -shared -Wl,--kill-at -m32
+CFLAGS = -DASTYLE_LIB -DNDEBUG -m32 -fno-diagnostics-show-option
+
+.PHONY: ../../../../bin/x86/AStyle.dll clean clean-after
+
+all: ../../../../bin/x86/AStyle.dll
+
+clean:
+	$(RM) $(OBJS) ../../../../bin/x86/AStyle.dll
+
+clean-after:
+	$(RM) $(OBJS)
+
+../../../../bin/x86/AStyle.dll: $(OBJS)
+	$(CPP) -Wall -s -O2 -o $@ $(OBJS) $(LIBS)
+
+../src/astyle_main.o: ../src/astyle_main.cpp ../src/astyle_main.h
+	$(CPP) -Wall -s -O2 -c $< -o $@ $(CFLAGS)
+
+../src/ASResource.o: ../src/ASResource.cpp ../src/astyle.h
+	$(CPP) -Wall -s -O2 -c $< -o $@ $(CFLAGS)
+
+../src/ASFormatter.o: ../src/ASFormatter.cpp ../src/astyle.h
+	$(CPP) -Wall -s -O2 -c $< -o $@ $(CFLAGS)
+
+../src/ASEnhancer.o: ../src/ASEnhancer.cpp ../src/astyle.h
+	$(CPP) -Wall -s -O2 -c $< -o $@ $(CFLAGS)
+
+../src/ASBeautifier.o: ../src/ASBeautifier.cpp ../src/astyle.h
+	$(CPP) -Wall -s -O2 -c $< -o $@ $(CFLAGS)
+
+AppResource.res: AppResource.rc
+	$(WINDRES) -F pe-i386 -i AppResource.rc -J rc -o AppResource.res -O coff
+

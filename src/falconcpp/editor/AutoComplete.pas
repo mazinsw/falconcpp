@@ -29,8 +29,8 @@ type
 
     procedure AddCompletion(const AToken, AValue, AComment: string);
     procedure Execute(AEditor: TEditor); virtual;
-    procedure ExecuteCompletion(const AToken: string; AEditor: TEditor);
-      virtual;
+    procedure ExecuteCompletion(const AToken: string;
+      AEditor: TEditor); virtual;
     procedure ParseCompletionList; virtual;
   public
     property AutoCompleteList: TStrings read fAutoCompleteList
@@ -98,12 +98,14 @@ var
   s: string;
   i, j: integer;
 begin
-  if AEditor <> nil then begin
+  if AEditor <> nil then
+  begin
     // get token
     s := AEditor.LineText;
     j := AEditor.CaretX;
     i := j - 1;
-    if i <= Length(s) then begin
+    if i <= Length(s) then
+    begin
       while (i > 0) and (s[i] > ' ') and (Pos(s[i], fEOTokenChars) = 0) do
         Dec(i);
       Inc(i);
@@ -127,30 +129,37 @@ begin
   if not fParsed then
     ParseCompletionList;
   Len := Length(AToken);
-  if (Len > 0) and (AEditor <> nil) and not AEditor.ReadOnly
-    and (fCompletions.Count > 0)
-  then begin
+  if (Len > 0) and (AEditor <> nil) and not AEditor.ReadOnly and
+    (fCompletions.Count > 0) then
+  begin
     // find completion for this token - not all chars necessary if unambiguous
     i := fCompletions.Count - 1;
     IdxMaybe := -1;
     NumMaybe := 0;
-    if fCaseSensitive then begin
-      while i > -1 do begin
+    if fCaseSensitive then
+    begin
+      while i > -1 do
+      begin
         s := fCompletions[i];
         if AnsiCompareStr(s, AToken) = 0 then
           break
-        else if AnsiCompareStr(Copy(s, 1, Len), AToken) = 0 then begin
+        else if AnsiCompareStr(Copy(s, 1, Len), AToken) = 0 then
+        begin
           Inc(NumMaybe);
           IdxMaybe := i;
         end;
         Dec(i);
       end;
-    end else begin
-      while i > -1 do begin
+    end
+    else
+    begin
+      while i > -1 do
+      begin
         s := fCompletions[i];
         if AnsiCompareText(s, AToken) = 0 then
           break
-        else if AnsiCompareText(Copy(s, 1, Len), AToken) = 0 then begin
+        else if AnsiCompareText(Copy(s, 1, Len), AToken) = 0 then
+        begin
           Inc(NumMaybe);
           IdxMaybe := i;
         end;
@@ -159,10 +168,11 @@ begin
     end;
     if (i = -1) and (NumMaybe = 1) then
       i := IdxMaybe;
-    if i > -1 then begin
+    if i > -1 then
+    begin
       // select token in editor
       p := AEditor.CaretXY;
-{begin}                                                                         //mh 2000-11-08
+      { begin }                                                                         // mh 2000-11-08
       AEditor.BeginUpdate;
       try
         AEditor.BlockBegin := BufferCoord(p.Char - Len, p.Line);
@@ -173,7 +183,8 @@ begin
         ptr := PChar(s);
         if Assigned(ptr) and (ptr^ <> #0) then
           repeat
-            if not CharInSet(ptr^, [#9, #32]) then Break;
+            if not CharInSet(ptr^, [#9, #32]) then
+              break;
             if ptr^ = #9 then
               Inc(IndentLen, AEditor.TabWidth)
             else
@@ -189,23 +200,26 @@ begin
           if (IndentLen > 0) and (Temp.Count > 1) then
           begin
             if AEditor.WantTabs then
-              s := StringOfChar(#9, IndentLen div AEditor.TabWidth) + StringOfChar(' ', IndentLen mod AEditor.TabWidth)
+              s := StringOfChar(#9, IndentLen div AEditor.TabWidth) +
+                StringOfChar(' ', IndentLen mod AEditor.TabWidth)
             else
               s := StringOfChar(' ', IndentLen);
             for i := 1 to Temp.Count - 1 do
               Temp[i] := s + Temp[i];
           end;
           // find first '|' and use it as caret position
-          PipeFind := False;
+          PipeFind := FALSE;
           j := 0;
-          for i := 0 to Temp.Count - 1 do begin
+          for i := 0 to Temp.Count - 1 do
+          begin
             s := Temp[i];
             IndentLen := 0;
             ptr := PChar(s);
             iptr := ptr;
             if Assigned(ptr) and (ptr^ <> #0) then
               repeat
-                if not CharInSet(ptr^, [#9, #32]) then Break;
+                if not CharInSet(ptr^, [#9, #32]) then
+                  break;
                 if ptr^ = #9 then
                   Inc(IndentLen, AEditor.TabWidth)
                 else
@@ -214,25 +228,26 @@ begin
               until ptr^ = #0;
             if not PipeFind then
               j := Pos('|', s);
-            if (IndentLen >= AEditor.TabWidth) and
-              (ptr - iptr <= IndentLen) then
+            if (IndentLen >= AEditor.TabWidth) and (ptr - iptr <= IndentLen)
+            then
             begin
-                s := StringOfChar(#9, IndentLen div AEditor.TabWidth) + StringOfChar(' ', IndentLen mod AEditor.TabWidth) +
-                  StrPas(ptr);
-                if (j > 0) and not PipeFind then
-                  j := Pos('|', s)
-                else
-                  Temp[i] := s;
+              s := StringOfChar(#9, IndentLen div AEditor.TabWidth) +
+                StringOfChar(' ', IndentLen mod AEditor.TabWidth) + StrPas(ptr);
+              if (j > 0) and not PipeFind then
+                j := Pos('|', s)
+              else
+                Temp[i] := s;
             end;
-            if (j > 0) and not PipeFind then begin
+            if (j > 0) and not PipeFind then
+            begin
               Delete(s, j, 1);
               Temp[i] := s;
-//              if j > 1 then
-//                Dec(j);
-              NewCaretPos := TRUE;
+              // if j > 1 then
+              // Dec(j);
+              NewCaretPos := True;
               Inc(p.Line, i);
               if i = 0 then
-//                Inc(p.x, j)
+                // Inc(p.x, j)
                 Inc(p.Char, j - 1)
               else
                 p.Char := j;
@@ -252,9 +267,9 @@ begin
         if NewCaretPos then
           AEditor.CaretXY := p;
       finally
-        AEditor.EndUpdate;                                                
+        AEditor.EndUpdate;
       end;
-{end}                                                                           //mh 2000-11-08
+      { end }                                                                           // mh 2000-11-08
     end;
   end;
 end;
@@ -301,19 +316,23 @@ begin
   fCompletionComments.Clear;
   fCompletionValues.Clear;
 
-  if fAutoCompleteList.Count > 0 then begin
+  if fAutoCompleteList.Count > 0 then
+  begin
     s := fAutoCompleteList[0];
     BorlandDCI := (s <> '') and (s[1] = '[');
 
     sCompl := '';
     sComment := '';
     sComplValue := '';
-    for i := 0 to fAutoCompleteList.Count - 1 do begin
+    for i := 0 to fAutoCompleteList.Count - 1 do
+    begin
       s := fAutoCompleteList[i];
       Len := Length(s);
-      if BorlandDCI then begin
+      if BorlandDCI then
+      begin
         // the style of the Delphi32.dci file
-        if (Len > 0) and (s[1] = '[') then begin
+        if (Len > 0) and (s[1] = '[') then
+        begin
           // save last entry
           if sCompl <> '' then
             SaveEntry;
@@ -332,27 +351,34 @@ begin
           sComment := Copy(s, j, Len);
           if sComment[Length(sComment)] = ']' then
             SetLength(sComment, Length(sComment) - 1);
-        end else begin
+        end
+        else
+        begin
           if sComplValue <> '' then
             sComplValue := sComplValue + #13#10;
           sComplValue := sComplValue + s;
         end;
-      end else begin
+      end
+      else
+      begin
         // the original style
-        if (Len > 0) and (s[1] <> '=') then begin
+        if (Len > 0) and (s[1] <> '=') then
+        begin
           // save last entry
           if sCompl <> '' then
             SaveEntry;
           // new completion entry
           sCompl := s;
-        end else if (Len > 0) and (s[1] = '=') then begin
+        end
+        else if (Len > 0) and (s[1] = '=') then
+        begin
           if sComplValue <> '' then
             sComplValue := sComplValue + #13#10;
           sComplValue := sComplValue + Copy(s, 2, Len);
         end;
       end;
     end;
-    if sCompl <> '' then                                                        //mg 2000-11-07
+    if sCompl <> '' then // mg 2000-11-07
       SaveEntry;
   end;
   fParsed := True;
@@ -365,4 +391,3 @@ begin
 end;
 
 end.
-

@@ -3,13 +3,13 @@ unit SearchEngine;
 interface
 
 uses
-  Classes, DScintilla, DScintillaTypes, RegEx;
+  Classes, DScintilla, DScintillaTypes, RegularExpressionsCore;
 
 type
   TSearchEngine = class(TComponent)
   private
     FEditor: TDScintilla;
-    FRegEx: TRegEx;
+    FRegEx: TPerlRegEx;
     FFlags: Integer;
   public
     constructor Create(AOwner: TComponent); override;
@@ -31,7 +31,7 @@ implementation
 constructor TSearchEngine.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  FRegEx := TRegEx.Create;
+  FRegEx := TPerlRegEx.Create;
 end;
 
 destructor TSearchEngine.Destroy;
@@ -49,8 +49,8 @@ function TSearchEngine.SearchInTarget(const Text: UnicodeString): Integer;
 begin
   if (FFlags and SCFIND_REGEXP) = SCFIND_REGEXP then
   begin
-    FRegEx.RegEx := UTF8Encode(Text);
-    FRegEx.SubjectLength := FEditor.GetTargetEnd - FEditor.GetTargetStart;
+    FRegEx.RegEx := UTF8String(Text);
+    FRegEx.Stop := FEditor.GetTargetEnd;
     FRegEx.Subject := PAnsiChar(FEditor.GetCharacterPointer) + FEditor.GetTargetStart;
     try
       if FRegEx.Match then

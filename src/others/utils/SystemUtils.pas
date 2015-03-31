@@ -76,7 +76,7 @@ function SHOpenFolderAndSelectItems(pidlFolder: PItemIDList; cidl: Cardinal;
 implementation
 
 uses
-  Forms, CommCtrl, ImgList, Controls, SysUtils, Registry, PerlRegEx;
+  Forms, CommCtrl, ImgList, Controls, SysUtils, Registry, RegularExpressionsCore;
 
 function FindFiles(const Search: string; Finded: TStrings): Boolean;
 var

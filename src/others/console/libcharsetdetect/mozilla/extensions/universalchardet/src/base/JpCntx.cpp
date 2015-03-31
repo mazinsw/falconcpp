@@ -39,7 +39,7 @@
 #include "JpCntx.h"
 
 //This is hiragana 2-char sequence table, the number in each cell represents its frequency category
-char jp2CharContext[83][83] = 
+const PRUint8 jp2CharContext[83][83] = 
 { 
 { 0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,},
 { 2,4,0,4,0,3,0,4,0,3,4,4,4,2,4,3,3,4,3,2,3,3,4,2,3,3,3,2,4,1,4,3,3,1,5,4,3,4,3,4,3,5,3,0,3,5,4,2,0,3,1,0,3,3,0,3,3,0,1,1,0,4,3,0,3,3,0,4,0,2,0,3,5,5,5,5,4,0,4,1,0,3,4,},
@@ -170,7 +170,7 @@ void JapaneseContextAnalysis::HandleData(const char* aBuf, PRUint32 aLen)
   return;
 }
 
-void JapaneseContextAnalysis::Reset(void)
+void JapaneseContextAnalysis::Reset(PRBool aIsPreferredLanguage)
 {
   mTotalRel = 0;
   for (PRUint32 i = 0; i < NUM_OF_CATEGORY; i++)
@@ -178,13 +178,14 @@ void JapaneseContextAnalysis::Reset(void)
   mNeedToSkipCharNum = 0;
   mLastCharOrder = -1;
   mDone = PR_FALSE;
+  mDataThreshold = aIsPreferredLanguage ? 0 : MINIMUM_DATA_THRESHOLD;
 }
 #define DONT_KNOW (float)-1
 
-float  JapaneseContextAnalysis::GetConfidence()
+float  JapaneseContextAnalysis::GetConfidence(void)
 {
   //This is just one way to calculate confidence. It works well for me.
-  if (mTotalRel > MINIMUM_DATA_THRESHOLD)
+  if (mTotalRel > mDataThreshold)
     return ((float)(mTotalRel - mRelSample[0]))/mTotalRel;
   else 
     return (float)DONT_KNOW;
@@ -194,15 +195,15 @@ float  JapaneseContextAnalysis::GetConfidence()
 PRInt32 SJISContextAnalysis::GetOrder(const char* str, PRUint32 *charLen)
 {
   //find out current char's byte length
-  if ((unsigned char)*str >= (unsigned char)0x81 && (unsigned char)*str <= (unsigned char)0x9f || 
+  if ((unsigned char)*str >= (unsigned char)0x81 && (unsigned char)*str <= (unsigned char)0x9f ||
       (unsigned char)*str >= (unsigned char)0xe0 && (unsigned char)*str <= (unsigned char)0xfc )
       *charLen = 2;
   else 
       *charLen = 1;
 
   //return its order if it is hiragana
-  if (*str == '\202' && 
-        (unsigned char)*(str+1) >= (unsigned char)0x9f && 
+  if (*str == '\202' &&
+        (unsigned char)*(str+1) >= (unsigned char)0x9f &&
         (unsigned char)*(str+1) <= (unsigned char)0xf1)
     return (unsigned char)*(str+1) - (unsigned char)0x9f;
   return -1;
@@ -227,5 +228,3 @@ PRInt32 EUCJPContextAnalysis::GetOrder(const char* str, PRUint32 *charLen)
      return (unsigned char)*(str+1) - (unsigned char)0xa1;
   return -1;
 }
-
-

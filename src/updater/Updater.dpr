@@ -17,7 +17,6 @@ uses
   UFrmUpdate in 'UFrmUpdate.pas' {FrmUpdate},
   UUtils in 'UUtils.pas',
   ExecWait in '..\others\utils\ExecWait.pas',
-  BZip2 in '..\others\bzip2\BZip2.pas',
   LibTar in '..\others\libtar\LibTar.pas',
   CompressUtils in '..\others\compressutils\CompressUtils.pas',
   StrMatch in '..\others\compressutils\StrMatch.pas',
@@ -54,7 +53,6 @@ uses
   LangCyrillicModel in '..\others\encoding\chsdet\src\sbseq\LangCyrillicModel.pas',
   LangGreekModel in '..\others\encoding\chsdet\src\sbseq\LangGreekModel.pas',
   LangHebrewModel in '..\others\encoding\chsdet\src\sbseq\LangHebrewModel.pas',
-  RegEx in '..\others\regex\RegEx.pas',
   AppConst in '..\falconcpp\AppConst.pas';
 
 {$IFDEF FALCON_PORTABLE}

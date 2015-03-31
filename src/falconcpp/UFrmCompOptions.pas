@@ -216,7 +216,7 @@ begin
     begin
       newPath := ComboBoxCompilerPath.Items.Strings[Index];
       newPath := ExcludeTrailingPathDelimiter(newPath);
-      if (CompareText(newPath, Path) <> 0) and FileExists(newPath + '\bin\gcc.exe') then
+      if not SameText(newPath, Path) and FileExists(newPath + '\bin\gcc.exe') then
       begin                                            
         WriteIniFile('Packages', 'NewInstalled', '-1');
         FrmFalconMain.SetActiveCompilerPath(newPath, -1);

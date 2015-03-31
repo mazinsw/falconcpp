@@ -1,5 +1,8 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
+#IF("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -std=c++0x" )
+#ENDIF("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
 
 # Add a distclean target to the generated makefile
 IF (UNIX)

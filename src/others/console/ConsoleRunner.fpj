@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Project>
-	<Libs Value="-Llibcharsetdetect\build\build -lcharsetdetect"/>
+	<Libs Value="-Llibcharsetdetect\build\build -lcharsetdetect -m32"/>
 	<Flags Value="-Ilibcharsetdetect -DINI_MAX_LINE=1000 -DNDEBUG -DNFALCON_PORTABLE"/>
-	<Target Value="..\..\..\bin\ConsoleRunner.exe"/>
+	<Target Value="..\..\..\bin\x86\ConsoleRunner.exe"/>
 	<CommandLine Value="ConsoleRunner dir têãstêí"/>
 	<CompilerOptions Value="-Wall -s -O2"/>
 	<DeleteObjectsBefore Value="Yes"/>

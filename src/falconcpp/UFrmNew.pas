@@ -161,6 +161,7 @@ var
   AIcon: TIcon;
 begin
   FraProjs := TFraProjs.Create(Self);
+  FraProjs.Align := alClient;
   ConvertTo32BitImageList(FraProjs.ImageList);
   AIcon := LoadIconFromResource('MAINICON', 48);
   Bitmap := IconToBitmap(AIcon);
@@ -185,6 +186,7 @@ begin
   end;
   FraProjs.PageControl.UnlockAnimation;
   FraPrjOpt := TFraPrjOpt.Create(Self);
+  FraPrjOpt.Align := alClient;
   Page := pwProj;
   FraProjs.PageControl.ActivePageIndex := 0;
   /////////////////

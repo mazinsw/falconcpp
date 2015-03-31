@@ -141,7 +141,7 @@ begin
   begin
     for X := 0 to Length(Extensions) - 1 do
     begin
-      if CompareText(ExtractFileExt(Files.Strings[I]), Extensions[X]) = 0 then
+      if SameText(ExtractFileExt(Files.Strings[I]), Extensions[X]) then
         List.AddObject(Files.Strings[I], Files.Objects[I]);
     end;
   end;

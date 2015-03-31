@@ -2247,7 +2247,7 @@ begin
     FS := TFileStream.Create(FileName, fmOpenRead or fmShareDenyNone);
     try
       FS.Position := 0;
-      Result := AddStream(NewFileName, Dir.Attr, FileDateToDateTime(Dir.Time),
+      Result := AddStream(NewFileName, Dir.Attr, Dir.TimeStamp,
         FS) finally FS.Free;
     end;
   end;
@@ -2295,7 +2295,7 @@ begin
         FN := FolderName + '\' + Dir.name;
         if (FParent.FStoreFolders) and (FParent.FStoreRelativePath) then
           AddFolderChain(RemoveRootName(FN + '\', RootFolder), Dir.Attr,
-            FileDateToDateTime(Dir.Time));
+            Dir.TimeStamp);
         if WithSubFolders then
         begin
           AddFolderEx(FN, RootFolder, WildCard, WithSubFolders);
@@ -2305,7 +2305,7 @@ begin
       begin
         if (Dir.name = '.') then
           AddFolderChain(RemoveRootName(FolderName + '\', RootFolder),
-            Dir.Attr, FileDateToDateTime(Dir.Time));
+            Dir.Attr, Dir.TimeStamp);
       end;
     end
     else

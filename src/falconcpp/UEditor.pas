@@ -283,7 +283,7 @@ implementation
 
 uses
   SysUtils, UnicodeUtils, CustomColors, Contnrs, UUtils, CppHighlighter,
-  CppTokenizer, RegularExpressionsCore;
+  CppTokenizer, RegularExpressionsCore, Types;
 
 function DisplayCoord(AColumn, ARow: Integer): TDisplayCoord;
 begin

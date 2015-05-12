@@ -36,7 +36,14 @@
   !define PKG_CPP      "gcc-g++ 4.7.1.fpk"
 ;--------------------------------
 ;General
-  
+
+!ifdef Win64
+  !define ARCH_NAME "Win64"
+  !define ARCH "x64"
+!else
+  !define ARCH_NAME "Win32"
+  !define ARCH "x86"
+!endif
   ;Properly display all languages (Installer will not work on Windows 95, 98 or ME!)
   Unicode true
 
@@ -494,11 +501,11 @@ Function .onInit
     ${EndIf}
   ${EndIf}
 
-  ${If} ${ARCH} == "x64"
-    StrCpy $InstDir "$PROGRAMFILES64\${PROGRAM_NAME}"
-  ${Else}
-    StrCpy $InstDir "$PROGRAMFILES32\${PROGRAM_NAME}"
-  ${Endif}
+!ifdef Win64
+  StrCpy $InstDir "$PROGRAMFILES64\${PROGRAM_NAME}"
+!else
+  StrCpy $InstDir "$PROGRAMFILES32\${PROGRAM_NAME}"
+!endif
 
 FunctionEnd
 

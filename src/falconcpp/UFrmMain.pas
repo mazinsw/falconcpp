@@ -931,7 +931,8 @@ uses
   UFrmGotoFunction, UFrmGotoLine, TBXThemes, Makefile, CodeTemplate,
   StrUtils, UFrmVisualCppOptions,
   PluginConst, Math, Highlighter, DScintilla, PluginWidgetMap, AppConst,
-  ExporterHTML, ExporterRTF, ExporterTeX, EditorPrint;
+  ExporterHTML, ExporterRTF, ExporterTeX, EditorPrint, Types;
+
 {$R *.dfm}
 
 var

@@ -280,6 +280,12 @@ begin
     (findString(BaseDir, List) < 0) then
     List.Add(BaseDir);
 
+  //TDM-GCC-32
+  BaseDir := ExtractFileDrive(ProgFiles) + '\TDM-GCC-32';
+  if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
+    (findString(BaseDir, List) < 0) then
+    List.Add(BaseDir);
+
   //TDM-GCC-64
   BaseDir := ExtractFileDrive(ProgFiles) + '\TDM-GCC-64';
   if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and

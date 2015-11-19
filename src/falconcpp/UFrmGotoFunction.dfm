@@ -4,7 +4,7 @@ object FormGotoFunction: TFormGotoFunction
   BorderStyle = bsSizeToolWin
   Caption = 'Goto Function'
   ClientHeight = 242
-  ClientWidth = 462
+  ClientWidth = 470
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -23,17 +23,19 @@ object FormGotoFunction: TFormGotoFunction
   object PanelFind: TPanel
     Left = 0
     Top = 0
-    Width = 462
+    Width = 470
     Height = 37
     Align = alTop
     BevelOuter = bvNone
+    BorderWidth = 8
     TabOrder = 0
-    OnResize = PanelFindResize
+    ExplicitWidth = 462
     object EditFuncName: TEdit
       Left = 8
       Top = 8
       Width = 454
       Height = 21
+      Align = alClient
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clSilver
       Font.Height = -11
@@ -41,11 +43,8 @@ object FormGotoFunction: TFormGotoFunction
       Font.Style = []
       ParentFont = False
       TabOrder = 0
-      Text = 'Function name'
+      TextHint = 'Function name...'
       OnChange = EditFuncNameChange
-      OnClick = EditFuncNameClick
-      OnEnter = EditFuncNameEnter
-      OnExit = EditFuncNameExit
       OnKeyDown = EditFuncNameKeyDown
       OnKeyPress = EditFuncNameKeyPress
     end
@@ -53,7 +52,7 @@ object FormGotoFunction: TFormGotoFunction
   object ListViewFunctions: TListView
     Left = 0
     Top = 37
-    Width = 462
+    Width = 470
     Height = 205
     Align = alClient
     Columns = <
@@ -80,6 +79,6 @@ object FormGotoFunction: TFormGotoFunction
     TabOrder = 1
     ViewStyle = vsReport
     OnDblClick = ListViewFunctionsDblClick
-    ExplicitHeight = 201
+    ExplicitWidth = 462
   end
 end

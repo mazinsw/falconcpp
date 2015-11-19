@@ -72,7 +72,7 @@ begin
   TreeView.BorderStyle := bsNone;
   TreeView.Align := alClient;
   TreeView.Color := $E1FFFF;
-  TreeView.NodeDataSize := 4;
+  TreeView.NodeDataSize := SizeOf(Pointer);
   TreeView.TreeOptions.MiscOptions := TreeView.TreeOptions.MiscOptions - [toEditOnClick];
   TreeView.TreeOptions.PaintOptions := TreeView.TreeOptions.PaintOptions + [toThemeAware, toUseExplorerTheme, toHideTreeLinesIfThemed];
   TreeView.TreeOptions.SelectionOptions := TreeView.TreeOptions.SelectionOptions + [toFullRowSelect];

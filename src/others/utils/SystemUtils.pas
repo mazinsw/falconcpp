@@ -39,6 +39,7 @@ function ExtractRelativePathOpt(const BaseName, DestName: string): string;
 function GetLanguageName(LangID: Word): string;
 function EmptyDirectory(const Dir: string): Boolean;
 function ConvertSlashes(const Path: String): String;
+function ConvertToUnixSlashes(const Path: string): string;
 function OpenFolderAndSelectFile(const FileName: string): boolean;
 function ExecuteFile(Handle: HWND; const Filename, Paramaters,
   Directory: string; Options: TExecuteFileOptions): Integer;
@@ -206,6 +207,16 @@ begin
   for i := 1 to Length(Result) do
       if Result[i] = '/' then
           Result[i] := '\';
+end;
+
+function ConvertToUnixSlashes(const Path: string): string;
+var
+  i: Integer;
+begin
+  Result := Path;
+  for i := 1 to Length(Result) do
+    if Result[i] = '\' then
+      Result[i] := '/';
 end;
 
 function OpenFolderAndSelectFile(const FileName: string): boolean;

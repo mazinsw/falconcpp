@@ -32,10 +32,6 @@ object FrmProperty: TFrmProperty
     TabOrder = 0
     object TSApp: TTabSheet
       Caption = 'Application'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         489
         400)

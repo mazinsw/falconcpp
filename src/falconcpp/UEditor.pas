@@ -283,7 +283,7 @@ implementation
 
 uses
   SysUtils, UnicodeUtils, CustomColors, Contnrs, UUtils, CppHighlighter,
-  CppTokenizer, RegularExpressionsCore, Types;
+  CppTokenizer, RegularExpressionsCore, Types, TokenUtils;
 
 function DisplayCoord(AColumn, ARow: Integer): TDisplayCoord;
 begin
@@ -2042,17 +2042,19 @@ begin
     LeftOffset := k;
     Exit;
   end;
+  // check previows line instruction
   CheckPrevLines := False;
   HasBreak := False;
   wStart := BufferCoord(I + 1, ALine);
   if GetHighlighterAttriAtRowCol(wStart, token, attri) then
   begin
+    // indent when these keyword are found
     if ((attri.name = HL_Style_InstructionWord) and
-        ((token = 'if') or (token = 'case') or (token = 'while') or
-          (token = 'else') or (token = 'for') or (token = 'default'))) or
-      ((attri.name = HL_Style_TypeWord) and ((token = 'public') or
-          (token = 'private') or (token = 'protected'))) or
-      ((attri.name = 'Symbol') and (token = '{')) then
+        StringIn(token, ['if', 'case', 'while', 'else', 'for', 'default'])) or
+
+      ((attri.name = HL_Style_TypeWord) and StringIn(token, ['public', 'private', 'protected'])) or
+
+      ((attri.name = HL_Style_Symbol) and (token = '{')) then
     begin
       if pend^ <> ';' then
         Inc(k, TabWidth);
@@ -2062,10 +2064,10 @@ begin
     else
     begin
       CheckPrevLines := True;
-      HasBreak := (attri.name = HL_Style_InstructionWord) and (token = 'break');
+      HasBreak := (attri.name = HL_Style_InstructionWord) and StringIn(token, ['break', 'return', 'continue']);
     end;
   end;
-  // dont indent when single line statement block
+  // don't indent when single line statement block
   ALine := ALine - 1;
   while CheckPrevLines and (ALine > 0) do
   begin
@@ -2093,14 +2095,13 @@ begin
         until p < sp;
         if (p >= sp) and (p^ = '{') then
           Break;
-        wStart := BufferCoord(j + 1, ALine); // TODO use collapsed line
+        wStart := BufferCoord(j + 1, ALine);
         if GetHighlighterAttriAtRowCol(wStart, token, attri) then
         begin
           tokenstart := WordStartPosition(PositionRelative(0,
               RowColToCharIndex(wStart)), True);
           if ((attri.name = HL_Style_InstructionWord) and
-              ((token = 'if') or (token = 'while') or (token = 'else') or
-                (token = 'for'))) or HasBreak then
+              StringIn(token, ['if', 'while', 'else', 'for'])) or HasBreak then
           begin
             if (tokenstart - 1 >= 0) then
             begin

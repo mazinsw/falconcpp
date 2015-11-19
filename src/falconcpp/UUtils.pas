@@ -240,7 +240,8 @@ procedure SearchCompilers(List: TStrings; var PathCompiler: string);
 
 var
   BaseDir, ProgFiles, Path, Temp, Temp2: string;
-  I, J, K: Integer;
+  ProgPaths: array[0..1] of string;
+  I, J, K, PathCount: Integer;
 begin
   List.Clear;
   //Falcon C++
@@ -253,45 +254,53 @@ begin
   end
   else
     PathCompiler := '';
-
-  ProgFiles := GetEnvironmentVariable('PROGRAMFILES');
-  BaseDir := IncludeTrailingPathDelimiter(ProgFiles) + 'Falcon\MinGW';
-  if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
-    (findString(BaseDir, List) < 0) then
+  PathCount := 1;
+  ProgPaths[0] := GetEnvironmentVariable('PROGRAMFILES');
+  ProgPaths[1] := GetEnvironmentVariable('PROGRAMFILES(x86)');
+{$IFDEF WIN64}
+  if (ProgPaths[1] <> '') then
+    Inc(PathCount);
+{$ENDIF}
+  for I := 0 to PathCount - 1 do
   begin
-    if (PathCompiler = '') and (Pos('FALCON', UpperCase(BaseDir)) <> 0) then
+    ProgFiles := ProgPaths[I];
+    BaseDir := IncludeTrailingPathDelimiter(ProgFiles) + 'Falcon\MinGW';
+    if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
+      (findString(BaseDir, List) < 0) then
     begin
-      List.Insert(0, BaseDir);
-      PathCompiler := BaseDir;
-    end
-    else
+      if (PathCompiler = '') and (Pos('FALCON', UpperCase(BaseDir)) <> 0) then
+      begin
+        List.Insert(0, BaseDir);
+        PathCompiler := BaseDir;
+      end
+      else
+        List.Add(BaseDir);
+    end;
+
+    //Code::Blocks
+    BaseDir := ProgFiles + '\CodeBlocks\MinGW';
+    if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
+      (findString(BaseDir, List) < 0) then
+      List.Add(BaseDir);
+
+    //MinGW
+    BaseDir := ExtractFileDrive(ProgFiles) + '\MinGW';
+    if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
+      (findString(BaseDir, List) < 0) then
+      List.Add(BaseDir);
+
+    //TDM-GCC-32
+    BaseDir := ExtractFileDrive(ProgFiles) + '\TDM-GCC-32';
+    if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
+      (findString(BaseDir, List) < 0) then
+      List.Add(BaseDir);
+
+    //TDM-GCC-64
+    BaseDir := ExtractFileDrive(ProgFiles) + '\TDM-GCC-64';
+    if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
+      (findString(BaseDir, List) < 0) then
       List.Add(BaseDir);
   end;
-
-  //Code::Blocks
-  BaseDir := ProgFiles + '\CodeBlocks\MinGW';
-  if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
-    (findString(BaseDir, List) < 0) then
-    List.Add(BaseDir);
-
-  //MinGW
-  BaseDir := ExtractFileDrive(ProgFiles) + '\MinGW';
-  if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
-    (findString(BaseDir, List) < 0) then
-    List.Add(BaseDir);
-
-  //TDM-GCC-32
-  BaseDir := ExtractFileDrive(ProgFiles) + '\TDM-GCC-32';
-  if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
-    (findString(BaseDir, List) < 0) then
-    List.Add(BaseDir);
-
-  //TDM-GCC-64
-  BaseDir := ExtractFileDrive(ProgFiles) + '\TDM-GCC-64';
-  if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
-    (findString(BaseDir, List) < 0) then
-    List.Add(BaseDir);
-
   Path := GetEnvironmentVariable('PATH');
   Temp := UpperCase(Path);
   I := Pos('MINGW', Temp);
@@ -1052,14 +1061,16 @@ end;
 
 function FormatLibrary(const FileName: string): string;
 var
-  Name, Lib: string;
+  Name, Lib, WinFileName, FilePath: string;
 begin
-  Name := ExtractFileName(FileName);
+  WinFileName := ConvertSlashes(FileName);
+  Name := ExtractFileName(WinFileName);
+  FilePath := ConvertToUnixSlashes(ExtractFilePath(WinFileName));
   Lib := 'lib';
   if Pos('lib', Name) = 1 then
     Lib := '';
   Result := Format(LD_DLL_STATIC_LIB,
-        [ExtractFilePath(FileName), Lib, RemoveFileExt(Name) + '.dll.a']);
+        [FilePath, Lib, RemoveFileExt(Name) + '.dll.a']);
 end;
 
 function BrowseDialog(Handle: HWND; const Title: string;

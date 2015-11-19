@@ -10817,14 +10817,15 @@ procedure TFrmFalconMain.FormKeyDown(Sender: TObject; var Key: Word;
 begin
   if [ssShift] = Shift then
   begin
-    if Key = VK_F9 then
-      RunRevContinue(Sender)
-    else if Key = VK_F8 then
-      RunRevStepIntoClick(Sender)
+    // reverse debugging shortcuts
+    if      Key = VK_F6 then
+      RunRevStepReturnClick(Sender)
     else if Key = VK_F7 then
+      RunRevStepIntoClick(Sender)
+    else if Key = VK_F8 then
       RunRevStepOverClick(Sender)
-    else if Key = VK_F6 then
-      RunRevStepReturnClick(Sender);
+    else if Key = VK_F9 then
+      RunRevContinue(Sender);
   end
   else if [ssCtrl] = Shift then
   begin

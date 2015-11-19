@@ -11,8 +11,6 @@ type
     PanelFind: TPanel;
     ListViewFunctions: TListView;
     EditFuncName: TEdit;
-    procedure PanelFindResize(Sender: TObject);
-    procedure EditFuncNameExit(Sender: TObject);
     procedure EditFuncNameKeyPress(Sender: TObject; var Key: Char);
     procedure EditFuncNameChange(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -23,11 +21,8 @@ type
     procedure EditFuncNameKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure ListViewFunctionsDblClick(Sender: TObject);
-    procedure EditFuncNameEnter(Sender: TObject);
-    procedure EditFuncNameClick(Sender: TObject);
   private
     { Private declarations }
-    showTextHint: Boolean;
     tokenList: TStrings;
     procedure ClearTokenList;
     procedure SelectItem(Index: Integer);
@@ -64,9 +59,7 @@ end;
 procedure TFormGotoFunction.UpdateLangNow;
 begin
   Caption := STR_FRM_GOTOFUNC[1];
-  EditFuncName.OnChange := nil;
-  EditFuncName.Text := STR_FRM_GOTOFUNC[2];
-  EditFuncName.OnChange := EditFuncNameChange;
+  EditFuncName.TextHint := STR_FRM_GOTOFUNC[2];
   ListViewFunctions.Columns.Items[0].Caption := STR_FRM_GOTOFUNC[3];
   ListViewFunctions.Columns.Items[1].Caption := STR_FRM_GOTOFUNC[4];
   ListViewFunctions.Columns.Items[2].Caption := STR_FRM_GOTOFUNC[5];
@@ -141,23 +134,6 @@ begin
   //List.Free;
 end;
 
-procedure TFormGotoFunction.PanelFindResize(Sender: TObject);
-begin
-  EditFuncName.Width := PanelFind.ClientWidth - 2 * EditFuncName.Left;
-end;
-
-procedure TFormGotoFunction.EditFuncNameExit(Sender: TObject);
-begin
-  if Trim(EditFuncName.Text) = '' then
-  begin
-    EditFuncName.Font.Color := clSilver;
-    EditFuncName.Text := STR_FRM_GOTOFUNC[2];
-    EditFuncName.SelStart := 0;
-    EditFuncName.SelLength := 0;
-    showTextHint := True;
-  end;
-end;
-
 procedure TFormGotoFunction.EditFuncNameKeyPress(Sender: TObject;
   var Key: Char);
 begin
@@ -166,35 +142,12 @@ begin
     Key := #0;
     SelectFunction(ListViewFunctions.ItemIndex);
   end;
-  if (Key = #27) or (showTextHint and CharInSet(Key, [#8, ' '])) then
+  if (Key = #27) then
     Key := #0;
-  if showTextHint and (Key > #0) then
-  begin
-    EditFuncName.Font.Color := clWindowText;
-    EditFuncName.OnChange := nil;
-    EditFuncName.Text := '';
-    EditFuncName.OnChange := EditFuncNameChange;
-    EditFuncName.SelStart := 0;
-    EditFuncName.SelLength := 0;
-    showTextHint := False;
-  end;
 end;
 
 procedure TFormGotoFunction.EditFuncNameChange(Sender: TObject);
 begin
-  //match functions
-  if (Trim(EditFuncName.Text) = '') then
-  begin
-    EditFuncName.Font.Color := clSilver;
-    EditFuncName.OnChange := nil;
-    EditFuncName.Text := STR_FRM_GOTOFUNC[2];
-    EditFuncName.OnChange := EditFuncNameChange;
-    EditFuncName.SelStart := 0;
-    EditFuncName.SelLength := 0;
-    showTextHint := True;
-    Match('');
-    Exit;
-  end;
   Match(Trim(EditFuncName.Text));
 end;
 
@@ -214,9 +167,7 @@ end;
 procedure TFormGotoFunction.FormCreate(Sender: TObject);
 begin
   tokenList := TStringList.Create;
-  showTextHint := True;
   UpdateLangNow;
-  EditFuncName.SelectAll;
 end;
 
 procedure TFormGotoFunction.FormKeyDown(Sender: TObject; var Key: Word;
@@ -262,15 +213,6 @@ begin
       Exit;
     SelectItem(Index);
   end;
-  if showTextHint and (Key in [VK_DELETE, 8, VK_SPACE]) then
-    Key := 0;
-  if showTextHint then
-  begin
-    if (Key in [VK_LEFT, VK_RIGHT]) then
-      Key := 0;
-    EditFuncName.SelStart := 0;
-    EditFuncName.SelLength := 0;
-  end;
 end;
 
 procedure TFormGotoFunction.SelectFunction(Index: Integer);
@@ -300,21 +242,6 @@ end;
 procedure TFormGotoFunction.ListViewFunctionsDblClick(Sender: TObject);
 begin
   SelectFunction(ListViewFunctions.ItemIndex);
-end;
-
-procedure TFormGotoFunction.EditFuncNameEnter(Sender: TObject);
-begin
-  EditFuncName.SelStart := 0;
-  EditFuncName.SelLength := 0;
-end;
-
-procedure TFormGotoFunction.EditFuncNameClick(Sender: TObject);
-begin
-  if showTextHint then
-  begin
-    EditFuncName.SelStart := 0;
-    EditFuncName.SelLength := 0;
-  end;
 end;
 
 end.

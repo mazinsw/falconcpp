@@ -258,14 +258,14 @@ object FrmFalconMain: TFrmFalconMain
         Caption = 'Step Into'
         Enabled = False
         ImageIndex = 46
-        ShortCut = 119
+        ShortCut = 118
         OnClick = RunStepIntoClick
       end
       object BtnStepOver: TTBXItem
         Caption = 'Step Over'
         Enabled = False
         ImageIndex = 54
-        ShortCut = 118
+        ShortCut = 119
         OnClick = RunStepOverClick
       end
       object BtnStepReturn: TTBXItem
@@ -1021,14 +1021,14 @@ object FrmFalconMain: TFrmFalconMain
           Caption = 'Step Into'
           Enabled = False
           ImageIndex = 46
-          ShortCut = 119
+          ShortCut = 118
           OnClick = RunStepIntoClick
         end
         object RunStepOver: TTBXItem
           Caption = 'Step Over'
           Enabled = False
           ImageIndex = 54
-          ShortCut = 118
+          ShortCut = 119
           OnClick = RunStepOverClick
         end
         object RunStepReturn: TTBXItem
@@ -1176,10 +1176,6 @@ object FrmFalconMain: TFrmFalconMain
           Caption = 'Messages'
           ImageIndex = 0
           PageControl = PageControlMessages
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
           object ListViewMsg: TListView
             Left = 0
             Top = 0
@@ -1325,10 +1321,6 @@ object FrmFalconMain: TFrmFalconMain
         Caption = 'Projects'
         ImageIndex = 1
         PageControl = PageControlProjects
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object TreeViewProjects: TTreeView
           Left = 0
           Top = 0
@@ -1395,10 +1387,6 @@ object FrmFalconMain: TFrmFalconMain
         Caption = 'Outline'
         ImageIndex = 56
         PageControl = PageControlOutline
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object TreeViewOutline: TVirtualStringTree
           Left = 0
           Top = 0
@@ -1419,7 +1407,6 @@ object FrmFalconMain: TFrmFalconMain
           Header.Font.Style = []
           Header.MainColumn = -1
           Images = ImgListOutLine
-          NodeDataSize = 0
           ParentFont = False
           TabOrder = 0
           TextMargin = 1

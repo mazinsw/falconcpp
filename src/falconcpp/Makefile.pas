@@ -151,7 +151,7 @@ function TMakefile.BuildMakefile: Integer;
 var
   Source, Resources, OutFile, Includes: TStrings;
   I, J: Integer;
-  S, Temp, Cop, EchoStr, IncludeHeaders, aTarget: string;
+  S, Temp, Cop, EchoStr, IncludeHeaders, aTarget, rTarget, mFlags: string;
 begin
   Result := 0;
   EchoStr := '';
@@ -161,6 +161,8 @@ begin
   TransformToRelativePath;
   SelectFilesByExt(['.c', '.cpp', '.cc', '.cxx', '.c++', '.cp'], Source);
   SelectFilesByExt(['.rc'], Resources);
+  if (Pos('-m32', Libs) > 0) and (Pos('-m32', Flags) = 0) then
+    mFlags := ' -m32';
   if CompilerIsCpp then
     OutFile.Add('CPP    = g++')
   else
@@ -216,12 +218,12 @@ begin
   if Length(CompilerPath) > 0 then
   begin
     OutFile.Add(Trim('LIBS   = -L"' + CompilerPath + '\lib" ' + Libs));
-    OutFile.Add(Trim('CFLAGS = -I"' + CompilerPath + '\include" ' + Flags));
+    OutFile.Add(Trim('CFLAGS = -I"' + CompilerPath + '\include" ' + Flags + mFlags));
   end
   else
   begin
     OutFile.Add(Trim('LIBS   = ' + Libs));
-    OutFile.Add(Trim('CFLAGS = ' + Flags));
+    OutFile.Add(Trim('CFLAGS = ' + Flags + mFlags));
   end;
   OutFile.Add('');
 
@@ -300,7 +302,10 @@ begin
     OutFile.Add(EscapeString(S) + ': ' + EscapeString(Temp));
     S := SingleQuotedStr(S);
     Temp := SingleQuotedStr(Temp);
-    OutFile.Add(TabChar + EchoStr + '$(WINDRES) -i ' + Temp + ' -J rc -o ' + S + ' -O coff');
+    rTarget := '';
+    if Pos('-m32', Libs) > 0 then
+      rTarget := ' -F pe-i386';
+    OutFile.Add(TabChar + EchoStr + '$(WINDRES) -i ' + Temp + ' -J rc -o ' + S + ' -O coff' + rTarget);
     OutFile.Add('');
   end;
 

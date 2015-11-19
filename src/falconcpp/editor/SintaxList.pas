@@ -224,7 +224,6 @@ begin
   All := StringReplace(All, ';', #13#10, [rfReplaceAll]);
   L := TStringList.Create;
   L.Text := All;
-  Style := [];
   Clear;
   for I := 0 to L.Count - 1 do
   begin

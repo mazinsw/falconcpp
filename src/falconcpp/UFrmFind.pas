@@ -887,8 +887,8 @@ begin
   if RGrpSearchMode.ItemIndex = 2 then
     SearchFlags := SearchFlags or SCFIND_REGEXP;
   // compare and Replace **********
-  SearchResultCount := Editor.SearchTextEx(Search, SearchFlags, StartPosition,
-    EndPosition, ChbCircSearch.Checked, sdDown, SearchResultStart,
+  SearchResultCount := Editor.SearchTextEx(Search, SearchFlags, 0,
+    StartPosition, ChbCircSearch.Checked, sdDown, SearchResultStart,
     SearchResultEnd, UsingResearch, StartPosition, EndPosition);
   if SearchResultCount = 1 then
   begin
@@ -909,7 +909,7 @@ var
   SourceSheet: TSourceFileSheet;
   Editor: TEditor;
   Search, Replace: string;
-  StartPosition, EndPosition: Integer;
+  StartPosition, DocEndPosition: Integer;
   SearchResultStart, SearchResultEnd, SearchResultCount, ReplaceLength: Integer;
   UsingResearch: Boolean;
   SearchFlags: Integer;
@@ -922,15 +922,25 @@ begin
   if ChbReplSel.Checked and Editor.SelAvail then
   begin
     StartPosition := Editor.GetSelectionStart;
-    EndPosition := Editor.GetSelectionEnd;
+    DocEndPosition := Editor.GetSelectionEnd;
   end
   else
   begin
-    StartPosition := Editor.GetCurrentPos;
     if ChbReplSel.Checked then
-      EndPosition := StartPosition
+    begin
+      StartPosition := Editor.GetCurrentPos;
+      DocEndPosition := StartPosition;
+    end
     else
-      EndPosition := -1;
+    begin
+      if ChbCircSearch.Checked then
+        StartPosition := 0
+      else if Editor.SelAvail then
+        StartPosition := Editor.GetSelectionStart
+      else
+        StartPosition := Editor.GetCurrentPos;
+      DocEndPosition := Editor.GetLength - 1;
+    end;
   end;
   Search := CboFind.Text;
   Replace := CboReplace.Text;
@@ -949,11 +959,12 @@ begin
   // compare and Replace **********
   Editor.BeginUndoAction;
   repeat
-    SearchResultCount := Editor.SearchTextEx(Search, SearchFlags, StartPosition,
-      EndPosition, ChbCircSearch.Checked, sdDown, SearchResultStart,
-      SearchResultEnd, UsingResearch, StartPosition, EndPosition);
+    SearchResultCount := Editor.SearchTextEx(Search, SearchFlags, 0,
+      StartPosition, ChbCircSearch.Checked, sdDown, SearchResultStart,
+      SearchResultEnd, UsingResearch, StartPosition, DocEndPosition);
     if SearchResultCount <> 1 then
       Break;
+    Editor.ClearSelections;
     Editor.SetTargetStart(SearchResultStart);
     Editor.SetTargetEnd(SearchResultEnd);
     if (SearchFlags and SCFIND_REGEXP) = SCFIND_REGEXP then
@@ -961,6 +972,7 @@ begin
     else
       ReplaceLength := Editor.ReplaceTarget(Replace);
     StartPosition := SearchResultStart + ReplaceLength;
+    DocEndPosition := DocEndPosition - (SearchResultEnd - SearchResultStart) + ReplaceLength;
     Editor.SetEmptySelection(StartPosition);
     Inc(ReplaceCount);
   until False;

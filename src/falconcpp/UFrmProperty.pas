@@ -168,7 +168,7 @@ end;
 
 procedure TFrmProperty.Save;
 var
-  Temp, OldFlags: string;
+  Temp, OldFlags, OldLibs: string;
   I: Integer;
 begin
   if (Project.FileType = FILE_TYPE_PROJECT) then
@@ -195,6 +195,7 @@ begin
   Temp := '';
   for I := 0 to ListLibs.Count - 1 do
     Temp := Temp + ' ' + ListLibs.Items.Strings[I];
+  OldLibs := Project.Libs;
   Project.Libs := Trim(Temp);
   Temp := '';
   for I := 0 to ListIncs.Count - 1 do
@@ -227,6 +228,8 @@ begin
   Project.Version.OriginalFilename := ListValues.Cells[1, 9];
   Project.PropertyChanged := True;
   Project.CompilePropertyChanged := True;
+  if (Pos('-m32', OldLibs) = 0) <> (Pos('-m32', Project.Libs) = 0) then
+    Project.ForceClean := True;
   if OldFlags <> Project.Flags then
   begin
     Project.ForceClean := True;
@@ -510,7 +513,7 @@ begin
   begin
     if not Assigned(AppIcon) then
       AppIcon := TIcon.Create;
-    if UpperCase(ExtractFileExt(OpenIcon.FileName)) = '.ICO' then
+    if SameText(ExtractFileExt(OpenIcon.FileName), '.ico') then
       AppIcon.LoadFromFile(OpenIcon.FileName)
     else
       AppIcon.Assign(OpenIcon.Icon);

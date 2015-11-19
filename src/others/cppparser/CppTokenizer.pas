@@ -295,13 +295,19 @@ begin
   StartPos := Ptr;
   while CharInSet(Ptr^, ['0'..'9']) do
     Inc(Ptr);
-  if CharInSet(Ptr^, ['.', 'x', 'X']) then
+  if CharInSet(Ptr^, ['x', 'X']) then  // allow hexadecimal ex.: 0xa0Ffc, 48xF1?
+  begin
+    Inc(Ptr);
+    while CharInSet(Ptr^, ['0'..'9', 'a'..'f', 'A'..'F']) do
+      Inc(Ptr);
+  end
+  else if Ptr^ = '.' then // allow float numbers ex.: 9.5
   begin
     Inc(Ptr);
     while CharInSet(Ptr^, ['0'..'9']) do
       Inc(Ptr);
   end;
-  if CharInSet(Ptr^, ['e', 'E']) then
+  if CharInSet(Ptr^, ['e', 'E']) then // allow scientific notation ex.: 15E10
   begin
     Inc(Ptr);
     while CharInSet(Ptr^, ['0'..'9']) do

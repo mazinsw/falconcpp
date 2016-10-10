@@ -139,8 +139,10 @@ type
   TScopeClassState = set of TScopeClass;
 
 const
-  TreeTokens = [tkClass, tkTypeStruct, tkStruct, tkUnion, tkTypeUnion];
-  RetTypeTokens = [tkVariable, tkFunction, tkPrototype, tkOperator];
+  StructTokens  = [tkTypeStruct, tkStruct, tkTypeUnion, tkUnion];
+  TreeTokens    = StructTokens + [tkClass];
+  BlockTokens   = TreeTokens + [tkNamespace, tkEnum];
+  RetTypeTokens = [tkVariable, tkFunction, tkPrototype, tkOperator, tkTypedef];
 
 implementation
 

@@ -163,7 +163,7 @@ const
     'About...'
     );
 
-  MAX_NEW_MENU = 8;
+  MAX_NEW_MENU = 9;
   CONST_STR_NEW_MENU: array[1..MAX_NEW_MENU] of string = (
   //New From Menu File
     '&Project...',
@@ -173,7 +173,8 @@ const
     'Resource File',
     'Empty File',
     '',
-    'Folder'
+    'Folder',
+    'Configuration'
     );
 
   MAX_IMPORT_MENU = 3;

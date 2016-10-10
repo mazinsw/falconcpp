@@ -375,10 +375,10 @@ begin
       Version.FileVersion := FraPrjOpt.EditVer.Text;
       Version.ProductVersion := FraPrjOpt.EditVer.Text;
       Ver := ParseVersion(FraPrjOpt.EditVer.Text);
-      Version.Major := Ver.Major;
-      Version.Minor := Ver.Minor;
-      Version.Release := Ver.Release;
-      Version.Build := Ver.Build;
+      Version.Version.Major := Ver.Major;
+      Version.Version.Minor := Ver.Minor;
+      Version.Version.Release := Ver.Release;
+      Version.Version.Build := Ver.Build;
       Version.FileDescription := FraPrjOpt.EditDesc.Text;
       Version.ProductName := FraPrjOpt.EditProdName.Text;
     end;

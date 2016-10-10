@@ -1,0 +1,5 @@
+with information:
+g++ -E NovoArquivo.cpp > NovoArquivo.p.cpp
+
+without information:
+g++ -E -P NovoArquivo.cpp > NovoArquivo.p2.cpp

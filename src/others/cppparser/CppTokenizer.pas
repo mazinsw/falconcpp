@@ -24,9 +24,10 @@ type
 
 function StartTokenizer(const StartPtr: PChar): PToken;
 procedure FreeTokens(First: PToken);
-function TokenMatch(const StartPtr: PChar; const S: string; Token: PToken): Boolean;
-function TokenLength(Token: PToken): Integer;
-function TokenString(const StartPtr: PChar; Token: PToken): string;
+function TokenMatch(const StartPtr: PChar; const S: string; Token: PToken): Boolean; inline;
+function TokenLength(Token: PToken): Integer; inline;
+function TokenString(const StartPtr: PChar; Token: PToken): string; inline;
+function TokenAtPosition(First: PToken; Position: Integer): PToken;
 
 function IsWordOrNumber(const StartPtr: PChar): Boolean;
 
@@ -35,19 +36,19 @@ implementation
 uses SysUtils;
 
 
-function TokenMatch(const StartPtr: PChar; const S: string; Token: PToken): Boolean;
+function TokenMatch(const StartPtr: PChar; const S: string; Token: PToken): Boolean; inline;
 begin
   Result := (Token <> nil) and (Length(S) = (Token^.EndPosition - Token^.StartPosition)) and
     (StrLComp(StartPtr + Token^.StartPosition, PChar(S),
             Token^.EndPosition - Token^.StartPosition) = 0);
 end;
 
-function TokenLength(Token: PToken): Integer;
+function TokenLength(Token: PToken): Integer; inline;
 begin
   Result := Token^.EndPosition - Token^.StartPosition;
 end;
 
-function TokenString(const StartPtr: PChar; Token: PToken): string;
+function TokenString(const StartPtr: PChar; Token: PToken): string; inline;
 begin
   if Token = nil then
   begin
@@ -57,6 +58,23 @@ begin
   SetLength(Result, Token^.EndPosition - Token^.StartPosition);
   StrLCopy(PChar(Result), StartPtr + Token^.StartPosition,
     Token^.EndPosition - Token^.StartPosition);
+end;
+
+function TokenAtPosition(First: PToken; Position: Integer): PToken;
+var
+  Next: PToken;
+begin
+  Next := First;
+  while Next <> nil do
+  begin
+    if (Position >= Next^.StartPosition) and (Position <= Next^.EndPosition) then
+    begin
+      Result := Next;
+      Exit;
+    end;
+    Next := Next^.Next;
+  end;
+  Result := nil;
 end;
 
 function AddToken(StartPosition, EndPosition, Line: Integer; Token: TTkxType;

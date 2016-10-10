@@ -1861,7 +1861,10 @@ begin
     if fstch = '{' then
       Inc(bCaret.Char, 2);
   end;
-  I := RightSpacesEx(StrPrevCaret, True);
+  if fstch = '}' then
+    I := LeftSpacesEx(StrPosCaret, True)
+  else
+    I := RightSpacesEx(StrPrevCaret, True);
   SpaceCount := LeftOffset - I;
   CommentStr := '';
   TmpStr := Trim(PrevLineStr);

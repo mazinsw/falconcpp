@@ -145,11 +145,7 @@ begin
   Result := True;
 end;
 
-{$IFDEF FALCON_PORTABLE}
-  {$R resources_portable.RES}
-{$ELSE}
-  {$R resources.RES}
-{$ENDIF}
+{$R resources.RES}
 
 begin
   if OpenWithOther then

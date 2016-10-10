@@ -42,7 +42,7 @@ type
     function SkipUntilFind(TypeSet: TSetOfTkxType): Boolean;
     function GetEOL(Line: Integer): string;
     procedure SkipEOL(Line: Integer);
-    function ProcessStruct(Token: TTkType): TTokenClass;
+    function ProcessStruct(Token: TTkType; Typedef: Boolean = False): TTokenClass;
     function GetInheritanceNoTemplate: string;
     function SkipTemplate: Boolean;
     procedure ProcessFields(StopLevel: Integer);
@@ -69,7 +69,9 @@ type
     destructor Destroy; override;
     procedure Cancel;
     procedure Clear;
-    function Parse(const Src: string; TokenFile: Pointer): Boolean;
+    function Tokenizer(const Src: string; TokenFile: Pointer): PToken;
+    function Parse(Tokens: PToken): Boolean;
+    function Run(const Src: string; TokenFile: Pointer): Boolean;
   end;
 
 implementation
@@ -284,7 +286,7 @@ begin
   until (FCurrent = nil) or (FCurrent^.Token in [tkxSemicolon,
     tkxCloseParentheses, tkxCloseBraces, tkxCloseBrackets]) or
     (UntilComma and (FCurrent^.Token = tkxComma));
-  if FCurrent^.Token = tkxSemicolon then
+  if (FCurrent <> nil) and (FCurrent^.Token = tkxSemicolon) then
   begin
     Next;
     Exit;
@@ -377,7 +379,7 @@ begin
   end;
 end;
 
-function TCppParser.ProcessStruct(Token: TTkType): TTokenClass;
+function TCppParser.ProcessStruct(Token: TTkType; Typedef: Boolean): TTokenClass;
 var
   NameToken, SaveCurrent, TokenDestr, SaveToken: PToken;
   Flag, Name: string;
@@ -423,6 +425,14 @@ begin
     begin
       Next;
       Flag := GetInheritanceNoTemplate;
+    end
+    else if (FCurrent^.Token = tkxSemicolon) and not Typedef then // forward
+    begin
+      Flag := TokenString(FStartPtr, SaveToken);
+      Result := AddToken(Name, Flag, tkForward, NameToken^.Line,
+        NameToken^.StartPosition, NameToken^.EndPosition - NameToken^.StartPosition,
+        FLevel);
+      Exit;
     end
     else if FCurrent^.Token = tkxLess then
     begin
@@ -606,6 +616,7 @@ var
   VarToken, FuncToken: TTokenClass;
   TokenType: TTkType;
   PtrRefStr, VarName, VectorStr, OptionsStr, ScopeStr, SaveTypeStr: string;
+  CurrToken: string;
   TypeStr: string;
   ParensCount: Integer;
   IsOperator, IsThrow: Boolean;
@@ -627,20 +638,21 @@ begin
       tkxGlobalScope,
       tkxIdentifier:
         begin
+          CurrToken := TokenString(FStartPtr, FCurrent);
           if (FCurrent^.Token = tkxIdentifier) and
-           (TokenMatch(FStartPtr, 'private', FCurrent) or
-            TokenMatch(FStartPtr, 'public', FCurrent) or
-            TokenMatch(FStartPtr, 'protected', FCurrent) or
-            TokenMatch(FStartPtr, 'struct', FCurrent) or
-            TokenMatch(FStartPtr, 'class', FCurrent) or
-            TokenMatch(FStartPtr, 'union', FCurrent) or
-            TokenMatch(FStartPtr, 'enum', FCurrent) or
-            TokenMatch(FStartPtr, 'typedef', FCurrent) or
-            TokenMatch(FStartPtr, 'template', FCurrent) or
-            TokenMatch(FStartPtr, 'namespace', FCurrent) or
-            TokenMatch(FStartPtr, 'extern', FCurrent) or
-            TokenMatch(FStartPtr, 'return', FCurrent) or
-            TokenMatch(FStartPtr, 'using', FCurrent)) then
+           ((CurrToken = 'private') or
+            (CurrToken = 'public') or
+            (CurrToken = 'protected') or
+            (CurrToken = 'struct') or
+            (CurrToken = 'class') or
+            (CurrToken = 'union') or
+            (CurrToken = 'enum') or
+            (CurrToken = 'typedef') or
+            (CurrToken = 'template') or
+            (CurrToken = 'namespace') or
+            (CurrToken = 'extern') or
+            (CurrToken = 'return') or
+            (CurrToken = 'using')) then
           begin
             Exit;
           end;
@@ -686,6 +698,7 @@ begin
         end;
       tkxComma,
       tkxSemicolon,
+      tkxCloseParentheses,
       tkxAssign:
         begin
           if (FCurrent^.Token = tkxAssign) and IsOperator then
@@ -708,7 +721,7 @@ begin
           end;
           if TokenOption <> nil then
             OptionsStr := ' ' + OptionsStr;
-          VarToken := AddToken(VarName, TypeStr + OptionsStr + PtrRefStr + VectorStr, 
+          VarToken := AddToken(VarName, TypeStr + OptionsStr + PtrRefStr + VectorStr,
             tkVariable, TokenID^.Line, TokenID^.StartPosition,
             TokenID^.EndPosition - TokenID^.StartPosition, FLevel);
           if (Length(ScopeStr) > 0) and (TokenScope <> nil) then
@@ -718,6 +731,8 @@ begin
               TokenScope^.StartPosition, 0, FLevel);
             Pop;
           end;
+          if TokenOption <> nil then
+            TypeStr := TypeStr + OptionsStr;
           PtrRefStr := '';
           OptionsStr := '';
           VectorStr := '';
@@ -727,7 +742,9 @@ begin
           TokenPtrRef := nil; 
           TokenScope := nil;
           TokenDestr := nil;
-          IsOperator := True;
+          IsOperator := (FCurrent^.Token = tkxAssign);
+          if FCurrent^.Token = tkxCloseParentheses then
+            Break;
           if FCurrent^.Token = tkxSemicolon then
           begin
             Next;
@@ -737,7 +754,10 @@ begin
           begin
             SkipAssign;
             if (FCurrent <> nil) and (FCurrent^.Token = tkxComma) then
+            begin
               Next;
+              IsOperator := False;
+            end;
             Continue;
           end;
         end;
@@ -1251,20 +1271,22 @@ procedure TCppParser.ProcessIdentifier(Fields: Boolean);
 var
   TokenName, TokenScope, TokenDestr: PToken;
   ScopeToken, UsingToken, StructToken: TTokenClass;
-  UsingName, ScopeStr, FriendTypeStr, FriendClassName, TypeStr: string;
+  UsingName, ScopeStr, FriendTypeStr: string;
+  FriendClassName, TypeStr, ReservedWord: string;
 begin
+  ReservedWord := TokenString(FStartPtr, FCurrent);
   if (FCurrent^.Token = tkxGlobalScope)  then
     ProcessVariableOrFunction(Fields)
-  else if TokenMatch(FStartPtr, 'while', FCurrent) or 
-     TokenMatch(FStartPtr, 'if', FCurrent) or 
-     TokenMatch(FStartPtr, 'switch', FCurrent) then
+  else if (ReservedWord = 'while') or (ReservedWord = 'do') or
+      (ReservedWord = 'try') or (ReservedWord = 'if') or
+      (ReservedWord = 'switch') then
   begin
     Next; // skip current
     if (FCurrent = nil) or (FCurrent^.Token <> tkxOpenParentheses) then
       Exit;
     SkipPair;
   end
-  else if TokenMatch(FStartPtr, 'for', FCurrent) then
+  else if (ReservedWord = 'for') or (ReservedWord = 'catch') then
   begin
     Next; // skip for
     if (FCurrent = nil) or (FCurrent^.Token <> tkxOpenParentheses) then
@@ -1275,35 +1297,41 @@ begin
     ProcessVariableOrFunction(False); // don't skip until ;
     if (FCurrent = nil) then
       Exit;
-    SkipInstruction; // test: i < ? or initialization yet
-    if (FCurrent = nil) then
-      Exit;
-    SkipInstruction; // increment: i++ or test yet
-    if (FCurrent <> nil) and (FCurrent^.Token = tkxCloseParentheses) then
+    if (ReservedWord = 'for') then
     begin
-      Next;
-      Exit;
+      SkipInstruction; // test: i < ? or initialization yet
+      if (FCurrent = nil) then
+        Exit;
+      SkipInstruction; // increment: i++ or test yet
+      if (FCurrent <> nil) and (FCurrent^.Token = tkxCloseParentheses) then
+      begin
+        Next;
+        Exit;
+      end;
+      SkipInstruction; // increment: i++
     end;
-    SkipInstruction; // increment: i++
     if (FCurrent = nil) or (FCurrent^.Token <> tkxCloseParentheses) then
       Exit;
     Next;
   end
-  else if TokenMatch(FStartPtr, 'else', FCurrent) then
+  else if (ReservedWord = 'else') then
   begin
-    Next; // skip else
+    Next;
   end
-  else if TokenMatch(FStartPtr, 'case', FCurrent) then
+  else if (ReservedWord = 'case') then
   begin
-    Next; // skip ;
-  end 
-  else if TokenMatch(FStartPtr, 'default', FCurrent) then
-  begin
-    Next; // skip ;
+    Next;
   end
-  else if TokenMatch(FStartPtr, 'private', FCurrent) or 
-          TokenMatch(FStartPtr, 'public', FCurrent) or 
-          TokenMatch(FStartPtr, 'protected', FCurrent) then
+  else if (ReservedWord = 'default') then
+  begin
+    Next;
+  end
+  else if (ReservedWord = 'return') then
+  begin
+    SkipInstruction; // skip
+  end
+  else if (ReservedWord = 'private') or (ReservedWord = 'public') or
+          (ReservedWord = 'protected') then
   begin       
     ScopeStr := TokenString(FStartPtr, FCurrent);
     Next;
@@ -1323,7 +1351,7 @@ begin
     if (FCurrent <> nil) or (FCurrent^.Token = tkxColon) then
       Next; // skip :
   end
-  else if TokenMatch(FStartPtr, 'struct', FCurrent) then
+  else if (ReservedWord = 'struct') then
   begin
     StructToken := ProcessStruct(tkStruct);
     if FCurrent <> nil then
@@ -1341,7 +1369,7 @@ begin
     if (FCurrent <> nil) and (FCurrent^.Token = tkxSemicolon) then
       Next; // skip ;
   end
-  else if TokenMatch(FStartPtr, 'class', FCurrent) then
+  else if (ReservedWord = 'class') then
   begin
     StructToken := ProcessStruct(tkClass);
     if FCurrent <> nil then
@@ -1359,7 +1387,7 @@ begin
     if (FCurrent <> nil) and (FCurrent^.Token = tkxSemicolon) then
       Next; // skip ;
   end
-  else if TokenMatch(FStartPtr, 'union', FCurrent) then
+  else if (ReservedWord = 'union') then
   begin
     StructToken := ProcessStruct(tkUnion);
     if FCurrent <> nil then
@@ -1377,7 +1405,7 @@ begin
     if (FCurrent <> nil) and (FCurrent^.Token = tkxSemicolon) then
       Next; // skip ;
   end
-  else if TokenMatch(FStartPtr, 'enum', FCurrent) then
+  else if (ReservedWord = 'enum') then
   begin
     StructToken := ProcessStruct(tkEnum);
     if FCurrent <> nil then
@@ -1395,28 +1423,28 @@ begin
     if (FCurrent <> nil) and (FCurrent^.Token = tkxSemicolon) then
       Next; // skip ;
   end
-  else if TokenMatch(FStartPtr, 'typedef', FCurrent) then
+  else if (ReservedWord = 'typedef') then
   begin
     Next; // skip typedef
     if FCurrent = nil then
       Exit;
     StructToken := nil;
     if TokenMatch(FStartPtr, 'struct', FCurrent) then
-      StructToken := ProcessStruct(tkStruct)
+      StructToken := ProcessStruct(tkStruct, True)
     else if TokenMatch(FStartPtr, 'class', FCurrent) then
-      StructToken := ProcessStruct(tkClass)
+      StructToken := ProcessStruct(tkClass, True)
     else if TokenMatch(FStartPtr, 'enum', FCurrent) then
-      StructToken := ProcessStruct(tkEnum)
+      StructToken := ProcessStruct(tkEnum, True)
     else if TokenMatch(FStartPtr, 'union', FCurrent) then
-      StructToken := ProcessStruct(tkUnion);
+      StructToken := ProcessStruct(tkUnion, True);
     ProcessTypedef(StructToken);
   end
-  else if TokenMatch(FStartPtr, 'template', FCurrent) then
+  else if (ReservedWord = 'template') then
   begin
     Next; // skip template
     SkipTemplate;
   end
-  else if TokenMatch(FStartPtr, 'namespace', FCurrent) then
+  else if (ReservedWord = 'namespace') then
   begin
     Next; //< skip namespace
     if (FCurrent <> nil) and (FCurrent^.Token <> tkxIdentifier) then
@@ -1438,22 +1466,22 @@ begin
       TokenName^.StartPosition, TokenName^.EndPosition - TokenName^.StartPosition, FLevel);
     AddToken('Scope', '', tkScope, FCurrent^.Line, FCurrent^.StartPosition + 1, 0, FLevel);
   end
-  else if not Fields and TokenMatch(FStartPtr, 'extern', FCurrent) then
+  else if not Fields and (ReservedWord = 'extern') then
   begin
 
     Next; // skip
-  end 
-  else if not Fields and TokenMatch(FStartPtr, 'delete', FCurrent) then
-  begin
-
-    SkipInstruction; // skip
-  end 
-  else if not Fields and TokenMatch(FStartPtr, 'new', FCurrent) then
+  end
+  else if not Fields and (ReservedWord = 'delete') then
   begin
 
     SkipInstruction; // skip
   end
-  else if TokenMatch(FStartPtr, 'friend', FCurrent) then
+  else if not Fields and (ReservedWord = 'new') then
+  begin
+
+    SkipInstruction; // skip
+  end
+  else if (ReservedWord = 'friend') then
   begin
     Next; // skip friend
     if FCurrent = nil then
@@ -1474,7 +1502,7 @@ begin
     if (FCurrent <> nil) or (FCurrent^.Token = tkxSemicolon) then
       Next; // skip ;
   end
-  else if TokenMatch(FStartPtr, 'using', FCurrent) then
+  else if (ReservedWord = 'using') then
   begin                                     
     Next; // skip using
     if FCurrent = nil then
@@ -1546,13 +1574,20 @@ begin
     scopeClass.SelLength := FCurrent^.StartPosition - scopeClass.SelStart;
 end;
 
-function TCppParser.Parse(const Src: string; TokenFile: Pointer): Boolean;
+function TCppParser.Run(const Src: string; TokenFile: Pointer): Boolean;
+begin
+  FFirst := Tokenizer(Src, TokenFile);
+  try
+    Result := Parse(FFirst);
+  finally
+    FreeTokens(FFirst);
+  end;
+end;
+
+function TCppParser.Parse(Tokens: PToken): Boolean;
 begin
   fBusy := True;
-  fTokenFile := TokenFile;
-  Clear;
-  FStartPtr := PChar(Src);
-  FFirst := StartTokenizer(FStartPtr);
+  FFirst := Tokens;
   FCurrent := FFirst;
   if FCurrent <> nil then
   begin
@@ -1581,7 +1616,6 @@ begin
       Next;
     until (FCurrent = nil) or fCancel;
   end;
-  FreeTokens(FFirst);
   Result := not fCancel;
   fBusy := False;
 end;
@@ -1699,6 +1733,16 @@ begin
     Result := nil;
     fLast := nil;
   end;
+end;
+
+function TCppParser.Tokenizer(const Src: string; TokenFile: Pointer): PToken;
+begin
+  FBusy := True;
+  fTokenFile := TokenFile;
+  Clear;
+  FStartPtr := PChar(Src);
+  Result := StartTokenizer(FStartPtr);
+  FBusy := False;
 end;
 
 function TCppParser.Top: TTokenClass;

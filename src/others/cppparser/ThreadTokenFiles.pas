@@ -132,7 +132,7 @@ begin
     if S <> '-' then
     begin
       S := FileObj.FileName;
-      if FileExists(S) and (fTokenFiles.ItemOfByFileName(S) = nil) then
+      if FileExists(S) and (fTokenFiles.Find(S) = nil) then
       begin
         TokenFile := TTokenFile.Create(fTokenFiles);
         TokenFile.FileName := S;
@@ -140,7 +140,7 @@ begin
         FileObj.Free;
         LoadFileEx(S, Lines, WithBOM, Encoding, LineBreak);
         Lines.LineBreak := LineBreak;
-        fParser.Parse(Lines.Text, TokenFile);
+        fParser.Run(Lines.Text, TokenFile);
         if fCancel then
         begin
           TokenFile.Free;
@@ -155,12 +155,12 @@ begin
     else
     begin
       S := FileObj.FileName;
-      if fTokenFiles.ItemOfByFileName(S) = nil then
+      if fTokenFiles.Find(S) = nil then
       begin
         TokenFile := TTokenFile.Create(fTokenFiles);
         TokenFile.FileName := S;
         TokenFile.Data := FileObj.ID;
-        fParser.Parse(FileObj.Text, TokenFile);
+        fParser.Run(FileObj.Text, TokenFile);
         FileObj.Free;
         if fCancel then
         begin
@@ -194,7 +194,7 @@ begin
   Result := FilesParsed;
   if not FileExists(FileName) then
     Exit;
-  if fTokenFiles.ItemOfByFileName(FileName) <> nil then
+  if fTokenFiles.Find(FileName) <> nil then
     Exit;
   if fCancel then
     Exit;
@@ -203,7 +203,7 @@ begin
   TokenFile.FileName := FileName;
   LoadFileEx(FileName, Lines, WithBOM, Encoding, LineBreak);
   Lines.LineBreak := LineBreak;
-  fParser.Parse(Lines.Text, TokenFile);
+  fParser.Run(Lines.Text, TokenFile);
   Lines.Free;
   if fCancel then
   begin
@@ -239,7 +239,7 @@ begin
         end;
       end;
     end;
-    if fTokenFiles.ItemOfByFileName(IncludeFileName) <> nil then
+    if fTokenFiles.Find(IncludeFileName) <> nil then
       Continue;
     if fCancel then
       Exit;
@@ -265,7 +265,7 @@ var
   FromName, DirFrom, DirBase, IncludeName, IncludeFileName: string;
 begin
   Result := FilesParsed;
-  if fTokenFiles.ItemOfByFileName(FileName) <> nil then
+  if fTokenFiles.Find(FileName) <> nil then
     Exit;
   if fCancel then
     Exit;
@@ -318,7 +318,7 @@ begin
         end;
       end;
     end;
-    if fTokenFiles.ItemOfByFileName(IncludeFileName) <> nil then
+    if fTokenFiles.Find(IncludeFileName) <> nil then
       Continue;
     if fCancel then
       Exit;
@@ -382,7 +382,7 @@ begin
         TokenFile.FileName := FileName;
         LoadFileEx(FileName, Lines, WithBOM, Encoding, LineBreak);
         Lines.LineBreak := LineBreak;
-        fParser.Parse(Lines.Text, TokenFile);
+        fParser.Run(Lines.Text, TokenFile);
         if fCancel then
         begin
           TokenFile.Free;

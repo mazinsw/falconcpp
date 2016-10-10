@@ -28,7 +28,6 @@ object FrmVisualCppOptions: TFrmVisualCppOptions
     Width = 313
     Height = 21
     Style = csDropDownList
-    ItemHeight = 13
     TabOrder = 0
   end
   object BtnOk: TButton

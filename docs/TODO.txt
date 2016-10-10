@@ -1,0 +1,12 @@
+filetype changed
+get page control event
+before edit event
+override event
+save event
+find template
+on begin load layout
+on end load layout
+on fill include list
+on build
+on build error
+fix Coversão to Conversão on translation

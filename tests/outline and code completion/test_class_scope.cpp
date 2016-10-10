@@ -50,32 +50,35 @@ int main()
     MyClassPublic mc_public;
     
     mc.my_public_func(10);
-    // don't call, don't show hint
-    mc_private.my_protected_func(10);
-    mc_private.my_private_func(10);
-        
+
     mc_private.my_public_func1(10);
     // don't call, don't show hint
+#ifdef NDEBUG
     mc_private.my_public_func(10);
     mc_private.my_protected_func(10);
     mc_private.my_protected_func1(10);
     mc_private.my_private_func(10);
     mc_private.my_private_func1(10);
-    
+#endif
+
     mc_protected.my_public_func2(10);
     // don't call, don't show hint
+#ifdef NDEBUG
     mc_protected.my_public_func(10);
     mc_protected.my_protected_func(10);
     mc_protected.my_protected_func2(10);
     mc_protected.my_private_func(10);
     mc_protected.my_private_func2(10);
+#endif
     
     mc_public.my_public_func(10);
     mc_public.my_public_func3(10);
     // don't call, don't show hint
+#ifdef NDEBUG
     mc_public.my_protected_func(10);
     mc_public.my_protected_func3(10);
     mc_public.my_private_func(10);
     mc_public.my_private_func3(10);
+#endif
     return 0;   
 }

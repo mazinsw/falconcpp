@@ -1,0 +1,8 @@
+formatter undo select all code
+press enter on start of indented code, unindent code
+save file don't replace file
+save file first save on Projects folder then move to correct location
+don't prompting, file does not exist
+TODO don't showing after type //TODO
+find window don't fading when search text from back top border
+#include <GL/glext.h> + Ctrl + Space after < does not show code completion

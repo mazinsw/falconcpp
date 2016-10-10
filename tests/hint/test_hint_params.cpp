@@ -23,7 +23,7 @@ int test(int param1, int param2, int updown_now, int cont, ...){}
 
 int main(int argc, char *argv[])
 {
-    MyResult mr;
+    MyResult mr = {};
     test(test, s, a);
     main(main(argc, argv), main(argc, "dsdsd"));
     mr.sum();

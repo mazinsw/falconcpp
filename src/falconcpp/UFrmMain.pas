@@ -11,23 +11,24 @@ uses
   UTemplates, SendData, OutputConsole, ShlObj, FormEffect,
   PNGImage, USourceFile, Clipbrd, CompletionProposal, UUtils,
   UFrmEditorOptions, FileDownload, SplashScreen, FormPosition,
-  TBXExtItems, TB2Item, TBX, TB2Dock, TBXSwitcher, IniFiles,
+  SpTBXExtItems, TB2Item, SpTBX, TB2Dock, SpTBXSwitcher, IniFiles,
   // themes
-  TBXOfficeXPTheme,
-  TBXAluminumTheme,
-  TBXOffice2003Theme,
-  TBXProfessionalTheme,
-  TBXStripesTheme,
+  SpTBXOfficeXPTheme,
+  SpTBXAluminumTheme,
+  SpTBXOffice2003Theme,
+  SpTBXProfessionalTheme,
+  SpTBXStripesTheme,
   // end themes
   AppEvnts, ThreadTokenFiles, CppParser, TokenConst, TokenFile,
   TokenHint, TokenList, TokenUtils,
   CommCtrl, DebugReader, CommandQueue,
-  DebugConsts,
+  DebugConsts, CppTokenizer,
   XMLDoc, XMLIntf, BreakPoint, HintTree, DebugWatch,
-  UParseMsgs, TBXStatusBars, XPPanels, ModernTabs,
-  TB2Toolbar, ThreadFileDownload, VirtualTrees,
+  UParseMsgs, SpTBXStatusBars, XPPanels, ModernTabs,
+  TB2Toolbar, ThreadFileDownload, VirtualTrees, SyncObjs,
   PluginManager, PluginServiceManager, UEditor, CppHighlighter, SintaxList,
-  AutoComplete, DScintillaTypes, SearchEngine, SystemUtils, CompilerSettings;
+  AutoComplete, DScintillaTypes, SearchEngine, SystemUtils, CompilerSettings,
+  SIImageList;
 
 const
   crReverseArrow = TCursor(-99);
@@ -64,7 +65,7 @@ const
     -1 // type
     );
 
-  FILE_IMG_LIST: array [1 .. 7] of Integer = (1, 2, 3, 4, 5, 6, 0);
+  FILE_IMG_LIST: array [1 .. 9] of Integer = (1, 2, 3, 4, 5, 6, 0, 7, 8);
 
   WM_RELOADFTM = WM_USER + $1008;
   WM_REPARSEFILES = WM_RELOADFTM + 1;
@@ -114,263 +115,262 @@ type
     SplashScreen: TSplashScreen;
     FrmPos: TFormPosition;
     ImgListOutLine: TImageList;
-    DockTop: TTBXDock;
-    DefaultBar: TTBXToolbar;
-    BtnNew: TTBXSubmenuItem;
-    BtnOpen: TTBXItem;
-    BtnRemove: TTBXItem;
-    BtnSaveAll: TTBXItem;
-    TBXSeparatorItem1: TTBXSeparatorItem;
-    BtnSave: TTBXItem;
-    EditBar: TTBXToolbar;
-    BtnUndo: TTBXItem;
-    BtnRedo: TTBXItem;
-    TBXSwitcher: TTBXSwitcher;
-    NavigatorBar: TTBXToolbar;
-    BtnPrevPage: TTBXItem;
-    BtnNextPage: TTBXItem;
-    CompilerBar: TTBXToolbar;
-    BtnRun: TTBXItem;
-    BtnCompile: TTBXItem;
-    BtnStop: TTBXItem;
-    TBXSeparatorItem9: TTBXSeparatorItem;
-    BtnExecute: TTBXItem;
-    ProjectBar: TTBXToolbar;
-    BtnNewProj: TTBXItem;
-    BtnProperties: TTBXItem;
-    PopupProject: TTBXPopupMenu;
-    HelpBar: TTBXToolbar;
-    BtnContxHelp: TTBXItem;
-    BtnHelp: TTBXItem;
-    DebugBar: TTBXToolbar;
-    PopProjNew: TTBXSubmenuItem;
-    TBXSeparatorItem23: TTBXSeparatorItem;
-    PopProjOpen: TTBXItem;
-    PopProjEdit: TTBXItem;
-    TBXSeparatorItem24: TTBXSeparatorItem;
-    PopProjDelFromDsk: TTBXItem;
-    PopProjRemove: TTBXItem;
-    PopProjRename: TTBXItem;
-    TBXSeparatorItem25: TTBXSeparatorItem;
-    PopProjProp: TTBXItem;
-    MenuDock: TTBXDock;
-    MenuBar: TTBXToolbar;
-    MenuFile: TTBXSubmenuItem;
-    FileNew: TTBXSubmenuItem;
-    FileNewProject: TTBXItem;
-    FileNewC: TTBXItem;
-    FileNewCpp: TTBXItem;
-    FileNewHeader: TTBXItem;
-    FileNewResource: TTBXItem;
-    FileNewEmpty: TTBXItem;
-    TBXSeparatorItem3: TTBXSeparatorItem;
-    FileNewFolder: TTBXItem;
-    FileOpen: TTBXItem;
-    FileReopen: TTBXSubmenuItem;
-    FileReopenClear: TTBXItem;
-    TBXSeparatorItem4: TTBXSeparatorItem;
-    FileSave: TTBXItem;
-    FileSaveAs: TTBXItem;
-    FileSaveAll: TTBXItem;
-    TBXSeparatorItem22: TTBXSeparatorItem;
-    FileImport: TTBXSubmenuItem;
-    FileImpDevCpp: TTBXItem;
-    FileImpCodeBlocks: TTBXItem;
-    FileImpMSVC: TTBXItem;
-    FileExport: TTBXSubmenuItem;
-    FileExportHTML: TTBXItem;
-    FileExportRTF: TTBXItem;
-    TBXSeparatorItem15: TTBXSeparatorItem;
-    FileClose: TTBXItem;
-    FileCloseAll: TTBXItem;
-    TBXSeparatorItem6: TTBXSeparatorItem;
-    FileExit: TTBXItem;
-    MenuEdit: TTBXSubmenuItem;
-    EditUndo: TTBXItem;
-    EditRedo: TTBXItem;
-    TBXSeparatorItem7: TTBXSeparatorItem;
-    EditCut: TTBXItem;
-    EditCopy: TTBXItem;
-    EditPaste: TTBXItem;
-    TBXSeparatorItem5: TTBXSeparatorItem;
-    EditSelectAll: TTBXItem;
-    MenuSearch: TTBXSubmenuItem;
-    SearchFind: TTBXItem;
-    SearchFindNext: TTBXItem;
-    SearchFindPrev: TTBXItem;
-    SearchFindFiles: TTBXItem;
-    SearchReplace: TTBXItem;
-    SearchIncremental: TTBXItem;
-    TBXSeparatorItem16: TTBXSeparatorItem;
-    SearchGotoFunction: TTBXItem;
-    SearchGotoLine: TTBXItem;
-    MenuView: TTBXSubmenuItem;
-    ViewProjMan: TTBXItem;
-    ViewStatusBar: TTBXItem;
-    ViewCompOut: TTBXItem;
-    ViewOutline: TTBXItem;
-    ViewToolbar: TTBXSubmenuItem;
-    ViewToolbarDefault: TTBXItem;
-    ViewToolbarEdit: TTBXItem;
-    ViewToolbarSearch: TTBXItem;
-    ViewToolbarCompiler: TTBXItem;
-    ViewToolbarNavigator: TTBXItem;
-    ViewToolbarProject: TTBXItem;
-    ViewToolbarHelp: TTBXItem;
-    ViewThemes: TTBXSubmenuItem;
-    ViewThemeDef: TTBXItem;
-    ViewThemeOffice2003: TTBXItem;
-    ViewThemeOffXP: TTBXItem;
-    ViewZoom: TTBXSubmenuItem;
-    ViewZoomInc: TTBXItem;
-    ViewZoomDec: TTBXItem;
-    TBXSeparatorItem21: TTBXSeparatorItem;
-    ViewFullScreen: TTBXItem;
-    TBXSeparatorItem20: TTBXSeparatorItem;
-    ViewRestoreDefault: TTBXItem;
-    MenuProject: TTBXSubmenuItem;
-    ProjectAdd: TTBXItem;
-    ProjectRemove: TTBXItem;
-    TBXSeparatorItem2: TTBXSeparatorItem;
-    ProjectBuild: TTBXItem;
-    TBXSeparatorItem10: TTBXSeparatorItem;
-    ProjectProperties: TTBXItem;
-    MenuRun: TTBXSubmenuItem;
-    RunRun: TTBXItem;
-    RunStop: TTBXItem;
-    TBXSeparatorItem12: TTBXSeparatorItem;
-    RunCompile: TTBXItem;
-    RunExecute: TTBXItem;
-    MenuTools: TTBXSubmenuItem;
-    ToolsEnvOptions: TTBXItem;
-    ToolsCompilerOptions: TTBXItem;
-    ToolsEditorOptions: TTBXItem;
-    TBXSeparatorItem18: TTBXSeparatorItem;
-    ToolsTemplate: TTBXItem;
-    ToolsPackageCreator: TTBXItem;
-    TBXSeparatorItem19: TTBXSeparatorItem;
-    ToolsPackages: TTBXItem;
-    MenuHelp: TTBXSubmenuItem;
-    HelpTipOfDay: TTBXItem;
-    TBXSeparatorItem11: TTBXSeparatorItem;
-    HelpUpdate: TTBXItem;
-    TBXSeparatorItem13: TTBXSeparatorItem;
-    HelpAbout: TTBXItem;
-    PopupEditor: TTBXPopupMenu;
-    PopEditorProperties: TTBXItem;
-    PopEditorSelectAll: TTBXItem;
-    TBXSeparatorItem8: TTBXSeparatorItem;
-    PopEditorRedo: TTBXItem;
-    PopEditorUndo: TTBXItem;
-    TBXSeparatorItem26: TTBXSeparatorItem;
-    TBXSeparatorItem27: TTBXSeparatorItem;
-    PopEditorDelete: TTBXItem;
-    PopEditorPaste: TTBXItem;
-    PopEditorCopy: TTBXItem;
-    PopEditorCut: TTBXItem;
-    PopEditorTools: TTBXSubmenuItem;
-    DockBottom: TTBXDock;
-    DockLeft: TTBXDock;
-    DockRight: TTBXDock;
-    ViewToolbarDebug: TTBXItem;
-    SearchBar: TTBXToolbar;
-    BtnFind: TTBXItem;
-    BtnReplace: TTBXItem;
-    BtnGotoLN: TTBXItem;
-    TBXSeparatorItem29: TTBXSeparatorItem;
-    HelpFalcon: TTBXSubmenuItem;
-    HelpFalconFalcon: TTBXItem;
-    PopupMsg: TTBXPopupMenu;
-    PupMsgGotoLine: TTBXItem;
-    TBXSeparatorItem31: TTBXSeparatorItem;
-    PupMsgOriMsg: TTBXItem;
-    TBXSeparatorItem32: TTBXSeparatorItem;
-    PupMsgCopyOri: TTBXItem;
-    PupMsgCopy: TTBXItem;
+    DockTop: TSpTBXDock;
+    DefaultBar: TSpTBXToolbar;
+    BtnNew: TSpTBXSubmenuItem;
+    BtnOpen: TSpTBXItem;
+    BtnRemove: TSpTBXItem;
+    BtnSaveAll: TSpTBXItem;
+    SpTBXSeparatorItem1: TSpTBXSeparatorItem;
+    BtnSave: TSpTBXItem;
+    EditBar: TSpTBXToolbar;
+    BtnUndo: TSpTBXItem;
+    BtnRedo: TSpTBXItem;
+    SpTBXSwitcher: TSpTBXSwitcher;
+    NavigatorBar: TSpTBXToolbar;
+    BtnPrevPage: TSpTBXItem;
+    BtnNextPage: TSpTBXItem;
+    CompilerBar: TSpTBXToolbar;
+    BtnRun: TSpTBXItem;
+    BtnCompile: TSpTBXItem;
+    BtnStop: TSpTBXItem;
+    SpTBXSeparatorItem9: TSpTBXSeparatorItem;
+    BtnExecute: TSpTBXItem;
+    ProjectBar: TSpTBXToolbar;
+    BtnNewProj: TSpTBXItem;
+    BtnProperties: TSpTBXItem;
+    PopupProject: TSpTBXPopupMenu;
+    HelpBar: TSpTBXToolbar;
+    BtnContxHelp: TSpTBXItem;
+    BtnHelp: TSpTBXItem;
+    DebugBar: TSpTBXToolbar;
+    PopProjNew: TSpTBXSubmenuItem;
+    SpTBXSeparatorItem23: TSpTBXSeparatorItem;
+    PopProjOpen: TSpTBXItem;
+    PopProjEdit: TSpTBXItem;
+    SpTBXSeparatorItem24: TSpTBXSeparatorItem;
+    PopProjDelFromDsk: TSpTBXItem;
+    PopProjRemove: TSpTBXItem;
+    PopProjRename: TSpTBXItem;
+    SpTBXSeparatorItem25: TSpTBXSeparatorItem;
+    PopProjProp: TSpTBXItem;
+    MenuDock: TSpTBXDock;
+    MenuBar: TSpTBXToolbar;
+    MenuFile: TSpTBXSubmenuItem;
+    FileNew: TSpTBXSubmenuItem;
+    FileNewProject: TSpTBXItem;
+    FileNewC: TSpTBXItem;
+    FileNewCpp: TSpTBXItem;
+    FileNewHeader: TSpTBXItem;
+    FileNewResource: TSpTBXItem;
+    FileNewEmpty: TSpTBXItem;
+    SpTBXSeparatorItem3: TSpTBXSeparatorItem;
+    FileNewFolder: TSpTBXItem;
+    FileOpen: TSpTBXItem;
+    FileReopen: TSpTBXSubmenuItem;
+    FileReopenClear: TSpTBXItem;
+    SpTBXSeparatorItem4: TSpTBXSeparatorItem;
+    FileSave: TSpTBXItem;
+    FileSaveAs: TSpTBXItem;
+    FileSaveAll: TSpTBXItem;
+    SpTBXSeparatorItem22: TSpTBXSeparatorItem;
+    FileImport: TSpTBXSubmenuItem;
+    FileImpDevCpp: TSpTBXItem;
+    FileImpCodeBlocks: TSpTBXItem;
+    FileImpMSVC: TSpTBXItem;
+    FileExport: TSpTBXSubmenuItem;
+    FileExportHTML: TSpTBXItem;
+    FileExportRTF: TSpTBXItem;
+    SpTBXSeparatorItem15: TSpTBXSeparatorItem;
+    FileClose: TSpTBXItem;
+    FileCloseAll: TSpTBXItem;
+    SpTBXSeparatorItem6: TSpTBXSeparatorItem;
+    FileExit: TSpTBXItem;
+    MenuEdit: TSpTBXSubmenuItem;
+    EditUndo: TSpTBXItem;
+    EditRedo: TSpTBXItem;
+    SpTBXSeparatorItem7: TSpTBXSeparatorItem;
+    EditCut: TSpTBXItem;
+    EditCopy: TSpTBXItem;
+    EditPaste: TSpTBXItem;
+    SpTBXSeparatorItem5: TSpTBXSeparatorItem;
+    EditSelectAll: TSpTBXItem;
+    MenuSearch: TSpTBXSubmenuItem;
+    SearchFind: TSpTBXItem;
+    SearchFindNext: TSpTBXItem;
+    SearchFindPrev: TSpTBXItem;
+    SearchFindFiles: TSpTBXItem;
+    SearchReplace: TSpTBXItem;
+    SearchIncremental: TSpTBXItem;
+    SpTBXSeparatorItem16: TSpTBXSeparatorItem;
+    SearchGotoFunction: TSpTBXItem;
+    SearchGotoLine: TSpTBXItem;
+    MenuView: TSpTBXSubmenuItem;
+    ViewProjMan: TSpTBXItem;
+    ViewStatusBar: TSpTBXItem;
+    ViewCompOut: TSpTBXItem;
+    ViewOutline: TSpTBXItem;
+    ViewToolbar: TSpTBXSubmenuItem;
+    ViewToolbarDefault: TSpTBXItem;
+    ViewToolbarEdit: TSpTBXItem;
+    ViewToolbarSearch: TSpTBXItem;
+    ViewToolbarCompiler: TSpTBXItem;
+    ViewToolbarNavigator: TSpTBXItem;
+    ViewToolbarProject: TSpTBXItem;
+    ViewToolbarHelp: TSpTBXItem;
+    ViewThemes: TSpTBXSubmenuItem;
+    ViewThemeDef: TSpTBXItem;
+    ViewThemeOffice2003: TSpTBXItem;
+    ViewThemeOffXP: TSpTBXItem;
+    ViewZoom: TSpTBXSubmenuItem;
+    ViewZoomInc: TSpTBXItem;
+    ViewZoomDec: TSpTBXItem;
+    SpTBXSeparatorItem21: TSpTBXSeparatorItem;
+    ViewFullScreen: TSpTBXItem;
+    SpTBXSeparatorItem20: TSpTBXSeparatorItem;
+    ViewRestoreDefault: TSpTBXItem;
+    MenuProject: TSpTBXSubmenuItem;
+    ProjectAdd: TSpTBXItem;
+    ProjectRemove: TSpTBXItem;
+    SpTBXSeparatorItem2: TSpTBXSeparatorItem;
+    ProjectBuild: TSpTBXItem;
+    SpTBXSeparatorItem10: TSpTBXSeparatorItem;
+    ProjectProperties: TSpTBXItem;
+    MenuRun: TSpTBXSubmenuItem;
+    RunRun: TSpTBXItem;
+    RunStop: TSpTBXItem;
+    SpTBXSeparatorItem12: TSpTBXSeparatorItem;
+    RunCompile: TSpTBXItem;
+    RunExecute: TSpTBXItem;
+    MenuTools: TSpTBXSubmenuItem;
+    ToolsEnvOptions: TSpTBXItem;
+    ToolsCompilerOptions: TSpTBXItem;
+    ToolsEditorOptions: TSpTBXItem;
+    SpTBXSeparatorItem18: TSpTBXSeparatorItem;
+    ToolsTemplate: TSpTBXItem;
+    ToolsPackageCreator: TSpTBXItem;
+    SpTBXSeparatorItem19: TSpTBXSeparatorItem;
+    ToolsPackages: TSpTBXItem;
+    MenuHelp: TSpTBXSubmenuItem;
+    HelpTipOfDay: TSpTBXItem;
+    SpTBXSeparatorItem11: TSpTBXSeparatorItem;
+    HelpUpdate: TSpTBXItem;
+    SpTBXSeparatorItem13: TSpTBXSeparatorItem;
+    HelpAbout: TSpTBXItem;
+    PopupEditor: TSpTBXPopupMenu;
+    PopEditorProperties: TSpTBXItem;
+    PopEditorSelectAll: TSpTBXItem;
+    SpTBXSeparatorItem8: TSpTBXSeparatorItem;
+    PopEditorRedo: TSpTBXItem;
+    PopEditorUndo: TSpTBXItem;
+    SpTBXSeparatorItem26: TSpTBXSeparatorItem;
+    SpTBXSeparatorItem27: TSpTBXSeparatorItem;
+    PopEditorDelete: TSpTBXItem;
+    PopEditorPaste: TSpTBXItem;
+    PopEditorCopy: TSpTBXItem;
+    PopEditorCut: TSpTBXItem;
+    PopEditorTools: TSpTBXSubmenuItem;
+    DockBottom: TSpTBXDock;
+    DockLeft: TSpTBXDock;
+    DockRight: TSpTBXDock;
+    ViewToolbarDebug: TSpTBXItem;
+    SearchBar: TSpTBXToolbar;
+    BtnFind: TSpTBXItem;
+    BtnReplace: TSpTBXItem;
+    BtnGotoLN: TSpTBXItem;
+    SpTBXSeparatorItem29: TSpTBXSeparatorItem;
+    HelpFalcon: TSpTBXSubmenuItem;
+    HelpFalconFalcon: TSpTBXItem;
+    PopupMsg: TSpTBXPopupMenu;
+    PupMsgGotoLine: TSpTBXItem;
+    SpTBXSeparatorItem31: TSpTBXSeparatorItem;
+    PupMsgOriMsg: TSpTBXItem;
+    SpTBXSeparatorItem32: TSpTBXSeparatorItem;
+    PupMsgCopyOri: TSpTBXItem;
+    PupMsgCopy: TSpTBXItem;
     TimerChangeDelay: TTimer;
-    ImgListMenus: TTBImageList;
-    DisImgListMenus: TTBImageList;
-    TBXSeparatorItem33: TTBXSeparatorItem;
-    BtnGotoBook: TTBXSubmenuItem;
-    BtnToggleBook: TTBXSubmenuItem;
-    PopEditorBookmarks: TTBXSubmenuItem;
-    PopEditorGotoBookmarks: TTBXSubmenuItem;
-    TBXSeparatorItem34: TTBXSeparatorItem;
-    TBXSeparatorItem36: TTBXSeparatorItem;
-    EditBookmarks: TTBXSubmenuItem;
-    TBXItem35: TTBXItem;
-    TBXItem36: TTBXItem;
-    TBXItem37: TTBXItem;
-    TBXItem38: TTBXItem;
-    TBXItem44: TTBXItem;
-    TBXItem45: TTBXItem;
-    TBXItem46: TTBXItem;
-    TBXItem47: TTBXItem;
-    TBXItem50: TTBXItem;
-    EditGotoBookmarks: TTBXSubmenuItem;
-    TBXItem58: TTBXItem;
-    TBXItem62: TTBXItem;
-    TBXItem65: TTBXItem;
-    TBXItem66: TTBXItem;
-    TBXItem71: TTBXItem;
-    TBXItem74: TTBXItem;
-    TBXItem75: TTBXItem;
-    TBXItem76: TTBXItem;
-    TBXItem78: TTBXItem;
-    TBXSeparatorItem37: TTBXSeparatorItem;
-    EditIndent: TTBXItem;
+    ImgListMenus: TImageList;
+    SpTBXSeparatorItem33: TSpTBXSeparatorItem;
+    BtnGotoBook: TSpTBXSubmenuItem;
+    BtnToggleBook: TSpTBXSubmenuItem;
+    PopEditorBookmarks: TSpTBXSubmenuItem;
+    PopEditorGotoBookmarks: TSpTBXSubmenuItem;
+    SpTBXSeparatorItem34: TSpTBXSeparatorItem;
+    SpTBXSeparatorItem36: TSpTBXSeparatorItem;
+    EditBookmarks: TSpTBXSubmenuItem;
+    SpTBXItem35: TSpTBXItem;
+    SpTBXItem36: TSpTBXItem;
+    SpTBXItem37: TSpTBXItem;
+    SpTBXItem38: TSpTBXItem;
+    SpTBXItem44: TSpTBXItem;
+    SpTBXItem45: TSpTBXItem;
+    SpTBXItem46: TSpTBXItem;
+    SpTBXItem47: TSpTBXItem;
+    SpTBXItem50: TSpTBXItem;
+    EditGotoBookmarks: TSpTBXSubmenuItem;
+    SpTBXItem58: TSpTBXItem;
+    SpTBXItem62: TSpTBXItem;
+    SpTBXItem65: TSpTBXItem;
+    SpTBXItem66: TSpTBXItem;
+    SpTBXItem71: TSpTBXItem;
+    SpTBXItem74: TSpTBXItem;
+    SpTBXItem75: TSpTBXItem;
+    SpTBXItem76: TSpTBXItem;
+    SpTBXItem78: TSpTBXItem;
+    SpTBXSeparatorItem37: TSpTBXSeparatorItem;
+    EditIndent: TSpTBXItem;
     TimerHintTipEvent: TTimer;
     ApplicationEvents: TApplicationEvents;
     TimerHintParams: TTimer;
-    FilePrint: TTBXItem;
-    TBXSeparatorItem38: TTBXSeparatorItem;
-    FileRemove: TTBXItem;
-    EditUnindent: TTBXItem;
-    EditDelete: TTBXItem;
-    FileExportTeX: TTBXItem;
-    PopEditorSwap: TTBXItem;
-    TBXSeparatorItem28: TTBXSeparatorItem;
-    PopupTabs: TTBXPopupMenu;
-    PopTabsClose: TTBXItem;
-    PopTabsCloseAllOthers: TTBXItem;
-    PopTabsCloseAll: TTBXItem;
-    TBXSeparatorItem35: TTBXSeparatorItem;
-    PopTabsSave: TTBXItem;
-    PopTabsSaveAll: TTBXItem;
-    TBXSeparatorItem39: TTBXSeparatorItem;
-    PopTabsSwap: TTBXItem;
-    TBXSeparatorItem40: TTBXSeparatorItem;
-    PopTabsTabsAtBottom: TTBXItem;
-    PopTabsTabsAtTop: TTBXItem;
-    TBXSeparatorItem41: TTBXSeparatorItem;
-    PopTabsProperties: TTBXItem;
-    EditSwap: TTBXItem;
-    TBXSeparatorItem42: TTBXSeparatorItem;
-    TBXSeparatorItem43: TTBXSeparatorItem;
-    EditFormat: TTBXItem;
-    PopProjAdd: TTBXItem;
-    PopEditorCompClass: TTBXItem;
-    PopEditorOpenDecl: TTBXItem;
-    TBXSeparatorItem44: TTBXSeparatorItem;
+    FilePrint: TSpTBXItem;
+    SpTBXSeparatorItem38: TSpTBXSeparatorItem;
+    FileRemove: TSpTBXItem;
+    EditUnindent: TSpTBXItem;
+    EditDelete: TSpTBXItem;
+    FileExportTeX: TSpTBXItem;
+    PopEditorSwap: TSpTBXItem;
+    SpTBXSeparatorItem28: TSpTBXSeparatorItem;
+    PopupTabs: TSpTBXPopupMenu;
+    PopTabsClose: TSpTBXItem;
+    PopTabsCloseAllOthers: TSpTBXItem;
+    PopTabsCloseAll: TSpTBXItem;
+    SpTBXSeparatorItem35: TSpTBXSeparatorItem;
+    PopTabsSave: TSpTBXItem;
+    PopTabsSaveAll: TSpTBXItem;
+    SpTBXSeparatorItem39: TSpTBXSeparatorItem;
+    PopTabsSwap: TSpTBXItem;
+    SpTBXSeparatorItem40: TSpTBXSeparatorItem;
+    PopTabsTabsAtBottom: TSpTBXItem;
+    PopTabsTabsAtTop: TSpTBXItem;
+    SpTBXSeparatorItem41: TSpTBXSeparatorItem;
+    PopTabsProperties: TSpTBXItem;
+    EditSwap: TSpTBXItem;
+    SpTBXSeparatorItem42: TSpTBXSeparatorItem;
+    SpTBXSeparatorItem43: TSpTBXSeparatorItem;
+    EditFormat: TSpTBXItem;
+    PopProjAdd: TSpTBXItem;
+    PopEditorCompClass: TSpTBXItem;
+    PopEditorOpenDecl: TSpTBXItem;
+    SpTBXSeparatorItem44: TSpTBXSeparatorItem;
     ImageListGutter: TImageList;
-    RunStepReturn: TTBXItem;
-    RunStepInto: TTBXItem;
-    RunStepOver: TTBXItem;
-    RunToggleBreakpoint: TTBXItem;
-    RunRuntoCursor: TTBXItem;
-    BtnStepInto: TTBXItem;
-    BtnStepOver: TTBXItem;
-    BtnStepReturn: TTBXItem;
-    PupMsgClear: TTBXItem;
+    RunStepReturn: TSpTBXItem;
+    RunStepInto: TSpTBXItem;
+    RunStepOver: TSpTBXItem;
+    RunToggleBreakpoint: TSpTBXItem;
+    RunRuntoCursor: TSpTBXItem;
+    BtnStepInto: TSpTBXItem;
+    BtnStepOver: TSpTBXItem;
+    BtnStepReturn: TSpTBXItem;
+    PupMsgClear: TSpTBXItem;
     ImgListCountry: TImageList;
-    SearchGotoPrevFunc: TTBXItem;
-    SearchGotoNextFunc: TTBXItem;
+    SearchGotoPrevFunc: TSpTBXItem;
+    SearchGotoNextFunc: TSpTBXItem;
     ImageListDebug: TImageList;
-    ViewThemeStripes: TTBXItem;
-    ViewThemeProfessional: TTBXItem;
-    ViewThemeAluminum: TTBXItem;
+    ViewThemeStripes: TSpTBXItem;
+    ViewThemeProfessional: TSpTBXItem;
+    ViewThemeAluminum: TSpTBXItem;
     PanelEditorMessages: TPanel;
-    StatusBar: TTBXStatusBar;
+    StatusBar: TSpTBXStatusBar;
     ProgressBarParser: TProgressBar;
     ProjectPanel: TSplitterPanel;
     PanelOutline: TSplitterPanel;
@@ -385,27 +385,28 @@ type
     TSMessages: TModernTabSheet;
     ListViewMsg: TListView;
     TreeViewOutline: TVirtualStringTree;
-    TBXSeparatorItem14: TTBXSeparatorItem;
-    PopTabsCopyDir: TTBXItem;
-    PopTabsCopyFullFileName: TTBXItem;
-    PopTabsCopyFileName: TTBXItem;
-    TBXSeparatorItem17: TTBXSeparatorItem;
-    PopTabsReadOnly: TTBXItem;
-    EditToggleComment: TTBXItem;
-    TBXSeparatorItem30: TTBXSeparatorItem;
-    TBXSeparatorItem45: TTBXSeparatorItem;
-    EditCollapseAll: TTBXItem;
-    EditUncollapseAll: TTBXItem;
-    PopupMenuLineEnding: TTBXPopupMenu;
-    TBXItem1: TTBXItem;
-    TBXItem2: TTBXItem;
-    TBXItem3: TTBXItem;
-    PopupMenuEncoding: TTBXPopupMenu;
-    PopEncANSI: TTBXItem;
-    PopEncUTF8: TTBXItem;
-    PopEncUCS2: TTBXItem;
-    TBXSeparatorItem46: TTBXSeparatorItem;
-    PopEncWithBOM: TTBXItem;
+    SpTBXSeparatorItem14: TSpTBXSeparatorItem;
+    PopTabsCopyDir: TSpTBXItem;
+    PopTabsCopyFullFileName: TSpTBXItem;
+    PopTabsCopyFileName: TSpTBXItem;
+    SpTBXSeparatorItem17: TSpTBXSeparatorItem;
+    PopTabsReadOnly: TSpTBXItem;
+    EditToggleComment: TSpTBXItem;
+    SpTBXSeparatorItem30: TSpTBXSeparatorItem;
+    SpTBXSeparatorItem45: TSpTBXSeparatorItem;
+    EditCollapseAll: TSpTBXItem;
+    EditUncollapseAll: TSpTBXItem;
+    PopupMenuLineEnding: TSpTBXPopupMenu;
+    SpTBXItem1: TSpTBXItem;
+    SpTBXItem2: TSpTBXItem;
+    SpTBXItem3: TSpTBXItem;
+    PopupMenuEncoding: TSpTBXPopupMenu;
+    PopEncANSI: TSpTBXItem;
+    PopEncUTF8: TSpTBXItem;
+    PopEncUCS2: TSpTBXItem;
+    SpTBXSeparatorItem46: TSpTBXSeparatorItem;
+    PopEncWithBOM: TSpTBXItem;
+    FileNewConfig: TSpTBXItem;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure About1Click(Sender: TObject);
@@ -655,8 +656,8 @@ type
       var Handled: Boolean);
     procedure EncodingItemClick(Sender: TObject);
     procedure LineEndingItemClick(Sender: TObject);
-    procedure StatusBarPanelClick(Sender: TTBXCustomStatusBar;
-      Panel: TTBXStatusPanel);
+    procedure StatusBarPanelClick(Sender: TSpTBXCustomStatusBar;
+      Panel: TSpTBXStatusPanel);
     procedure PopEncWithBOMClick(Sender: TObject);
     procedure PageControlOutlineClose(Sender: TObject; TabIndex: Integer;
       var CanClose: Boolean);
@@ -897,7 +898,8 @@ type
   TParserThread = class(TThread)
   private
     fLastPercent: Integer;
-    fScanEventHandle: THandle;
+    fScanEvent: TEvent;
+    fLockEvent: TEvent;
     fSourceChanged: Boolean;
     fSource: string;
     fStartTime: Cardinal;
@@ -905,7 +907,12 @@ type
     fTokenFile: TTokenFile;
     fHasParsed: Boolean;
     fBusy: Boolean;
+    fTokens: PToken;
     fCppParser: TCppParser;
+    fChangeNumber: Integer;
+    fTokenNumber: Integer;
+    fLockTokens: TCriticalSection;
+    function InternalLockTokens: PToken;
     procedure GetSource;
     procedure SetResults;
   protected
@@ -915,6 +922,9 @@ type
     destructor Destroy; override;
     procedure SetModified; // actual files has modified
     procedure Shutdown;
+    procedure DataChanged;
+    function LockTokens(ID: Pointer): PToken;
+    procedure UnLockTokens;
     property CppParser: TCppParser read fCppParser write fCppParser;
     property TokenFile: TTokenFile read fTokenFile write fTokenFile;
     property Busy: Boolean read fBusy;
@@ -928,7 +938,7 @@ implementation
 uses
   UFrmAbout, UFrmNew, UFrmProperty, ExecWait, UTools, UFrmRemove,
   UFrmUpdate, ULanguages, UFrmEnvOptions, UFrmCompOptions, UFrmFind, AStyle,
-  UFrmGotoFunction, UFrmGotoLine, TBXThemes, Makefile, CodeTemplate,
+  UFrmGotoFunction, UFrmGotoLine, SpTBXThemes, Makefile, CodeTemplate,
   StrUtils, UFrmVisualCppOptions,
   PluginConst, Math, Highlighter, DScintilla, PluginWidgetMap, AppConst,
   ExporterHTML, ExporterRTF, ExporterTeX, EditorPrint, Types;
@@ -1058,37 +1068,41 @@ end;
 constructor TParserThread.Create;
 begin
   inherited Create(True);
+  fLockTokens := TCriticalSection.Create;
+  fTokens := StartTokenizer('1');
   fTokenFile := TTokenFile.Create;
   fCppParser := TCppParser.Create;
-
-  fScanEventHandle := CreateEvent(nil, False, False, nil);
-  if (fScanEventHandle = 0) or (fScanEventHandle = INVALID_HANDLE_VALUE) then
-    raise EOutOfResources.Create('Couldn''t create WIN32 event object');
+  fScanEvent := TEvent.Create(nil, False, False, '');
+  fLockEvent := TEvent.Create(nil, False, False, '');
 end;
 
 destructor TParserThread.Destroy;
 begin
   Shutdown;
+  fLockEvent.Free;
+  fScanEvent.Free;
   fCppParser.Free;
   fTokenFile.Free;
-  if (fScanEventHandle <> 0) and (fScanEventHandle <> INVALID_HANDLE_VALUE) then
-    CloseHandle(fScanEventHandle);
+  FreeTokens(fTokens);
+  fLockTokens.Free;
   inherited Destroy;
 end;
 
 procedure TParserThread.Execute;
+var
+  CurrentNumber: Integer;
 begin
   while not Terminated do
   begin
     fBusy := False;
-    WaitForSingleObject(fScanEventHandle, INFINITE);
+    fScanEvent.WaitFor(INFINITE);
     fHasParsed := False;
     fBusy := True;
     repeat
       if Terminated then
         Break;
       // make sure the event is reset when we are still in the repeat loop
-      ResetEvent(fScanEventHandle);
+      fScanEvent.ResetEvent;
       // get the modified source and set fSourceChanged to 0
       Synchronize(GetSource);
       if Terminated then
@@ -1096,7 +1110,13 @@ begin
       // clear keyword list
       fLastPercent := 0;
       fStartTime := GetTickCount;
-      fHasParsed := fCppParser.Parse(fSource, TokenFile);
+      FreeTokens(InternalLockTokens);
+      CurrentNumber := fChangeNumber;
+      fTokens := fCppParser.Tokenizer(fSource, TokenFile);
+      fTokenNumber := CurrentNumber;
+      fLockEvent.SetEvent;
+      UnLockTokens;
+      fHasParsed := fCppParser.Parse(fTokens);
       if fSourceChanged then
         Break;
     until not fSourceChanged;
@@ -1142,12 +1162,49 @@ begin
   fSourceChanged := False;
 end;
 
+function TParserThread.InternalLockTokens: PToken;
+begin
+  fLockTokens.Enter;
+  Result := fTokens;
+end;
+
+function TParserThread.LockTokens(ID: Pointer): PToken;
+var
+  I: Integer;
+begin
+  Result := nil;
+  Exit;
+  if (fChangeNumber = fTokenNumber) and (ID = fTokenFile.Data) then
+  begin
+    Result := InternalLockTokens;
+    Exit;
+  end;
+  FrmFalconMain.TimerChangeDelay.Enabled := False;
+  fLockEvent.ResetEvent;
+  if not Busy then
+    SetModified;
+  for I := 0 to 30 do
+  begin
+    Application.ProcessMessages;
+    if fLockEvent.WaitFor(100) = wrSignaled then
+    begin
+      Result := InternalLockTokens;
+      Exit;
+    end;
+  end;
+  Result := nil;
+end;
+
+procedure TParserThread.DataChanged;
+begin
+  fChangeNumber := (fChangeNumber + 1) mod 1000000;
+end;
+
 procedure TParserThread.SetModified;
 begin
   fCppParser.Cancel;
   fSourceChanged := True;
-  if (fScanEventHandle <> 0) and (fScanEventHandle <> INVALID_HANDLE_VALUE) then
-    SetEvent(fScanEventHandle);
+  fScanEvent.SetEvent;
 end;
 
 procedure TParserThread.SetResults;
@@ -1181,9 +1238,13 @@ procedure TParserThread.Shutdown;
 begin
   fCppParser.Cancel;
   Terminate;
-  if (fScanEventHandle <> 0) and (fScanEventHandle <> INVALID_HANDLE_VALUE) then
-    SetEvent(fScanEventHandle);
+  fScanEvent.SetEvent;
   WaitFor;
+end;
+
+procedure TParserThread.UnLockTokens;
+begin
+  fLockTokens.Leave;
 end;
 
 { TFrmFalconMain }
@@ -1243,11 +1304,10 @@ begin
   FCompilerSettings := TCompilerSettings.Create;
   FConfig := TConfig.Create;
   FAppRoot := ExtractFilePath(Application.ExeName);
-{$IFDEF FALCON_PORTABLE}
-  FConfigRoot := FAppRoot + 'Config\';
-{$ELSE}
-  FConfigRoot := GetSpecialFolderPath(CSIDL_APPDATA) + 'Falcon\';
-{$ENDIF}
+  if IsPortable then
+    FConfigRoot := FAppRoot + 'Config\'
+  else
+    FConfigRoot := GetSpecialFolderPath(CSIDL_APPDATA) + 'Falcon\';
   // create config root directory
   if not DirectoryExists(ConfigRoot) then
     CreateDir(ConfigRoot);
@@ -1314,17 +1374,6 @@ begin
   SetExplorerTheme(ListViewMsg.Handle);
   if CheckWin32Version(6, 0) then
     TreeViewProjects.ShowLines := False;
-  // outline images
-  AddImages(ImgListOutLine, 'OUTLINEIMAGES');
-  // menu images
-  AddImages(ImgListMenus, 'MENUIMAGES');
-  AddImages(DisImgListMenus, 'DISMENUIMAGES');
-  // gutter images
-  AddImages(ImageListGutter, 'GUTTERIMAGES');
-  // debug images
-  AddImages(ImageListDebug, 'DEBUGHINTIMAGES');
-  // country images
-  AddImages(ImgListCountry, 'IMGCOUNTRY');
   // init outline image list
   for I := 0 to MAX_OUTLINE_TREE_IMAGES - 1 do
   begin
@@ -1822,7 +1871,7 @@ begin
     BtnSaveAll.Enabled := Flag;
     PopTabsSaveAll.Enabled := Flag;
     Flag := Assigned(CurrentFile) and
-      not(CurrentFile.FileType in [FILE_TYPE_FOLDER, FILE_TYPE_PROJECT]);
+      not(CurrentFile.FileType in [FILE_TYPE_FOLDER, FILE_TYPE_PROJECT, FILE_TYPE_CONFIG, FILE_TYPE_CONFIG_GROUP]);
     FileExport.Enabled := Flag;
     Flag := PageControlEditor.PageCount > 0;
     FileClose.Enabled := Flag;
@@ -1834,7 +1883,7 @@ begin
     BtnRemove.Enabled := Flag;
     PopProjRemove.Enabled := Flag;
     Flag := Assigned(CurrentFile) and
-      not(CurrentFile.FileType in [FILE_TYPE_FOLDER, FILE_TYPE_PROJECT]);
+      not(CurrentFile.FileType in [FILE_TYPE_FOLDER, FILE_TYPE_PROJECT, FILE_TYPE_CONFIG, FILE_TYPE_CONFIG_GROUP]);
     FilePrint.Enabled := Flag;
   end;
   if rmFileNew in Regions then
@@ -1846,10 +1895,11 @@ begin
     FileNewResource.Enabled := Flag;
     FileNewEmpty.Enabled := Flag;
     FileNewFolder.Enabled := Flag and Assigned(SelectedFile) and
-      ((SelectedFile.FileType in [FILE_TYPE_FOLDER, FILE_TYPE_PROJECT]) or
+      ((SelectedFile.FileType in [FILE_TYPE_FOLDER, FILE_TYPE_PROJECT, FILE_TYPE_CONFIG, FILE_TYPE_CONFIG_GROUP]) or
       (Assigned(SelectedFile.Node.Parent) and
       (TSourceFile(SelectedFile.Node.Parent.Data).FileType in [FILE_TYPE_FOLDER,
-      FILE_TYPE_PROJECT])));
+      FILE_TYPE_PROJECT, FILE_TYPE_CONFIG, FILE_TYPE_CONFIG_GROUP])));
+    FileNewFolder.Enabled := Flag and Assigned(SelectedFile);
   end;
   if rmEdit in Regions then
   begin
@@ -1999,7 +2049,7 @@ begin
   if rmProjectsPopup in Regions then
   begin
     Flag := Assigned(SelectedFile) and
-      not(SelectedFile.FileType in [FILE_TYPE_PROJECT, FILE_TYPE_FOLDER]);
+      not(SelectedFile.FileType in [FILE_TYPE_PROJECT, FILE_TYPE_FOLDER, FILE_TYPE_CONFIG, FILE_TYPE_CONFIG_GROUP]);
     PopProjEdit.Enabled := Flag;
     Flag := Assigned(SelectedFile) and SelectedFile.Saved;
     PopProjOpen.Enabled := Flag;
@@ -2287,7 +2337,7 @@ begin
   for I := 0 to TreeViewProjects.Items.Count - 1 do
   begin
     prop := TSourceFile(TreeViewProjects.Items.Item[I].Data);
-    if not(prop.FileType in [FILE_TYPE_PROJECT, FILE_TYPE_FOLDER, FILE_TYPE_RC])
+    if not(prop.FileType in [FILE_TYPE_PROJECT, FILE_TYPE_FOLDER, FILE_TYPE_RC, FILE_TYPE_CONFIG, FILE_TYPE_CONFIG_GROUP])
     then
     begin
       Inc(Result);
@@ -2526,7 +2576,7 @@ procedure TFrmFalconMain.EditFileClick(Sender: TObject);
 begin
   if (TreeViewProjects.SelectionCount > 0) then
   begin
-    if TSourceFile(TreeViewProjects.Selected.Data).FileType <> FILE_TYPE_FOLDER
+    if TSourceFile(TreeViewProjects.Selected.Data).FileType < FILE_TYPE_FOLDER
     then
       TSourceFile(TreeViewProjects.Selected.Data).Edit;
   end;
@@ -2666,6 +2716,7 @@ var
   clAction: Boolean;
   FileName: string;
 begin
+  CodeCompletion.CancelCompletion;
   if TabIndex < 0 then
     Exit;
   sheet := TSourceFileSheet(PageControlEditor.Pages[TabIndex]);
@@ -2985,7 +3036,7 @@ begin
   end;
   if ViewOutline.Checked then
     PanelOutline.Show;
-  FindedTokenFile := FilesParsed.ItemOfByFileName(FileProp.FileName);
+  FindedTokenFile := FilesParsed.Find(FileProp.FileName);
   if FindedTokenFile = nil then
     Exit;
   FindedTokenFile.Data := FileProp;
@@ -3151,7 +3202,7 @@ begin
     // TreeViewOutline.Clear;
     if not IsLoading then
     begin
-      FindedTokenFile := FilesParsed.ItemOfByFileName(prop.FileName);
+      FindedTokenFile := FilesParsed.Find(prop.FileName);
       if FindedTokenFile <> nil then
         UpdateActiveFileToken(FindedTokenFile)
       else if { not FilesParsed.Busy and } not DebugReader.Running then
@@ -3232,7 +3283,7 @@ end;
 procedure TFrmFalconMain.StatusBarContextPopup(Sender: TObject;
   MousePos: TPoint; var Handled: Boolean);
 var
-  StatusPanel: TTBXStatusPanel;
+  StatusPanel: TSpTBXStatusPanel;
   sheet: TSourceFileSheet;
 begin
   if not GetActiveSheet(sheet) then
@@ -3249,8 +3300,8 @@ begin
     StatusBar.PopupMenu := nil;
 end;
 
-procedure TFrmFalconMain.StatusBarPanelClick(Sender: TTBXCustomStatusBar;
-  Panel: TTBXStatusPanel);
+procedure TFrmFalconMain.StatusBarPanelClick(Sender: TSpTBXCustomStatusBar;
+  Panel: TSpTBXStatusPanel);
 var
   sheet: TSourceFileSheet;
 begin
@@ -3357,7 +3408,7 @@ begin
     Node.Focused := True;
     prop := TSourceFile(Node.Data);
     if Config.Environment.OneClickOpenFile and
-      not(prop.FileType in [FILE_TYPE_FOLDER, FILE_TYPE_PROJECT]) then
+      not(prop.FileType in [FILE_TYPE_FOLDER, FILE_TYPE_PROJECT, FILE_TYPE_CONFIG, FILE_TYPE_CONFIG_GROUP]) then
     begin
       Node.EndEdit(True);
       prop.Edit;
@@ -3447,7 +3498,7 @@ begin
   end
   else
   begin
-    if TSourceFile(Node.Data).FileType <> FILE_TYPE_FOLDER then
+    if TSourceFile(Node.Data).FileType < FILE_TYPE_FOLDER then
     begin
       Ext := ExtractFileExt(OldFileName);
       if Ext <> ExtractFileExt(S) then
@@ -3701,7 +3752,7 @@ var
 begin
   if not(Source.FileType in [FILE_TYPE_H, FILE_TYPE_CPP]) then
     Exit;
-  TokenFile := FilesParsed.ItemOfByFileName(Source.FileName);
+  TokenFile := FilesParsed.Find(Source.FileName);
   if TokenFile = nil then
     Exit;
   // remove references
@@ -3746,7 +3797,7 @@ begin
   begin
     ParseList := TStringList.Create;
     RemoveList := TStringList.Create;
-    if Source.FileType <> FILE_TYPE_FOLDER then
+    if Source.FileType < FILE_TYPE_FOLDER then
     begin
       ParseList.AddObject(Source.FileName, Source);
       RemoveList.AddObject(OldFileName, Source);
@@ -3763,7 +3814,7 @@ begin
   end;
   for I := 0 to RemoveList.Count - 1 do
   begin
-    FindedTokenFile := FilesParsed.ItemOfByFileName(RemoveList.Strings[I]);
+    FindedTokenFile := FilesParsed.Find(RemoveList.Strings[I]);
     if FindedTokenFile <> nil then
       FilesParsed.Remove(FindedTokenFile);
   end;
@@ -3923,10 +3974,10 @@ begin
   Item.OnClick := ReopenFileClick;
   if FileReopen.Count = 1 then
   begin
-    TTBXItem(FileReopen.Items[0]).Caption := STR_FRM_MAIN[32];
-    TTBXItem(FileReopen.Items[0]).Enabled := True;
-    TTBXItem(FileReopen.Items[0]).ImageIndex := 51;
-    FileReopen.Add(TTBXSeparatorItem.Create(Self));
+    TSpTBXItem(FileReopen.Items[0]).Caption := STR_FRM_MAIN[32];
+    TSpTBXItem(FileReopen.Items[0]).Enabled := True;
+    TSpTBXItem(FileReopen.Items[0]).ImageIndex := 51;
+    FileReopen.Add(TSpTBXSeparatorItem.Create(Self));
   end;
   FileReopen.Insert(2, Item);
   Result := True;
@@ -3946,9 +3997,9 @@ begin
       if FileReopen.Count > 2 then
         Exit;
       FileReopen.Delete(1);
-      TTBXItem(FileReopen.Items[0]).Caption := STR_FRM_MAIN[31];
-      TTBXItem(FileReopen.Items[0]).Enabled := False;
-      TTBXItem(FileReopen.Items[0]).ImageIndex := -1;
+      TSpTBXItem(FileReopen.Items[0]).Caption := STR_FRM_MAIN[31];
+      TSpTBXItem(FileReopen.Items[0]).Enabled := False;
+      TSpTBXItem(FileReopen.Items[0]).ImageIndex := -1;
       Exit;
     end;
   end;
@@ -3960,9 +4011,9 @@ begin
   begin
     FileReopen.Delete(FileReopen.Count - 1);
   end;
-  TTBXItem(FileReopen.Items[0]).Caption := STR_FRM_MAIN[31];
-  TTBXItem(FileReopen.Items[0]).Enabled := False;
-  TTBXItem(FileReopen.Items[0]).ImageIndex := -1;
+  TSpTBXItem(FileReopen.Items[0]).Caption := STR_FRM_MAIN[31];
+  TSpTBXItem(FileReopen.Items[0]).Enabled := False;
+  TSpTBXItem(FileReopen.Items[0]).ImageIndex := -1;
 end;
 
 procedure TFrmFalconMain.ReopenFileClick(Sender: TObject);
@@ -4126,7 +4177,7 @@ procedure TFrmFalconMain.CompilerCmdFinish(Sender: TObject;
   const FileName, Params: string; ConsoleOut: TStrings; ExitCode: Integer);
 var
   Item: TListItem;
-  Temp, capt, TimeStr: string;
+  Temp, NewVer, capt, TimeStr: string;
   RowSltd: Boolean;
   I, W: Integer;
   CompMessages: TStrings;
@@ -4170,11 +4221,27 @@ begin
 
     LastProjectBuild.Compiled := True;
     LastProjectBuild.CompilePropertyChanged := False;
-    if LastProjectBuild.AutoIncBuild then
-      if (LastProjectBuild.Version.Build < 9999) then
-        Inc(LastProjectBuild.Version.Build)
+    Temp := VersionToStr(LastProjectBuild.Version.Version);
+    if LastProjectBuild.AutoIncBuild and LastProjectBuild.IncludeVersionInfo then
+    begin
+      if (LastProjectBuild.Version.Version.Build < 9999) then
+        Inc(LastProjectBuild.Version.Version.Build)
       else
-        Inc(LastProjectBuild.Version.Release);
+      begin
+        LastProjectBuild.Version.Version.Build := 0;
+        Inc(LastProjectBuild.Version.Version.Minor);
+      end;
+    end;
+    NewVer := VersionToStr(LastProjectBuild.Version.Version);
+    if (NewVer <> Temp) and LastProjectBuild.IncludeVersionInfo then
+    begin
+      LastProjectBuild.PropertyChanged := True;
+      if LastProjectBuild.Version.FileVersion = Temp then
+         LastProjectBuild.Version.FileVersion := NewVer;
+      if LastProjectBuild.Version.ProductVersion = Temp then
+         LastProjectBuild.Version.ProductVersion := NewVer;
+      UpdateMenuItems([rmFile]); // update save buttons
+    end;
     Temp := ExtractFilePath(LastProjectBuild.FileName);
     if FileExists(Temp + 'Makefile.mak') and LastProjectBuild.DeleteMakefileAfter
     then
@@ -4467,7 +4534,7 @@ begin
       ofNoChangeDir];
     if GetSelectedFileInList(FileProp) then
     begin
-      if (FileProp.FileType <> FILE_TYPE_FOLDER) then
+      if (FileProp.FileType < FILE_TYPE_FOLDER) then
         InitialDir := ExtractFilePath(FileProp.FileName)
       else
         InitialDir := FileProp.FileName;
@@ -4974,7 +5041,7 @@ begin
         IncludeFile := nil;
       if IncludeFile = nil then
       begin
-        if (FilesParsed.ItemOfByFileName(IncludeFileName) = nil) then
+        if (FilesParsed.Find(IncludeFileName) = nil) then
           ParseList.AddObject(IncludeFileName, nil);
       end;
       continue;
@@ -5022,11 +5089,10 @@ var
   sheet: TSourceFileSheet;
   FilePrp: TSourceFile;
 begin
-  if IsLoading then
-    Exit;
-  if not(Sender is TEditor) then
+  if not (Sender is TEditor) then
     Exit;
   Editor := TEditor(Sender);
+  TParserThread(fWorkerThread).DataChanged;
   UpdateMenuItems([rmFile, rmEdit, rmSearch, rmRun]); { rmRun for Breakpoint }
   sheet := TSourceFileSheet(Editor.Owner);
   FilePrp := sheet.SourceFile;
@@ -5122,15 +5188,15 @@ begin
       for I := 1 to 9 do
         if TEditor(Sender).GetBookMark(I, X, Y) then
         begin
-          TTBXItem(EditBookmarks.Items[I - 1]).Checked := True;
-          TTBXItem(EditGotoBookmarks.Items[I - 1]).Checked := True;
-          TTBXItem(EditGotoBookmarks.Items[I - 1]).Enabled := True;
+          TSpTBXItem(EditBookmarks.Items[I - 1]).Checked := True;
+          TSpTBXItem(EditGotoBookmarks.Items[I - 1]).Checked := True;
+          TSpTBXItem(EditGotoBookmarks.Items[I - 1]).Enabled := True;
         end
         else
         begin
-          TTBXItem(EditBookmarks.Items[I - 1]).Checked := False;
-          TTBXItem(EditGotoBookmarks.Items[I - 1]).Checked := False;
-          TTBXItem(EditGotoBookmarks.Items[I - 1]).Enabled := False;
+          TSpTBXItem(EditBookmarks.Items[I - 1]).Checked := False;
+          TSpTBXItem(EditGotoBookmarks.Items[I - 1]).Checked := False;
+          TSpTBXItem(EditGotoBookmarks.Items[I - 1]).Enabled := False;
         end;
     end;
   end;
@@ -5196,7 +5262,6 @@ var
   token: TTokenClass;
   SelStart: Integer;
   InputError: Boolean;
-  WS: TBufferCoord;
   StyleID: Integer;
   Style: THighlighStyle;
   S: string;
@@ -5303,7 +5368,7 @@ begin
       Exit;
     // find declaration
     if not FilesParsed.FindDeclaration(Input, Fields, ActiveEditingFile,
-      TokenFileItem, token, SelStart, WS.Line) then
+      ActiveEditingFile, TokenFileItem, token, SelStart) then
       Exit;
     if TokenFileItem = ActiveEditingFile then // current file
     begin
@@ -5936,14 +6001,14 @@ end;
 
 procedure TFrmFalconMain.ViewItemClick(Sender: TObject);
 begin
-  case TTBXItem(Sender).Tag of
+  case TSpTBXItem(Sender).Tag of
     0:
-      ProjectPanel.Visible := TTBXItem(Sender).Checked;
+      ProjectPanel.Visible := TSpTBXItem(Sender).Checked;
     1:
-      StatusBar.Visible := TTBXItem(Sender).Checked;
+      StatusBar.Visible := TSpTBXItem(Sender).Checked;
     2:
       begin
-        PanelOutline.Visible := TTBXItem(Sender).Checked and
+        PanelOutline.Visible := TSpTBXItem(Sender).Checked and
           (PageControlEditor.ActivePageIndex >= 0);
         if PanelOutline.Visible then
           UpdateActiveFileToken(ActiveEditingFile)
@@ -6001,6 +6066,9 @@ begin
     7:
       NewSourceFile(FILE_TYPE_FOLDER, NO_COMPILER, STR_NEW_MENU[8],
         STR_FRM_MAIN[14], '', '', SelFile, True, False);
+    8:
+      NewSourceFile(FILE_TYPE_CONFIG, NO_COMPILER, STR_NEW_MENU[9],
+        STR_FRM_MAIN[14], '', '', SelFile, True, False);
   else
     NewSourceFile(FileType, CompilerType, 'main' + Ext, STR_FRM_MAIN[13], Ext,
       '', SelFile, False, True).Edit.Editor.SetSavePoint;
@@ -6014,23 +6082,23 @@ end;
 
 procedure TFrmFalconMain.TViewToolbarClick(Sender: TObject);
 begin
-  case TTBXItem(Sender).Tag of
+  case TSpTBXItem(Sender).Tag of
     0:
-      DefaultBar.Visible := TTBXItem(Sender).Checked;
+      DefaultBar.Visible := TSpTBXItem(Sender).Checked;
     1:
-      EditBar.Visible := TTBXItem(Sender).Checked;
+      EditBar.Visible := TSpTBXItem(Sender).Checked;
     2:
-      SearchBar.Visible := TTBXItem(Sender).Checked;
+      SearchBar.Visible := TSpTBXItem(Sender).Checked;
     3:
-      CompilerBar.Visible := TTBXItem(Sender).Checked;
+      CompilerBar.Visible := TSpTBXItem(Sender).Checked;
     4:
-      NavigatorBar.Visible := TTBXItem(Sender).Checked;
+      NavigatorBar.Visible := TSpTBXItem(Sender).Checked;
     5:
-      ProjectBar.Visible := TTBXItem(Sender).Checked;
+      ProjectBar.Visible := TSpTBXItem(Sender).Checked;
     6:
-      HelpBar.Visible := TTBXItem(Sender).Checked;
+      HelpBar.Visible := TSpTBXItem(Sender).Checked;
     7:
-      DebugBar.Visible := TTBXItem(Sender).Checked;
+      DebugBar.Visible := TSpTBXItem(Sender).Checked;
   end;
 end;
 
@@ -6105,10 +6173,10 @@ begin
   end;
   NewPrj.IncludeVersionInfo := ini.ReadBool('Project',
     'IncludeVersionInfo', False);
-  NewPrj.Version.Major := ini.ReadInteger('VersionInfo', 'Major', 0);
-  NewPrj.Version.Minor := ini.ReadInteger('VersionInfo', 'Minor', 0);
-  NewPrj.Version.Release := ini.ReadInteger('VersionInfo', 'Release', 0);
-  NewPrj.Version.Build := ini.ReadInteger('VersionInfo', 'Build', 0);
+  NewPrj.Version.Version.Major := ini.ReadInteger('VersionInfo', 'Major', 0);
+  NewPrj.Version.Version.Minor := ini.ReadInteger('VersionInfo', 'Minor', 0);
+  NewPrj.Version.Version.Release := ini.ReadInteger('VersionInfo', 'Release', 0);
+  NewPrj.Version.Version.Build := ini.ReadInteger('VersionInfo', 'Build', 0);
   NewPrj.Version.LanguageID := ini.ReadInteger('VersionInfo',
     'LanguageID', 1033);
   NewPrj.Version.CharsetID := ini.ReadInteger('VersionInfo', 'CharsetID', 1252);
@@ -6867,8 +6935,7 @@ end;
 
 procedure TFrmFalconMain.TimerChangeDelayTimer(Sender: TObject);
 begin
-  if fWorkerThread <> nil then
-    TParserThread(fWorkerThread).SetModified;
+  TParserThread(fWorkerThread).SetModified;
   TimerChangeDelay.Enabled := False;
 end;
 
@@ -6908,20 +6975,20 @@ begin
     Exit;
   if not FileProp.GetSheet(sheet) then
     Exit;
-  if TTBXItem(Sender).Checked then // set bookmark
+  if TSpTBXItem(Sender).Checked then // set bookmark
   begin
-    TTBXItem(EditGotoBookmarks.Items[TTBXItem(Sender).Tag - 1]).Checked := True;
-    TTBXItem(EditGotoBookmarks.Items[TTBXItem(Sender).Tag - 1]).Enabled := True;
-    sheet.Editor.SetBookMark(TTBXItem(Sender).Tag, sheet.Editor.DisplayX,
+    TSpTBXItem(EditGotoBookmarks.Items[TSpTBXItem(Sender).Tag - 1]).Checked := True;
+    TSpTBXItem(EditGotoBookmarks.Items[TSpTBXItem(Sender).Tag - 1]).Enabled := True;
+    sheet.Editor.SetBookMark(TSpTBXItem(Sender).Tag, sheet.Editor.DisplayX,
       sheet.Editor.DisplayY);
   end
   else
   begin // delete bookmark
-    TTBXItem(EditGotoBookmarks.Items[TTBXItem(Sender).Tag - 1]).Checked
+    TSpTBXItem(EditGotoBookmarks.Items[TSpTBXItem(Sender).Tag - 1]).Checked
       := False;
-    TTBXItem(EditGotoBookmarks.Items[TTBXItem(Sender).Tag - 1]).Enabled
+    TSpTBXItem(EditGotoBookmarks.Items[TSpTBXItem(Sender).Tag - 1]).Enabled
       := False;
-    sheet.Editor.ClearBookMark(TTBXItem(Sender).Tag);
+    sheet.Editor.ClearBookMark(TSpTBXItem(Sender).Tag);
   end;
 end;
 
@@ -7009,8 +7076,8 @@ begin
     Exit;
   if not FileProp.GetSheet(sheet) then
     Exit;
-  if TTBXItem(Sender).Checked then
-    sheet.Editor.GotoBookMark(TTBXItem(Sender).Tag);
+  if TSpTBXItem(Sender).Checked then
+    sheet.Editor.GotoBookMark(TSpTBXItem(Sender).Tag);
 end;
 
 procedure TFrmFalconMain.TreeViewProjectsDragDrop(Sender, Source: TObject;
@@ -7082,7 +7149,7 @@ begin
   if (HT - [htOnItem, htOnIcon, htNowhere, htOnIndent, htBelow] <> HT) and
     (TSourceFile(Selitem.Data).FileType <> FILE_TYPE_PROJECT) then
   begin
-    if TSourceFile(AnItem.Data).FileType in [FILE_TYPE_PROJECT, FILE_TYPE_FOLDER]
+    if TSourceFile(AnItem.Data).FileType in [FILE_TYPE_PROJECT, FILE_TYPE_FOLDER, FILE_TYPE_CONFIG, FILE_TYPE_CONFIG_GROUP]
     then
       Accept := True
     else if htBelow in HT then
@@ -7205,7 +7272,7 @@ var
 begin
   if not GetActiveSheet(sheet) then
     Exit;
-  FindedTokenFile := FilesParsed.ItemOfByFileName(sheet.SourceFile.FileName);
+  FindedTokenFile := FilesParsed.Find(sheet.SourceFile.FileName);
   if FindedTokenFile <> nil then
     UpdateActiveFileToken(FindedTokenFile);
 end;
@@ -7301,7 +7368,7 @@ var
   sheet: TSourceFileSheet;
   Sibling, Parent: PVirtualNode;
 begin
-  FindedTokenFile := FilesParsed.ItemOfByFileName(NewTokenFile.FileName);
+  FindedTokenFile := FilesParsed.Find(NewTokenFile.FileName);
   if FindedTokenFile = nil then // not parsed
   begin
     TokenFileItem := TTokenFile.Create(FilesParsed);
@@ -7422,7 +7489,7 @@ begin
     Fields := Fields + Input;
     Input := GetFirstWord(Fields);
     TokenFileItem := ActiveEditingFile;
-    if not FilesParsed.GetFieldsBaseType(Input, Fields, BracketStart,
+    if not FilesParsed.GetFieldsBaseType(SaveInput, SaveFields, BracketStart,
       TokenFileItem, TokenFileItem, token) then
     begin
       HintParams.Cancel;
@@ -7810,7 +7877,7 @@ begin
     end;
     // show hint
     if FilesParsed.FindDeclaration(Input, Fields, ActiveEditingFile,
-      TokenFileItem, token, I, BC.Line) then
+      ActiveEditingFile, TokenFileItem, token, I) then
     begin
       S := MakeTokenHint(token, TokenFileItem.FileName);
       HintTip.UpdateHint(S, token.Comment, P.X, P.Y + Editor.LineHeight + 4,
@@ -7973,6 +8040,7 @@ var
   Buffer, SaveBuffer: TBufferCoord;
   attri: THighlighStyle;
   InputError, SkipFirst: Boolean;
+  Tokens, CurrToken: PToken;
 begin
   fShowCodeCompletion := 0;
   Input := '';
@@ -7981,6 +8049,15 @@ begin
     Exit;
   if not GetActiveSheet(sheet) then
     Exit;
+  Tokens := TParserThread(fWorkerThread).LockTokens(sheet.SourceFile);
+  try
+    // do something ...
+    CurrToken := TokenAtPosition(Tokens, sheet.Editor.GetCurrentPos);
+    if CurrToken <> nil then
+      Fields := '';
+  finally
+    TParserThread(fWorkerThread).UnLockTokens;
+  end;
   // get valid SelStart
   Buffer := sheet.Editor.CaretXY;
   LineStr := '';
@@ -8183,7 +8260,7 @@ begin
       end;
     end;
     // search base type and list fields and functions of struct, union or class
-    if FilesParsed.GetFieldsBaseType(Input, Fields, SelStart, ActiveEditingFile,
+    if FilesParsed.GetFieldsBaseType('', Fields, SelStart, ActiveEditingFile,
       TokenItem, token) then
     begin
       // show private fields only on implementation scope
@@ -8745,7 +8822,7 @@ begin
   begin
     if not(SelFile is TProjectFile) and
       (TSourceFile(SelFile.Node.Parent.Data).FileType in [FILE_TYPE_FOLDER,
-      FILE_TYPE_PROJECT]) then
+      FILE_TYPE_PROJECT, FILE_TYPE_CONFIG, FILE_TYPE_CONFIG_GROUP]) then
     begin
       SelFile := TSourceFile(SelFile.Node.Parent.Data);
     end;
@@ -8935,8 +9012,8 @@ var
   Buffer: TBufferCoord;
   FuncScope, ScopeFlag: string;
 begin
-  FromTokenFile := FilesParsed.ItemOfByFileName(FromSrc.FileName);
-  ToTokenFile := FilesParsed.ItemOfByFileName(ToSrc.FileName);
+  FromTokenFile := FilesParsed.Find(FromSrc.FileName);
+  ToTokenFile := FilesParsed.Find(ToSrc.FileName);
   ToSheet := ToSrc.Edit;
   if not FromSrc.GetSheet(FromSheet) or (FromTokenFile = nil) or
     (ToTokenFile = nil) then
@@ -8993,7 +9070,7 @@ begin
     // search scope
     FuncScope := GetFuncScope(scopeToken);
     if FilesParsed.FindDeclaration(scopeToken.name, FuncScope, FromTokenFile,
-      TempTokenFile, token, scopeToken.SelStart, 0) then
+      FromTokenFile, TempTokenFile, token, scopeToken.SelStart) then
     begin
       if ToTokenFile <> TempTokenFile then
         Exit;
@@ -9116,7 +9193,7 @@ begin
         Exit;
       end;
       // want to create a header file?
-      CurrentTokenFile := FilesParsed.ItemOfByFileName(FileName);
+      CurrentTokenFile := FilesParsed.Find(FileName);
       if not CreateTODOSourceFile(OtherFileName, CurrentTokenFile,
         CurrentSourceFile, OtherSourceFile) then
         Exit;
@@ -9145,7 +9222,7 @@ begin
       if CurrentSourceFile.Project.CompilerType = COMPILER_CPP then
         OtherFileName := ChangeFileExt(FileName, '.cpp');
       // want to create a source file?
-      CurrentTokenFile := FilesParsed.ItemOfByFileName(FileName);
+      CurrentTokenFile := FilesParsed.Find(FileName);
       if not CreateTODOSourceFile(OtherFileName, CurrentTokenFile,
         CurrentSourceFile, OtherSourceFile) then
         Exit;
@@ -9628,18 +9705,17 @@ var
   scope, scopeToken, token: TTokenClass;
   SrcFileName: string;
   CurrentSrcFile, SrcFile: TSourceFile;
-  SelStart, SelLine: Integer;
+  SelStart: Integer;
   Input, Fields, ScopeFlag: string;
   InputError: Boolean;
 begin
   if not GetActiveSheet(sheet) then
     Exit;
   CurrentSrcFile := sheet.SourceFile;
-  CurrentTokenFile := FilesParsed.ItemOfByFileName(CurrentSrcFile.FileName);
+  CurrentTokenFile := FilesParsed.Find(CurrentSrcFile.FileName);
   if (CurrentTokenFile = nil) then
     Exit;
   SelStart := sheet.Editor.GetSelectionStart;
-  SelLine := sheet.Editor.CaretY;
   SrcFile := CurrentSrcFile;
   SrcFileName := CurrentSrcFile.FileName;
   // get prototype
@@ -9649,7 +9725,7 @@ begin
       InputError) then
       Exit;
     if not FilesParsed.FindDeclaration(Input, Fields, CurrentTokenFile,
-      CurrentTokenFile, scopeToken, SelStart, SelLine) then
+      CurrentTokenFile, CurrentTokenFile, scopeToken, SelStart) then
       Exit;
     SrcFileName := CurrentTokenFile.FileName;
     CurrentSrcFile := TSourceFile(CurrentTokenFile.Data);
@@ -9683,7 +9759,7 @@ begin
     SrcFile := nil;
     if not SearchImplementationFile(CurrentSrcFile, SrcFile, SrcFileName) then
       Exit;
-    SrcTokenFile := FilesParsed.ItemOfByFileName(SrcFileName);
+    SrcTokenFile := FilesParsed.Find(SrcFileName);
     if SrcTokenFile = nil then
       Exit;
     if not SrcTokenFile.SearchToken(scopeToken.name, ScopeFlag, token, 0, True,
@@ -9710,7 +9786,7 @@ var
 begin
   if not GetActiveSheet(sheet) then
     Exit;
-  sheet.SourceFile.WithBOM := TTBXItem(Sender).Checked;
+  sheet.SourceFile.WithBOM := TSpTBXItem(Sender).Checked;
   UpdateStatusbar;
 end;
 
@@ -9731,7 +9807,7 @@ begin
   if not GetActiveSheet(sheet) then
     Exit;
   CurrentSrcFile := sheet.SourceFile;
-  CurrentTokenFile := FilesParsed.ItemOfByFileName(CurrentSrcFile.FileName);
+  CurrentTokenFile := FilesParsed.Find(CurrentSrcFile.FileName);
   if (CurrentTokenFile = nil) then
     Exit;
   BS := sheet.Editor.CaretXY;
@@ -9805,7 +9881,7 @@ begin
       end
       else
       begin
-        SrcTokenFile := FilesParsed.ItemOfByFileName(SrcFileName);
+        SrcTokenFile := FilesParsed.Find(SrcFileName);
         if SrcTokenFile = nil then
           Exit;
         if SrcFile = nil then
@@ -9822,7 +9898,7 @@ begin
   begin
     ClassTokenFile := nil;
     if FilesParsed.FindDeclaration(ScopeFlag, '', CurrentTokenFile,
-      SrcTokenFile, ClassToken, scopeToken.SelStart, 0) then
+      CurrentTokenFile, SrcTokenFile, ClassToken, scopeToken.SelStart) then
       ClassHasFound := ClassToken.token in [tkClass, tkStruct, tkUnion];
     if ClassHasFound then
     begin
@@ -9855,7 +9931,7 @@ begin
       end
       else
       begin
-        ClassTokenFile := FilesParsed.ItemOfByFileName(SrcFileName);
+        ClassTokenFile := FilesParsed.Find(SrcFileName);
         if ClassTokenFile = nil then
           Exit;
         SrcTokenFile := CurrentTokenFile;
@@ -10549,7 +10625,7 @@ end;
 
 procedure TFrmFalconMain.SelectTheme(Theme: string);
 begin
-  TBXSwitcher.Theme := Theme;
+  SpTBXSwitcher.Theme := Theme;
   Config.Environment.Theme := Theme;
   Color := CurrentTheme.GetViewColor(TVT_MENUBAR);
   if Theme = 'Default' then
@@ -10594,9 +10670,9 @@ end;
 
 procedure TFrmFalconMain.SelectThemeClick(Sender: TObject);
 var
-  Item: TTBXItem;
+  Item: TSpTBXItem;
 begin
-  Item := TTBXItem(Sender);
+  Item := TSpTBXItem(Sender);
   case Item.Tag of
     0:
       SelectTheme('Default');
@@ -10673,7 +10749,7 @@ begin
     Proj.GetFiles(Files);
     for I := 0 to Files.Count - 1 do
     begin
-      FindedTokenFile := FilesParsed.ItemOfByFileName(Files.Strings[I]);
+      FindedTokenFile := FilesParsed.Find(Files.Strings[I]);
       if FindedTokenFile <> nil then
         FindedTokenFile.GetFunctions(List, '');
     end;
@@ -10710,7 +10786,7 @@ begin
   if not GetActiveSheet(sheet) then
     Exit;
   fprop := sheet.SourceFile;
-  FindedTokenFile := FilesParsed.ItemOfByFileName(fprop.FileName);
+  FindedTokenFile := FilesParsed.Find(fprop.FileName);
   if FindedTokenFile = nil then
     Exit;
   TokenFile := FindedTokenFile;
@@ -10733,7 +10809,7 @@ begin
   if not GetActiveSheet(sheet) then
     Exit;
   fprop := sheet.SourceFile;
-  FindedTokenFile := FilesParsed.ItemOfByFileName(fprop.FileName);
+  FindedTokenFile := FilesParsed.Find(fprop.FileName);
   if FindedTokenFile = nil then
     Exit;
   TokenFile := FindedTokenFile;

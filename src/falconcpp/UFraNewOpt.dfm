@@ -1,28 +1,25 @@
 object FraPrjOpt: TFraPrjOpt
   Left = 0
   Top = 0
-  Width = 508
-  Height = 302
+  Width = 451
+  Height = 304
   Align = alClient
   TabOrder = 0
-  ExplicitWidth = 451
-  ExplicitHeight = 304
   DesignSize = (
-    508
-    302)
+    451
+    304)
   object GrbApp: TGroupBox
     Left = 8
     Top = 2
-    Width = 492
-    Height = 144
+    Width = 435
+    Height = 146
     Anchors = [akLeft, akTop, akRight, akBottom]
     Caption = 'Application'
     TabOrder = 0
-    ExplicitWidth = 435
     ExplicitHeight = 145
     DesignSize = (
-      492
-      144)
+      435
+      146)
     object LblDescIcon: TLabel
       Left = 11
       Top = 77
@@ -48,8 +45,8 @@ object FraPrjOpt: TFraPrjOpt
       object ImgIcon: TImage
         Left = 1
         Top = 1
-        Width = 49
-        Height = 49
+        Width = 32
+        Height = 32
         Hint = 'Double click to change application icon'
         Align = alClient
         AutoSize = True
@@ -93,6 +90,8 @@ object FraPrjOpt: TFraPrjOpt
         PopupMenu = PUMIcon
         ShowHint = True
         OnDblClick = BtnChgIconClick
+        ExplicitWidth = 49
+        ExplicitHeight = 49
       end
     end
     object BtnChgIcon: TButton
@@ -118,15 +117,14 @@ object FraPrjOpt: TFraPrjOpt
     object GrBInfo: TGroupBox
       Left = 168
       Top = 32
-      Width = 316
-      Height = 103
+      Width = 259
+      Height = 105
       Anchors = [akLeft, akTop, akRight, akBottom]
       TabOrder = 3
-      ExplicitWidth = 259
       ExplicitHeight = 104
       DesignSize = (
-        316
-        103)
+        259
+        105)
       object LblCompa: TLabel
         Left = 8
         Top = 8
@@ -142,7 +140,7 @@ object FraPrjOpt: TFraPrjOpt
         Caption = 'Description'
       end
       object LblVers: TLabel
-        Left = 171
+        Left = 114
         Top = 8
         Width = 35
         Height = 13
@@ -151,7 +149,7 @@ object FraPrjOpt: TFraPrjOpt
         ExplicitLeft = 184
       end
       object LblProdName: TLabel
-        Left = 171
+        Left = 114
         Top = 55
         Width = 67
         Height = 13
@@ -160,10 +158,10 @@ object FraPrjOpt: TFraPrjOpt
         ExplicitLeft = 184
       end
       object Bevel2: TBevel
-        Left = 151
+        Left = 94
         Top = 8
         Width = 2
-        Height = 86
+        Height = 88
         Anchors = [akTop, akRight, akBottom]
         Shape = bsLeftLine
         ExplicitLeft = 184
@@ -172,54 +170,49 @@ object FraPrjOpt: TFraPrjOpt
       object EditComp: TEdit
         Left = 8
         Top = 23
-        Width = 124
+        Width = 67
         Height = 21
         Anchors = [akLeft, akTop, akRight]
         TabOrder = 0
-        ExplicitWidth = 67
       end
       object EditDesc: TEdit
         Left = 8
         Top = 70
-        Width = 124
+        Width = 67
         Height = 21
         Anchors = [akLeft, akTop, akRight]
         TabOrder = 1
-        ExplicitWidth = 67
       end
       object EditVer: TEdit
-        Left = 171
+        Left = 114
         Top = 23
         Width = 137
         Height = 21
         Anchors = [akTop, akRight]
         TabOrder = 2
         Text = '1.0.0.0'
-        ExplicitLeft = 114
       end
       object EditProdName: TEdit
-        Left = 171
+        Left = 114
         Top = 70
         Width = 137
         Height = 21
         Anchors = [akTop, akRight]
         TabOrder = 3
-        ExplicitLeft = 114
       end
     end
   end
   object GrbProj: TGroupBox
     Left = 8
-    Top = 149
-    Width = 492
+    Top = 151
+    Width = 435
     Height = 145
     Anchors = [akLeft, akRight, akBottom]
     Caption = 'Project'
     TabOrder = 1
     ExplicitTop = 150
-    ExplicitWidth = 435
     DesignSize = (
-      492
+      435
       145)
     object LblName: TLabel
       Left = 8
@@ -252,7 +245,7 @@ object FraPrjOpt: TFraPrjOpt
     object GrbOptmz: TGroupBox
       Left = 208
       Top = 26
-      Width = 276
+      Width = 219
       Height = 111
       Anchors = [akLeft, akTop, akRight]
       Caption = 'Optimizations'

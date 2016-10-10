@@ -583,7 +583,7 @@ var
   Files: TStrings;
   FileName: string;
   FileProp: TSourceFile;
-  I, J, Results, Line, Column, EndColumn: Integer;
+  I, Results: Integer;
   // TODO: commented
   // Search: TSynEditSearchCustom;
   SourceSheet: TSourceFileSheet;

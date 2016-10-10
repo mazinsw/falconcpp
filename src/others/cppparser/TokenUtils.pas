@@ -585,9 +585,9 @@ begin
   Result := '';
   Sep := '';
   VarNum := 1;
-  if not (Token.Token in [tkTypeStruct, tkStruct, tkTypeUnion, tkUnion]) then
+  if not (Token.Token in StructTokens) or (Token.Count < 2) then
     Exit;
-  Params := Token;
+  Params := Token.Items[1];
   for I := 0 to Params.Count - 1 do
   begin
     if Params.Items[I].Token <> tkVariable then
@@ -1285,7 +1285,6 @@ procedure GetDescendants(const S: string; List: TStrings; scope: TScopeClass);
 var
   sc, Temp, ancs: string;
 begin
-  List.Clear;
   Temp := S;
   sc := GetFirstWord(Temp);
   if sc = 'virtual' then
@@ -1978,6 +1977,8 @@ begin
       case ptr^ of
         ')':
         begin
+          if field <> '' then
+            Break;
           SkipInvPairGetCast(init, ptr, '(', ')', cast);
           skipSpace := True;
         end;

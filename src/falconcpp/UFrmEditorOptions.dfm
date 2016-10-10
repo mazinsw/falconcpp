@@ -34,6 +34,10 @@ object FrmEditorOptions: TFrmEditorOptions
     TabOrder = 0
     object TSGeneral: TTabSheet
       Caption = 'General'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         489
         400)
@@ -226,6 +230,10 @@ object FrmEditorOptions: TFrmEditorOptions
     object TSDisplay: TTabSheet
       Caption = 'Display'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         489
         400)
@@ -362,6 +370,10 @@ object FrmEditorOptions: TFrmEditorOptions
     object TSSintax: TTabSheet
       Caption = 'Colors'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         489
         400)
@@ -607,6 +619,10 @@ object FrmEditorOptions: TFrmEditorOptions
     object TSFormatter: TTabSheet
       Caption = 'Formatter'
       ImageIndex = 4
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         489
         400)
@@ -620,6 +636,10 @@ object FrmEditorOptions: TFrmEditorOptions
         TabOrder = 0
         object TSFormatterStyle: TTabSheet
           Caption = 'Style'
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
           DesignSize = (
             467
             359)
@@ -668,6 +688,10 @@ object FrmEditorOptions: TFrmEditorOptions
         object TSFormatterIndentation: TTabSheet
           Caption = 'Indentation'
           ImageIndex = 1
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
           object CheckBoxForceUsingTabs: TCheckBox
             Left = 6
             Top = 8
@@ -804,6 +828,10 @@ object FrmEditorOptions: TFrmEditorOptions
         object TSFormatterPadding: TTabSheet
           Caption = 'Padding'
           ImageIndex = 4
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
           object CheckBoxPadEmptyLines: TCheckBox
             Left = 6
             Top = 8
@@ -938,6 +966,10 @@ object FrmEditorOptions: TFrmEditorOptions
         object TSFormatterFormatting: TTabSheet
           Caption = 'Formatting'
           ImageIndex = 2
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
           object LabelBracketsStyle: TLabel
             Left = 6
             Top = 8
@@ -1111,6 +1143,10 @@ object FrmEditorOptions: TFrmEditorOptions
     object TSCodeResources: TTabSheet
       Caption = 'Code Resources'
       ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object GroupBox8: TGroupBox
         Left = 6
         Top = 4

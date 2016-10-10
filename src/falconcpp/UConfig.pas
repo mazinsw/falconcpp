@@ -280,22 +280,24 @@ begin
     UsersDefDir := ExpandRelativePath(TFrmFalconMain(Form).AppRoot, UsersDefDir);
     if not DirectoryExists(UsersDefDir) then
       UsersDefDir := TFrmFalconMain(Form).AppRoot;
-    ProjectsDir := ini.ReadString('EnvironmentOptions', 'ProjectsDir',
-{$IFDEF FALCON_PORTABLE}
-       TFrmFalconMain(Form).AppRoot
-{$ELSE}
-       GetSpecialFolderPath
-{$ENDIF}
-       + 'Projects\');
+    if IsPortable then
+    begin
+      ProjectsDir := ini.ReadString('EnvironmentOptions', 'ProjectsDir',
+         TFrmFalconMain(Form).AppRoot + 'Projects\');
+    end
+    else
+    begin
+      ProjectsDir := ini.ReadString('EnvironmentOptions', 'ProjectsDir',
+         GetSpecialFolderPath + 'Projects\');
+    end;
     ProjectsDir := ExpandRelativePath(TFrmFalconMain(Form).AppRoot, ProjectsDir);
     if not DirectoryExists(ProjectsDir) then
-      ProjectsDir :=
-{$IFDEF FALCON_PORTABLE}
-        TFrmFalconMain(Form).AppRoot
-{$ELSE}
-        GetSpecialFolderPath
-{$ENDIF}
-        + 'Projects\';
+    begin
+      if IsPortable then
+        ProjectsDir := TFrmFalconMain(Form).AppRoot + 'Projects\'
+      else
+        ProjectsDir := GetSpecialFolderPath + 'Projects\';
+    end;
     TemplatesDir := ini.ReadString('EnvironmentOptions', 'TemplatesDir',
       UsersDefDir + 'Templates\');
     TemplatesDir := ExpandRelativePath(UsersDefDir, TemplatesDir);

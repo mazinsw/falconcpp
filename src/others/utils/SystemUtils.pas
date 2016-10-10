@@ -46,6 +46,7 @@ function ExecuteFile(Handle: HWND; const Filename, Paramaters,
 procedure Execute(const S: String);
 function UserIsAdmin: Boolean;
 function IsNT: Boolean;
+function IsPortable: Boolean;
 function IsForeground(Handle: HWND): Boolean;
 function ForceForegroundWindow(hwnd: THandle): Boolean;
 function BringUpApp(const ClassName: string): Boolean;
@@ -168,35 +169,33 @@ end;
 
 function ExpandRelativePath(const Base, Path: string): string;
 begin
-{$IFDEF FALCON_PORTABLE}
-  if (ExtractFileDrive(Path) = '') and DirectoryExists(Base + Path) then
-    Result := ExpandFileName(Base + Path)
+  if IsPortable then
+  begin
+    if (ExtractFileDrive(Path) = '') and DirectoryExists(Base + Path) then
+      Result := ExpandFileName(Base + Path)
+    else
+      Result := ExpandFileName(ExtractRelativePath(Base, Path));
+  end
   else
-    Result := ExpandFileName(ExtractRelativePath(Base, Path));
-{$ELSE}
     Result := Path;
-{$ENDIF}
 end;
 
 function ExpandRelativeFileName(const Base, FileName: string): string;
 begin
   if FileName = '' then
     Result := ''
+  else if IsPortable then
+    Result := ExpandRelativePath(base, ExtractFilePath(FileName)) + ExtractFileName(FileName)
   else
-{$IFDEF FALCON_PORTABLE}
-    Result := ExpandRelativePath(base, ExtractFilePath(FileName)) + ExtractFileName(FileName);
-{$ELSE}
     Result := FileName;
-{$ENDIF}
 end;
 
 function ExtractRelativePathOpt(const BaseName, DestName: string): string;
 begin
-{$IFDEF FALCON_PORTABLE}
-  Result := ExtractRelativePath(BaseName, DestName);
-{$ELSE}
-  Result := DestName;
-{$ENDIF}
+  if IsPortable then
+    Result := ExtractRelativePath(BaseName, DestName)
+  else
+    Result := DestName;
 end;
 
 function ConvertSlashes(const Path: String): String;
@@ -447,6 +446,11 @@ begin
 
     Result := ExitCode;
   end;
+end;
+
+function IsPortable: Boolean;
+begin
+  Result := FileExists(ChangeFileExt(Application.ExeName, '.portable.txt'));
 end;
 
 function IsForeground(Handle: HWND): Boolean;

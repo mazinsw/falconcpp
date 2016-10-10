@@ -3,15 +3,9 @@
 MANFTHEME RCDATA "../../res/Theme.manifest"
 MANFADMIN RCDATA "../../res/Admin.manifest"
 MANFBOTH RCDATA "../../res/Both.manifest"
-IMGLOGO RCDATA "../../res/images/Logo.png"
-IMGCOUNTRY RCDATA "../../res/images/countrys.png"
 AUTOCOMPLETE RCDATA "../../res/AutoComplete.txt"
-OUTLINEIMAGES RCDATA "../../res/images/outline.png"
-GUTTERIMAGES RCDATA "../../res/images/gutter.png"
-DEBUGHINTIMAGES RCDATA "../../res/images/debughint.png"
-MENUIMAGES RCDATA "../../res/images/menu.png"
-DISMENUIMAGES RCDATA "../../res/images/dismenu.png"
 
+IMGLOGO RCDATA "../../res/images/Logo.png"
 moredown BITMAP "../../res/images/small/moredown.bmp"    
 moreup BITMAP "../../res/images/small/moreup.bmp"
 

@@ -187,7 +187,6 @@ object FrmCompOptions: TFrmCompOptions
         Height = 22
         ItemsEx = <>
         TabOrder = 0
-        Images = FrmFalconMain.DisImgListMenus
       end
       object PageControl2: TPageControl
         Left = 4

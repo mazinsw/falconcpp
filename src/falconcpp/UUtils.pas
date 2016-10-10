@@ -44,6 +44,7 @@ procedure GetNameAndVersion(const S: string; var aName, aVersion: string);
 procedure SearchCompilers(List: TStrings; var PathCompiler: string);
 function TranslateSpecialChars(const S: string): string;
 function CanDoubleQuotedStr(const S: string): Boolean;
+procedure SplitInput(const S: string; List: TStrings);
 procedure SplitParams(const S: string; List: TStrings);
 procedure GetIncludeDirs(const ProjectDir, Flags: string; IncludeList: TStrings;
   Expand: Boolean = False);
@@ -75,7 +76,7 @@ function NewSourceFile(FileType, Compiler: Integer; FirstName, BaseName,
 function FormatLibrary(const FileName: string): string;
 function BrowseDialog(Handle: HWND; const Title: string;
   var Directory: string): Boolean;
-function HumanToBool(Resp: string): Boolean;
+function HumanToBool(const Text: string; Default: Boolean = False): Boolean;
 function BoolToHuman(Question: Boolean): string;
 
 function EditorGotoXY(Memo: TEditor; X, Y: Integer): Boolean;
@@ -221,6 +222,23 @@ begin
   end;
 end;
 
+function IAmIn64Bits: Boolean;
+type
+  WinIsWow64 = function( Handle: THandle; var Iret: BOOL ): Windows.BOOL; stdcall;
+var
+  HandleTo64BitsProcess: WinIsWow64;
+  Iret                 : Windows.BOOL;
+begin
+  Result := False;
+  HandleTo64BitsProcess := GetProcAddress(GetModuleHandle('kernel32.dll'), 'IsWow64Process');
+  if Assigned(HandleTo64BitsProcess) then
+  begin
+    if not HandleTo64BitsProcess(GetCurrentProcess, Iret) then
+    Raise Exception.Create('Invalid handle');
+    Result := Iret;
+  end;
+end;
+
 procedure SearchCompilers(List: TStrings; var PathCompiler: string);
 
   function findString(const S: string; aList: TStrings): Integer;
@@ -256,11 +274,12 @@ begin
     PathCompiler := '';
   PathCount := 1;
   ProgPaths[0] := GetEnvironmentVariable('PROGRAMFILES');
-  ProgPaths[1] := GetEnvironmentVariable('PROGRAMFILES(x86)');
-{$IFDEF WIN64}
-  if (ProgPaths[1] <> '') then
-    Inc(PathCount);
-{$ENDIF}
+  ProgPaths[1] := GetEnvironmentVariable('ProgramW6432');
+  if IAmIn64Bits then
+  begin
+    if (ProgPaths[1] <> '') then
+      Inc(PathCount);
+  end;
   for I := 0 to PathCount - 1 do
   begin
     ProgFiles := ProgPaths[I];
@@ -396,6 +415,31 @@ begin
       end;
       Inc(p);
     end;
+end;
+
+procedure SplitInput(const S: string; List: TStrings);
+var
+  I, PrevPos: Integer;
+begin
+  PrevPos := 1;
+  for I := 1 to Length(S) do
+  begin
+    if S[I] = '.' then
+    begin
+      List.Add(Copy(S, PrevPos, I - PrevPos));
+      List.Add(S[I]);
+      PrevPos := I + 1;
+    end
+    else if (I > 1) and (((S[I] = ':') and (S[I - 1] = ':')) OR
+      ((S[I] = '>') and (S[I - 1] = '-'))) then
+    begin
+      List.Add(Copy(S, PrevPos, I - PrevPos - 1));
+      List.Add(S[I - 1] + S[I]);
+      PrevPos := I + 1;
+    end;
+  end;
+  if Length(S) - PrevPos + 1 > 0 then
+    List.Add(Copy(S, PrevPos, Length(S) - PrevPos + 1));
 end;
 
 procedure SplitParams(const S: string; List: TStrings);
@@ -962,7 +1006,7 @@ function CreateSourceFolder(const Name: string;
   Parent: TSourceFile): TSourceFile;
 begin
   if not Assigned(Parent) or not
-    (Parent.FileType in [FILE_TYPE_FOLDER, FILE_TYPE_PROJECT]) then
+    (Parent.FileType in [FILE_TYPE_FOLDER, FILE_TYPE_PROJECT, FILE_TYPE_CONFIG, FILE_TYPE_CONFIG_GROUP]) then
   begin
     Result := nil;
     Exit;
@@ -1029,7 +1073,7 @@ begin
       end
       else
       begin
-        if (OwnerFile.FileType <> FILE_TYPE_FOLDER) then
+        if (OwnerFile.FileType < FILE_TYPE_FOLDER) then
         begin
           if not Assigned(OwnerFile.Node.Parent) then
           begin
@@ -1106,12 +1150,12 @@ begin
   end;
 end;
 
-function HumanToBool(Resp: string): Boolean;
+function HumanToBool(const Text: string; Default: Boolean): Boolean;
 begin
-  if SameText(Resp, 'Yes') or (Resp = '1') then
+  if SameText(Text, 'Yes') or SameText(Text, 'True') or (Text = '1') then
     Result := True
   else
-    Result := False;
+    Result := Default;
 end;
 
 function BoolToHuman(Question: Boolean): string;

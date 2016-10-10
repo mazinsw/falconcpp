@@ -210,10 +210,10 @@ begin
   Project.AppType := RGAppTp.ItemIndex;
   Project.EnableTheme := ChbEnbThm.Checked;
   Project.RequiresAdmin := ChbReqAdmin.Checked;
-  Project.Version.Major := UpDownMajor.Position;
-  Project.Version.Minor := UpDownMinor.Position;
-  Project.Version.Release := UpDownRelease.Position;
-  Project.Version.Build := UpDownBuild.Position;
+  Project.Version.Version.Major := UpDownMajor.Position;
+  Project.Version.Version.Minor := UpDownMinor.Position;
+  Project.Version.Version.Release := UpDownRelease.Position;
+  Project.Version.Version.Build := UpDownBuild.Position;
   Project.AutoIncBuild := ChbIncBuild.Checked;
   Project.Version.LanguageID := TLanguageItem(
     CbbLang.ItemsEx.Items[CbbLang.ItemIndex].Data).ID;
@@ -322,10 +322,10 @@ begin
     SplitParams(Trim(Project.Flags), ListIncs.Items);
     ChbIncVer.Checked := Project.IncludeVersionInfo;
     ChbIncVerClick(ChbIncVer);
-    UpDownMajor.Position := Project.Version.Major;
-    UpDownMinor.Position := Project.Version.Minor;
-    UpDownRelease.Position := Project.Version.Release;
-    UpDownBuild.Position := Project.Version.Build;
+    UpDownMajor.Position := Project.Version.Version.Major;
+    UpDownMinor.Position := Project.Version.Version.Minor;
+    UpDownRelease.Position := Project.Version.Version.Release;
+    UpDownBuild.Position := Project.Version.Version.Build;
     ChbIncBuild.Checked := Project.AutoIncBuild;
     ListValues.Cells[1, 1] := Project.Version.CompanyName;
     ListValues.Cells[1, 2] := Project.Version.FileDescription;
@@ -548,9 +548,15 @@ begin
 end;
 
 procedure TFrmProperty.VersionChange(Sender: TObject);
+var
+  OldVer, NewVer: string;
 begin
-  ListValues.Cells[1, 3] := Format('%d.%d.%d.%d', [UpDownMajor.Position,
+  OldVer := ListValues.Cells[1, 3];
+  NewVer := Format('%d.%d.%d.%d', [UpDownMajor.Position,
     UpDownMinor.Position, UpDownRelease.Position, UpDownBuild.Position]);
+  ListValues.Cells[1, 3] := NewVer;
+  if (OldVer = ListValues.Cells[1, 6]) or (OldVer = '') then
+    ListValues.Cells[1, 6] := NewVer;
   ProjectChange(Sender);
 end;
 

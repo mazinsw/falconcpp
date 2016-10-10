@@ -6,7 +6,7 @@ uses
   Windows, SysUtils, Forms, Graphics, Classes, Dialogs,
   Menus, ComCtrls, Controls, ShellApi,
   XMLDoc, XMLIntf, Makefile, Breakpoint, UTemplates, ModernTabs,
-  UEditor;
+  UEditor, SystemUtils;
 
 const
   FILE_TYPE_PROJECT = 1;
@@ -16,6 +16,8 @@ const
   FILE_TYPE_RC = 5;
   FILE_TYPE_UNKNOW = 6;
   FILE_TYPE_FOLDER = 7;
+  FILE_TYPE_CONFIG = 8;
+  FILE_TYPE_CONFIG_GROUP = 9;
 
   SHEET_TYPE_FILE = 1;
   SHEET_TYPE_DESGN = 2;
@@ -75,10 +77,8 @@ const
     LD_OPTION_OUT_LIB + ',%s%s%s';
 type
   TVersionInfo = class
-    Major: Integer;
-    Minor: Integer;
-    Release: Integer;
-    Build: Integer;
+  public
+    Version: TVersion;
     LanguageID: Integer;
     CharsetID: Integer;
     CompanyName: string;
@@ -90,6 +90,8 @@ type
     OriginalFilename: string;
     ProductName: string;
     ProductVersion: string;
+  public
+    procedure Assign(const Value: TVersionInfo);
   end;
 
   TSourceFileSheet = class;
@@ -201,18 +203,12 @@ type
     property LineEnding: Integer read FLineEnding write SetLineEnding;
   end;
 
-  IContainer = interface
-  end;
-
-  TProjectBase = class(TSourceFile)
+  TProjectConfiguration = class
   private
-    FTargetDateTime: TDateTime;
     FLibs: string;
-    FTemplateResources: TTemplateID;
     FFlags: string;
     FCompOpt: string;
     FTarget: string;
-    FCompilerPath: string;
     FCmdLine: string;
     FDelObjPrior: Boolean;
     FDelObjAfter: Boolean;
@@ -221,55 +217,29 @@ type
     FIncludeInfo: Boolean;
     FEnableTheme: Boolean;
     FRequiresAdmin: Boolean;
-    FCompiled: Boolean;
     FAppType: Integer;
     FCompilerType: Integer;
     FIconFileName: string;
     FIcon: TIcon;
     FAutoIncBuild: Boolean;
-    FPropertyChanged: Boolean;
-    FSomeFileChanged: Boolean;
-    FCompilerPropertyChanged: Boolean;
-    FDebugging: Boolean;
     FVersion: TVersionInfo;
-    FBreakpointChanged: Boolean;
-    FBreakpointCursor: TBreakpoint;
-    FForceClean: Boolean; //for header changes
+    FName: string;
     procedure SetIcon(Value: TIcon);
   public
-    property TemplateResources: TTemplateID read FTemplateResources
-      write FTemplateResources;
-    property Version: TVersionInfo read FVersion;
-    property BreakpointCursor: TBreakpoint read FBreakpointCursor;
-    constructor Create(Node: TTreeNode);
+    constructor Create;
     destructor Destroy; override;
-    function GetResource(Res: TStrings): Boolean;
-    procedure GetFiles(List: TStrings; AllTypes: Boolean = False;
-      WithBreakpoint: Boolean = False);
-    procedure Build; virtual;
-    procedure SaveAs(const FileName: string); virtual;
-    function NeedBuild: Boolean; virtual;
-    function GetTarget: string;
-    function TargetChanged: Boolean;
-    function GetBreakpointFiles(List: TStrings): Boolean;
-    function HasBreakpoint: Boolean;
+    procedure Assign(const Value: TProjectConfiguration);
+    procedure Load(ParentNode: IXMLNode);
+    procedure Save(ParentNode: IXMLNode);
   public
-    property ForceClean: Boolean read FForceClean write FForceClean;
-    property Debugging: Boolean read FDebugging write FDebugging;
+    property Name: string read FName write FName;
+    property Version: TVersionInfo read FVersion;
     property Libs: string read FLibs write FLibs;
     property Flags: string read FFlags write FFlags;
     property CompilerOptions: string read FCompOpt write FCompOpt;
     property Target: string read FTarget write FTarget;
-    property CompilerPath: string read FCompilerPath write FCompilerPath;
     property CmdLine: string read FCmdLine write FCmdLine;
-    property Compiled: Boolean read FCompiled write FCompiled;
-    property TargetDateTime: TdateTime read FTargetDateTime write FTargetDateTime;
     property AutoIncBuild: Boolean read FAutoIncBuild write FAutoIncBuild;
-    property PropertyChanged: Boolean read FPropertyChanged write FPropertyChanged;
-    property SomeFileChanged: Boolean read FSomeFileChanged write FSomeFileChanged;
-    property BreakpointChanged: Boolean read FBreakpointChanged write FBreakpointChanged;
-    property CompilePropertyChanged: Boolean read FCompilerPropertyChanged
-      write FCompilerPropertyChanged;
     property AppType: Integer read FAppType write FAppType;
     property CompilerType: Integer read FCompilerType write FCompilerType;
     property IncludeVersionInfo: Boolean read FIncludeInfo write FIncludeInfo;
@@ -283,8 +253,126 @@ type
     property IconFileName: string read FIconFileName write FIconFileName;
   end;
 
+  TProjectBase = class(TSourceFile)
+  private
+    FTargetDateTime: TDateTime;
+    FTemplateResources: TTemplateID;
+    FCompilerPath: string;
+    FCompiled: Boolean;
+    FPropertyChanged: Boolean;
+    FSomeFileChanged: Boolean;
+    FCompilerPropertyChanged: Boolean;
+    FDebugging: Boolean;
+    FBreakpointChanged: Boolean;
+    FBreakpointCursor: TBreakpoint;
+    FForceClean: Boolean; //for header changes
+    FConfigurations: TList;
+    FConfigIndex: Integer;
+    procedure ClearConfigurations;
+    function GetConfigurationCount: Integer;
+    function GetCurrentConfiguration: TProjectConfiguration;
+    procedure SetCurrentConfiguration(const Value: TProjectConfiguration);
+    function GetConfiguration(Index: Integer): TProjectConfiguration;
+    procedure SetConfiguration(Index: Integer;
+      const Value: TProjectConfiguration);
+    // Compatibility
+    function GetAppType: Integer;
+    function GetAutoIncBuild: Boolean;
+    function GetCmdLine: string;
+    function GetCompilerType: Integer;
+    function GetCompOpt: string;
+    function GetConfigName: string;
+    function GetDelMakAfter: Boolean;
+    function GetDelObjAfter: Boolean;
+    function GetDelObjPrior: Boolean;
+    function GetDelResAfter: Boolean;
+    function GetEnableTheme: Boolean;
+    function GetFlags: string;
+    function GetIcon: TIcon;
+    function GetIconFileName: string;
+    function GetIncludeInfo: Boolean;
+    function GetLibs: string;
+    function GetRequiresAdmin: Boolean;
+    function GetVersion: TVersionInfo;
+    procedure SetAppType(const Value: Integer);
+    procedure SetAutoIncBuild(const Value: Boolean);
+    procedure SetCmdLine(const Value: string);
+    procedure SetCompilerType(const Value: Integer);
+    procedure SetCompOpt(const Value: string);
+    procedure SetConfigName(const Value: string);
+    procedure SetDelMakAfter(const Value: Boolean);
+    procedure SetDelObjAfter(const Value: Boolean);
+    procedure SetDelObjPrior(const Value: Boolean);
+    procedure SetDelResAfter(const Value: Boolean);
+    procedure SetEnableTheme(const Value: Boolean);
+    procedure SetFlags(const Value: string);
+    procedure SetIcon(const Value: TIcon);
+    procedure SetIconFileName(const Value: string);
+    procedure SetIncludeInfo(const Value: Boolean);
+    procedure SetLibs(const Value: string);
+    procedure SetRequiresAdmin(const Value: Boolean);
+    procedure SetTarget(const Value: string);
+    function GetTargetConfig: string;
+    procedure SetConfigIndex(const Value: Integer);
+  public
+    property TemplateResources: TTemplateID read FTemplateResources
+      write FTemplateResources;
+    property BreakpointCursor: TBreakpoint read FBreakpointCursor;
+    constructor Create(Node: TTreeNode);
+    destructor Destroy; override;
+    function GetResource(Res: TStrings): Boolean;
+    procedure GetFiles(List: TStrings; AllTypes: Boolean = False;
+      WithBreakpoint: Boolean = False);
+    procedure Build; virtual; abstract;
+    procedure SaveAs(const FileName: string); virtual; abstract;
+    function NeedBuild: Boolean; virtual;
+    function GetTarget: string;
+    function TargetChanged: Boolean;
+    function GetBreakpointFiles(List: TStrings): Boolean;
+    function HasBreakpoint: Boolean;
+    function AddConfiguration(Config: TProjectConfiguration): Integer;
+    function IndexOfConfiguration(const Name: string): Integer;
+
+  public
+    property Configuration: TProjectConfiguration read GetCurrentConfiguration write SetCurrentConfiguration;
+    property Configurations[Index: Integer]: TProjectConfiguration read GetConfiguration write SetConfiguration;
+    property ConfigurationCount: Integer read GetConfigurationCount;
+    property ConfigurationIndex: Integer read FConfigIndex write SetConfigIndex;
+    property ForceClean: Boolean read FForceClean write FForceClean;
+    property Debugging: Boolean read FDebugging write FDebugging;
+    property CompilerPath: string read FCompilerPath write FCompilerPath;
+    property Compiled: Boolean read FCompiled write FCompiled;
+    property TargetDateTime: TdateTime read FTargetDateTime write FTargetDateTime;
+    property PropertyChanged: Boolean read FPropertyChanged write FPropertyChanged;
+    property SomeFileChanged: Boolean read FSomeFileChanged write FSomeFileChanged;
+    property BreakpointChanged: Boolean read FBreakpointChanged write FBreakpointChanged;
+    property CompilePropertyChanged: Boolean read FCompilerPropertyChanged
+      write FCompilerPropertyChanged;
+
+    // Compatibility
+    property ConfigName: string read GetConfigName write SetConfigName;
+    property Version: TVersionInfo read GetVersion;
+    property Libs: string read GetLibs write SetLibs;
+    property Flags: string read GetFlags write SetFlags;
+    property CompilerOptions: string read GetCompOpt write SetCompOpt;
+    property Target: string read GetTargetConfig write SetTarget;
+    property CmdLine: string read GetCmdLine write SetCmdLine;
+    property AutoIncBuild: Boolean read GetAutoIncBuild write SetAutoIncBuild;
+    property AppType: Integer read GetAppType write SetAppType;
+    property CompilerType: Integer read GetCompilerType write SetCompilerType;
+    property IncludeVersionInfo: Boolean read GetIncludeInfo write SetIncludeInfo;
+    property EnableTheme: Boolean read GetEnableTheme write SetEnableTheme;
+    property RequiresAdmin: Boolean read GetRequiresAdmin write SetRequiresAdmin;
+    property DeleteObjsBefore: Boolean read GetDelObjPrior write SetDelObjPrior;
+    property DeleteObjsAfter: Boolean read GetDelObjAfter write SetDelObjAfter;
+    property DeleteMakefileAfter: Boolean read GetDelMakAfter write SetDelMakAfter;
+    property DeleteResourcesAfter: Boolean read GetDelResAfter write SetDelResAfter;
+    property Icon: TIcon read GetIcon write SetIcon;
+    property IconFileName: string read GetIconFileName write SetIconFileName;
+  end;
+
   TProjectSource = class(TProjectBase);
-  TProjectFile = class(TProjectBase, IContainer)
+  TProjectFile = class(TProjectBase)
   private
     procedure UpdateTarget(Value: string);
   protected
@@ -345,12 +433,48 @@ type
 implementation
 
 uses UFrmMain, UUtils, UConfig, TokenFile, TokenList, TokenUtils, DScintillaTypes,
-  CustomColors, Highlighter, UnicodeUtils, SystemUtils;
+  CustomColors, Highlighter, UnicodeUtils;
 
 const
   fileMoveError = 'Can''t move file ''%s'' to ''%s.''';
   fileRenameError = 'Can''t rename file ''%s'' to ''%s.''';
   fileOverrideError = 'Can''t override existing file "%s".';
+
+function GetTagProperty(Node: IXMLNode; const Tag, Attribute: string): string;
+var
+  Temp: IXMLNode;
+begin
+  Temp := Node.ChildNodes.FindNode(Tag);
+  if (Temp <> nil) then
+    Result := Temp.Attributes[Attribute]
+  else
+    Result := '';
+end;
+
+function GetBoolProperty(Node: IXMLNode; const Tag, Attribute: string; Default: Boolean = False): Boolean;
+begin
+  Result := HumanToBool(GetTagProperty(Node, Tag, Attribute), Default);
+end;
+
+function GetIntProperty(Node: IXMLNode; const Tag, Attribute: string; Default: Integer = 0): Integer;
+begin
+  Result := StrToIntDef(GetTagProperty(Node, Tag, Attribute), Default);
+end;
+
+procedure SetTagProperty(Node: IXMLNode; const Tag, Attribute, Value: string);
+var
+  Temp: IXMLNode;
+begin
+  Temp := Node.ChildNodes.FindNode(Tag);
+  if (Temp = nil) then
+    Temp := Node.AddChild(Tag);
+  Temp.Attributes[Attribute] := Value;
+end;
+
+procedure SetBoolProperty(Node: IXMLNode; const Tag, Attribute: string; Value: Boolean);
+begin
+  SetTagProperty(Node, Tag, Attribute, BoolToHuman(Value));
+end;
 
 { TSourceBase }
 
@@ -472,7 +596,7 @@ end;
 
 procedure TSourceFile.DeleteOfDisk;
 begin
-  if (FFileType <> FILE_TYPE_FOLDER) then
+  if (FFileType < FILE_TYPE_FOLDER) then
   begin
     if FileExists(FileName) then
     begin
@@ -735,7 +859,7 @@ var
 begin
   if (Name = Value) or (Value = '') then
     Exit;
-  if (FileType <> FILE_TYPE_FOLDER) then
+  if (FileType < FILE_TYPE_FOLDER) then
   begin
     { ***   PROJECT or FILE   *** }
     if FileExists(FileName) and Saved then
@@ -782,6 +906,7 @@ var
   Sheet: TSourceFileSheet;
   BOM: Boolean;
   LineBreak: string;
+  SaveOnChange: TNotifyEvent;
 begin
   if GetSheet(Sheet) then
   begin
@@ -797,7 +922,10 @@ begin
   if Saved then
   begin
     Sheet.Editor.ReadOnly := False;
+    SaveOnChange := sheet.Editor.OnChange;
+    sheet.Editor.OnChange := nil;
     AdjustEncoding(LoadFile(sheet.Editor.Lines, BOM, LineBreak));
+    sheet.Editor.OnChange := SaveOnChange;
     if LineBreak = #13 then
       sheet.Editor.SetEOLMode(SC_EOL_CR)
     else if LineBreak = #10 then
@@ -819,7 +947,6 @@ begin
     Sheet.Editor.SetFocus;
   FrmFalconMain.PageControlEditorChange(FrmFalconMain.PageControlEditor);
   FrmFalconMain.EditorBeforeCreate(Self);
-  Sheet.Editor.OnChange(Sheet.Editor);
   Result := Sheet;
 end;
 
@@ -882,7 +1009,7 @@ procedure TSourceFile.GetSubFiles(List: TStrings);
   end;
 
 begin
-  if FileType <> FILE_TYPE_FOLDER then
+  if FileType < FILE_TYPE_FOLDER then
     Exit;
   GetSubFiles(Self);
 end;
@@ -1011,7 +1138,7 @@ begin
       FSaved := True;
     Exit;
   end;
-  if (FileType <> FILE_TYPE_FOLDER) and (not FSaved or Modified or
+  if (FileType < FILE_TYPE_FOLDER) and (not FSaved or Modified or
     not FileExists(FileName) or FileChangedInDisk) then
   begin
     if not FSaved and FileExists(FileName) and GetSheet(Sheet) then
@@ -1141,22 +1268,25 @@ end;
 
 {TProjectBase}
 
+procedure TProjectBase.ClearConfigurations;
+var
+  I: Integer;
+begin
+  for I := 0 to FConfigurations.Count - 1 do
+    TProjectConfiguration(FConfigurations[I]).Free;
+  FConfigurations.Clear;
+end;
+
 constructor TProjectBase.Create(Node: TTreeNode);
 begin
   inherited Create(Node);
-  FForceClean := False;
-  FVersion := TVersionInfo.Create;
-  FVersion.LanguageID := GetSystemDefaultLangID;
-  FVersion.CharsetID := $04E4;
+  FConfigurations := TList.Create;
+  FConfigurations.Add(TProjectConfiguration.Create);
+  FConfigIndex := 0;
   FBreakpointCursor := TBreakpoint.Create;
   FBreakpointCursor.Valid := False;
-  FDelObjPrior := True;
-  FDelObjAfter := True;
-  FDelMakAfter := True;
-  FDelResAfter := True;
-  FIcon := nil;
+  FForceClean := False;
   FCompiled := False;
-  FCompilerType := COMPILER_CPP;
   FPropertyChanged := False;
   FCompilerPropertyChanged := False;
   FCompilerPath := '';
@@ -1166,35 +1296,140 @@ destructor TProjectBase.Destroy;
 begin
   if Assigned(FTemplateResources) then
     FTemplateResources.Free;
-  if Assigned(FIcon) then
-    FIcon.Free;
   FBreakpointCursor.Free;
-  FVersion.Free;
+  ClearConfigurations;
+  FConfigurations.Free;
   inherited Destroy;
 end;
 
-procedure TProjectBase.SetIcon(Value: TIcon);
+procedure TProjectBase.SetAppType(const Value: Integer);
 begin
-  if FIcon = Value then
-    Exit;
-  if FIcon = nil then
-    FIcon := TIcon.Create
-  else if Value = nil then
-  begin
-    FIcon.Free;
-    FIcon := nil;
-    Exit;
-  end;
-  FIcon.Assign(Value);
+  Configuration.AppType := Value;
 end;
 
-procedure TProjectBase.SaveAs(const FileName: string);
+procedure TProjectBase.SetAutoIncBuild(const Value: Boolean);
 begin
+  Configuration.AutoIncBuild := Value;
+end;
+
+procedure TProjectBase.SetCmdLine(const Value: string);
+begin
+  Configuration.CmdLine := Value;
+end;
+
+procedure TProjectBase.SetCompilerType(const Value: Integer);
+begin
+  Configuration.CompilerType := Value;
+end;
+
+procedure TProjectBase.SetCompOpt(const Value: string);
+begin
+  Configuration.CompilerOptions := Value;
+end;
+
+procedure TProjectBase.SetConfigIndex(const Value: Integer);
+begin
+  if FConfigIndex = Value then
+    Exit;
+  FConfigIndex := Value;
+  PropertyChanged := True;
+end;
+
+procedure TProjectBase.SetConfigName(const Value: string);
+begin
+  Configuration.Name := Value;
+end;
+
+procedure TProjectBase.SetConfiguration(Index: Integer;
+  const Value: TProjectConfiguration);
+begin
+  Configurations[Index].Assign(Value);
+end;
+
+procedure TProjectBase.SetCurrentConfiguration(
+  const Value: TProjectConfiguration);
+var
+  Index: Integer;
+begin
+  Index := IndexOfConfiguration(Value.Name);
+  if Index < 0 then
+    Index := AddConfiguration(Value);
+  FConfigIndex := Index;
+end;
+
+procedure TProjectBase.SetDelMakAfter(const Value: Boolean);
+begin
+  Configuration.DeleteMakefileAfter := Value;
+end;
+
+procedure TProjectBase.SetDelObjAfter(const Value: Boolean);
+begin
+  Configuration.DeleteObjsAfter := Value;
+end;
+
+procedure TProjectBase.SetDelObjPrior(const Value: Boolean);
+begin
+  Configuration.DeleteObjsBefore := Value;
+end;
+
+procedure TProjectBase.SetDelResAfter(const Value: Boolean);
+begin
+  Configuration.DeleteResourcesAfter := Value;
+end;
+
+procedure TProjectBase.SetEnableTheme(const Value: Boolean);
+begin
+  Configuration.EnableTheme := Value;
+end;
+
+procedure TProjectBase.SetFlags(const Value: string);
+begin
+  Configuration.Flags := Value;
+end;
+
+procedure TProjectBase.SetIcon(const Value: TIcon);
+begin
+  Configuration.Icon := Value;
+end;
+
+procedure TProjectBase.SetIconFileName(const Value: string);
+begin
+  Configuration.IconFileName := Value;
+end;
+
+procedure TProjectBase.SetIncludeInfo(const Value: Boolean);
+begin
+  Configuration.IncludeVersionInfo := Value;
+end;
+
+procedure TProjectBase.SetLibs(const Value: string);
+begin
+  Configuration.Libs := Value;
+end;
+
+procedure TProjectBase.SetRequiresAdmin(const Value: Boolean);
+begin
+  Configuration.RequiresAdmin := Value;
+end;
+
+procedure TProjectBase.SetTarget(const Value: string);
+begin
+  Configuration.Target := Value;
 end;
 
 function TProjectBase.GetTarget: string;
 begin
   Result := ExtractFilePath(FileName) + Target;
+end;
+
+function TProjectBase.GetTargetConfig: string;
+begin
+  Result := Configuration.Target;
+end;
+
+function TProjectBase.GetVersion: TVersionInfo;
+begin
+  Result := Configuration.Version;
 end;
 
 function TProjectBase.NeedBuild: Boolean;
@@ -1225,10 +1460,10 @@ procedure TProjectBase.GetFiles(List: TStrings; AllTypes,
     I: Integer;
     canAdd: Boolean;
   begin
-    canAdd := (not (SrcFile.FileType in [FILE_TYPE_RC, FILE_TYPE_FOLDER]) and
+    canAdd := (not (SrcFile.FileType in [FILE_TYPE_RC, FILE_TYPE_FOLDER, FILE_TYPE_CONFIG, FILE_TYPE_CONFIG_GROUP]) and
       WithBreakpoint and (SrcFile.Breakpoint.Count > 0)) or not WithBreakpoint;
 
-    if canAdd and (AllTypes or (SrcFile.FileType <> FILE_TYPE_FOLDER)) then
+    if canAdd and (AllTypes or (SrcFile.FileType < FILE_TYPE_FOLDER)) then
       List.AddObject(SrcFile.FileName, SrcFile);
     for I := 0 to SrcFile.Node.Count - 1 do
       AddFiles(TSourceFile(SrcFile.Node.Item[I].Data));
@@ -1244,6 +1479,36 @@ begin
   end
   else
     AddFiles(Self);
+end;
+
+function TProjectBase.GetFlags: string;
+begin
+  Result := Configuration.Flags;
+end;
+
+function TProjectBase.GetIcon: TIcon;
+begin
+  Result := Configuration.Icon;
+end;
+
+function TProjectBase.GetIconFileName: string;
+begin
+  Result := Configuration.IconFileName;
+end;
+
+function TProjectBase.GetIncludeInfo: Boolean;
+begin
+  Result := Configuration.IncludeVersionInfo;
+end;
+
+function TProjectBase.GetLibs: string;
+begin
+  Result := Configuration.Libs;
+end;
+
+function TProjectBase.GetRequiresAdmin: Boolean;
+begin
+  Result := Configuration.RequiresAdmin;
 end;
 
 function TProjectBase.GetResource(Res: TStrings): Boolean;
@@ -1285,43 +1550,53 @@ begin
       if IncludeVersionInfo then
       begin
         Res.Add('1 VERSIONINFO');
-        Vers := IntToStr(FVersion.Major) + ',' +
-          IntToStr(FVersion.Minor) + ',' +
-          IntToStr(FVersion.Release) + ',' +
-          IntToStr(FVersion.Build);
+        Vers := IntToStr(Version.Version.Major) + ',' +
+          IntToStr(Version.Version.Minor) + ',' +
+          IntToStr(Version.Version.Release) + ',' +
+          IntToStr(Version.Version.Build);
         Res.Add('    FILEVERSION ' + Vers);
-        if (Length(FVersion.ProductVersion) = 0) then
+        if (Length(Version.ProductVersion) = 0) then
           Res.Add('    PRODUCTVERSION ' + Vers)
         else
-          Res.Add('    PRODUCTVERSION ' + StringReplace(FVersion.ProductVersion,
+          Res.Add('    PRODUCTVERSION ' + StringReplace(Version.ProductVersion,
             '.', ',', [rfReplaceAll]));
         Res.Add('    FILEOS 0x4L');
         Res.Add('    FILETYPE 0x1L');
         Res.Add('BEGIN');
         Res.Add('    BLOCK "StringFileInfo"');
         Res.Add('    BEGIN');
-        Res.Add('        BLOCK "' + IntToHex(FVersion.LanguageID, 4) +
-          IntToHex(FVersion.CharsetID, 4) + '"');
+        Res.Add('        BLOCK "' + IntToHex(Version.LanguageID, 4) +
+          IntToHex(Version.CharsetID, 4) + '"');
         Res.Add('        BEGIN');
-        Res.Add('            VALUE "CompanyName", "' + FVersion.CompanyName + '"');
-        Res.Add('            VALUE "FileDescription", "' + FVersion.FileDescription + '"');
-        Res.Add('            VALUE "FileVersion", "' + FVersion.FileVersion + '"');
-        Res.Add('            VALUE "InternalName", "' + FVersion.InternalName + '"');
-        Res.Add('            VALUE "LegalCopyright", "' + FVersion.LegalCopyright + '"');
-        Res.Add('            VALUE "OriginalFilename", "' + FVersion.OriginalFilename + '"');
-        Res.Add('            VALUE "ProductName", "' + FVersion.ProductName + '"');
-        Res.Add('            VALUE "ProductVersion", "' + FVersion.ProductVersion + '"');
+        Res.Add('            VALUE "CompanyName", "' + Version.CompanyName + '"');
+        Res.Add('            VALUE "FileDescription", "' + Version.FileDescription + '"');
+        Res.Add('            VALUE "FileVersion", "' + Version.FileVersion + '"');
+        Res.Add('            VALUE "InternalName", "' + Version.InternalName + '"');
+        Res.Add('            VALUE "LegalCopyright", "' + Version.LegalCopyright + '"');
+        Res.Add('            VALUE "OriginalFilename", "' + Version.OriginalFilename + '"');
+        Res.Add('            VALUE "ProductName", "' + Version.ProductName + '"');
+        Res.Add('            VALUE "ProductVersion", "' + Version.ProductVersion + '"');
         Res.Add('        END');
         Res.Add('    END');
         Res.Add('    BLOCK "VarFileInfo"');
         Res.Add('    BEGIN');
         Res.Add('        VALUE "Translation", 0x' +
-          IntToHex(FVersion.LanguageID, 4) + ', 0x' + IntToHex(FVersion.CharsetID, 4));
+          IntToHex(Version.LanguageID, 4) + ', 0x' + IntToHex(Version.CharsetID, 4));
         Res.Add('    END');
         Res.Add('END');
       end;
     end;
   end;
+end;
+
+function TProjectBase.GetAppType: Integer;
+begin
+  Result := Configuration.AppType;
+end;
+
+function TProjectBase.GetAutoIncBuild: Boolean;
+begin
+  Result := Configuration.AutoIncBuild;
 end;
 
 function TProjectBase.GetBreakpointFiles(List: TStrings): Boolean;
@@ -1341,6 +1616,66 @@ begin
   Files.Free;
 end;
 
+function TProjectBase.GetCmdLine: string;
+begin
+  Result := Configuration.CmdLine;
+end;
+
+function TProjectBase.GetCompilerType: Integer;
+begin
+  Result := Configuration.CompilerType;
+end;
+
+function TProjectBase.GetCompOpt: string;
+begin
+  Result := Configuration.CompilerOptions;
+end;
+
+function TProjectBase.GetConfigName: string;
+begin
+  Result := Configuration.Name;
+end;
+
+function TProjectBase.GetConfiguration(Index: Integer): TProjectConfiguration;
+begin
+  Result := TProjectConfiguration(FConfigurations[Index]);
+end;
+
+function TProjectBase.GetConfigurationCount: Integer;
+begin
+  Result := FConfigurations.Count;
+end;
+
+function TProjectBase.GetCurrentConfiguration: TProjectConfiguration;
+begin
+  Result := Configurations[FConfigIndex];
+end;
+
+function TProjectBase.GetDelMakAfter: Boolean;
+begin
+  Result := Configuration.DeleteMakefileAfter;
+end;
+
+function TProjectBase.GetDelObjAfter: Boolean;
+begin
+  Result := Configuration.DeleteObjsAfter;
+end;
+
+function TProjectBase.GetDelObjPrior: Boolean;
+begin
+  Result := Configuration.DeleteObjsBefore;
+end;
+
+function TProjectBase.GetDelResAfter: Boolean;
+begin
+  Result := Configuration.DeleteResourcesAfter;
+end;
+
+function TProjectBase.GetEnableTheme: Boolean;
+begin
+  Result := Configuration.EnableTheme;
+end;
+
 function TProjectBase.HasBreakpoint: Boolean;
 var
   Files: TStrings;
@@ -1351,8 +1686,33 @@ begin
   Files.Free;
 end;
 
-procedure TProjectBase.Build;
+function TProjectBase.IndexOfConfiguration(const Name: string): Integer;
 begin
+  for Result := 0 to FConfigurations.Count - 1 do
+  begin
+    if SameText(Configurations[Result].Name, Name) then
+      Exit;
+  end;
+  Result := -1;
+end;
+
+function TProjectBase.AddConfiguration(Config: TProjectConfiguration): Integer;
+var
+  Index: Integer;
+  NewConfig: TProjectConfiguration;
+begin
+  Index := IndexOfConfiguration(Config.Name);
+  if Index = -1 then
+  begin
+    NewConfig := TProjectConfiguration.Create; // Handle own objects
+    NewConfig.Assign(Config);
+    Result := FConfigurations.Add(NewConfig);
+  end
+  else
+  begin
+    Configurations[Index] := Config;
+    Result := Index;
+  end;
 end;
 
 {TProjectFile}
@@ -1411,17 +1771,6 @@ end;
 
 procedure TProjectFile.LoadFromFile(const FileName: string);
 
-  function GetTagProperty(Node: IXMLNode; Tag, Attribute: string): string;
-  var
-    Temp: IXMLNode;
-  begin
-    Temp := Node.ChildNodes.FindNode(Tag);
-    if (Temp <> nil) then
-      Result := Temp.Attributes[Attribute]
-    else
-      Result := '';
-  end;
-
   procedure LoadFiles(XMLNode: IXMLNode; Parent: TSourceFile);
   var
     Temp: IXMLNode;
@@ -1463,24 +1812,22 @@ procedure TProjectFile.LoadFromFile(const FileName: string);
   end;
 
 var
-  XMLDoc: TXMLDocument;
+  XMLDoc: IXMLDocument;
   Node, ProjNode: IXMLNode;
-  StrIcon, Temp: string;
-  Stream: TStream;
+  NewConfig: TProjectConfiguration;
 begin
   IsNew := False;
-
-  XMLDoc := TXMLDocument.Create(FrmFalconMain);
+  XMLDoc := TXMLDocument.Create(nil);
   try
     XMLDoc.LoadFromFile(FileName);
   except
     //XMLDoc.Free;
-    FTarget := ExtractName(FileName) + '.exe';
-    FCompOpt := '-Wall -s';
-    FDelObjPrior := True;
-    FDelObjAfter := True;
-    FDelMakAfter := True;
-    FDelResAfter := True;
+    Target := ExtractName(FileName) + '.exe';
+    CompilerOptions := '-Wall -s';
+    DeleteObjsBefore := True;
+    DeleteObjsAfter := True;
+    DeleteMakefileAfter := True;
+    DeleteResourcesAfter := True;
     Exit;
   end;
   XMLDoc.Options := XMLDoc.Options + [doNodeAutoIndent];
@@ -1493,94 +1840,23 @@ begin
     //XMLDoc.Free;
     Exit;
   end;
-
-  //if tag version info exist
-  Node := ProjNode.ChildNodes.FindNode('VersionInfo');
-  if (Node <> nil) then
-  begin
-    IncludeVersionInfo := True;
-    Version.Major := StrToIntDef(GetTagProperty(Node, 'VersionNumbers',
-      'Major'), 0);
-    Version.Minor := StrToIntDef(GetTagProperty(Node, 'VersionNumbers',
-      'Minor'), 0);
-    Version.Release := StrToIntDef(GetTagProperty(Node, 'VersionNumbers',
-      'Release'), 0);
-    Version.Build := StrToIntDef(GetTagProperty(Node, 'VersionNumbers',
-      'Build'), 0);
-    Version.LanguageID := StrToIntDef(GetTagProperty(Node, 'LanguageID',
-      'Value'), GetSystemDefaultLangID);
-    Version.CharsetID := StrToIntDef(GetTagProperty(Node, 'CharsetID',
-      'Value'), $04E4);
-    Version.CompanyName := GetTagProperty(Node, 'CompanyName', 'Value');
-    Version.FileVersion := GetTagProperty(Node, 'FileVersion', 'Value');
-    Version.FileDescription := GetTagProperty(Node, 'FileDescription', 'Value');
-    Version.InternalName := GetTagProperty(Node, 'InternalName', 'Value');
-    Version.LegalCopyright := GetTagProperty(Node, 'LegalCopyright', 'Value');
-    Version.LegalTrademarks := GetTagProperty(Node, 'LegalTrademarks', 'Value');
-    Version.OriginalFilename := GetTagProperty(Node, 'OriginalFilename',
-      'Value');
-    Version.ProductName := GetTagProperty(Node, 'ProductName', 'Value');
-    Version.ProductVersion := GetTagProperty(Node, 'ProductVersion', 'Value');
-    Temp := GetTagProperty(Node, 'AutoIncrementBuild', 'Value');
-    FAutoIncBuild := HumanToBool(Temp);
-  end
-  else
-  begin
-    FAutoIncBuild := False;
-    FIncludeInfo := False;
-  end;
-
-  FLibs := GetTagProperty(ProjNode, 'Libs', 'Value');
-  FFlags := GetTagProperty(ProjNode, 'Flags', 'Value');
-  FTarget := GetTagProperty(ProjNode, 'Target', 'Value');
-  FCmdLine := GetTagProperty(ProjNode, 'CommandLine', 'Value');
-  FCompOpt := GetTagProperty(ProjNode, 'CompilerOptions', 'Value');
-  Temp := UpperCase(GetTagProperty(ProjNode, 'DeleteObjectsBefore', 'Value'));
-  FDelObjPrior := HumanToBool(Temp);
-  Temp := UpperCase(GetTagProperty(ProjNode, 'DeleteObjectsAfter', 'Value'));
-  FDelObjAfter := HumanToBool(Temp);
-  Temp := UpperCase(GetTagProperty(ProjNode, 'DeleteMakefileAfter', 'Value'));
-  FDelMakAfter := HumanToBool(Temp);
-  Temp := UpperCase(GetTagProperty(ProjNode, 'DeleteResourcesAfter', 'Value'));
-  FDelResAfter := HumanToBool(Temp);
-  Temp := UpperCase(GetTagProperty(ProjNode, 'EnableTheme', 'Value'));
-  FEnableTheme := HumanToBool(Temp);
-  Temp := UpperCase(GetTagProperty(ProjNode, 'RequiresAdmin', 'Value'));
-  FRequiresAdmin := HumanToBool(Temp);
-  FAppType := GetAppTypeByName(GetTagProperty(ProjNode, 'AppType', 'Value'));
-  Temp := GetTagProperty(ProjNode, 'CompilerType', 'Value');
-  if (UpperCase(Temp) = 'C') then
-    FCompilerType := COMPILER_C
-  else
-    FCompilerType := COMPILER_CPP;
-
-  //load files
   Node := ProjNode.ChildNodes.FindNode('Files');
   if (Node <> nil) then
     LoadFiles(Node, Self);
-  //end load files
-
-  Node := ProjNode.ChildNodes.FindNode('AppIcon');
-  //if tag icon exist
-  if (Node <> nil) then
+  Configuration.Load(ProjNode);
+  Node := ProjNode.ChildNodes.FindNode('Configurations');
+  if Node <> nil then
   begin
-    StrIcon := Node.Text;
-    StrIcon := Union64(StrIcon);
-    Stream := TMemoryStream.Create;
-    StringToStream(StrIcon, Stream);
-    Stream.Position := 0;
-    FIcon := TIcon.Create;
-    try
-      FIcon.LoadFromStream(Stream);
-    except
-      FIcon.Free;
-      FIcon := nil;
+    NewConfig := TProjectConfiguration.Create;
+    Node := Node.ChildNodes.First;
+    while (Node <> nil) do
+    begin
+      NewConfig.Load(Node);
+      AddConfiguration(NewConfig);
+      Node := Node.NextSibling;
     end;
-    Stream.Free;
-  end
-  else
-    FIcon := nil;
-  //XMLDoc.Free;
+    NewConfig.Free;
+  end;
 end;
 
 function TProjectFile.GetFileByPathName(const RelativeName: string): TSourceFile;
@@ -1621,7 +1897,7 @@ function TProjectFile.SearchFile(const Name: string): TSourceFile;
     I: Integer;
   begin
     Result := nil;
-    if SrcFile.FileType <> FILE_TYPE_FOLDER then
+    if SrcFile.FileType < FILE_TYPE_FOLDER then
     begin
       if CompareStr(Name, SrcFile.Name) = 0 then
         Result := SrcFile;
@@ -1670,7 +1946,7 @@ procedure TProjectFile.LoadLayout;
   end;
 
 var
-  XMLDoc: TXMLDocument;
+  XMLDoc: IXMLDocument;
   Node, FoldersNode, FilesNode, LytNode: IXMLNode;
   Temp, S, LytFileName: string;
   TopIndex, TopLine, Tabpos: Integer;
@@ -1682,7 +1958,7 @@ begin
   LytFileName := ChangeFileExt(FileName, '.layout');
   if not FileExists(LytFileName) then
     Exit;
-  XMLDoc := TXMLDocument.Create(FrmFalconMain);
+  XMLDoc := TXMLDocument.Create(nil);
   try
     XMLDoc.LoadFromFile(LytFileName);
   except
@@ -1883,13 +2159,13 @@ var
   end;
 
 var
-  XMLDoc: TXMLDocument;
+  XMLDoc: IXMLDocument;
   Temp, Node, LytNode: IXMLNode;
   I: Integer;
   BoolStr: string;
   sheet: TSourceFileSheet;
 begin
-  XMLDoc := TXMLDocument.Create(FrmFalconMain);
+  XMLDoc := TXMLDocument.Create(nil);
   XMLDoc.Active := True;
   XMLDoc.Version := '1.0';
   XMLDoc.Options := XMLDoc.Options + [doNodeAutoIndent];
@@ -1962,16 +2238,6 @@ end;
 
 procedure TProjectFile.SaveToFile(const FileName: string);
 
-  procedure SetTagProperty(Node: IXMLNode; Tag, Attribute, Value: string);
-  var
-    Temp: IXMLNode;
-  begin
-    Temp := Node.ChildNodes.FindNode(Tag);
-    if (Temp = nil) then
-      Temp := Node.AddChild(Tag);
-    Temp.Attributes[Attribute] := Value;
-  end;
-
   procedure AddFiles(XMLNode: IXMLNode; Parent: TSourceFile);
   var
     Temp: IXMLNode;
@@ -1996,12 +2262,11 @@ procedure TProjectFile.SaveToFile(const FileName: string);
   end;
 
 var
-  XMLDoc: TXMLDocument;
-  Node, ProjNode: IXMLNode;
-  Temp: string;
-  Stream: TStream;
+  XMLDoc: IXMLDocument;
+  Node, ConfigNode, ProjNode: IXMLNode;
+  I: Integer;
 begin
-  XMLDoc := TXMLDocument.Create(FrmFalconMain);
+  XMLDoc := TXMLDocument.Create(nil);
   XMLDoc.Active := True;
   XMLDoc.Version := '1.0';
   XMLDoc.Options := XMLDoc.Options + [doNodeAutoIndent];
@@ -2009,66 +2274,20 @@ begin
   XMLDoc.NodeIndentStr := #9;
 
   ProjNode := XMLDoc.AddChild('Project');
-
-  if IncludeVersionInfo then
-  begin
-    Node := ProjNode.AddChild('VersionInfo');
-    SetTagProperty(Node, 'VersionNumbers', 'Major', IntToStr(Version.Major));
-    SetTagProperty(Node, 'VersionNumbers', 'Minor', IntToStr(Version.Minor));
-    SetTagProperty(Node, 'VersionNumbers', 'Release',
-      IntToStr(Version.Release));
-    SetTagProperty(Node, 'VersionNumbers', 'Build', IntToStr(Version.Build));
-    SetTagProperty(Node, 'LanguageID', 'Value', IntToStr(Version.LanguageID));
-    SetTagProperty(Node, 'CharsetID', 'Value', IntToStr(Version.CharsetID));
-    SetTagProperty(Node, 'CompanyName', 'Value', Version.CompanyName);
-    SetTagProperty(Node, 'FileVersion', 'Value', Version.FileVersion);
-    SetTagProperty(Node, 'FileDescription', 'Value', Version.FileDescription);
-    SetTagProperty(Node, 'InternalName', 'Value', Version.InternalName);
-    SetTagProperty(Node, 'LegalCopyright', 'Value', Version.LegalCopyright);
-    SetTagProperty(Node, 'LegalTrademarks', 'Value', Version.LegalTrademarks);
-    SetTagProperty(Node, 'OriginalFilename', 'Value', Version.OriginalFilename);
-    SetTagProperty(Node, 'ProductName', 'Value', Version.ProductName);
-    SetTagProperty(Node, 'ProductVersion', 'Value', Version.ProductVersion);
-    Temp := BoolToHuman(AutoIncBuild);
-    SetTagProperty(Node, 'AutoIncrementBuild', 'Value', Temp);
-  end;
-
-  SetTagProperty(ProjNode, 'Libs', 'Value', Libs);
-  SetTagProperty(ProjNode, 'Flags', 'Value', Flags);
-  SetTagProperty(ProjNode, 'Target', 'Value', Target);
-  SetTagProperty(ProjNode, 'CommandLine', 'Value', CmdLine);
-  SetTagProperty(ProjNode, 'CompilerOptions', 'Value', CompilerOptions);
-  Temp := BoolToHuman(DeleteObjsBefore);
-  SetTagProperty(ProjNode, 'DeleteObjectsBefore', 'Value', Temp);
-  Temp := BoolToHuman(DeleteObjsAfter);
-  SetTagProperty(ProjNode, 'DeleteObjectsAfter', 'Value', Temp);
-  Temp := BoolToHuman(DeleteMakefileAfter);
-  SetTagProperty(ProjNode, 'DeleteMakefileAfter', 'Value', Temp);
-  Temp := BoolToHuman(DeleteResourcesAfter);
-  SetTagProperty(ProjNode, 'DeleteResourcesAfter', 'Value', Temp);
-  Temp := BoolToHuman(EnableTheme);
-  SetTagProperty(ProjNode, 'EnableTheme', 'Value', Temp);
-  Temp := BoolToHuman(RequiresAdmin);
-  SetTagProperty(ProjNode, 'RequiresAdmin', 'Value', Temp);
-  SetTagProperty(ProjNode, 'CompilerType', 'Value', COMPILERS[CompilerType]);
-  SetTagProperty(ProjNode, 'AppType', 'Value', APPTYPES[AppType]);
-
-  //get files
   Node := ProjNode.AddChild('Files');
   AddFiles(Node, Self);
-  //end get files
-
-  //save application ico
-  if Assigned(FIcon) then
+  Configuration.Save(ProjNode);
+  if ConfigurationCount > 1 then
   begin
-    Node := ProjNode.AddChild('AppIcon');
-    Stream := TMemoryStream.Create;
-    FIcon.SaveToStream(Stream);
-    Stream.Position := 0;
-    Node.Text := Divide64(StreamToString(Stream));
-    Stream.Free;
+    Node := ProjNode.AddChild('Configurations');
+    for I := 0 to ConfigurationCount - 1 do
+    begin
+      if I = FConfigIndex then
+        Continue;
+      ConfigNode := Node.AddChild('Configuration');
+      Configurations[I].Save(ConfigNode);
+    end;
   end;
-
   try
     XMLDoc.SaveToFile(FileName);
   except
@@ -2220,12 +2439,12 @@ begin
     begin
       ProjectDir := ExtractFilePath(FileName);
       IncludeList := TStringList.Create;
-      GetIncludeDirs(ExtractFilePath(FileName), FFlags, IncludeList);
+      GetIncludeDirs(ExtractFilePath(FileName), Flags, IncludeList);
       for I := 0 to Files.Count - 1 do
       begin
         Includes := TStringList.Create;
         Files.Objects[I] := Includes;
-        TokenFile := FrmFalconMain.FilesParsed.ItemOfByFileName(Files.Strings[I]);
+        TokenFile := FrmFalconMain.FilesParsed.Find(Files.Strings[I]);
         if TokenFile = nil then
           Continue;
         for J := 0 to TokenFile.Includes.Count - 1 do
@@ -2605,6 +2824,225 @@ destructor TSourceFileSheet.Destroy;
 begin
   FSourceFile.FSheet := nil;
   inherited Destroy;
+end;
+
+{ TProjectConfiguration }
+
+procedure TProjectConfiguration.Assign(const Value: TProjectConfiguration);
+begin
+  FLibs := Value.FLibs;
+  FFlags := Value.FFlags;
+  FCompOpt := Value.FCompOpt;
+  FTarget := Value.FTarget;
+  FCmdLine := Value.FCmdLine;
+  FDelObjPrior := Value.FDelObjPrior;
+  FDelObjAfter := Value.FDelObjAfter;
+  FDelMakAfter := Value.FDelMakAfter;
+  FDelResAfter := Value.FDelResAfter;
+  FIncludeInfo := Value.FIncludeInfo;
+  FEnableTheme := Value.FEnableTheme;
+  FRequiresAdmin := Value.FRequiresAdmin;
+  FAppType := Value.FAppType;
+  FCompilerType := Value.FCompilerType;
+  FIconFileName := Value.FIconFileName;
+  if (FIcon = nil) and (Value.FIcon <> nil) then
+    FIcon := TIcon.Create
+  else if (FIcon <> nil) and (Value.FIcon = nil) then
+    FIcon.Free;
+  if Value.FIcon <> nil then
+    FIcon.Assign(Value.FIcon)
+  else
+    FIcon := nil;
+  FAutoIncBuild := Value.FAutoIncBuild;
+  FVersion.Assign(Value.FVersion);
+  FName := Value.FName;
+end;
+
+constructor TProjectConfiguration.Create;
+begin
+  FVersion := TVersionInfo.Create;
+  FVersion.LanguageID := GetSystemDefaultLangID;
+  FVersion.CharsetID := $04E4;
+  FDelObjPrior := True;
+  FDelObjAfter := True;
+  FDelMakAfter := True;
+  FDelResAfter := True;
+  FIcon := nil;
+  FCompilerType := COMPILER_CPP;
+end;
+
+destructor TProjectConfiguration.Destroy;
+begin
+  if Assigned(FIcon) then
+    FIcon.Free;
+  FVersion.Free;
+  inherited;
+end;
+
+procedure TProjectConfiguration.Load(ParentNode: IXMLNode);
+var
+  Node: IXMLNode;
+  StrIcon, Temp: string;
+  Stream: TStream;
+  AIcon: TIcon;
+begin
+  Name := GetTagProperty(ParentNode, 'ConfigurationName', 'Value');
+  Libs := GetTagProperty(ParentNode, 'Libs', 'Value');
+  Flags := GetTagProperty(ParentNode, 'Flags', 'Value');
+  Target := GetTagProperty(ParentNode, 'Target', 'Value');
+  CmdLine := GetTagProperty(ParentNode, 'CommandLine', 'Value');
+  CompilerOptions := GetTagProperty(ParentNode, 'CompilerOptions', 'Value');
+  DeleteObjsBefore := GetBoolProperty(ParentNode, 'DeleteObjectsBefore', 'Value');
+  DeleteObjsAfter := GetBoolProperty(ParentNode, 'DeleteObjectsAfter', 'Value');
+  DeleteMakefileAfter := GetBoolProperty(ParentNode, 'DeleteMakefileAfter', 'Value');
+  DeleteResourcesAfter := GetBoolProperty(ParentNode, 'DeleteResourcesAfter', 'Value');
+  EnableTheme := GetBoolProperty(ParentNode, 'EnableTheme', 'Value');
+  RequiresAdmin := GetBoolProperty(ParentNode, 'RequiresAdmin', 'Value');
+  AppType := GetAppTypeByName(GetTagProperty(ParentNode, 'AppType', 'Value'));
+  Temp := GetTagProperty(ParentNode, 'CompilerType', 'Value');
+  if SameText(Temp, 'C') then
+    CompilerType := COMPILER_C
+  else
+    CompilerType := COMPILER_CPP;
+  //if tag version info exist
+  Node := ParentNode.ChildNodes.FindNode('VersionInfo');
+  if (Node <> nil) then
+  begin
+    IncludeVersionInfo := True;
+    Version.Version.Major := GetIntProperty(Node, 'VersionNumbers', 'Major');
+    Version.Version.Minor := GetIntProperty(Node, 'VersionNumbers', 'Minor');
+    Version.Version.Release := GetIntProperty(Node, 'VersionNumbers', 'Release');
+    Version.Version.Build := GetIntProperty(Node, 'VersionNumbers', 'Build');
+    Version.LanguageID := GetIntProperty(Node, 'LanguageID', 'Value', GetSystemDefaultLangID);
+    Version.CharsetID := GetIntProperty(Node, 'CharsetID', 'Value', $04E4);
+    Version.CompanyName := GetTagProperty(Node, 'CompanyName', 'Value');
+    Version.FileVersion := GetTagProperty(Node, 'FileVersion', 'Value');
+    Version.FileDescription := GetTagProperty(Node, 'FileDescription', 'Value');
+    Version.InternalName := GetTagProperty(Node, 'InternalName', 'Value');
+    Version.LegalCopyright := GetTagProperty(Node, 'LegalCopyright', 'Value');
+    Version.LegalTrademarks := GetTagProperty(Node, 'LegalTrademarks', 'Value');
+    Version.OriginalFilename := GetTagProperty(Node, 'OriginalFilename', 'Value');
+    Version.ProductName := GetTagProperty(Node, 'ProductName', 'Value');
+    Version.ProductVersion := GetTagProperty(Node, 'ProductVersion', 'Value');
+    Temp := GetTagProperty(Node, 'AutoIncrementBuild', 'Value');
+    AutoIncBuild := HumanToBool(Temp);
+  end
+  else
+  begin
+    AutoIncBuild := False;
+    IncludeVersionInfo := False;
+  end;
+  Node := ParentNode.ChildNodes.FindNode('AppIcon');
+  //if tag icon exist
+  if (Node <> nil) then
+  begin
+    StrIcon := Node.Text;
+    StrIcon := Union64(StrIcon);
+    Stream := TMemoryStream.Create;
+    AIcon := TIcon.Create;
+    try
+      try
+        StringToStream(StrIcon, Stream);
+        Stream.Position := 0;
+        AIcon.LoadFromStream(Stream);
+        Icon := AIcon;
+      except
+        Icon := nil;
+      end;
+    finally
+      AIcon.Free;
+      Stream.Free;
+    end;
+  end
+  else
+    Icon := nil;
+end;
+
+procedure TProjectConfiguration.Save(ParentNode: IXMLNode);
+var
+  Node: IXMLNode;
+  Stream: TStream;
+begin
+  SetTagProperty(ParentNode, 'ConfigurationName', 'Value', Name);
+  SetTagProperty(ParentNode, 'Libs', 'Value', Libs);
+  SetTagProperty(ParentNode, 'Flags', 'Value', Flags);
+  SetTagProperty(ParentNode, 'Target', 'Value', Target);
+  SetTagProperty(ParentNode, 'CommandLine', 'Value', CmdLine);
+  SetTagProperty(ParentNode, 'CompilerOptions', 'Value', CompilerOptions);
+  SetBoolProperty(ParentNode, 'DeleteObjectsBefore', 'Value', DeleteObjsBefore);
+  SetBoolProperty(ParentNode, 'DeleteObjectsAfter', 'Value', DeleteObjsAfter);
+  SetBoolProperty(ParentNode, 'DeleteMakefileAfter', 'Value', DeleteMakefileAfter);
+  SetBoolProperty(ParentNode, 'DeleteResourcesAfter', 'Value', DeleteResourcesAfter);
+  SetBoolProperty(ParentNode, 'EnableTheme', 'Value', EnableTheme);
+  SetBoolProperty(ParentNode, 'RequiresAdmin', 'Value', RequiresAdmin);
+  SetTagProperty(ParentNode, 'CompilerType', 'Value', COMPILERS[CompilerType]);
+  SetTagProperty(ParentNode, 'AppType', 'Value', APPTYPES[AppType]);
+  if IncludeVersionInfo then
+  begin
+    Node := ParentNode.AddChild('VersionInfo');
+    SetTagProperty(Node, 'VersionNumbers', 'Major', IntToStr(Version.Version.Major));
+    SetTagProperty(Node, 'VersionNumbers', 'Minor', IntToStr(Version.Version.Minor));
+    SetTagProperty(Node, 'VersionNumbers', 'Release', IntToStr(Version.Version.Release));
+    SetTagProperty(Node, 'VersionNumbers', 'Build', IntToStr(Version.Version.Build));
+    SetTagProperty(Node, 'LanguageID', 'Value', IntToStr(Version.LanguageID));
+    SetTagProperty(Node, 'CharsetID', 'Value', IntToStr(Version.CharsetID));
+    SetTagProperty(Node, 'CompanyName', 'Value', Version.CompanyName);
+    SetTagProperty(Node, 'FileVersion', 'Value', Version.FileVersion);
+    SetTagProperty(Node, 'FileDescription', 'Value', Version.FileDescription);
+    SetTagProperty(Node, 'InternalName', 'Value', Version.InternalName);
+    SetTagProperty(Node, 'LegalCopyright', 'Value', Version.LegalCopyright);
+    SetTagProperty(Node, 'LegalTrademarks', 'Value', Version.LegalTrademarks);
+    SetTagProperty(Node, 'OriginalFilename', 'Value', Version.OriginalFilename);
+    SetTagProperty(Node, 'ProductName', 'Value', Version.ProductName);
+    SetTagProperty(Node, 'ProductVersion', 'Value', Version.ProductVersion);
+    SetBoolProperty(Node, 'AutoIncrementBuild', 'Value', AutoIncBuild);
+  end;
+  //save application ico
+  if Icon <> nil then
+  begin
+    Node := ParentNode.AddChild('AppIcon');
+    Stream := TMemoryStream.Create;
+    try
+      Icon.SaveToStream(Stream);
+      Stream.Position := 0;
+      Node.Text := Divide64(StreamToString(Stream));
+    finally
+      Stream.Free;
+    end;
+  end;
+end;
+
+procedure TProjectConfiguration.SetIcon(Value: TIcon);
+begin
+  if FIcon = Value then
+    Exit;
+  if FIcon = nil then
+    FIcon := TIcon.Create
+  else if Value = nil then
+  begin
+    FIcon.Free;
+    FIcon := nil;
+    Exit;
+  end;
+  FIcon.Assign(Value);
+end;
+
+{ TVersionInfo }
+
+procedure TVersionInfo.Assign(const Value: TVersionInfo);
+begin
+  Version := Value.Version;
+  LanguageID := Value.LanguageID;
+  CharsetID := Value.CharsetID;
+  CompanyName := Value.CompanyName;
+  FileVersion := Value.FileVersion;
+  FileDescription := Value.FileDescription;
+  InternalName := Value.InternalName;
+  LegalCopyright := Value.LegalCopyright;
+  LegalTrademarks := Value.LegalTrademarks;
+  OriginalFilename := Value.OriginalFilename;
+  ProductName := Value.ProductName;
+  ProductVersion := Value.ProductVersion;
 end;
 
 end.

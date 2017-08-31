@@ -30,7 +30,6 @@ object FrmFalconMain: TFrmFalconMain
     object DefaultBar: TSpTBXToolbar
       Left = 0
       Top = 0
-      Caption = 'Default Bar'
       DefaultDock = DockTop
       DockPos = 0
       DockRow = 1
@@ -39,13 +38,13 @@ object FrmFalconMain: TFrmFalconMain
       ShowHint = True
       TabOrder = 0
       OnClose = ToolbarClose
+      Caption = 'Default Bar'
       object BtnNew: TSpTBXSubmenuItem
-        AlwaysSelectFirst = True
         Caption = 'New'
-        DropdownCombo = True
         ImageIndex = 6
-        LinkSubitems = FileNew
         OnClick = FileNewItemClick
+        DropdownCombo = True
+        LinkSubitems = FileNew
       end
       object BtnOpen: TSpTBXItem
         Caption = 'Open'
@@ -59,7 +58,7 @@ object FrmFalconMain: TFrmFalconMain
         ImageIndex = 12
         OnClick = FileRemoveClick
       end
-      object TBXSeparatorItem1: TSpTBXSeparatorItem
+      object SpTBXSeparatorItem1: TSpTBXSeparatorItem
       end
       object BtnSave: TSpTBXItem
         Caption = 'Save'
@@ -78,9 +77,8 @@ object FrmFalconMain: TFrmFalconMain
     end
     object EditBar: TSpTBXToolbar
       Tag = 1
-      Left = 138
+      Left = 144
       Top = 0
-      Caption = 'Edit Bar'
       DefaultDock = DockTop
       DockPos = 128
       DockRow = 1
@@ -89,6 +87,7 @@ object FrmFalconMain: TFrmFalconMain
       ShowHint = True
       TabOrder = 1
       OnClose = ToolbarClose
+      Caption = 'Edit Bar'
       object BtnUndo: TSpTBXItem
         Caption = 'Undo'
         Enabled = False
@@ -106,9 +105,8 @@ object FrmFalconMain: TFrmFalconMain
     end
     object NavigatorBar: TSpTBXToolbar
       Tag = 4
-      Left = 387
+      Left = 393
       Top = 0
-      Caption = 'Navigator Bar'
       DefaultDock = DockTop
       DockPos = 179
       DockRow = 1
@@ -118,6 +116,7 @@ object FrmFalconMain: TFrmFalconMain
       ShowHint = True
       TabOrder = 2
       OnClose = ToolbarClose
+      Caption = 'Navigator Bar'
       object BtnPrevPage: TSpTBXItem
         Caption = 'Previous Page'
         Enabled = False
@@ -130,7 +129,7 @@ object FrmFalconMain: TFrmFalconMain
         ImageIndex = 14
         OnClick = BtnNextPageClick
       end
-      object TBXSeparatorItem33: TSpTBXSeparatorItem
+      object SpTBXSeparatorItem33: TSpTBXSeparatorItem
       end
       object BtnToggleBook: TSpTBXSubmenuItem
         Caption = 'Toggle Bookmarks'
@@ -147,9 +146,8 @@ object FrmFalconMain: TFrmFalconMain
     end
     object CompilerBar: TSpTBXToolbar
       Tag = 3
-      Left = 279
+      Left = 285
       Top = 0
-      Caption = 'Compiler Bar'
       DefaultDock = DockTop
       DockPos = 179
       DockRow = 1
@@ -158,6 +156,7 @@ object FrmFalconMain: TFrmFalconMain
       ShowHint = True
       TabOrder = 3
       OnClose = ToolbarClose
+      Caption = 'Compiler Bar'
       object BtnRun: TSpTBXItem
         Caption = 'Run'
         Enabled = False
@@ -179,7 +178,7 @@ object FrmFalconMain: TFrmFalconMain
         ShortCut = 116
         OnClick = RunExecuteClick
       end
-      object TBXSeparatorItem9: TSpTBXSeparatorItem
+      object SpTBXSeparatorItem9: TSpTBXSeparatorItem
       end
       object BtnStop: TSpTBXItem
         Caption = 'Stop'
@@ -191,9 +190,8 @@ object FrmFalconMain: TFrmFalconMain
     end
     object ProjectBar: TSpTBXToolbar
       Tag = 5
-      Left = 495
+      Left = 501
       Top = 0
-      Caption = 'Project Bar'
       DefaultDock = DockTop
       DockPos = 395
       DockRow = 1
@@ -202,6 +200,7 @@ object FrmFalconMain: TFrmFalconMain
       ShowHint = True
       TabOrder = 4
       OnClose = ToolbarClose
+      Caption = 'Project Bar'
       object BtnNewProj: TSpTBXItem
         Tag = 1
         Caption = 'New Project'
@@ -218,9 +217,8 @@ object FrmFalconMain: TFrmFalconMain
     end
     object HelpBar: TSpTBXToolbar
       Tag = 6
-      Left = 551
+      Left = 557
       Top = 0
-      Caption = 'Help Bar'
       DefaultDock = DockTop
       DockPos = 447
       DockRow = 1
@@ -229,6 +227,7 @@ object FrmFalconMain: TFrmFalconMain
       ShowHint = True
       TabOrder = 5
       OnClose = ToolbarClose
+      Caption = 'Help Bar'
       object BtnHelp: TSpTBXItem
         Caption = 'Help'
         ImageIndex = 30
@@ -243,9 +242,8 @@ object FrmFalconMain: TFrmFalconMain
     end
     object DebugBar: TSpTBXToolbar
       Tag = 7
-      Left = 607
+      Left = 613
       Top = 0
-      Caption = 'Debug Bar'
       DefaultDock = DockTop
       DockPos = 467
       DockRow = 1
@@ -254,6 +252,7 @@ object FrmFalconMain: TFrmFalconMain
       ShowHint = True
       TabOrder = 6
       OnClose = ToolbarClose
+      Caption = 'Debug Bar'
       object BtnStepInto: TSpTBXItem
         Caption = 'Step Into'
         Enabled = False
@@ -278,9 +277,8 @@ object FrmFalconMain: TFrmFalconMain
     end
     object SearchBar: TSpTBXToolbar
       Tag = 2
-      Left = 194
+      Left = 200
       Top = 0
-      Caption = 'Search Bar'
       DefaultDock = DockTop
       DockPos = 179
       DockRow = 1
@@ -289,6 +287,7 @@ object FrmFalconMain: TFrmFalconMain
       ShowHint = True
       TabOrder = 7
       OnClose = ToolbarClose
+      Caption = 'Search Bar'
       object BtnFind: TSpTBXItem
         Caption = 'Find'
         Enabled = False
@@ -303,7 +302,7 @@ object FrmFalconMain: TFrmFalconMain
         ShortCut = 16466
         OnClick = SearchReplaceClick
       end
-      object TBXSeparatorItem29: TSpTBXSeparatorItem
+      object SpTBXSeparatorItem29: TSpTBXSeparatorItem
       end
       object BtnGotoLN: TSpTBXItem
         Caption = 'Goto Line Number'
@@ -325,19 +324,20 @@ object FrmFalconMain: TFrmFalconMain
       Left = 0
       Top = 0
       ActivateParent = False
-      Caption = 'Menu Bar'
       CloseButton = False
       DockMode = dmCannotFloatOrChangeDocks
       DockPos = 0
       DragHandleStyle = dhNone
       FullSize = True
       Images = ImgListMenus
-      MenuBar = True
       Options = [tboDefault]
       ProcessShortCuts = True
       ShrinkMode = tbsmWrap
       TabOrder = 0
       OnMouseDown = MenuBarMouseDown
+      Caption = 'Menu Bar'
+      Customizable = False
+      MenuBar = True
       object MenuFile: TSpTBXSubmenuItem
         Caption = '&File'
         object FileNew: TSpTBXSubmenuItem
@@ -380,7 +380,7 @@ object FrmFalconMain: TFrmFalconMain
             ImageIndex = 6
             OnClick = FileNewItemClick
           end
-          object TBXSeparatorItem3: TSpTBXSeparatorItem
+          object SpTBXSeparatorItem3: TSpTBXSeparatorItem
           end
           object FileNewFolder: TSpTBXItem
             Tag = 7
@@ -393,6 +393,7 @@ object FrmFalconMain: TFrmFalconMain
             Tag = 8
             Caption = 'Configuration'
             Enabled = False
+            ImageIndex = 26
             OnClick = FileNewItemClick
           end
         end
@@ -410,7 +411,7 @@ object FrmFalconMain: TFrmFalconMain
             OnClick = ClearHistoryClick
           end
         end
-        object TBXSeparatorItem4: TSpTBXSeparatorItem
+        object SpTBXSeparatorItem4: TSpTBXSeparatorItem
         end
         object FileSave: TSpTBXItem
           Caption = '&Save'
@@ -431,7 +432,7 @@ object FrmFalconMain: TFrmFalconMain
           ShortCut = 24659
           OnClick = FileSaveAllClick
         end
-        object TBXSeparatorItem22: TSpTBXSeparatorItem
+        object SpTBXSeparatorItem22: TSpTBXSeparatorItem
         end
         object FileImport: TSpTBXSubmenuItem
           Caption = 'Import'
@@ -464,7 +465,7 @@ object FrmFalconMain: TFrmFalconMain
             OnClick = FileExportTeXClick
           end
         end
-        object TBXSeparatorItem15: TSpTBXSeparatorItem
+        object SpTBXSeparatorItem15: TSpTBXSeparatorItem
         end
         object FileClose: TSpTBXItem
           Caption = '&Close'
@@ -483,7 +484,7 @@ object FrmFalconMain: TFrmFalconMain
           Enabled = False
           OnClick = FileRemoveClick
         end
-        object TBXSeparatorItem6: TSpTBXSeparatorItem
+        object SpTBXSeparatorItem6: TSpTBXSeparatorItem
         end
         object FilePrint: TSpTBXItem
           Caption = '&Print'
@@ -491,7 +492,7 @@ object FrmFalconMain: TFrmFalconMain
           ShortCut = 16464
           OnClick = FilePrintClick
         end
-        object TBXSeparatorItem38: TSpTBXSeparatorItem
+        object SpTBXSeparatorItem38: TSpTBXSeparatorItem
         end
         object FileExit: TSpTBXItem
           Caption = '&Exit'
@@ -515,7 +516,7 @@ object FrmFalconMain: TFrmFalconMain
           ShortCut = 16473
           OnClick = EditRedoClick
         end
-        object TBXSeparatorItem7: TSpTBXSeparatorItem
+        object SpTBXSeparatorItem7: TSpTBXSeparatorItem
         end
         object EditCut: TSpTBXItem
           Caption = 'Cut'
@@ -538,7 +539,7 @@ object FrmFalconMain: TFrmFalconMain
           ShortCut = 16470
           OnClick = EditPasteClick
         end
-        object TBXSeparatorItem5: TSpTBXSeparatorItem
+        object SpTBXSeparatorItem5: TSpTBXSeparatorItem
         end
         object EditSwap: TSpTBXItem
           Caption = 'Swap header/source'
@@ -546,7 +547,7 @@ object FrmFalconMain: TFrmFalconMain
           ShortCut = 122
           OnClick = EditSwapClick
         end
-        object TBXSeparatorItem42: TSpTBXSeparatorItem
+        object SpTBXSeparatorItem42: TSpTBXSeparatorItem
         end
         object EditDelete: TSpTBXItem
           Caption = 'Delete'
@@ -562,72 +563,72 @@ object FrmFalconMain: TFrmFalconMain
           ShortCut = 16449
           OnClick = EditSelectAllClick
         end
-        object TBXSeparatorItem36: TSpTBXSeparatorItem
+        object SpTBXSeparatorItem36: TSpTBXSeparatorItem
         end
         object EditBookmarks: TSpTBXSubmenuItem
           Caption = 'Toggle Bookmarks'
           Enabled = False
           ImageIndex = 53
-          object TBXItem35: TSpTBXItem
+          object SpTBXItem35: TSpTBXItem
             Tag = 1
-            AutoCheck = True
             Caption = 'Bookmark &1'
+            AutoCheck = True
             ShortCut = 16433
             OnClick = ToggleBookmarksClick
           end
-          object TBXItem36: TSpTBXItem
+          object SpTBXItem36: TSpTBXItem
             Tag = 2
-            AutoCheck = True
             Caption = 'Bookmark &2'
+            AutoCheck = True
             ShortCut = 16434
             OnClick = ToggleBookmarksClick
           end
-          object TBXItem37: TSpTBXItem
+          object SpTBXItem37: TSpTBXItem
             Tag = 3
-            AutoCheck = True
             Caption = 'Bookmark &3'
+            AutoCheck = True
             ShortCut = 16435
             OnClick = ToggleBookmarksClick
           end
-          object TBXItem38: TSpTBXItem
+          object SpTBXItem38: TSpTBXItem
             Tag = 4
-            AutoCheck = True
             Caption = 'Bookmark &4'
+            AutoCheck = True
             ShortCut = 16436
             OnClick = ToggleBookmarksClick
           end
-          object TBXItem44: TSpTBXItem
+          object SpTBXItem44: TSpTBXItem
             Tag = 5
-            AutoCheck = True
             Caption = 'Bookmark &5'
+            AutoCheck = True
             ShortCut = 16437
             OnClick = ToggleBookmarksClick
           end
-          object TBXItem45: TSpTBXItem
+          object SpTBXItem45: TSpTBXItem
             Tag = 6
-            AutoCheck = True
             Caption = 'Bookmark &6'
+            AutoCheck = True
             ShortCut = 16438
             OnClick = ToggleBookmarksClick
           end
-          object TBXItem46: TSpTBXItem
+          object SpTBXItem46: TSpTBXItem
             Tag = 7
-            AutoCheck = True
             Caption = 'Bookmark &7'
+            AutoCheck = True
             ShortCut = 16439
             OnClick = ToggleBookmarksClick
           end
-          object TBXItem47: TSpTBXItem
+          object SpTBXItem47: TSpTBXItem
             Tag = 8
-            AutoCheck = True
             Caption = 'Bookmark &8'
+            AutoCheck = True
             ShortCut = 16440
             OnClick = ToggleBookmarksClick
           end
-          object TBXItem50: TSpTBXItem
+          object SpTBXItem50: TSpTBXItem
             Tag = 9
-            AutoCheck = True
             Caption = 'Bookmark &9'
+            AutoCheck = True
             ShortCut = 16441
             OnClick = ToggleBookmarksClick
           end
@@ -636,62 +637,62 @@ object FrmFalconMain: TFrmFalconMain
           Caption = 'Goto Bookmarks'
           Enabled = False
           ImageIndex = 52
-          object TBXItem58: TSpTBXItem
+          object SpTBXItem58: TSpTBXItem
             Tag = 1
             Caption = 'Bookmark &1'
             ShortCut = 32817
             OnClick = GotoBookmarkClick
           end
-          object TBXItem62: TSpTBXItem
+          object SpTBXItem62: TSpTBXItem
             Tag = 2
             Caption = 'Bookmark &2'
             ShortCut = 32818
             OnClick = GotoBookmarkClick
           end
-          object TBXItem65: TSpTBXItem
+          object SpTBXItem65: TSpTBXItem
             Tag = 3
             Caption = 'Bookmark &3'
             ShortCut = 32819
             OnClick = GotoBookmarkClick
           end
-          object TBXItem66: TSpTBXItem
+          object SpTBXItem66: TSpTBXItem
             Tag = 4
             Caption = 'Bookmark &4'
             ShortCut = 32820
             OnClick = GotoBookmarkClick
           end
-          object TBXItem71: TSpTBXItem
+          object SpTBXItem71: TSpTBXItem
             Tag = 5
             Caption = 'Bookmark &5'
             ShortCut = 32821
             OnClick = GotoBookmarkClick
           end
-          object TBXItem74: TSpTBXItem
+          object SpTBXItem74: TSpTBXItem
             Tag = 6
             Caption = 'Bookmark &6'
             ShortCut = 32822
             OnClick = GotoBookmarkClick
           end
-          object TBXItem75: TSpTBXItem
+          object SpTBXItem75: TSpTBXItem
             Tag = 7
             Caption = 'Bookmark &7'
             ShortCut = 32823
             OnClick = GotoBookmarkClick
           end
-          object TBXItem76: TSpTBXItem
+          object SpTBXItem76: TSpTBXItem
             Tag = 8
             Caption = 'Bookmark &8'
             ShortCut = 32824
             OnClick = GotoBookmarkClick
           end
-          object TBXItem78: TSpTBXItem
+          object SpTBXItem78: TSpTBXItem
             Tag = 9
             Caption = 'Bookmark &9'
             ShortCut = 32825
             OnClick = GotoBookmarkClick
           end
         end
-        object TBXSeparatorItem37: TSpTBXSeparatorItem
+        object SpTBXSeparatorItem37: TSpTBXSeparatorItem
         end
         object EditIndent: TSpTBXItem
           Caption = 'Indent'
@@ -705,7 +706,7 @@ object FrmFalconMain: TFrmFalconMain
           ShortCut = 24661
           OnClick = EditUnindentClick
         end
-        object TBXSeparatorItem30: TSpTBXSeparatorItem
+        object SpTBXSeparatorItem30: TSpTBXSeparatorItem
         end
         object EditToggleComment: TSpTBXItem
           Caption = 'Toggle Line Comment'
@@ -713,7 +714,7 @@ object FrmFalconMain: TFrmFalconMain
           ShortCut = 16577
           OnClick = EditToggleCommentClick
         end
-        object TBXSeparatorItem43: TSpTBXSeparatorItem
+        object SpTBXSeparatorItem43: TSpTBXSeparatorItem
         end
         object EditFormat: TSpTBXItem
           Caption = 'Format'
@@ -721,7 +722,7 @@ object FrmFalconMain: TFrmFalconMain
           ShortCut = 24646
           OnClick = EditFormatClick
         end
-        object TBXSeparatorItem45: TSpTBXSeparatorItem
+        object SpTBXSeparatorItem45: TSpTBXSeparatorItem
         end
         object EditCollapseAll: TSpTBXItem
           Caption = 'Collapse All'
@@ -773,7 +774,7 @@ object FrmFalconMain: TFrmFalconMain
           Enabled = False
           ShortCut = 16460
         end
-        object TBXSeparatorItem16: TSpTBXSeparatorItem
+        object SpTBXSeparatorItem16: TSpTBXSeparatorItem
         end
         object SearchGotoFunction: TSpTBXItem
           Caption = 'Goto Funcion...'
@@ -802,22 +803,22 @@ object FrmFalconMain: TFrmFalconMain
       object MenuView: TSpTBXSubmenuItem
         Caption = '&View'
         object ViewProjMan: TSpTBXItem
-          AutoCheck = True
           Caption = 'Project Manager'
+          AutoCheck = True
           Checked = True
           OnClick = ViewItemClick
         end
         object ViewStatusBar: TSpTBXItem
           Tag = 1
-          AutoCheck = True
           Caption = 'Statusbar'
+          AutoCheck = True
           Checked = True
           OnClick = ViewItemClick
         end
         object ViewOutline: TSpTBXItem
           Tag = 2
-          AutoCheck = True
           Caption = 'Outline'
+          AutoCheck = True
           Checked = True
           OnClick = ViewItemClick
         end
@@ -828,57 +829,57 @@ object FrmFalconMain: TFrmFalconMain
         object ViewToolbar: TSpTBXSubmenuItem
           Caption = 'Toolbars'
           object ViewToolbarDefault: TSpTBXItem
-            AutoCheck = True
             Caption = 'Default Bar'
+            AutoCheck = True
             Checked = True
             OnClick = TViewToolbarClick
           end
           object ViewToolbarEdit: TSpTBXItem
             Tag = 1
-            AutoCheck = True
             Caption = 'Edit Bar'
+            AutoCheck = True
             Checked = True
             OnClick = TViewToolbarClick
           end
           object ViewToolbarSearch: TSpTBXItem
             Tag = 2
-            AutoCheck = True
             Caption = 'Search Bar'
+            AutoCheck = True
             Checked = True
             OnClick = TViewToolbarClick
           end
           object ViewToolbarCompiler: TSpTBXItem
             Tag = 3
-            AutoCheck = True
             Caption = 'Compiler Bar'
+            AutoCheck = True
             Checked = True
             OnClick = TViewToolbarClick
           end
           object ViewToolbarNavigator: TSpTBXItem
             Tag = 4
-            AutoCheck = True
             Caption = 'Navigator Bar'
+            AutoCheck = True
             Checked = True
             OnClick = TViewToolbarClick
           end
           object ViewToolbarProject: TSpTBXItem
             Tag = 5
-            AutoCheck = True
             Caption = 'Project Bar'
+            AutoCheck = True
             Checked = True
             OnClick = TViewToolbarClick
           end
           object ViewToolbarHelp: TSpTBXItem
             Tag = 6
-            AutoCheck = True
             Caption = 'Help Bar'
+            AutoCheck = True
             Checked = True
             OnClick = TViewToolbarClick
           end
           object ViewToolbarDebug: TSpTBXItem
             Tag = 7
-            AutoCheck = True
             Caption = 'Debug Bar'
+            AutoCheck = True
             Checked = True
             OnClick = TViewToolbarClick
           end
@@ -886,47 +887,8 @@ object FrmFalconMain: TFrmFalconMain
         object ViewThemes: TSpTBXSubmenuItem
           Tag = 2
           Caption = 'Themes'
-          object ViewThemeDef: TSpTBXItem
-            AutoCheck = True
-            Caption = 'Default'
-            GroupIndex = 1
-            OnClick = SelectThemeClick
-          end
-          object ViewThemeOffice2003: TSpTBXItem
-            Tag = 1
-            AutoCheck = True
-            Caption = 'Office 2003'
-            Checked = True
-            GroupIndex = 1
-            OnClick = SelectThemeClick
-          end
-          object ViewThemeOffXP: TSpTBXItem
-            Tag = 2
-            AutoCheck = True
-            Caption = 'Office XP'
-            GroupIndex = 1
-            OnClick = SelectThemeClick
-          end
-          object ViewThemeStripes: TSpTBXItem
-            Tag = 3
-            AutoCheck = True
-            Caption = 'Stripes'
-            GroupIndex = 1
-            OnClick = SelectThemeClick
-          end
-          object ViewThemeProfessional: TSpTBXItem
-            Tag = 4
-            AutoCheck = True
-            Caption = 'Professional'
-            GroupIndex = 1
-            OnClick = SelectThemeClick
-          end
-          object ViewThemeAluminum: TSpTBXItem
-            Tag = 5
-            AutoCheck = True
-            Caption = 'Aluminum'
-            GroupIndex = 1
-            OnClick = SelectThemeClick
+          object SpTBXSkinGroupItem1: TSpTBXSkinGroupItem
+            OnSkinChange = SelectThemeClick
           end
         end
         object ViewZoom: TSpTBXSubmenuItem
@@ -946,14 +908,14 @@ object FrmFalconMain: TFrmFalconMain
             OnClick = ViewZoomDecClick
           end
         end
-        object TBXSeparatorItem21: TSpTBXSeparatorItem
+        object SpTBXSeparatorItem21: TSpTBXSeparatorItem
         end
         object ViewFullScreen: TSpTBXItem
           Caption = 'Full Screen'
           ShortCut = 123
           OnClick = ViewFullScreenClick
         end
-        object TBXSeparatorItem20: TSpTBXSeparatorItem
+        object SpTBXSeparatorItem20: TSpTBXSeparatorItem
         end
         object ViewRestoreDefault: TSpTBXItem
           Caption = 'Restore Default'
@@ -974,7 +936,7 @@ object FrmFalconMain: TFrmFalconMain
           ImageIndex = 28
           OnClick = ProjectRemoveClick
         end
-        object TBXSeparatorItem2: TSpTBXSeparatorItem
+        object SpTBXSeparatorItem2: TSpTBXSeparatorItem
         end
         object ProjectBuild: TSpTBXItem
           Caption = 'Build'
@@ -982,7 +944,7 @@ object FrmFalconMain: TFrmFalconMain
           ImageIndex = 26
           OnClick = ProjectBuildClick
         end
-        object TBXSeparatorItem10: TSpTBXSeparatorItem
+        object SpTBXSeparatorItem10: TSpTBXSeparatorItem
         end
         object ProjectProperties: TSpTBXItem
           Caption = 'Properties'
@@ -1015,7 +977,7 @@ object FrmFalconMain: TFrmFalconMain
           ShortCut = 116
           OnClick = RunExecuteClick
         end
-        object TBXSeparatorItem12: TSpTBXSeparatorItem
+        object SpTBXSeparatorItem12: TSpTBXSeparatorItem
         end
         object RunToggleBreakpoint: TSpTBXItem
           Caption = 'Toggle Breakpoint'
@@ -1072,7 +1034,7 @@ object FrmFalconMain: TFrmFalconMain
           Caption = 'Editor Options...'
           OnClick = ToolsEditorOptionsClick
         end
-        object TBXSeparatorItem18: TSpTBXSeparatorItem
+        object SpTBXSeparatorItem18: TSpTBXSeparatorItem
         end
         object ToolsTemplate: TSpTBXItem
           Caption = 'Template Creator...'
@@ -1082,7 +1044,7 @@ object FrmFalconMain: TFrmFalconMain
           Caption = 'Package Creator...'
           Enabled = False
         end
-        object TBXSeparatorItem19: TSpTBXSeparatorItem
+        object SpTBXSeparatorItem19: TSpTBXSeparatorItem
         end
         object ToolsPackages: TSpTBXItem
           Caption = 'Packages...'
@@ -1104,14 +1066,14 @@ object FrmFalconMain: TFrmFalconMain
           Caption = 'Tip of the Day...'
           Enabled = False
         end
-        object TBXSeparatorItem11: TSpTBXSeparatorItem
+        object SpTBXSeparatorItem11: TSpTBXSeparatorItem
         end
         object HelpUpdate: TSpTBXItem
           Caption = 'Update...'
           ImageIndex = 47
           OnClick = SubMUpdateClick
         end
-        object TBXSeparatorItem13: TSpTBXSeparatorItem
+        object SpTBXSeparatorItem13: TSpTBXSeparatorItem
         end
         object HelpAbout: TSpTBXItem
           Caption = 'About...'
@@ -1123,7 +1085,7 @@ object FrmFalconMain: TFrmFalconMain
   object DockBottom: TSpTBXDock
     Tag = 2
     Left = 0
-    Top = 586
+    Top = 585
     Width = 906
     Height = 9
     Position = dpBottom
@@ -1133,7 +1095,7 @@ object FrmFalconMain: TFrmFalconMain
     Left = 185
     Top = 53
     Width = 9
-    Height = 533
+    Height = 532
     Position = dpLeft
   end
   object DockRight: TSpTBXDock
@@ -1141,20 +1103,20 @@ object FrmFalconMain: TFrmFalconMain
     Left = 712
     Top = 53
     Width = 9
-    Height = 533
+    Height = 532
     Position = dpRight
   end
   object PanelEditorMessages: TPanel
     Left = 194
     Top = 53
     Width = 518
-    Height = 533
+    Height = 532
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
     object PanelMessages: TSplitterPanel
       Left = 0
-      Top = 386
+      Top = 385
       Width = 518
       Height = 147
       Align = alBottom
@@ -1220,7 +1182,7 @@ object FrmFalconMain: TFrmFalconMain
       Left = 0
       Top = 0
       Width = 518
-      Height = 386
+      Height = 385
       Align = alClient
       CanDragTabs = True
       NormalColor = clWhite
@@ -1243,52 +1205,59 @@ object FrmFalconMain: TFrmFalconMain
   end
   object StatusBar: TSpTBXStatusBar
     Left = 0
-    Top = 595
+    Top = 594
     Width = 906
+    Height = 23
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -12
     Font.Name = 'Segoe UI'
     Font.Style = []
-    Images = ImgListMenus
-    Panels = <
-      item
-        Size = 140
-        Tag = 0
-        TextTruncation = twEndEllipsis
-      end
-      item
-        Size = 170
-        Tag = 0
-      end
-      item
-        Size = 200
-        Tag = 0
-      end
-      item
-        Control = ProgressBarParser
-        Size = 150
-        Tag = 0
-      end
-      item
-        Alignment = taCenter
-        Size = 80
-        Tag = 0
-      end
-      item
-        Alignment = taCenter
-        Size = 90
-        Tag = 0
-      end>
     ParentFont = False
     ParentShowHint = False
     ShowHint = True
-    UseSystemFont = False
-    OnContextPopup = StatusBarContextPopup
-    OnPanelClick = StatusBarPanelClick
+    Visible = False
+    Images = ImgListMenus
+    object BarItemFileName: TSpTBXLabelItem
+      Caption = 'FileName'
+      Visible = False
+    end
+    object SpTBXSeparatorItem47: TSpTBXSeparatorItem
+    end
+    object BarItemLineStatus: TSpTBXLabelItem
+      Caption = 'Line Status'
+      Visible = False
+    end
+    object SpTBXSeparatorItem48: TSpTBXSeparatorItem
+      Visible = False
+    end
+    object BarItemBuildStatus: TSpTBXLabelItem
+      Caption = 'Build Status'
+      Visible = False
+    end
+    object SpTBXSeparatorItem49: TSpTBXSeparatorItem
+    end
+    object BarItemProgressBar: TTBControlItem
+      Control = ProgressBarParser
+    end
+    object SpTBXRightAlignSpacerItem1: TSpTBXRightAlignSpacerItem
+      CustomWidth = 740
+    end
+    object BarItemEncoding: TSpTBXSubmenuItem
+      Caption = 'Encoding'
+      Visible = False
+      LinkSubitems = SubmenuEncoding
+    end
+    object SpTBXSeparatorItem50: TSpTBXSeparatorItem
+    end
+    object BarItemLineEnding: TSpTBXSubmenuItem
+      Caption = 'Ending'
+      Visible = False
+      LinkSubitems = SubmenuEnding
+    end
     object ProgressBarParser: TProgressBar
-      Left = 510
-      Top = 2
+      Left = 0
+      Top = 0
       Width = 149
       Height = 19
       TabOrder = 0
@@ -1299,7 +1268,7 @@ object FrmFalconMain: TFrmFalconMain
     Left = 0
     Top = 53
     Width = 185
-    Height = 533
+    Height = 532
     Align = alLeft
     BorderStyle = bsNone
     Size = 4
@@ -1309,7 +1278,7 @@ object FrmFalconMain: TFrmFalconMain
       Left = 0
       Top = 0
       Width = 181
-      Height = 533
+      Height = 532
       ActivePage = TSProjects
       Align = alClient
       Color = clWhite
@@ -1331,7 +1300,7 @@ object FrmFalconMain: TFrmFalconMain
           Left = 0
           Top = 0
           Width = 175
-          Height = 502
+          Height = 501
           Align = alClient
           BorderWidth = 1
           DragMode = dmAutomatic
@@ -1366,7 +1335,7 @@ object FrmFalconMain: TFrmFalconMain
     Left = 721
     Top = 53
     Width = 185
-    Height = 533
+    Height = 532
     Align = alRight
     BorderStyle = bsNone
     Size = 4
@@ -1376,7 +1345,7 @@ object FrmFalconMain: TFrmFalconMain
       Left = 4
       Top = 0
       Width = 181
-      Height = 533
+      Height = 532
       ActivePage = TSOutline
       Align = alClient
       NormalColor = clWhite
@@ -1397,7 +1366,7 @@ object FrmFalconMain: TFrmFalconMain
           Left = 0
           Top = 0
           Width = 175
-          Height = 502
+          Height = 501
           Align = alClient
           Colors.UnfocusedColor = clMedGray
           Font.Charset = DEFAULT_CHARSET
@@ -1500,7 +1469,7 @@ object FrmFalconMain: TFrmFalconMain
     Left = 810
     Top = 152
     Bitmap = {
-      494C010117001900040018001000FFFFFFFF2100FFFFFFFFFFFFFFFF424D3600
+      494C010117001900040018001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000600000006000000001002000000000000090
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -2692,12 +2661,8 @@ object FrmFalconMain: TFrmFalconMain
       FFE001FFFFFFFFFE01FFE001FFE001FFFE01FFC3FFFFE001FFE001FFFFFFFFE3
       FFFFE001FFE001FFFE03FFF3FFFFE001FFE001FFC3FFFFFBFFFFE001FFE001FF
       E3FFFFFFFFFFE001FFE001FFF3FFFFFFFFFFE001FFE001FFFBFFFFFFFFFFF003
-      FFF003FFFFFFFFFFFFFFFFFFFFFFFFFF}
-  end
-  object TBXSwitcher: TSpTBXSwitcher
-    Theme = 'Default'
-    Left = 27
-    Top = 153
+      FFF003FFFFFFFFFFFFFFFFFFFFFFFFFF00000000000000000000000000000000
+      000000000000}
   end
   object PopupProject: TSpTBXPopupMenu
     Images = ImgListMenus
@@ -2710,7 +2675,7 @@ object FrmFalconMain: TFrmFalconMain
       ImageIndex = 6
       LinkSubitems = FileNew
     end
-    object TBXSeparatorItem23: TSpTBXSeparatorItem
+    object SpTBXSeparatorItem23: TSpTBXSeparatorItem
     end
     object PopProjEdit: TSpTBXItem
       Caption = 'Edit'
@@ -2722,7 +2687,7 @@ object FrmFalconMain: TFrmFalconMain
       ImageIndex = 9
       OnClick = PopProjOpenClick
     end
-    object TBXSeparatorItem24: TSpTBXSeparatorItem
+    object SpTBXSeparatorItem24: TSpTBXSeparatorItem
     end
     object PopProjAdd: TSpTBXItem
       Caption = 'Add to project'
@@ -2744,7 +2709,7 @@ object FrmFalconMain: TFrmFalconMain
       ShortCut = 8238
       OnClick = PopProjDelFromDskClick
     end
-    object TBXSeparatorItem25: TSpTBXSeparatorItem
+    object SpTBXSeparatorItem25: TSpTBXSeparatorItem
     end
     object PopProjProp: TSpTBXItem
       Caption = 'Property...'
@@ -2762,7 +2727,7 @@ object FrmFalconMain: TFrmFalconMain
       Caption = 'Open declaration'
       OnClick = PopEditorOpenDeclClick
     end
-    object TBXSeparatorItem44: TSpTBXSeparatorItem
+    object SpTBXSeparatorItem44: TSpTBXSeparatorItem
     end
     object PopEditorCompClass: TSpTBXItem
       Caption = 'Complete class at cursor'
@@ -2773,7 +2738,7 @@ object FrmFalconMain: TFrmFalconMain
       Caption = 'Swap header/source'
       OnClick = EditSwapClick
     end
-    object TBXSeparatorItem8: TSpTBXSeparatorItem
+    object SpTBXSeparatorItem8: TSpTBXSeparatorItem
     end
     object PopEditorUndo: TSpTBXItem
       Caption = 'Undo'
@@ -2785,7 +2750,7 @@ object FrmFalconMain: TFrmFalconMain
       ImageIndex = 19
       OnClick = EditRedoClick
     end
-    object TBXSeparatorItem28: TSpTBXSeparatorItem
+    object SpTBXSeparatorItem28: TSpTBXSeparatorItem
     end
     object PopEditorCut: TSpTBXItem
       Caption = 'Cut'
@@ -2812,12 +2777,12 @@ object FrmFalconMain: TFrmFalconMain
       ImageIndex = 45
       OnClick = EditSelectAllClick
     end
-    object TBXSeparatorItem27: TSpTBXSeparatorItem
+    object SpTBXSeparatorItem27: TSpTBXSeparatorItem
     end
     object PopEditorTools: TSpTBXSubmenuItem
       Caption = 'Tools'
     end
-    object TBXSeparatorItem26: TSpTBXSeparatorItem
+    object SpTBXSeparatorItem26: TSpTBXSeparatorItem
     end
     object PopEditorBookmarks: TSpTBXSubmenuItem
       Caption = 'Toggle Bookmarks'
@@ -2829,7 +2794,7 @@ object FrmFalconMain: TFrmFalconMain
       ImageIndex = 52
       LinkSubitems = EditGotoBookmarks
     end
-    object TBXSeparatorItem34: TSpTBXSeparatorItem
+    object SpTBXSeparatorItem34: TSpTBXSeparatorItem
     end
     object PopEditorProperties: TSpTBXItem
       Caption = 'Properties...'
@@ -2852,13 +2817,13 @@ object FrmFalconMain: TFrmFalconMain
       ShortCut = 24643
       OnClick = Copyoriginalmessage1Click
     end
-    object TBXSeparatorItem32: TSpTBXSeparatorItem
+    object SpTBXSeparatorItem32: TSpTBXSeparatorItem
     end
     object PupMsgOriMsg: TSpTBXItem
       Caption = 'Original message'
       OnClick = Originalmessage1Click
     end
-    object TBXSeparatorItem31: TSpTBXSeparatorItem
+    object SpTBXSeparatorItem31: TSpTBXSeparatorItem
     end
     object PupMsgGotoLine: TSpTBXItem
       Caption = 'Goto line'
@@ -2882,7 +2847,7 @@ object FrmFalconMain: TFrmFalconMain
     Left = 699
     Top = 4
     Bitmap = {
-      494C010139003D00040010001000FFFFFFFF2100FFFFFFFFFFFFFFFF424D3600
+      494C010139003D00040010001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000F0000000010020000000000000F0
       0000000000000000000000000000000000000000000000000000AB6813FFAB68
       13FFAB6813FFAB6813FFAB6813FFAB6813FF0000000000000000000000000000
@@ -4866,7 +4831,8 @@ object FrmFalconMain: TFrmFalconMain
       C0018000E003E00380000000E003E00300000000E003E00300000000E003E003
       00000000E003E00300000000E003E00300000000E003E00300000000E003E003
       00010000E003E00300038000E003E00300078000E007E00781FFC001E00FE00F
-      C3FFE003E01FE01FFFFFF80FFFFFFFFF}
+      C3FFE003E01FE01FFFFFF80FFFFFFFFF00000000000000000000000000000000
+      000000000000}
   end
   object TimerHintTipEvent: TTimer
     Enabled = False
@@ -4907,7 +4873,7 @@ object FrmFalconMain: TFrmFalconMain
       Enabled = False
       OnClick = PopTabsCloseAllOthersClick
     end
-    object TBXSeparatorItem35: TSpTBXSeparatorItem
+    object SpTBXSeparatorItem35: TSpTBXSeparatorItem
     end
     object PopTabsSave: TSpTBXItem
       Caption = 'Save'
@@ -4921,7 +4887,7 @@ object FrmFalconMain: TFrmFalconMain
       ImageIndex = 11
       OnClick = FileSaveAllClick
     end
-    object TBXSeparatorItem39: TSpTBXSeparatorItem
+    object SpTBXSeparatorItem39: TSpTBXSeparatorItem
     end
     object PopTabsCopyFullFileName: TSpTBXItem
       Caption = 'Copy full filename'
@@ -4935,20 +4901,20 @@ object FrmFalconMain: TFrmFalconMain
       Caption = 'Copy directory path'
       OnClick = PopTabsCopyDirClick
     end
-    object TBXSeparatorItem14: TSpTBXSeparatorItem
+    object SpTBXSeparatorItem14: TSpTBXSeparatorItem
     end
     object PopTabsSwap: TSpTBXItem
       Caption = 'Swap header/source'
       OnClick = EditSwapClick
     end
-    object TBXSeparatorItem17: TSpTBXSeparatorItem
+    object SpTBXSeparatorItem17: TSpTBXSeparatorItem
     end
     object PopTabsReadOnly: TSpTBXItem
-      AutoCheck = True
       Caption = 'Read only'
+      AutoCheck = True
       OnClick = PopTabsReadOnlyClick
     end
-    object TBXSeparatorItem40: TSpTBXSeparatorItem
+    object SpTBXSeparatorItem40: TSpTBXSeparatorItem
     end
     object PopTabsTabsAtTop: TSpTBXItem
       Caption = 'Tabs at top'
@@ -4958,7 +4924,7 @@ object FrmFalconMain: TFrmFalconMain
       Caption = 'Tabs at bottom'
       OnClick = PopTabsTabsAtBottomClick
     end
-    object TBXSeparatorItem41: TSpTBXSeparatorItem
+    object SpTBXSeparatorItem41: TSpTBXSeparatorItem
     end
     object PopTabsProperties: TSpTBXItem
       Caption = 'Properties...'
@@ -4971,7 +4937,7 @@ object FrmFalconMain: TFrmFalconMain
     Left = 300
     Top = 243
     Bitmap = {
-      494C010110001500040010001000FFFFFFFF2100FFFFFFFFFFFFFFFF424D3600
+      494C010110001500040010001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000005000000001002000000000000050
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -5635,7 +5601,8 @@ object FrmFalconMain: TFrmFalconMain
       FFFFFFFFFFFFFFFFF83FF83FF83FF83FF01FF01FF01FF01FE00FE00FE00FE00F
       E00FE00FE00FE00FE00FE00FE00FE00FE00FE00FE00FE00FE00FE00FE00FE00F
       F01FF01FF01FF01FF83FF83FF80FF83FFFFFFFFFFF9FFFFFFFFFFFFFFFFFFFFF
-      FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+      FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000000000000000000000000000
+      000000000000}
   end
   object ImgListCountry: TImageList
     ColorDepth = cd32Bit
@@ -5643,7 +5610,7 @@ object FrmFalconMain: TFrmFalconMain
     Left = 76
     Top = 282
     Bitmap = {
-      494C0101EE00F100040010000B00FFFFFFFF2100FFFFFFFFFFFFFFFF424D3600
+      494C0101EE00F100040010000B00FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000009402000001002000000000000094
       020000000000000000000000000000000000006600FF005700FF005700FF0057
       00FF004600FF004600FF004600FF003402FF003402FF003402FF0000CAFF0000
@@ -11092,14 +11059,15 @@ object FrmFalconMain: TFrmFalconMain
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
-      00000000000000000000000000000000}
+      0000000000000000000000000000000000000000000000000000000000000000
+      000000000000}
   end
   object ImageListDebug: TImageList
     ColorDepth = cd32Bit
     Left = 404
     Top = 243
     Bitmap = {
-      494C010104000900040010001000FFFFFFFF2100FFFFFFFFFFFFFFFF424D3600
+      494C010104000900040010001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000002000000001002000000000000020
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -11367,68 +11335,75 @@ object FrmFalconMain: TFrmFalconMain
       FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE1FF80FFF3FF80FFC0FF80FFE1FF80F
       F807F80FFC0FF80FF807F80FF807F80FF807F80FF807F80FF807F80FFC0FF80F
       FC0FF80FFE1FF80FFE1FFFFFFF3FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-      FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+      FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000000000000000000000000000
+      000000000000}
   end
   object PopupMenuLineEnding: TSpTBXPopupMenu
     Left = 808
-    Top = 544
-    object TBXItem1: TSpTBXItem
-      AutoCheck = True
-      Caption = 'Windows'
-      GroupIndex = 1
-      RadioItem = True
-      OnClick = LineEndingItemClick
-    end
-    object TBXItem2: TSpTBXItem
-      Tag = 1
-      AutoCheck = True
-      Caption = 'Linux'
-      GroupIndex = 1
-      RadioItem = True
-      OnClick = LineEndingItemClick
-    end
-    object TBXItem3: TSpTBXItem
-      Tag = 2
-      AutoCheck = True
-      Caption = 'Mac'
-      GroupIndex = 1
-      RadioItem = True
-      OnClick = LineEndingItemClick
+    Top = 520
+    object SubmenuEnding: TSpTBXSubmenuItem
+      Caption = 'Ending'
+      object SpTBXItem1: TSpTBXItem
+        Caption = 'Windows'
+        AutoCheck = True
+        GroupIndex = 1
+        RadioItem = True
+        OnClick = LineEndingItemClick
+      end
+      object SpTBXItem2: TSpTBXItem
+        Tag = 1
+        Caption = 'Linux'
+        AutoCheck = True
+        GroupIndex = 1
+        RadioItem = True
+        OnClick = LineEndingItemClick
+      end
+      object SpTBXItem3: TSpTBXItem
+        Tag = 2
+        Caption = 'Mac'
+        AutoCheck = True
+        GroupIndex = 1
+        RadioItem = True
+        OnClick = LineEndingItemClick
+      end
     end
   end
   object PopupMenuEncoding: TSpTBXPopupMenu
-    Left = 688
-    Top = 544
-    object PopEncANSI: TSpTBXItem
-      AutoCheck = True
-      Caption = 'ANSI'
-      GroupIndex = 1
-      RadioItem = True
-      OnClick = EncodingItemClick
-    end
-    object PopEncUTF8: TSpTBXItem
-      Tag = 1
-      AutoCheck = True
-      Caption = 'UTF-8'
-      GroupIndex = 1
-      RadioItem = True
-      OnClick = EncodingItemClick
-    end
-    object PopEncUCS2: TSpTBXItem
-      Tag = 2
-      AutoCheck = True
-      Caption = 'UCS-2'
-      GroupIndex = 1
-      RadioItem = True
-      OnClick = EncodingItemClick
-    end
-    object TBXSeparatorItem46: TSpTBXSeparatorItem
-    end
-    object PopEncWithBOM: TSpTBXItem
-      AutoCheck = True
-      Caption = 'With BOM'
-      Enabled = False
-      OnClick = PopEncWithBOMClick
+    Left = 624
+    Top = 512
+    object SubmenuEncoding: TSpTBXSubmenuItem
+      Caption = 'Encoding'
+      object PopEncANSI: TSpTBXItem
+        Caption = 'ANSI'
+        AutoCheck = True
+        GroupIndex = 1
+        RadioItem = True
+        OnClick = EncodingItemClick
+      end
+      object PopEncUTF8: TSpTBXItem
+        Tag = 1
+        Caption = 'UTF-8'
+        AutoCheck = True
+        GroupIndex = 1
+        RadioItem = True
+        OnClick = EncodingItemClick
+      end
+      object PopEncUCS2: TSpTBXItem
+        Tag = 2
+        Caption = 'UCS-2'
+        AutoCheck = True
+        GroupIndex = 1
+        RadioItem = True
+        OnClick = EncodingItemClick
+      end
+      object SpTBXSeparatorItem46: TSpTBXSeparatorItem
+      end
+      object PopEncWithBOM: TSpTBXItem
+        Caption = 'With BOM'
+        AutoCheck = True
+        Enabled = False
+        OnClick = PopEncWithBOMClick
+      end
     end
   end
 end

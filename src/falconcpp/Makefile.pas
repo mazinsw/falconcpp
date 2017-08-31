@@ -174,6 +174,7 @@ begin
     OutFile.Add('AR     = ar');
     OutFile.Add('RANLIB = ranlib');
   end;
+  //OutFile.Add('RM     = del /F /Q');
   OutFile.Add('RM     = rm -f');
   if Source.Count > 0 then
   begin
@@ -231,9 +232,11 @@ begin
     EchoStr := '@';
   aTarget := ConvertToUnixSlashes(Target);
   S := EscapeString(aTarget);
-  Temp := S + ' clean';
+  Temp := 'all';
+  if CleanBefore then
+    Temp := 'clean ' + Temp;
   if CleanAfter then
-    Temp := Temp + ' clean-after';
+    Temp := Temp + ' clear';
   OutFile.Add('.PHONY: ' + Temp);
   OutFile.Add('');
   OutFile.Add('all: ' + S);
@@ -241,12 +244,9 @@ begin
   OutFile.Add('clean:');
   OutFile.Add(TabChar + EchoStr + '$(RM) $(OBJS) ' + S);
   OutFile.Add('');
-  if CleanAfter then
-  begin
-    OutFile.Add('clean-after:');
-    OutFile.Add(TabChar + EchoStr + '$(RM) $(OBJS)');
-    OutFile.Add('');
-  end;
+  OutFile.Add('clear:');
+  OutFile.Add(TabChar + EchoStr + '$(RM) $(OBJS)');
+  OutFile.Add('');
   Cop := Trim(CompilerOptions);
   if DebugMode then
     Cop := Trim('-g ' + Cop);

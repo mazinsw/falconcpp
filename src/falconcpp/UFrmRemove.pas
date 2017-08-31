@@ -83,7 +83,7 @@ var
   Files: TStrings;
 begin
   Files := TStringList.Create;
-  proj.GetFiles(Files);
+  proj.GetSources(Files, FILES_TYPES);
   for I := 0 to Files.Count - 1 do
     AddItem(TSourceFile(Files.Objects[I]));
   Files.Free;

@@ -4,10 +4,10 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Menus, ExtCtrls, USourceFile, TBX;
+  Dialogs, Menus, ExtCtrls, USourceFile, SpTBXItem;
 
 type
-  TToolMenuItem = class(TTBXItem)
+  TToolMenuItem = class(TSpTBXItem)
   private
     FStrCommand: string;
     FEnableCmd: string;
@@ -24,21 +24,21 @@ const
   NEW_LN = #13 + #10;
 
 procedure CreateStdTools;
-function CreateRootMenuTool(Caption: string; RootMenu: TTBXSubmenuItem = nil)
-  : TTBXSubmenuItem;
-function CreateMenuTool(RootMenu: TTBXSubmenuItem;
+function CreateRootMenuTool(Caption: string; RootMenu: TSpTBXSubmenuItem = nil)
+  : TSpTBXSubmenuItem;
+function CreateMenuTool(RootMenu: TSpTBXSubmenuItem;
   Caption, StrCmd, EnableCmd: string): TToolMenuItem;
 
 implementation
 
 uses UFrmMain, UEditor;
 
-function CreateRootMenuTool(Caption: string; RootMenu: TTBXSubmenuItem = nil)
-  : TTBXSubmenuItem;
+function CreateRootMenuTool(Caption: string; RootMenu: TSpTBXSubmenuItem = nil)
+  : TSpTBXSubmenuItem;
 var
-  RtMenu: TTBXSubmenuItem;
+  RtMenu: TSpTBXSubmenuItem;
 begin
-  RtMenu := TTBXSubmenuItem.Create(FrmFalconMain.PopEditorTools.Owner);
+  RtMenu := TSpTBXSubmenuItem.Create(FrmFalconMain.PopEditorTools.Owner);
   RtMenu.Caption := Caption;
   if Assigned(RootMenu) then
     RootMenu.Add(RtMenu);
@@ -46,7 +46,7 @@ begin
   Result := RtMenu;
 end;
 
-function CreateMenuTool(RootMenu: TTBXSubmenuItem;
+function CreateMenuTool(RootMenu: TSpTBXSubmenuItem;
   Caption, StrCmd, EnableCmd: string): TToolMenuItem;
 var
   MTools: TToolMenuItem;
@@ -62,7 +62,7 @@ end;
 
 procedure CreateStdTools;
 var
-  RMenuTool: TTBXSubmenuItem;
+  RMenuTool: TSpTBXSubmenuItem;
   ItemTool: TToolMenuItem;
 begin
   RMenuTool := CreateRootMenuTool('Convertions');

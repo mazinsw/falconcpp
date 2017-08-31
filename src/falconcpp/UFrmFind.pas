@@ -101,7 +101,7 @@ var
     CurrentPosition: Integer;
   UsingResearch: Boolean;
 begin
-  if not Frm.GetActiveFile(prop) then
+  if not Frm.GetActiveFile1(prop) then
     Exit;
   if not prop.GetSheet(SourceSheet) then
     Exit;
@@ -159,7 +159,7 @@ var
     CurrentPosition: Integer;
   UsingResearch: Boolean;
 begin
-  if not Frm.GetActiveFile(prop) then
+  if not Frm.GetActiveFile1(prop) then
     Exit;
   if not prop.GetSheet(SourceSheet) then
     Exit;
@@ -214,7 +214,7 @@ var
   Editor: TEditor;
   SelText: string;
 begin
-  if not Frm.GetActiveFile(prop) then
+  if not Frm.GetActiveFile1(prop) then
     Exit;
   if not prop.GetSheet(SourceSheet) then
     Exit;
@@ -241,7 +241,7 @@ var
   SelText: string;
 begin
   SelText := '';
-  if Frm.GetActiveFile(prop) then
+  if Frm.GetActiveFile1(prop) then
   begin
     if prop.GetSheet(SourceSheet) then
     begin
@@ -268,7 +268,7 @@ var
   Editor: TEditor;
   SelText: string;
 begin
-  if not Frm.GetActiveFile(prop) then
+  if not Frm.GetActiveFile1(prop) then
     Exit;
   if not prop.GetSheet(SourceSheet) then
     Exit;

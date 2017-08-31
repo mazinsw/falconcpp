@@ -3,7 +3,7 @@ unit PluginServiceManager;
 interface
 
 uses
-  Windows, Plugin, Forms, TBX, Classes, Controls, PluginWidget;
+  Windows, Plugin, Forms, SpTBXItem, Classes, Controls, PluginWidget;
 
 type
   TPluginServiceManager = class
@@ -29,10 +29,10 @@ type
 
     function CreateMenuItemWidget(Plugin: TPlugin; Param: Integer;
       Data: Pointer): Integer;
-    function GetSubmenuFromID(WidgetID: Integer): TTBXSubmenuItem;
-    function GetMenuItemFromID(WidgetID: Integer): TTBXItem;
+    function GetSubmenuFromID(WidgetID: Integer): TSpTBXSubmenuItem;
+    function GetMenuItemFromID(WidgetID: Integer): TSpTBXItem;
     function WidgetShowModal(Widget: TWidget): Integer;
-    function GetPopupMenuFromID(WidgetID: Integer): TTBXPopupMenu;
+    function GetPopupMenuFromID(WidgetID: Integer): TSpTBXPopupMenu;
     function GetFileSelected(WidgetID, Param: Integer; Data: Pointer): Integer;
     function SetWidgetEnabled(WidgetID: Integer; Enabled: Boolean): Integer;
     function GetActiveFile(WidgetID, Param: Integer; Data: Pointer): Integer;
@@ -96,7 +96,7 @@ function TPluginServiceManager.CreateMenuItemWidget(Plugin: TPlugin;
 var
   MenuItem: PFCPMenuItem;
   Submenu: TTBCustomItem;
-  Submenuitem: TTBXSubmenuItem;
+  Submenuitem: TSpTBXSubmenuItem;
   Item, NewItem: TTBCustomItem;
   I: Integer;
   Widget: TWidget;
@@ -281,7 +281,7 @@ function TPluginServiceManager.GetFileSelected(WidgetID, Param: Integer;
   Data: Pointer): Integer;
 var
   MainForm: TFrmFalconMain;
-  SelectedFile: TSourceFile;
+  SelectedFile: TSourceBase;
   SourceFile: PFCPSourceFile;
   S: AnsiString;
 begin           
@@ -315,12 +315,12 @@ function TPluginServiceManager.GetActiveFile(WidgetID, Param: Integer;
   Data: Pointer): Integer;
 var
   MainForm: TFrmFalconMain;
-  ActiveFile: TSourceFile;
+  ActiveFile: TSourceBase;
   SourceFile: PFCPSourceFile;
   S: AnsiString;
-begin           
+begin
   MainForm := TFrmFalconMain(FForm);
-  if MainForm.GetActiveFile(ActiveFile) then
+  if MainForm.GetActiveSource(ActiveFile) then
   begin
     SourceFile := PFCPSourceFile(Data);
     SourceFile^.uType := ActiveFile.FileType;
@@ -413,7 +413,7 @@ begin
   Component := GetMenuItemFromID(WidgetID);
   if Component <> nil then
   begin
-    TTBXItem(Component).Enabled := Enabled;
+    TSpTBXItem(Component).Enabled := Enabled;
     Result := 0; 
     Exit;
   end;
@@ -431,7 +431,7 @@ begin
     Result := 0;
 end;
 
-function TPluginServiceManager.GetSubmenuFromID(WidgetID: Integer): TTBXSubmenuItem;
+function TPluginServiceManager.GetSubmenuFromID(WidgetID: Integer): TSpTBXSubmenuItem;
 var
   MainForm: TFrmFalconMain;
   Widget: TWidget;
@@ -440,8 +440,8 @@ begin
   if WidgetID > $00FFFF then
   begin
     Widget := Widgets.Find(WidgetID);
-    if (Widget <> nil) and (Widget.Component is TTBXSubmenuItem) then
-      Result := TTBXSubmenuItem(Widget.Component)
+    if (Widget <> nil) and (Widget.Component is TSpTBXSubmenuItem) then
+      Result := TSpTBXSubmenuItem(Widget.Component)
     else
       Result := nil;
     Exit;
@@ -472,7 +472,7 @@ begin
   end;
 end;
 
-function TPluginServiceManager.GetPopupMenuFromID(WidgetID: Integer): TTBXPopupMenu;
+function TPluginServiceManager.GetPopupMenuFromID(WidgetID: Integer): TSpTBXPopupMenu;
 var
   MainForm: TFrmFalconMain;
   Widget: TWidget;
@@ -481,8 +481,8 @@ begin
   if WidgetID > $00FFFF then
   begin
     Widget := Widgets.Find(WidgetID);
-    if (Widget <> nil) and (Widget.Component is TTBXPopupMenu) then
-      Result := TTBXPopupMenu(Widget.Component)
+    if (Widget <> nil) and (Widget.Component is TSpTBXPopupMenu) then
+      Result := TSpTBXPopupMenu(Widget.Component)
     else
       Result := nil;
     Exit;
@@ -494,7 +494,7 @@ begin
   end;
 end;
 
-function TPluginServiceManager.GetMenuItemFromID(WidgetID: Integer): TTBXItem;
+function TPluginServiceManager.GetMenuItemFromID(WidgetID: Integer): TSpTBXItem;
 var
   MainForm: TFrmFalconMain;
   Widget: TWidget;
@@ -504,7 +504,7 @@ begin
   begin
     Widget := Widgets.Find(WidgetID);
     if Widget <> nil then
-      Result := TTBXItem(Widget.Component)
+      Result := TSpTBXItem(Widget.Component)
     else
       Result := nil;
     Exit;
@@ -558,7 +558,7 @@ begin
     MENUITEM_MAIN_VIEW_STATUSBAR: Result := MainForm.ViewStatusBar;
     MENUITEM_MAIN_VIEW_OUTLINE: Result := MainForm.ViewOutline;
     MENUITEM_MAIN_VIEW_COMPILEROUTPUT: Result := MainForm.ViewCompOut;
-    MENUITEM_MAIN_VIEW_TOOLBARS_DEFAULT: Result := MainForm.ViewThemeDef;
+    //MENUITEM_MAIN_VIEW_TOOLBARS_DEFAULT: Result := MainForm.ViewThemeDef;
     MENUITEM_MAIN_VIEW_TOOLBARS_EDIT: Result := MainForm.ViewToolbarEdit;
     MENUITEM_MAIN_VIEW_TOOLBARS_SEARCH: Result := MainForm.ViewToolbarSearch;
     MENUITEM_MAIN_VIEW_TOOLBARS_COMPILER: Result := MainForm.ViewToolbarCompiler;
@@ -566,12 +566,12 @@ begin
     MENUITEM_MAIN_VIEW_TOOLBARS_PROJECT: Result := MainForm.ViewToolbarProject;
     MENUITEM_MAIN_VIEW_TOOLBARS_HELP: Result := MainForm.ViewToolbarHelp;
     MENUITEM_MAIN_VIEW_TOOLBARS_DEBUG: Result := MainForm.ViewToolbarDebug;
-    MENUITEM_MAIN_VIEW_THEMES_DEFAULT: Result := MainForm.ViewThemeDef;
-    MENUITEM_MAIN_VIEW_THEMES_OFFICE2003: Result := MainForm.ViewThemeOffice2003;
-    MENUITEM_MAIN_VIEW_THEMES_OFFICEXP: Result := MainForm.ViewThemeOffXP;
-    MENUITEM_MAIN_VIEW_THEMES_STRIPES: Result := MainForm.ViewThemeStripes;
-    MENUITEM_MAIN_VIEW_THEMES_PROFESSIONAL: Result := MainForm.ViewThemeProfessional;
-    MENUITEM_MAIN_VIEW_THEMES_ALUMINUM: Result := MainForm.ViewThemeAluminum;
+    //MENUITEM_MAIN_VIEW_THEMES_DEFAULT: Result := MainForm.ViewThemeDef;
+    //MENUITEM_MAIN_VIEW_THEMES_OFFICE2003: Result := MainForm.ViewThemeOffice2003;
+    //MENUITEM_MAIN_VIEW_THEMES_OFFICEXP: Result := MainForm.ViewThemeOffXP;
+   // MENUITEM_MAIN_VIEW_THEMES_STRIPES: Result := MainForm.ViewThemeStripes;
+    //MENUITEM_MAIN_VIEW_THEMES_PROFESSIONAL: Result := MainForm.ViewThemeProfessional;
+    //MENUITEM_MAIN_VIEW_THEMES_ALUMINUM: Result := MainForm.ViewThemeAluminum;
     MENUITEM_MAIN_VIEW_ZOOM_INCREASE: Result := MainForm.ViewZoomInc;
     MENUITEM_MAIN_VIEW_ZOOM_DECREASE: Result := MainForm.ViewZoomDec;
     MENUITEM_MAIN_VIEW_FULLSCREEN: Result := MainForm.ViewFullScreen;
@@ -611,13 +611,13 @@ begin
        (WidgetID <= MENUITEM_MAIN_EDIT_TOGGLEBOOKMARKS_9) and
        (WidgetID - MENUITEM_MAIN_EDIT_TOGGLEBOOKMARKS_1 < MainForm.EditBookmarks.Count) then
     begin
-      Result := TTBXItem(MainForm.EditBookmarks.Items[WidgetID - MENUITEM_MAIN_EDIT_TOGGLEBOOKMARKS_1])
+      Result := TSpTBXItem(MainForm.EditBookmarks.Items[WidgetID - MENUITEM_MAIN_EDIT_TOGGLEBOOKMARKS_1])
     end
     else if (WidgetID >= MENUITEM_MAIN_EDIT_GOTOBOOKMARKS_1) and
        (WidgetID <= MENUITEM_MAIN_EDIT_GOTOBOOKMARKS_9) and
        (WidgetID - MENUITEM_MAIN_EDIT_GOTOBOOKMARKS_1 < MainForm.EditGotoBookmarks.Count) then
     begin
-      Result := TTBXItem(MainForm.EditGotoBookmarks.Items[WidgetID - MENUITEM_MAIN_EDIT_GOTOBOOKMARKS_1])
+      Result := TSpTBXItem(MainForm.EditGotoBookmarks.Items[WidgetID - MENUITEM_MAIN_EDIT_GOTOBOOKMARKS_1])
     end
     else
       Result := nil;

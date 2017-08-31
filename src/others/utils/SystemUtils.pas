@@ -5,7 +5,7 @@ interface
 {$I Falcon.inc}
 
 uses
-  Windows, Classes, ShlObj, ShellAPI;
+  Windows, Classes, ShlObj, ShellAPI, ImgList;
 
 const
   CSIDL_PROGRAM_FILES = $0026;
@@ -53,7 +53,9 @@ function BringUpApp(const ClassName: string): Boolean;
 function GetFileVersionA(const FileName: string): TVersion;
 function ParseVersion(const Version: string): TVersion;
 function CompareVersion(Ver1, Ver2: TVersion): Integer;
-function VersionToStr(Version: TVersion): string;
+function VersionToStr(Version: TVersion; const Separator: string = '.'): string;
+function GetIconIndex(const FileName: string; ImageList: TCustomImageList;
+  Size: Integer = SHGFI_LARGEICON): Integer;
 
 
 {$EXTERNALSYM SwitchToThisWindow}
@@ -78,7 +80,8 @@ function SHOpenFolderAndSelectItems(pidlFolder: PItemIDList; cidl: Cardinal;
 implementation
 
 uses
-  Forms, CommCtrl, ImgList, Controls, SysUtils, Registry, RegularExpressionsCore;
+  Forms, CommCtrl, Controls, SysUtils, Registry,
+  RegularExpressionsCore, Graphics;
 
 function FindFiles(const Search: string; Finded: TStrings): Boolean;
 var
@@ -615,14 +618,14 @@ begin
   RegExp.Free;
 end;
 
-function VersionToStr(Version: TVersion): string;
+function VersionToStr(Version: TVersion; const Separator: string): string;
 begin
-  Result := Format('%d.%d.%d.%d', [
-    Version.Major,
-      Version.Minor,
-      Version.Release,
-      Version.Build
-      ]);
+  Result := Format('%d%s%d%s%d%s%d', [
+    Version.Major, Separator,
+    Version.Minor, Separator,
+    Version.Release, Separator,
+    Version.Build
+  ]);
 end;
 
 function CompareVersion(Ver1, Ver2: TVersion): Integer;
@@ -645,6 +648,42 @@ begin
     Result := -1
   else
     Result := 0;
+end;
+
+function GetIconIndex(const FileName: string; ImageList: TCustomImageList;
+  Size: Integer): Integer;
+var
+  FileInfo: TSHFileInfo;
+  ImageListHandle: THandle;
+  aIcon: TIcon;
+begin
+  // clear the memory
+  FillChar(FileInfo, SizeOf(FileInfo), #0);
+  // get a handle to the ImageList for the file selected
+  ImageListHandle := SHGetFileInfo(
+    PChar(FileName), 0, FileInfo, SizeOf(FileInfo),
+    // we want an icon in LARGE
+    SHGFI_ICON or Size
+  );
+  try
+    // create a icon class
+    aIcon := TIcon.Create;
+    try
+      // assign the handle of the icon returned
+      aIcon.Handle := FileInfo.hIcon;
+      // lets paint it transparent
+      aIcon.Transparent := True;
+      Result := ImageList.AddIcon(aIcon);
+    finally
+      // free our icon class
+      FreeAndNil(aIcon);
+    end;
+  finally
+    // !!! FREE THE ICON PROVIDED BY THE SHELL
+    DestroyIcon(FileInfo.hIcon);
+    // free the image list handle
+    ImageList_Destroy(ImageListHandle);
+  end;
 end;
 
 end.

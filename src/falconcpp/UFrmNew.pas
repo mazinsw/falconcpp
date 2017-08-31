@@ -298,7 +298,8 @@ procedure TFrmNewProj.BtnFnshClick(Sender: TObject);
 var
   Node: TTreeNode;
   NewPrj: TProjectFile;
-  NewFile, OwnerFile: TSourceFile;
+  OwnerFile: TSourceBase;
+  NewFile: TSourceBase;
   FileName, SrcFileName, SrcDir, FolderName: string;
   Optmz: string;
   Template: TTemplate;
@@ -313,7 +314,7 @@ var
   sheet: TProjectsSheet;
 begin
   FrmFalconMain.IncLoading;
-  NewPrj := FrmFalconMain.CreateProject('', FILE_TYPE_PROJECT);
+  NewPrj := TProjectFile(FrmFalconMain.CreateProject('', FILE_TYPE_PROJECT));
   Node := NewPrj.Node;
   if (Page = pwProj) then
   begin
@@ -433,8 +434,10 @@ begin
       begin
         SrcDir := ExcludeTrailingPathDelimiter(SrcDir);
         FolderName := ExtractFileName(SrcDir);
-        if not OwnerFile.FindFile(FolderName, OwnerFile) then
-          OwnerFile := CreateSourceFolder(FolderName, OwnerFile);
+        if not OwnerFile.SearchSource(FolderName, NewFile) then
+          OwnerFile := CreateSourceFolder(FolderName, TSourceBase(OwnerFile))
+        else
+          OwnerFile := TSourceFolder(NewFile);
         SrcDir := ExtractFilePath(SrcDir);
       end;
       //add file
@@ -444,11 +447,14 @@ begin
         ExtractName(SrcFileName),
         ExtractFileExt(SrcFileName),
         '',
-        OwnerFile,
+        TSourceBase(OwnerFile),
         False, False);
       FileText := TemFiles.SourceFile[I];
-      NewFile.Edit.Editor.Lines.Assign(FileText);
-      NewFile.Edit.Editor.EmptyUndoBuffer;
+      if NewFile is TSourceFile then
+      begin
+        TSourceFile(NewFile).Edit.Editor.Lines.Assign(FileText);
+        TSourceFile(NewFile).Edit.Editor.EmptyUndoBuffer;
+      end;
       NewFile.IsNew := True;
       FileText.Free;
     end;

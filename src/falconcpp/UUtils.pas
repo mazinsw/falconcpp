@@ -32,7 +32,7 @@ const
 type
   TLanguageItem = class
     ID: Cardinal;
-      Name: string;
+    Name: string;
     ImageIndex: TImageIndex;
   end;
 
@@ -68,23 +68,21 @@ function StringToStream(Text: string; Value: TStream): Integer;
 function FileDateTime(const FileName: string): TDateTime;
 function ExtractRootPathName(const Path: string): string;
 function ExcludeRootPathName(const Path: string): string;
-function CreateSourceFolder(const Name: string;
-  Parent: TSourceFile): TSourceFile;
+function CreateSourceFolder(const Name: string; Parent: TSourceBase): TSourceFolder;
 function NewSourceFile(FileType, Compiler: Integer; FirstName, BaseName,
-  Ext, FileName: string; OwnerFile: TSourceFile; UseFileName,
-  Expand: Boolean): TSourceFile;
+  Ext, FileName: string; OwnerFile: TSourceBase; UseFileName,
+  Expand: Boolean): TSourceBase;
 function FormatLibrary(const FileName: string): string;
 function BrowseDialog(Handle: HWND; const Title: string;
-  var Directory: string): Boolean;
+  var Directory: string; Modern: Boolean = False): Boolean;
 function HumanToBool(const Text: string; Default: Boolean = False): Boolean;
 function BoolToHuman(Question: Boolean): string;
 
 function EditorGotoXY(Memo: TEditor; X, Y: Integer): Boolean;
-function SearchSourceFile(FileName: string;
+function SearchSourceFile(const FileName: string;
   var FileProp: TSourceFile): Boolean;
-function OpenFile(FileName: string): TProjectFile;
+function OpenFile(const FileName: string): TProjectBase;
 function RemoveOption(const S, Options: string): string;
-function DeleteResourceFiles(List: TStrings): Boolean;
 function GetAppTypeByName(AppType: string): Integer;
 function GetCurrentUserName: string;
 function GetCompanyName: string;
@@ -257,9 +255,10 @@ procedure SearchCompilers(List: TStrings; var PathCompiler: string);
   end;
 
 var
-  BaseDir, ProgFiles, Path, Temp, Temp2: string;
+  BaseDir, ProgFiles, Path, Temp: string;
   ProgPaths: array[0..1] of string;
-  I, J, K, PathCount: Integer;
+  I, PathCount: Integer;
+  Paths: TStrings;
 begin
   List.Clear;
   //Falcon C++
@@ -321,42 +320,15 @@ begin
       List.Add(BaseDir);
   end;
   Path := GetEnvironmentVariable('PATH');
-  Temp := UpperCase(Path);
-  I := Pos('MINGW', Temp);
-  while I > 0 do
+  Paths := TStringList.Create;
+  Paths.Delimiter := ';';
+  Paths.StrictDelimiter := True;
+  Paths.DelimitedText := Path;
+  for I := 0 to Paths.Count - 1 do
   begin
-    J := I;
-    while (J > 1) and (Temp[J] <> ';') do
-      Dec(J);
-    K := I;
-    while (K < Length(Temp)) and (Temp[K] <> ';') do
-      Inc(K);
-    Temp2 := Copy(Path, J, K - J + 1);
-    if Temp[J] = ';' then
-    begin
-      Delete(Temp, J + 1, K - J);
-      Delete(Path, J + 1, K - J);
-    end
-    else if Temp[K] = ';' then
-    begin
-      Delete(Temp, J, K - J);
-      Delete(Path, J, K - J);
-    end
-    else
-    begin
-      Delete(Temp, J, K - J + 1);
-      Delete(Path, J, K - J + 1);
-    end;
-    I := I - j + 1;
-    while (I < Length(Temp2)) and (Temp2[I] <> '\') do
-      Inc(I);
-    if Temp2[I] = '\' then
-      Delete(Temp2, I, Length(Temp2) - I + 1);
-    if Temp2[1] = ';' then
-      Delete(Temp2, 1, 1);
-    BaseDir := Temp2;
-    if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
-      (findString(BaseDir, List) < 0) then
+    Temp := ExcludeTrailingPathDelimiter(Paths[I]);
+    BaseDir := ExcludeTrailingPathDelimiter(ExtractFilePath(Temp));
+    if FileExists(BaseDir + '\bin\gcc.exe') and (findString(BaseDir, List) < 0) then
     begin
       if (PathCompiler = '') and (Pos('FALCON', UpperCase(BaseDir)) <> 0) then
       begin
@@ -366,9 +338,8 @@ begin
       else
         List.Add(BaseDir);
     end;
-    I := Pos('MINGW', Temp);
   end;
-
+  Paths.Free;
   //Dev-C++
   BaseDir := ProgFiles + '\Dev-Cpp\MinGW';
   if FileExists(IncludeTrailingPathDelimiter(BaseDir) + 'bin\gcc.exe') and
@@ -832,18 +803,19 @@ function GetFileType(AFileName: string): Integer;
 var
   Ext: string;
 begin
-  Result := FILE_TYPE_UNKNOW;
   Ext := ExtractFileExt(AFileName);
-  if SameText(Ext, '.fpj') then
+  if InStrCmp(Ext, FPJ_EXT) then
     Result := FILE_TYPE_PROJECT
-  else if SameText(Ext, '.c') then
+  else if InStrCmp(Ext, C_EXT) then
     Result := FILE_TYPE_C
-  else if InStrCmp(Ext, ['.cpp', '.cc', '.cxx', '.c++', '.cp']) then
+  else if InStrCmp(Ext, CPP_EXT) then
     Result := FILE_TYPE_CPP
-  else if InStrCmp(Ext, ['.h', '.hpp', '.rh', '.hh']) then
+  else if InStrCmp(Ext, H_EXT) then
     Result := FILE_TYPE_H
-  else if SameText(Ext, '.rc') then
-    Result := FILE_TYPE_RC;
+  else if InStrCmp(Ext, RC_EXT) then
+    Result := FILE_TYPE_RC
+  else
+    Result := FILE_TYPE_UNKNOW;
 end;
 
 function GetCompiler(FileType: Integer): Integer;
@@ -1002,26 +974,23 @@ begin
   Result := StrPas(pstr);
 end;
 
-function CreateSourceFolder(const Name: string;
-  Parent: TSourceFile): TSourceFile;
+function CreateSourceFolder(const Name: string; Parent: TSourceBase): TSourceFolder;
 begin
-  if not Assigned(Parent) or not
-    (Parent.FileType in [FILE_TYPE_FOLDER, FILE_TYPE_PROJECT, FILE_TYPE_CONFIG, FILE_TYPE_CONFIG_GROUP]) then
-  begin
-    Result := nil;
-    Exit;
-  end;
-  Result := FrmFalconMain.CreateSource(Parent.Node, Name);
+  if not Assigned(Parent) then
+    raise Exception.Create('Project not informed');
+  if not (Parent.FileType in CONTAINER_TYPES) then
+    raise Exception.Create('Only project and folder can have a folder');
+  Result := FrmFalconMain.CreateFolder(Name, Parent.Node);
   Result.FileType := FILE_TYPE_FOLDER;
   Result.FileName := Name;
   Parent.Node.Expanded := True;
 end;
 
 function NewSourceFile(FileType, Compiler: Integer; FirstName, BaseName,
-  Ext, FileName: string; OwnerFile: TSourceFile; UseFileName,
-  Expand: Boolean): TSourceFile;
+  Ext, FileName: string; OwnerFile: TSourceBase; UseFileName,
+  Expand: Boolean): TSourceBase;
 
-  function NewProject: TProjectFile;
+  function NewProject: TProjectBase;
   var
     AName: string;
   begin
@@ -1055,52 +1024,43 @@ function NewSourceFile(FileType, Compiler: Integer; FirstName, BaseName,
 var
   AName: string;
 begin
-  with FrmFalconMain do
+  if not Assigned(OwnerFile)
+     or (
+       not (OwnerFile is TProjectBase) and
+       not Assigned(OwnerFile.Node.Parent) and
+       not (OwnerFile.FileType in [FILE_TYPE_FOLDER, FILE_TYPE_CONFIG_GROUP]))
+     or (
+       (OwnerFile.Project.FileType <> FILE_TYPE_PROJECT) and
+       (FileType <> FILE_TYPE_CONFIG)) then
   begin
-    if Assigned(OwnerFile) then
-    begin
-      if (OwnerFile is TProjectFile) then
-      begin
-        if (TProjectFile(OwnerFile).FileType <> FILE_TYPE_PROJECT) then
-        begin
-          Result := NewProject;
-          Exit;
-        end;
-        if (OwnerFile.Node.Count = 0) then
-          AName := FirstName
-        else
-          AName := NextFileName(BaseName, Ext, OwnerFile.Node);
-      end
-      else
-      begin
-        if (OwnerFile.FileType < FILE_TYPE_FOLDER) then
-        begin
-          if not Assigned(OwnerFile.Node.Parent) then
-          begin
-            Result := NewProject;
-            Exit;
-          end;
-          OwnerFile := TSourceFile(OwnerFile.Node.Parent.Data);
-        end;
-        AName := NextFileName(BaseName, Ext, OwnerFile.Node);
-      end;
-
-      Result := CreateSource(OwnerFile.Node, AName);
-      Result.FileName := AName;
-      Result.FileType := FileType;
-      if Expand or (OwnerFile.FileType = FILE_TYPE_PROJECT) then
-        OwnerFile.Node.Expanded := True;
-    end
-    else
-      Result := NewProject;
+    Result := NewProject;
+    Exit;
   end;
-end;
-
-function SelectDirProc(Wnd: HWND; uMsg: UINT; lParam, lpData: LPARAM): Integer stdcall;
-begin
-  if (uMsg = BFFM_INITIALIZED) and (lpData <> 0) then
-    SendMessage(Wnd, BFFM_SETSELECTION, Integer(True), lpdata);
-  result := 0;
+  AName := FirstName;
+  if not (OwnerFile is TProjectBase) and not (OwnerFile.FileType in [FILE_TYPE_FOLDER, FILE_TYPE_CONFIG_GROUP]) then
+    OwnerFile := TSourceBase(OwnerFile.Node.Parent.Data);
+  // Create configuration group when add a new Configuration
+  if (FileType = FILE_TYPE_CONFIG) then
+  begin
+    OwnerFile.Node.Expanded := True;
+    OwnerFile := FrmFalconMain.CreateConfigGroup(STR_NEW_MENU[9], OwnerFile.Node);
+  end
+  else if OwnerFile.FileType in CONFIG_TYPES then
+    OwnerFile := OwnerFile.Project;
+  if not (OwnerFile is TProjectBase) or (OwnerFile.Node.Count > 0) then
+    AName := NextFileName(BaseName, Ext, OwnerFile.Node);
+  if FileType = FILE_TYPE_FOLDER then
+    Result := CreateSourceFolder(AName, OwnerFile)
+  else if FileType = FILE_TYPE_CONFIG then
+    Result := FrmFalconMain.CreateConfiguration(AName, OwnerFile.Node)
+  else
+    Result := FrmFalconMain.CreateSource(AName, OwnerFile.Node);
+  Result.FileName := AName;
+  Result.FileType := FileType;
+  if Expand or (OwnerFile.FileType = FILE_TYPE_PROJECT) then
+    OwnerFile.Node.Expanded := True;
+  if (OwnerFile.Project is TProjectSource) then
+    OwnerFile.Project.Node.Expanded := True;
 end;
 
 function FormatLibrary(const FileName: string): string;
@@ -1117,31 +1077,59 @@ begin
         [FilePath, Lib, RemoveFileExt(Name) + '.dll.a']);
 end;
 
+function SelectDirProc(Wnd: HWND; uMsg: UINT;
+  lParam, lpData: lParam): Integer stdcall;
+begin
+  if (uMsg = BFFM_INITIALIZED) and (lpData <> 0) then
+    SendMessage(Wnd, BFFM_SETSELECTION, Integer(True), lpData);
+  Result := 0;
+end;
+
 function BrowseDialog(Handle: HWND; const Title: string;
-  var Directory: string): Boolean;
+  var Directory: string; Modern: Boolean): Boolean;
 var
   lpItemID: PItemIDList;
   BrowseInfo: TBrowseInfo;
-  DisplayName: array[0..MAX_PATH] of char;
-  TempPath: array[0..MAX_PATH] of char;
+  DisplayName: array [0 .. MAX_PATH] of Char;
+  TempPath: array [0 .. MAX_PATH] of Char;
+{$WARN SYMBOL_PLATFORM OFF}
+  FileDialog: TFileOpenDialog;
+{$WARN SYMBOL_PLATFORM ON}
 begin
   Result := False;
+  if Modern and (Win32MajorVersion >= 6) then
+  begin
+{$WARN SYMBOL_PLATFORM OFF}
+    FileDialog := TFileOpenDialog.Create(nil);
+    try
+      FileDialog.Title := Title;
+      FileDialog.Options := [fdoPickFolders, fdoPathMustExist];
+      FileDialog.DefaultFolder := Directory;
+      FileDialog.FileName := Directory;
+      Result := FileDialog.Execute(Handle);
+      if Result then
+        Directory := FileDialog.FileName;
+    finally
+      FileDialog.Free;
+    end;
+{$WARN SYMBOL_PLATFORM ON}
+    Exit;
+  end;
   FillChar(BrowseInfo, sizeof(TBrowseInfo), #0);
   with BrowseInfo do
   begin
-
     hwndOwner := Handle;
     pszDisplayName := @DisplayName;
-    lpszTitle := PChar(Title);
-    ulFlags := BIF_RETURNONLYFSDIRS;
+    lpszTitle := Pchar(Title);
+    ulFlags := BIF_RETURNONLYFSDIRS or BIF_NEWDIALOGSTYLE;
     if Directory <> '' then
     begin
       lpfn := SelectDirProc;
-      lParam := Integer(PChar(Directory));
+      lParam := Integer(Pchar(Directory));
     end;
   end;
   lpItemID := SHBrowseForFolder(BrowseInfo);
-  if lpItemId <> nil then
+  if lpItemID <> nil then
   begin
     SHGetPathFromIDList(lpItemID, TempPath);
     Directory := TempPath;
@@ -1178,7 +1166,7 @@ begin
   Result := (Memo.DisplayX = X) and (Memo.DisplayY = Y);
 end;
 
-function SearchSourceFile(FileName: string;
+function SearchSourceFile(const FileName: string;
   var FileProp: TSourceFile): Boolean;
 var
   ActFile: TSourceFile;
@@ -1189,6 +1177,8 @@ begin
   for I := 0 to FrmFalconMain.TreeViewProjects.Items.Count - 1 do
   begin
     Node := FrmFalconMain.TreeViewProjects.Items.Item[I];
+    if not (TSourceBase(Node.Data) is TSourceFile) then
+      Continue;
     ActFile := TSourceFile(Node.Data);
     if SameText(ActFile.FileName, FileName) then
     begin
@@ -1199,59 +1189,38 @@ begin
   end;
 end;
 
-function OpenFile(FileName: string): TProjectFile;
+function OpenFile(const FileName: string): TProjectBase;
 var
-  ProjProp: TProjectFile;
+  ProjProp: TProjectBase;
   FileType: Integer;
 begin
   FileType := GetFileType(FileName);
-  ProjProp := TProjectFile(NewSourceFile(FileType,
+  ProjProp := TProjectBase(NewSourceFile(FileType,
     GetCompiler(FileType), '', '', '', FileName, nil, True, False));
   ProjProp.Saved := True;
   ProjProp.IsNew := False;
   ProjProp.DateOfFile := FileDateTime(ProjProp.FileName);
-
-  if (ProjProp.FileType <> FILE_TYPE_PROJECT) then
-  begin
-    if (FileType = FILE_TYPE_RC) then
-      ProjProp.Target := RemoveFileExt(ProjProp.Name) + '.res'
-    else
-    begin
-      if (ProjProp.FileType <> FILE_TYPE_PROJECT) then
-      begin
-        ProjProp.Target := RemoveFileExt(ProjProp.Name) + '.exe';
-        ProjProp.AppType := APPTYPE_CONSOLE;
-        ProjProp.CompilerOptions := '-Wall -s';
-      end;
-    end;
-  end
-  else
-    ProjProp.LoadFromFile(ProjProp.FileName);
-  if ProjProp.FileType = FILE_TYPE_PROJECT then
-    ProjProp.LoadLayout;
   Result := ProjProp;
+
+  if ProjProp is TProjectFile then
+  begin
+    ProjProp.LoadFromFile(ProjProp.FileName);
+    TProjectFile(ProjProp).LoadLayout;
+    Exit;
+  end;
+  if (FileType = FILE_TYPE_RC) then
+    ProjProp.Target := RemoveFileExt(ProjProp.Name) + '.res'
+  else
+  begin
+    ProjProp.Target := RemoveFileExt(ProjProp.Name) + '.exe';
+    ProjProp.AppType := APPTYPE_CONSOLE;
+    ProjProp.CompilerOptions := '-Wall -s';
+  end;
 end;
 
 function RemoveOption(const S, Options: string): string;
 begin
   Result := StringReplace(Options, S, '', [rfReplaceAll]);
-end;
-
-function DeleteResourceFiles(List: TStrings): Boolean;
-var
-  I: Integer;
-  Ext: string;
-begin
-  Result := False;
-  for I := List.Count - 1 downto 0 do
-  begin
-    Ext := ExtractFileExt(List.Strings[I]);
-    if SameText(Ext, '.RC') then
-    begin
-      Result := True;
-      List.Delete(I);
-    end;
-  end;
 end;
 
 function NextProjectName(FirstName, Ext: string; Nodes: TTreeNodes): string;
@@ -1265,7 +1234,7 @@ function NextProjectName(FirstName, Ext: string; Nodes: TTreeNodes): string;
     Node := Nodes.GetFirstNode;
     while Node <> nil do
     begin
-      Caption := ExtractFileName(TSourceFile(Node.Data).FileName);
+      Caption := ExtractFileName(TSourceBase(Node.Data).FileName);
       if SameText(Caption, FileName) then
       begin
         Result := True;
@@ -1313,7 +1282,7 @@ function NextFileName(FirstName, Ext: string; Node: TTreeNode): string;
     Result := False;
     for I := 0 to Node.Count - 1 do
     begin
-      Caption := TSourceFile(Node[I].Data).Name;
+      Caption := TSourceBase(Node[I].Data).Name;
       if (Caption = FileName) then
       begin
         Result := True;

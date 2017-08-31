@@ -3,7 +3,7 @@ unit UInstaller;
 interface
 
 uses
-  Windows, Classes, Forms, BZip2, LibTar, Consts,
+  Windows, Classes, Forms, Compress.BZip2, LibTar, Consts,
   IniFiles, Dialogs, CompressUtils, Messages, PkgUtils;
 
 const

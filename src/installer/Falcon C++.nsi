@@ -1,4 +1,4 @@
-;NSIS Modern User Interface
+﻿;NSIS Modern User Interface
 ;--------------------------------
 ;Include Modern UI
 
@@ -50,9 +50,9 @@
   Name "${PROJECT_NAME}"
 ;!define WITH_MINGW
 !ifdef WITH_MINGW
-  OutFile "..\..\bin\${ARCH}\Falcon C++-${APP_VERSION}-${ARCH_NAME}-Setup.exe"
+  OutFile "..\..\bin\releases\Falcon C++-${APP_VERSION}-${ARCH_NAME}-Setup.exe"
 !else  
-  OutFile "..\..\bin\${ARCH}\Falcon C++-${APP_VERSION}-No-MinGW-${ARCH_NAME}-Setup.exe"
+  OutFile "..\..\bin\releases\Falcon C++-${APP_VERSION}-No-MinGW-${ARCH_NAME}-Setup.exe"
 !endif
 
   ;Default installation folder

@@ -7,6 +7,9 @@ interface
 uses
   Forms, Graphics, Classes, ULanguages;
 
+const
+  OFFICE_XP_THEME = 'Office XP';
+
 type
 
   TEditorOptions = class
@@ -62,7 +65,6 @@ type
     DeleteEmptyLines: Boolean;
     FillEmptyLines: Boolean;
       //Formatting
-    BracketStyle: Integer;
     BreakClosingHeadersBrackets: Boolean;
     BreakIfElse: Boolean;
     AddBrackets: Boolean;
@@ -152,7 +154,7 @@ function ReadIniFile(Section, Ident, Default: string): string;
 implementation
 
 uses UFrmMain, UUtils, SystemUtils, Windows, SysUtils, IniFiles, Dialogs,
-  Menus, Controls, TBX, ModernTabs, AppConst;
+  Menus, Controls, SpTBXItem, ModernTabs, AppConst;
 
 procedure WriteIniFile(const Section, Ident, Value: string);
 var
@@ -211,7 +213,7 @@ end;
 
 procedure TConfig.Load(const FileName: string; Form: TForm);
 
-  procedure SetDock(const CurrDock: Integer; Toolbar: TTBXToolbar;
+  procedure SetDock(const CurrDock: Integer; Toolbar: TSpTBXToolbar;
     const pt: TPoint);
   begin
     with TFrmFalconMain(Form) do
@@ -255,7 +257,7 @@ begin
     ShowToolbarsInFullscreen := ini.ReadBool('EnvironmentOptions',
       'ShowToolbarsInFullscreen', True);
     RemoveFileOnClose := ini.ReadBool('EnvironmentOptions', 'RemoveFileOnClose', True);
-    OneClickOpenFile := ini.ReadBool('EnvironmentOptions', 'OneClickOpenFile', False);
+    OneClickOpenFile := ini.ReadBool('EnvironmentOptions', 'OneClickOpenFile', True);
     CheckForUpdates := ini.ReadBool('EnvironmentOptions', 'CheckForUpdates', True);
     CreateBackupFiles := ini.ReadBool('EnvironmentOptions', 'CreateBackupFiles', False);
     BackupFilesExt := ini.ReadString('EnvironmentOptions', 'BackupFilesExt', '.bkp');
@@ -273,7 +275,7 @@ begin
       True);
     LanguageID := ini.ReadInteger('EnvironmentOptions', 'LanguageID',
       GetSystemDefaultLangID);
-    Theme := ini.ReadString('EnvironmentOptions', 'Theme', 'OfficeXP');
+    Theme := ini.ReadString('EnvironmentOptions', 'Theme', OFFICE_XP_THEME);
     //Files and Directories
     UsersDefDir := ini.ReadString('EnvironmentOptions', 'UsersDefDir',
       TFrmFalconMain(Form).AppRoot);
@@ -367,7 +369,6 @@ begin
     DeleteEmptyLines := ini.ReadBool('EditorOptions', 'DeleteEmptyLines', False);
     FillEmptyLines := ini.ReadBool('EditorOptions', 'FillEmptyLines', False);
       //Formatting
-    BracketStyle := ini.ReadInteger('EditorOptions', 'BracketStyle', 0);
     BreakClosingHeadersBrackets := ini.ReadBool('EditorOptions', 'BreakClosingHeadersBrackets',
       False);
     BreakIfElse := ini.ReadBool('EditorOptions', 'BreakIfElse', False);
@@ -519,7 +520,7 @@ procedure TConfig.Save(const FileName: string; Form: TForm);
 var
   ini, oriini: TIniFile;
 
-  function GetDock(Toolbar: TTBXToolbar): Integer;
+  function GetDock(Toolbar: TSpTBXToolbar): Integer;
   begin
     Result := 0;
     with TFrmFalconMain(Form) do
@@ -663,7 +664,6 @@ begin
     ini.WriteBool('EditorOptions', 'DeleteEmptyLines', DeleteEmptyLines);
     ini.WriteBool('EditorOptions', 'FillEmptyLines', FillEmptyLines);
       //Formatting
-    ini.WriteInteger('EditorOptions', 'BracketStyle', BracketStyle);
     ini.WriteBool('EditorOptions', 'BreakClosingHeadersBrackets',
       BreakClosingHeadersBrackets);
     ini.WriteBool('EditorOptions', 'BreakIfElse', BreakIfElse);

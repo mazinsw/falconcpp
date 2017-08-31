@@ -34,10 +34,6 @@ object FrmEditorOptions: TFrmEditorOptions
     TabOrder = 0
     object TSGeneral: TTabSheet
       Caption = 'General'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         489
         400)
@@ -230,10 +226,6 @@ object FrmEditorOptions: TFrmEditorOptions
     object TSDisplay: TTabSheet
       Caption = 'Display'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         489
         400)
@@ -370,10 +362,6 @@ object FrmEditorOptions: TFrmEditorOptions
     object TSSintax: TTabSheet
       Caption = 'Colors'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         489
         400)
@@ -619,10 +607,6 @@ object FrmEditorOptions: TFrmEditorOptions
     object TSFormatter: TTabSheet
       Caption = 'Formatter'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       DesignSize = (
         489
         400)
@@ -636,10 +620,6 @@ object FrmEditorOptions: TFrmEditorOptions
         TabOrder = 0
         object TSFormatterStyle: TTabSheet
           Caption = 'Style'
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
           DesignSize = (
             467
             359)
@@ -660,15 +640,23 @@ object FrmEditorOptions: TFrmEditorOptions
             Left = 6
             Top = 3
             Width = 109
-            Height = 137
+            Height = 316
             Caption = 'Styles'
             ItemIndex = 0
             Items.Strings = (
               'ANSI'
-              'K&&R'
+              'K && R'
               'Linux'
               'GNU'
               'Java'
+              'Stroustrup'
+              'Whitesmith'
+              'Banner'
+              'Horstmann'
+              '1TBS'
+              'Google'
+              'Pico'
+              'Lisp'
               'Custom')
             TabOrder = 1
             OnClick = RadioGroupFormatterStylesClick
@@ -966,43 +954,16 @@ object FrmEditorOptions: TFrmEditorOptions
         object TSFormatterFormatting: TTabSheet
           Caption = 'Formatting'
           ImageIndex = 2
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
-          object LabelBracketsStyle: TLabel
-            Left = 6
-            Top = 8
-            Width = 69
-            Height = 13
-            Caption = 'Brackets style:'
-          end
           object Label26: TLabel
             Left = 6
-            Top = 38
+            Top = 10
             Width = 61
             Height = 13
             Caption = 'Pointer align:'
           end
-          object ComboBoxBracketStyle: TComboBox
-            Left = 152
-            Top = 6
-            Width = 137
-            Height = 21
-            Style = csDropDownList
-            ItemIndex = 0
-            TabOrder = 0
-            Text = 'None'
-            OnChange = ComboBoxBracketStyleChange
-            Items.Strings = (
-              'None'
-              'Break'
-              'Attach'
-              'Linux')
-          end
           object CheckBoxBreakClosingHeadersBrackets: TCheckBox
             Left = 6
-            Top = 62
+            Top = 34
             Width = 259
             Height = 17
             Hint = 
@@ -1014,12 +975,12 @@ object FrmEditorOptions: TFrmEditorOptions
             Caption = 'Break closing headers brackets'
             ParentShowHint = False
             ShowHint = True
-            TabOrder = 1
+            TabOrder = 0
             OnClick = EditorOptionsChanged
           end
           object CheckBoxBreakElseIf: TCheckBox
             Left = 6
-            Top = 80
+            Top = 52
             Width = 339
             Height = 17
             Hint = 
@@ -1031,12 +992,12 @@ object FrmEditorOptions: TFrmEditorOptions
             Caption = 'Break '#39'else if()'#39' header combinations into separate lines'
             ParentShowHint = False
             ShowHint = True
-            TabOrder = 2
+            TabOrder = 1
             OnClick = EditorOptionsChanged
           end
           object CheckBoxDontBreakComplex: TCheckBox
             Left = 6
-            Top = 152
+            Top = 124
             Width = 408
             Height = 17
             Hint = 
@@ -1047,24 +1008,24 @@ object FrmEditorOptions: TFrmEditorOptions
               'in a single line'
             ParentShowHint = False
             ShowHint = True
-            TabOrder = 3
+            TabOrder = 2
             OnClick = EditorOptionsChanged
           end
           object CheckBoxDontBreakOneLineBlocks: TCheckBox
             Left = 6
-            Top = 134
+            Top = 106
             Width = 219
             Height = 17
             Hint = 'Don'#39't break one-line blocks.'
             Caption = 'Don'#39't break one-line blocks'
             ParentShowHint = False
             ShowHint = True
-            TabOrder = 4
+            TabOrder = 3
             OnClick = EditorOptionsChanged
           end
           object CheckBoxConvToSpaces: TCheckBox
             Left = 6
-            Top = 170
+            Top = 142
             Width = 187
             Height = 17
             Hint = 
@@ -1076,12 +1037,12 @@ object FrmEditorOptions: TFrmEditorOptions
             Caption = 'Convert TABs to spaces'
             ParentShowHint = False
             ShowHint = True
-            TabOrder = 5
+            TabOrder = 4
             OnClick = EditorOptionsChanged
           end
           object CheckBoxAddBrackets: TCheckBox
             Left = 6
-            Top = 98
+            Top = 70
             Width = 235
             Height = 17
             Hint = 
@@ -1094,12 +1055,12 @@ object FrmEditorOptions: TFrmEditorOptions
             Caption = 'Add brackets'
             ParentShowHint = False
             ShowHint = True
-            TabOrder = 6
+            TabOrder = 5
             OnClick = EditorOptionsChanged
           end
           object CheckBoxAddOneLineBrackets: TCheckBox
             Left = 6
-            Top = 116
+            Top = 88
             Width = 235
             Height = 17
             Hint = 
@@ -1110,12 +1071,12 @@ object FrmEditorOptions: TFrmEditorOptions
             Caption = 'Add one line brackets'
             ParentShowHint = False
             ShowHint = True
-            TabOrder = 7
+            TabOrder = 6
             OnClick = EditorOptionsChanged
           end
           object ComboBoxPointerAlign: TComboBox
             Left = 152
-            Top = 36
+            Top = 8
             Width = 137
             Height = 21
             Hint = 
@@ -1128,7 +1089,7 @@ object FrmEditorOptions: TFrmEditorOptions
             ItemIndex = 0
             ParentShowHint = False
             ShowHint = True
-            TabOrder = 8
+            TabOrder = 7
             Text = 'None'
             OnChange = ComboBoxPointerAlignChange
             Items.Strings = (
@@ -1143,10 +1104,6 @@ object FrmEditorOptions: TFrmEditorOptions
     object TSCodeResources: TTabSheet
       Caption = 'Code Resources'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GroupBox8: TGroupBox
         Left = 6
         Top = 4

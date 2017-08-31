@@ -3,11 +3,7 @@ unit ThreadExtract;
 interface
 
 uses
-{$IFDEF LINUX}
   Classes;
-{$ELSE}
-  Windows, Classes;
-{$ENDIF}
 
 type
   TThreadExtract = class(TThread)
@@ -30,7 +26,7 @@ procedure ExtractAndWatch(const FileName, Path: string; OnStartEvent,
 
 implementation
 
-uses KAZip;
+uses KAZip, SysUtils;
 
 { TThreadExtract }
 
@@ -48,7 +44,7 @@ begin
   try
     Zp.Open(FFileName);
     Zp.OverwriteAction := oaOverwriteAll;
-    Zp.Entries.ExtractAll(FPath, 'Falcon');
+    Zp.Entries.ExtractAll(FPath);
   finally
     Zp.Free;
   end;

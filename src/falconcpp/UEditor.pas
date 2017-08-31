@@ -472,14 +472,13 @@ end;
 
 procedure TEditor.BeginUpdate;
 begin
-  // TODO:
+  // TODO: Need to implement?
 end;
 
 function TEditor.BufferToDisplayPos(const rowcol: TBufferCoord): TDisplayCoord;
 var
   Position: Integer;
 begin
-  // TODO:
   Position := RowColToCharIndex(rowcol);
   Result.Row := rowcol.Line;
   Result.Column := GetColumn(PositionRelative(0, Position)) + 1;
@@ -615,7 +614,7 @@ end;
 
 function TEditor.GetDisplayY: Integer;
 begin
-  Result := LineFromPosition(GetCurrentPos) + 1;
+  Result := GetCaretY;
 end;
 
 function TEditor.GetLineChars: string;
@@ -812,7 +811,7 @@ end;
 
 procedure TEditor.InvalidateLine(Line: Integer);
 begin
-  // TODO:
+  // TODO: Need to implement?
 end;
 
 function TEditor.IsPointInSelection(const rowcol: TBufferCoord): Boolean;
@@ -984,7 +983,6 @@ end;
 
 procedure TEditor.SetCaretXY(const Value: TBufferCoord);
 begin
-  // TODO:
   SetEmptySelection(PositionRelative(0, RowColToCharIndex(Value)));
   ScrollCaret;
 end;
@@ -1037,7 +1035,6 @@ end;
 
 function TEditor.WordStart: TBufferCoord;
 begin
-  // TODO:
   Result := WordStartEx(CaretXY)
 end;
 
@@ -1251,7 +1248,9 @@ begin
   SetProperty('fold.compact', '0');
   SetProperty('fold.comment', '1');
   SetProperty('fold.preprocessor', '1');
+  { TODO -oMazin -c : Move to Cpp Highlighter 20/12/2016 07:30:24 }
   SetProperty('lexer.cpp.track.preprocessor', '0');
+  SetProperty('styling.within.preprocessor', '1');
   SetStyleBits(5);
   FHighlighter.SetKeyWords(SetKeyWords);
   ResetAllStyle;
@@ -1816,7 +1815,6 @@ begin
 end;
 
 // Indentation enhancement
-
 procedure TEditor.ProcessBreakLine;
 var
   c, bCaret: TBufferCoord;
@@ -1870,7 +1868,7 @@ begin
   TmpStr := Trim(PrevLineStr);
   IsCommentLine := False;
   if GetHighlighterAttriAtRowCol(BufferCoord(Length(PrevLineStr), c.Line - 1),
-    token, attri) and (attri.name = 'Documentation Comment') then
+    token, attri) and (attri.name = HL_Style_DocComment) then
     IsCommentLine := True;
   NextLineStr := '';
   // ( is /** or * blabla ) and not /** bla bla */
@@ -1981,6 +1979,7 @@ begin
     k := 0;
     p := PChar(PrevLine);
     if p^ <> #0 then
+    begin
       repeat
         if not CharInSet(p^, [#9, #32]) then
           Break;
@@ -1991,7 +1990,18 @@ begin
         Inc(I);
         Inc(p);
       until p^ = #0;
-      Pt := PChar(PrevLine);
+    end;
+    // skip "}" example: } else
+    if p^ <> #0 then
+    begin
+      repeat
+        if not CharInSet(p^, [#9, #32, '}']) then
+          Break;
+        Inc(I);
+        Inc(p);
+      until p^ = #0;
+    end;
+    Pt := PChar(PrevLine);
     Inc(Pt, Length(PrevLine) - 1);
     if (p^ <> #0) and not SkipComment then
     begin
@@ -2085,6 +2095,16 @@ begin
         Inc(j);
         Inc(p);
       until p^ = #0;
+      // skip "}" example: } else
+      if p^ <> #0 then
+      begin
+        repeat
+          if not CharInSet(p^, [#9, #32, '}']) then
+            Break;
+          Inc(j);
+          Inc(p);
+        until p^ = #0;
+      end;
       if (p^ = '{') then
         Break;
       if p^ <> #0 then

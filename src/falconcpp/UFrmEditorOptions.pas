@@ -106,8 +106,6 @@ type
     CheckBoxIndentNamespaces: TCheckBox;
     CheckBoxIndentLabels: TCheckBox;
     CheckBoxIndentMultLinePreprocessor: TCheckBox;
-    LabelBracketsStyle: TLabel;
-    ComboBoxBracketStyle: TComboBox;
     CheckBoxBreakClosingHeadersBrackets: TCheckBox;
     CheckBoxBreakElseIf: TCheckBox;
     CheckBoxDontBreakComplex: TCheckBox;
@@ -161,7 +159,6 @@ type
     procedure BtnRestDefClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure RadioGroupFormatterStylesClick(Sender: TObject);
-    procedure ComboBoxBracketStyleChange(Sender: TObject);
     procedure BtnPrevStyleClick(Sender: TObject);
     procedure ComboBoxPointerAlignChange(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word;
@@ -323,7 +320,7 @@ begin
     //Formatter
       //Style
     RadioGroupFormatterStyles.ItemIndex := StyleIndex;
-    BtnPrevStyle.Visible := RadioGroupFormatterStyles.ItemIndex = 5;
+    BtnPrevStyle.Visible := RadioGroupFormatterStyles.ItemIndex = RadioGroupFormatterStyles.Items.Count - 1;
     for I := 0 to TSFormatterIndentation.ControlCount - 1 do
     begin
       TSFormatterIndentation.Controls[I].Enabled := BtnPrevStyle.Visible;
@@ -360,8 +357,6 @@ begin
     CheckBoxDeleteEmptyLines.Checked := DeleteEmptyLines;
     CheckBoxFillEmptyLines.Checked := FillEmptyLines;
       //Formatting
-    ComboBoxBracketStyle.ItemIndex := BracketStyle;
-    ComboBoxBracketStyleChange(ComboBoxBracketStyle);
     CheckBoxBreakClosingHeadersBrackets.Checked := BreakClosingHeadersBrackets;
     CheckBoxBreakElseIf.Checked := BreakIfElse;
     CheckBoxAddBrackets.Checked := AddBrackets;
@@ -458,7 +453,6 @@ begin
     DeleteEmptyLines := CheckBoxDeleteEmptyLines.Checked;
     FillEmptyLines := CheckBoxFillEmptyLines.Checked;
     //Formatting
-    BracketStyle := ComboBoxBracketStyle.ItemIndex;
     BreakClosingHeadersBrackets := CheckBoxBreakClosingHeadersBrackets.Checked;
     BreakIfElse := CheckBoxBreakElseIf.Checked;
     AddBrackets := CheckBoxAddBrackets.Checked;
@@ -555,7 +549,7 @@ begin
   //Style
   TSFormatterStyle.Caption := STR_FRM_EDITOR_OPT[49];
   RadioGroupFormatterStyles.Caption := STR_FRM_EDITOR_OPT[43];
-  RadioGroupFormatterStyles.Items.Strings[5] := STR_FRM_EDITOR_OPT[50];
+  RadioGroupFormatterStyles.Items[RadioGroupFormatterStyles.Items.Count - 1] := STR_FRM_EDITOR_OPT[50];
   BtnPrevStyle.Caption := STR_FRM_EDITOR_OPT[51];
   GroupBoxFormatterSample.Caption := STR_FRM_EDITOR_OPT[52];
   //Indentation
@@ -600,11 +594,6 @@ begin
   CheckBoxFillEmptyLines.Hint := STR_FRM_EDITOR_OPT[90];
   //formatting
   TSFormatterFormatting.Caption := STR_FRM_EDITOR_OPT[91];
-  LabelBracketsStyle.Caption := STR_FRM_EDITOR_OPT[92];
-  ComboBoxBracketStyle.Items.Strings[0] := STR_FRM_EDITOR_OPT[93];
-  ComboBoxBracketStyle.Items.Strings[1] := STR_FRM_EDITOR_OPT[94];
-  ComboBoxBracketStyle.Items.Strings[2] := STR_FRM_EDITOR_OPT[95];
-  ComboBoxBracketStyle.Items.Strings[3] := STR_FRM_EDITOR_OPT[96];
   CheckBoxBreakClosingHeadersBrackets.Caption := STR_FRM_EDITOR_OPT[97];
   CheckBoxBreakElseIf.Caption := STR_FRM_EDITOR_OPT[98];
   CheckBoxAddBrackets.Caption := STR_FRM_EDITOR_OPT[99];
@@ -1111,6 +1100,31 @@ begin
 end;
 
 procedure TFrmEditorOptions.BtnPrevStyleClick(Sender: TObject);
+const
+  IndexToBracketStyle: array[0..13] of TBracketStyle = (
+    stALLMAN, //ANSI
+    stKR, //K && R
+    stLINUX, //Linux
+    stGNU, //GNU
+    stJAVA, //Java
+    stSTROUSTRUP, //Stroustrup
+    stWHITESMITH, //Whitesmith
+    stBANNER, //Banner
+    stHORSTMANN, //Horstmann
+    st1TBS, //1TBS
+    stGOOGLE, //Google
+    stPICO, //Pico
+    stLISP, //Lisp
+    stNONE //Custom
+  );
+
+  IndexToAlignPointer: array[0..3] of TAlignPointer = (
+    apNone,
+    apType,
+    apMiddle,
+    apName
+  );
+
 var
   formatter: TAStyle;
   caret: TBufferCoord;
@@ -1118,7 +1132,7 @@ var
 begin
   formatter := TAStyle.Create;
   formatter.MaxInstatementIndent := StrToIntDef(CboRMrg.Text, 80);
-  BtnPrevStyle.Visible := RadioGroupFormatterStyles.ItemIndex = 5;
+  BtnPrevStyle.Visible := RadioGroupFormatterStyles.ItemIndex = RadioGroupFormatterStyles.Items.Count - 1;
   for I := 0 to TSFormatterIndentation.ControlCount - 1 do
   begin
     TSFormatterIndentation.Controls[I].Enabled := BtnPrevStyle.Visible;
@@ -1131,52 +1145,41 @@ begin
   begin
     TSFormatterFormatting.Controls[I].Enabled := BtnPrevStyle.Visible;
   end;
-  case RadioGroupFormatterStyles.ItemIndex of
-    0: // ansi
+  formatter.BracketStyle := IndexToBracketStyle[RadioGroupFormatterStyles.ItemIndex];
+  case IndexToBracketStyle[RadioGroupFormatterStyles.ItemIndex] of
+    stALLMAN: // ansi
       begin
-        formatter.BracketStyle := stALLMAN;
-        //formatter.BracketFormat := bfBreakMode;
         formatter.Properties[aspIndentNamespaces] := True;
         formatter.Properties[aspKeepOneLineStatements] := True;
         formatter.Properties[aspKeepOneLineBlocks] := False;
       end;
-    1: // K&R
+    stKR: // K&R
       begin
-        formatter.BracketStyle := stKR;
-        //formatter.BracketFormat := bfAtatch;
         formatter.Properties[aspIndentNamespaces] := True;
         formatter.Properties[aspKeepOneLineStatements] := True;
         formatter.Properties[aspKeepOneLineBlocks] := False;
       end;
-    2: //Linux
+    stLINUX: //Linux
       begin
-        formatter.BracketStyle := stLINUX;
         formatter.TabWidth := 8;
-        //formatter.BracketFormat := bfBDAC;
         formatter.Properties[aspIndentNamespaces] := True;
         formatter.Properties[aspKeepOneLineStatements] := True;
         formatter.Properties[aspKeepOneLineBlocks] := False;
       end;
-    3: //GNU
+    stGNU: //GNU
       begin
-        formatter.BracketStyle := stGNU;
         formatter.TabWidth := 2;
-        //formatter.BracketFormat := bfBreakMode;
-        //formatter.Properties[aspIndentBlock] := True;
         formatter.Properties[aspIndentNamespaces] := True;
         formatter.Properties[aspKeepOneLineStatements] := True;
         formatter.Properties[aspKeepOneLineBlocks] := False;
       end;
-    4: //java
+    stJAVA: //java
       begin
-        formatter.BracketStyle := stJAVA;
-        //formatter.BracketFormat := bfAtatch;
         formatter.Properties[aspKeepOneLineStatements] := True;
         formatter.Properties[aspKeepOneLineBlocks] := False;
       end;
-    5: //custom
+    stNONE: //custom
       begin
-        formatter.BracketStyle := stNONE;
         formatter.TabWidth := StrToIntDef(CboTabWdt.Text, 4);
 
       //Indentation
@@ -1189,13 +1192,10 @@ begin
         formatter.Properties[aspIndentClasses] := CheckBoxIndentClasses.Checked;
         formatter.Properties[aspIndentSwitches] := CheckBoxIndentSwitches.Checked;
         formatter.Properties[aspIndentCases] := CheckBoxIndentCase.Checked;
-        //formatter.Properties[aspIndentBracket] := CheckBoxIndentBrackets.Checked;
-        //formatter.Properties[aspIndentBlock] := CheckBoxIndentBlocks.Checked;
         formatter.Properties[aspIndentNamespaces] := CheckBoxIndentNamespaces.Checked;
         formatter.Properties[aspIndentLabels] := CheckBoxIndentLabels.Checked;
         formatter.Properties[aspIndentPreprocDefine] := CheckBoxIndentMultLinePreprocessor.Checked;
-        formatter.Properties[aspIndentCol1Comments] :=
-          CheckBoxIndentSingleLineComments.Checked;
+        formatter.Properties[aspIndentCol1Comments] := CheckBoxIndentSingleLineComments.Checked;
 
       //Padding
         formatter.Properties[aspBreakBlocks] := CheckBoxPadEmptyLines.Checked;
@@ -1209,31 +1209,13 @@ begin
         formatter.Properties[aspFillEmptyLines] := CheckBoxFillEmptyLines.Checked;
 
       //Formatting
-//        case ComboBoxBracketStyle.ItemIndex of
-//          1: formatter.BracketFormat := bfBreakMode; //Break
-//          2: formatter.BracketFormat := bfAtatch; //Attach
-//          3: formatter.BracketFormat := bfBDAC; //Linux
-//        { TODO -oMazin -c : formatter.BracketFormat := bfRunIn; 24/08/2012 22:23:50 }
-//        { TODO -oMazin -c : formatter.BracketFormat := bfStroustrup; 24/08/2012 22:24:27 }
-//        else
-//        //None
-//          formatter.BracketFormat := bfNone;
-//        end;
-        if (ComboBoxBracketStyle.ItemIndex < 2) then //Does not work
-          formatter.Properties[aspBreakClosingBrackets] := CheckBoxBreakClosingHeadersBrackets.Checked;
         formatter.Properties[aspBreakElseIfs] := CheckBoxBreakElseIf.Checked;
         formatter.Properties[aspAddBrackets] := CheckBoxAddBrackets.Checked;
         formatter.Properties[aspAddOneLineBrackets] := CheckBoxAddOneLineBrackets.Checked;
         formatter.Properties[aspKeepOneLineBlocks] := CheckBoxDontBreakOneLineBlocks.Checked;
         formatter.Properties[aspKeepOneLineStatements] := CheckBoxDontBreakComplex.Checked;
         formatter.Properties[aspConvertTabs] := CheckBoxConvToSpaces.Checked;
-        case ComboBoxPointerAlign.ItemIndex of
-          1: formatter.AlignPointer := apType;
-          2: formatter.AlignPointer := apMiddle;
-          3: formatter.AlignPointer := apName;
-        else
-          formatter.AlignPointer := apNone;
-        end;
+        formatter.AlignPointer := IndexToAlignPointer[ComboBoxPointerAlign.ItemIndex];
       end;
   end;
   caret := EditFormatter.CaretXY;
@@ -1248,13 +1230,6 @@ procedure TFrmEditorOptions.RadioGroupFormatterStylesClick(Sender: TObject);
 begin
   OptionsChange;
   BtnPrevStyleClick(Sender);
-end;
-
-procedure TFrmEditorOptions.ComboBoxBracketStyleChange(Sender: TObject);
-begin
-  CheckBoxBreakClosingHeadersBrackets.Enabled := (ComboBoxBracketStyle.ItemIndex < 2)
-    and (RadioGroupFormatterStyles.ItemIndex = 5);
-  OptionsChange;
 end;
 
 procedure TFrmEditorOptions.ComboBoxPointerAlignChange(Sender: TObject);

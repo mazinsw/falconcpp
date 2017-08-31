@@ -3,7 +3,7 @@ unit CompressUtils;
 interface
 
 uses
-  Windows, SysUtils, Classes, LibTar, BZip2, StrMatch, KAZip;
+  Windows, SysUtils, Classes, LibTar, Compress.BZip2, StrMatch, KAZip;
 
 const
   FILE_TYPE_BZIP2 = 0;

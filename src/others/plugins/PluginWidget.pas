@@ -3,7 +3,7 @@ unit PluginWidget;
 interface
 
 uses
-  Windows, Plugin, Classes, Forms, Controls, TBX, StdCtrls;
+  Windows, Plugin, Classes, Forms, Controls, SpTBXItem, StdCtrls;
 
 type
 
@@ -120,7 +120,7 @@ type
     destructor Destroy; override;
   end;
 
-  TWidgetSubmenu = class(TTBXSubmenuItem)
+  TWidgetSubmenu = class(TSpTBXSubmenuItem)
   private
     FWidget: TWidget;
   protected
@@ -129,7 +129,7 @@ type
     destructor Destroy; override;
   end;
 
-  TWidgetMenuItem = class(TTBXItem)
+  TWidgetMenuItem = class(TSpTBXItem)
   private
     FWidget: TWidget;
   public
@@ -138,7 +138,7 @@ type
     procedure Click; override;
   end;
 
-  TWidgetMenuSeparator = class(TTBXSeparatorItem)
+  TWidgetMenuSeparator = class(TSpTBXSeparatorItem)
   private
     FWidget: TWidget;
   public

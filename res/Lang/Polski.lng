@@ -1,862 +1,1320 @@
 [FALCON]
 
 # Language definitions
-LangID=1033
-LangName=English(Default)
-ImageIndex=220
+LangID=1045
+LangName=Polski
+ImageIndex=171
 
 # Translated by
-Name=Mazinsw
-Email=mazinsw@gmail.com
+Name=Marcin
+Email=burningflugzeug@gmail.com
 Version=1.0
 
 # Main Form
 # Top Menu
-1=&File
-2=&Edit
-3=&Search
-4=&View
-5=&Project
-6=&Run
-7=&Tools
-8=&Help
+1=&Plik
+2=&Edycja
+3=&Szukanie
+4=&Widok
+5=&Projekt
+6=&Uruchom
+7=&Narzędzia
+8=&Pomoc
 
 # File Menu
-109=&New
-110=&Open...
-111=&Reopen
-113=&Save
-114=Save &As...
-115=Save All
-117=Import
-118=Export
-120=&Close
-121=C&lose All
-122=Re&move
-124=&Print
-126=&Exit
+109=&Nowy
+110=&Otwórz
+111=&Otwórz ponownie
+113=&Zapisz
+114=Zapisz &jako...
+115=Zapisz wszystko
+117=Importuj
+118=Eksportuj
+120=&Zamknij
+121=&Zamknij wszystko
+122=&Usuń
+124=&Drukuj
+126=&Zamknij program
 
 # Edit Menu
-221=Undo
-222=Redo
-224=Cut
-225=Copy
-226=Paste
+221=Cofnij
+222=Przywróć
+224=Wytnij
+225=Kopiuj
+226=Wklej
+# Warning: Using default value
 228=Swap header/source
-230=Delete
-231=Select All
+230=Usuń
+231=Zaznacz wszystko
+# Warning: Using default value
 233=Toggle Bookmarks
+# Warning: Using default value
 234=Goto Bookmarks
+# Warning: Using default value
 236=Indent
+# Warning: Using default value
 237=Unindent
+# Warning: Using default value
 239=Toggle Line Comment
-241=Format
-243=Collapse All
-244=Uncollapse All
+241=Formatuj
+243=Zwiń wszystko
+244=Rozwiń wszystko
 
 # Search Menu
-334=Find...
-335=Find Next
-336=Find Previous
+334=Znajdź...
+335=Znajdź następny
+336=Znajdź poprzedni
+# Warning: Using default value
 337=Find in Files...
-338=Replace...
+338=Zamień...
+# Warning: Using default value
 339=Incremental Search...
+# Warning: Using default value
 341=Goto Funcion...
+# Warning: Using default value
 342=Goto Previous Function
+# Warning: Using default value
 343=Goto Next Function
-344=Goto Line Number...
+344=Przejdź do wiersza o numerze...
 
 # View Menu
-391=Project Manager
-392=Statusbar
+391=Menedżer projektu
+392=Pasek statusu
+# Warning: Using default value
 393=Outline
+# Warning: Using default value
 394=Compiler Output
-395=Toolbars
+395=Paski narzędzi
+# Warning: Using default value
 396=Themes
+# Warning: Using default value
 397=Zoom
-399=Full Screen
-401=Restore Default
+399=Pełny ekran
+401=Przywróć domyślne
 
 # Project Menu
-435=Add...
+435=Dodaj...
+# Warning: Using default value
 436=Remove...
+# Warning: Using default value
 438=Build
-440=Properties...
+440=Właściwości...
 
 # Run Menu
-541=Run
-542=Compile
-543=Execute
+541=Uruchom
+542=Kompiluj
+543=Wykonaj
+# Warning: Using default value
 545=Toggle Breakpoint
+# Warning: Using default value
 546=Step Into
+# Warning: Using default value
 547=Step Over
+# Warning: Using default value
 548=Step Return
+# Warning: Using default value
 549=Run to Cursor
-550=Stop
+550=Zatrzymaj
 
 # Tools Menu
-646=Environment Options...
-647=Compiler Options...
-648=Editor Options...
+646=Opcje środowiskowe...
+647=Opcje kompilatora...
+648=Opcje edytora...
+# Warning: Using default value
 650=Template Creator...
+# Warning: Using default value
 651=Package Creator...
+# Warning: Using default value
 653=Packages...
 
 # Help Menu
-854=Falcon Help
-855=Tip of the Day...
-857=Update
-859=About...
+854=Pomoc programu Falcon
+855=Wskazówka dnia...
+857=Aktualizuj
+859=O programie...
 
 # SubMenu New from File Menu
-959=&Project...
-960=C File
-961=C++ File
-962=Header File
+959=&Projekt...
+960=Plik C
+961=Plik C++
+962=Plik nagłówkowy
+# Warning: Using default value
 963=Resource File
-964=Empty File
+964=Pusty plik
 966=Folder
 
 # SubMenu Import from File Menu
-970=Dev-C++ Project
-971=Code::Blocks Project
-972=MS Visual C++ Project
+970=Projekt Dev-C++
+971=Projekt Code::Blocks
+972=Projekt MS Visual C++
 
 # SubMenu Toolbars from View Menu
-978=Default Bar
-979=Edit Bar
-980=Search Bar
-981=Compiler Bar
-982=Navigator Bar
-983=Project Bar
-984=Help Bar
-985=Debug Bar
+978=Pasek domyślny
+979=Pasek edycji
+980=Pasek wyszukiwania
+981=Pasek kompilacji
+982=Pasek nawigacyjny
+983=Pasek projektów
+984=Pasek pomocy
+985=Pasek debugowania
 
 # DefaultBar ToolBar
-1067=New
-1068=Open
-1069=Remove
-1071=Save
-1072=Save All
+1067=Nowy
+1068=Otwórz
+1069=Usuń
+1071=Zapisz
+1072=Zapisz wszystko
 
 # EditBar ToolBar
-1080=Undo
-1081=Redo
+1080=Cofnij
+1081=Przywróć
 
 # NavigatorBar ToolBar
-1089=Previous Page
-1090=Next Page
+1089=Poprzednia strona
+1090=Następna strona
+# Warning: Using default value
 1092=Toggle Bookmarks
+# Warning: Using default value
 1093=Goto Bookmarks
 
 # CompilerBar ToolBar
-1098=Run
-1099=Compile
-1100=Execute
-1102=Stop
+1098=Uruchom
+1099=Kompiluj
+1100=Wykonaj
+1102=Zatrzymaj
 
 # HelpBar ToolBar
-1110=Help
+1110=Pomoc
+# Warning: Using default value
 1111=Context Help
 
 # ProjectBar ToolBar
-1119=New Project
-1120=Properties
+1119=Nowy projekt
+1120=Właściwości
 
 # DebugBar Toolbar
+# Warning: Using default value
 1128=Step Into
+# Warning: Using default value
 1129=Step Over
+# Warning: Using default value
 1130=Step Return
 
 # SearchBar Toolbar
-1138=Find
-1139=Replace
-1141=Goto Line Number
+1138=Znajdź
+1139=Zamień
+1141=Przejdź do wiersza o numerze...
 
 # PopupMenu from Project List
-1181=&New
-1183=Edit
-1184=Open
-1186=Add to project
-1187=Remove
-1188=Rename
-1189=Delete from disk
-1191=Property...
+1181=&Nowy
+1183=Edytuj
+1184=Otwórz
+1186=Dodaj do projektu
+1187=Usuń
+1188=Zmień nazwę
+1189=Usuń z dysku
+1191=Właściwości...
 
 # PopupMenu from Editor
+# Warning: Using default value
 1291=Open declaration
+# Warning: Using default value
 1293=Complete class at cursor
+# Warning: Using default value
 1294=Swap header/source
-1296=Undo
-1297=Redo
-1299=Cut
-1300=Copy
-1301=Paste
-1302=Delete
-1303=Select All
-1305=Tools
+1296=Cofnij
+1297=Przywróć
+1299=Wytnij
+1300=Kopiuj
+1301=Wklej
+1302=Usuń
+1303=Zaznacz wszystko
+1305=Narzędzia
+# Warning: Using default value
 1307=Toggle Bookmarks
+# Warning: Using default value
 1308=Goto Bookmarks
-1310=Properties...
+1310=Właściwości...
 
 # PopupMenu from Tabs
-1351=&Close
-1352=Close &all
-1353=Close all others
-1355=Save
-1356=Save all
+1351=&Zamknij
+1352=Zamknij &wszystko
+1353=Zamknij pozostałe
+1355=Zapisz
+1356=Zapisz wszystko
+# Warning: Using default value
 1358=Copy full filename
+# Warning: Using default value
 1359=Copy filename
+# Warning: Using default value
 1360=Copy directory path
+# Warning: Using default value
 1362=Swap header/source
-1364=Read only
+1364=Tylko do odczytu
+# Warning: Using default value
 1366=Tabs at top
+# Warning: Using default value
 1367=Tabs at bottom
-1369=Properties...
+1369=Właściwości...
 
 # PopupMenu from Messages
-1375=Copy
+1375=Kopiuj
+# Warning: Using default value
 1376=Copy original message
+# Warning: Using default value
 1378=Original message
+# Warning: Using default value
 1380=Goto line
-1381=Clear
+1381=Wyczyść
 
 # Tabs Left
-1405=Projects
+1405=Projekty
+# Warning: Using default value
 1406=Explorer
 
 # Tabs Right
+# Warning: Using default value
 1407=Outline
 
 # Tabs Down
+# Warning: Using default value
 1408=Messages
 
 # Messages List
-1410=File
-1411=Line
+1410=Plik
+1411=Wiersz
+# Warning: Using default value
 1412=Notification
 
 # Others
-1413=Empty project
-1414=Save changes to "%s"?
+1413=Pusty projekt
+1414=Zapisać zmiany w pliku "%s"?
 
 # Filters
+# Warning: Using default value
 1415=Falcon project file
+# Warning: Using default value
 1416=All types
 
 # default FileName
-1417=NewFile
+1417=BezNazwy
+# Warning: Using default value
 1418=NewFolder
+# Warning: Using default value
 1419=main
+# Warning: Using default value
 1420=resource
 
 # Others
-1421=Running
-1422=Compiling
+1421=Uruchamianie
+1422=Kompilowanie
+# Warning: Using default value
 1423=Building
-1424=Delete file "%s" from project?
-1425=Delete "%s" from disk?
+1424=Usunąć plik "%s" z projektu?
+1425=Usunąć plik "%s" z dysku?
+# Warning: Using default value
 1426=Generic error
-1427=Project
+1427=Projekt
 
 # Splash Screen
-1428=Translated by: %s
+1428=Tłumaczenie: %s
+# Warning: Using default value
 1429=Creating standard templates...
-1430=Loading Templates...
-1431=Loading Projects...
+1430=Ładowanie szablonów...
+1431=Ładowanie projektów...
+# Warning: Using default value
 1432=Creating standard tools...
+# Warning: Using default value
 1433=Setting Environment Variable...
+# Warning: Using default value
 1434=Preparing to Launch Application...
+# Warning: Using default value
 1435=(Empty)
+# Warning: Using default value
 1436=Clear History
-1437=Loading History...
-1438=File %s not found
+1437=Ładowanie historii...
+1438=Nie znaleziono pliku %s
 
 # Filters
+# Warning: Using default value
 1439=All known files
+# Warning: Using default value
 1440=Loading all installed packages...
+# Warning: Using default value
 1441=Checking for new installed packages...
+# Warning: Using default value
 1442=dddd, d of mmmm of yyyy t
 
 # Compilation messages
+# Warning: Using default value
 1443=Compilation success in %s s
+# Warning: Using default value
 1444=Compilation failed
+# Warning: Using default value
 1445=Adding messages %d/%d
+# Warning: Using default value
 1446=Parsing results %d/%d
+# Warning: Using default value
 1447=Do you want to create it?
+# Warning: Using default value
 1448=Debugging
+# Warning: Using default value
 1449=Loading configurations...
+# Warning: Using default value
 1450=Compiler was not detected!
+# Warning: Using default value
 1451=Can't import %s project!
+# Warning: Using default value
 1452=%s Project
+# Warning: Using default value
 1453=This file has been modified by another program.\nDo you want to reload it?
+# Warning: Using default value
 1454=Variables
+# Warning: Using default value
 1455=Continue
-1456=Delete folder "%s" from project?
-1457=Delete folder "%s" from disk?
+1456=Usunąć folder "%s" z projektu?
+1457=Usunąć folder "%s" z dysku?
+# Warning: Using default value
 1458=The file "%s" already exists.\nDo you want to override it?
 
 # Property Form
 # Tabs
+# Warning: Using default value
 1528=Application
+# Warning: Using default value
 1529=Version Info
+# Warning: Using default value
 1530=Compiler
+# Warning: Using default value
 1531=Run
 
 # Sheet Application
+# Warning: Using default value
 1532=Application settings
+# Warning: Using default value
 1533=Project name:
+# Warning: Using default value
 1534=Tarjet:
+# Warning: Using default value
 1535=Icon:
+# Warning: Using default value
 1536=Double click to change application icon
+# Warning: Using default value
 1537=Load Icon...
+# Warning: Using default value
 1538=Output settings
+# Warning: Using default value
 1539=Target file extension:
+# Warning: Using default value
 1540=Includes all files into project
+# Warning: Using default value
 1573=Properties
+# Warning: Using default value
 1574=Application Type
+# Warning: Using default value
 1575=Console Application
+# Warning: Using default value
 1576=Windows Application
+# Warning: Using default value
 1577=Dinamic Link Library
+# Warning: Using default value
 1578=Static Library
+# Warning: Using default value
 1579=Enable theme
+# Warning: Using default value
 1580=Requires admin level
+# Warning: Using default value
 1581=Create linked library
+# Warning: Using default value
 1582=Select folder to include
+# Warning: Using default value
 1583=Edit selected
+# Warning: Using default value
 1584=Select library folder
 
 # Common buttons
 1541=&Ok
-1542=&Cancel
-1543=Apply
+1542=&Anuluj
+1543=Zastosuj
 
 # Sheet Version Info
+# Warning: Using default value
 1544=Include version information in project
+# Warning: Using default value
 1545=Version numbers
+# Warning: Using default value
 1546=Major version
+# Warning: Using default value
 1547=Minor version
+# Warning: Using default value
 1548=Release
+# Warning: Using default value
 1549=Build
+# Warning: Using default value
 1550=Auto increment build number
+# Warning: Using default value
 1551=Language
+# Warning: Using default value
 1552=Locale:
+# Warning: Using default value
 1553=Key
+# Warning: Using default value
 1554=Value
 
 # Sheet Compiler
+# Warning: Using default value
 1555=Compiler Type
+# Warning: Using default value
 1556=Optmizations
+# Warning: Using default value
 1557=Minimize Size
+# Warning: Using default value
 1558=Show Warnings
+# Warning: Using default value
 1559=Optimize speed
+# Warning: Using default value
 1560=Libraries
+# Warning: Using default value
 1561=Add
+# Warning: Using default value
 1562=Delete selected
+# Warning: Using default value
 1563=Move to up
+# Warning: Using default value
 1564=Move to Down
+# Warning: Using default value
 1565=Includes
+# Warning: Using default value
 1566=Cleaning
+# Warning: Using default value
 1567=Delete objects before compilation
+# Warning: Using default value
 1568=Delete objects after compilation
+# Warning: Using default value
 1569=Delete makefile after compilation
+# Warning: Using default value
 1570=Delete resources after compilation
 
 # Sheet Run
+# Warning: Using default value
 1571=Application
+# Warning: Using default value
 1572=Params:
 
 # New Project Form
-1673=New Project
-1674=< Back
-1675=Next >
-1676=Finish
+1673=Nowy projekt
+1674=< Wstecz
+1675=Dalej >
+1676=Zakończ
 
 # Projects Frame
-1677=Description
+1677=Opis
+# Warning: Using default value
 1678=Falcon C++ Project Wizard
 
 # Project Options Frame
+# Warning: Using default value
 1679=Change
+# Warning: Using default value
 1680=Application Icon
+# Warning: Using default value
 1681=Company
+# Warning: Using default value
 1682=Version
+# Warning: Using default value
 1683=Product Name
+# Warning: Using default value
 1684=Name
 
 # Update Frame
+# Warning: Using default value
 4001=Application Update
+# Warning: Using default value
 4002=Looking for updates
+# Warning: Using default value
 4003=&Update
+# Warning: Using default value
 4004=Falcon C++ is open, do you want to close it?
+# Warning: Using default value
 4005=Update failed
+# Warning: Using default value
 4006=Conection problem.
+# Warning: Using default value
 4007=Upgrade completed successfully.
+# Warning: Using default value
 4008=Upgrade completed
+# Warning: Using default value
 4009=Download failed: try again.
-4010=Download error
-4011=Downloading 0%...
-4012=Connecting...
-4013=Downloading...
+4010=Błąd pobierania
+4011=Pobieranie 0%
+4012=Łączenie...
+4013=Pobieranie...
 
 # Get Version Frame
+# Warning: Using default value
 4014=Locating new version of the Falcon C++...
 
 # Update Frame
+# Warning: Using default value
 4015=Changes:
+# Warning: Using default value
 4016=XML Format error
+# Warning: Using default value
 4017=No update available
+# Warning: Using default value
 4018=This version is newer than the repository
+# Warning: Using default value
 4019=Installed version is already the newest version
+# Warning: Using default value
 4020=Update available
+# Warning: Using default value
 4021=New version available: %s
+# Warning: Using default value
 4022=&Close
+# Warning: Using default value
 4023=&Ok
+# Warning: Using default value
 4024=&Cancel
+# Warning: Using default value
 4025=Installing...
 
 # Find/Replace Form
+# Warning: Using default value
 4201=Find and replace
+# Warning: Using default value
 4202=&Find
+# Warning: Using default value
 4203=&Replace
+# Warning: Using default value
 4204=Fin&d in files
+# Warning: Using default value
 4205=Find:
+# Warning: Using default value
 4206=Replace with:
+# Warning: Using default value
 4207=Replace
+# Warning: Using default value
 4208=In selection
+# Warning: Using default value
 4209=Replace All
+# Warning: Using default value
 4210=More
+# Warning: Using default value
 4211=Less
+# Warning: Using default value
 4212=Find Next
+# Warning: Using default value
 4213=Cancel
+# Warning: Using default value
 4214=Search options
+# Warning: Using default value
 4215=Match &case
+# Warning: Using default value
 4216=Match whole &word only
+# Warning: Using default value
 4217=Wrap aroun&d
+# Warning: Using default value
 4218=Search mode
+# Warning: Using default value
 4219=Normal
+# Warning: Using default value
 4220=Extended (\n, \r, \t, \0, \x...)
+# Warning: Using default value
 4221=Regular expression
+# Warning: Using default value
 4222=Direction
+# Warning: Using default value
 4223=Up
+# Warning: Using default value
 4224=Down
+# Warning: Using default value
 4225=Transparency
+# Warning: Using default value
 4226=Opacity
+# Warning: Using default value
 4227=Search in
+# Warning: Using default value
 4228=Project
+# Warning: Using default value
 4229=Selected object
+# Warning: Using default value
 4230=Can't find the text:\n"%s"
+# Warning: Using default value
 4231=%d occurrences were replaced.
+# Warning: Using default value
 4232=Stop
+# Warning: Using default value
 4233=Find '%s' in file '%s'
+# Warning: Using default value
 4234=Found '%s' in line %d, column %d
 
 # Editor Options Form
-4333=Editor Options
+4333=Opcje edytora
 
 # General Sheet
+# Warning: Using default value
 4334=General
+# Warning: Using default value
 4335=Editor Options
+# Warning: Using default value
 4336=Auto Indent
+# Warning: Using default value
 4338=Insert Mode
+# Warning: Using default value
 4339=Group Undo
+# Warning: Using default value
 4340=Keep Trailing Spaces
+# Warning: Using default value
 4341=Show Space and Tab Characters
+# Warning: Using default value
 4342=Scroll Hint
+# Warning: Using default value
 4343=Tab Indent/Unindent
+# Warning: Using default value
 4344=Smart Tabs
+# Warning: Using default value
 4345=Use Tab Character
+# Warning: Using default value
 4346=Enhanced Home Key
+# Warning: Using default value
 4347=Max Undo:
+# Warning: Using default value
 4348=Tab Width:
+# Warning: Using default value
 4349=Highligth matching braces/parentheses
+# Warning: Using default value
 4350=Normal Color
+# Warning: Using default value
 4351=Error Color
+# Warning: Using default value
 4352=Background Color
+# Warning: Using default value
 4353=Highligth current line
+# Warning: Using default value
 4354=Color
+# Warning: Using default value
 4355=Link click
+# Warning: Using default value
 4356=Restore Default
+# Warning: Using default value
 4470=Auto close brackets/parentheses
+# Warning: Using default value
 4471=Cursor past EOL
 
 # Display Sheet
+# Warning: Using default value
 4357=Display
+# Warning: Using default value
 4358=Editor font:
+# Warning: Using default value
 4359=Size:
+# Warning: Using default value
 4360=Sample:
+# Warning: Using default value
 4361=Margin and gutter
+# Warning: Using default value
 4362=Show right margin
+# Warning: Using default value
 4363=Show gutter
+# Warning: Using default value
 4364=Show line gutter
+# Warning: Using default value
 4365=Gradient gutter
+# Warning: Using default value
 4366=Right margin:
+# Warning: Using default value
 4367=Gutter width:
 
 # Colors Sheet
-4368=Colors
+4368=Kolor
+# Warning: Using default value
 4369=Type:
+# Warning: Using default value
 4370=Defined sintax:
+# Warning: Using default value
 4371=Save sintax
+# Warning: Using default value
 4372=Delete sintax
+# Warning: Using default value
 4373=Foreground:
+# Warning: Using default value
 4374=Background:
+# Warning: Using default value
 4375=Styles
-4376=Bold
-4377=Italic
-4378=Underlined
+4376=Pogrubienie
+4377=Kursywa
+4378=Podkreślenie
+# Warning: Using default value
 4379=New Sintax
 
 # Formatter
-4380=Formatter
+4380=Format
 
 # Style
-4381=Style
+4381=Styl
+# Warning: Using default value
 4382=Custom
+# Warning: Using default value
 4383=Preview
+# Warning: Using default value
 4384=Sample
 
 # Indentation
-4385=Indentation
+4385=Wcięcia
+# Warning: Using default value
 4386=Force using TABs
+# Warning: Using default value
 4387=Indent classes (keywords public:, protected: and private:)
+# Warning: Using default value
 4388=Indent switches (keyword case:)
+# Warning: Using default value
 4389=Indent case: statements in switches (commands case:)
+# Warning: Using default value
 4390=Indent brackets
+# Warning: Using default value
 4391=Indent blocks
+# Warning: Using default value
 4392=Indent namespaces
+# Warning: Using default value
 4393=Indent labels
+# Warning: Using default value
 4394=Indent mult-line preprocessor definitions
+# Warning: Using default value
 4395=Indent single line comments
 
 # Hints
+# Warning: Using default value
 4396=Indent using tab characters.
+# Warning: Using default value
 4397=Indent 'class' and 'struct' blocks so that the blocks 'public:', 'protected:' and 'private:' are indented. The struct blocks are\nindented only if an access modifier is declared somewhere in the struct. The entire block is indented. This option is \neffective for C++ files only.
+# Warning: Using default value
 4398=Indent 'switch' blocks so that the 'case X:' statements are indented in the switch block. The entire case block is indented.
+# Warning: Using default value
 4399=Indent 'case X:' blocks from the 'case X:' headers. Case statements not enclosed in blocks are NOT indented.
+# Warning: Using default value
 4400=Add extra indentation to namespace blocks.
+# Warning: Using default value
 4401=Add extra indentation to labels so they appear 1 indent less than the current indentation, \nrather than being flushed to the left (the default).
+# Warning: Using default value
 4402=Indent multi-line preprocessor definitions ending with a backslash. Should be used with --convert-tabs for proper results. \nDoes a pretty good job, but cannot perform miracles in obfuscated preprocessor definitions. Without this option the \npreprocessor statements remain unchanged.
+# Warning: Using default value
 4403=Indent C++ comments beginning in column one. By default C++ comments beginning in column one are not indented. \nThis option will allow the comments to be indented with the code.
 
 # Padding sheet
+# Warning: Using default value
 4404=Padding
+# Warning: Using default value
 4405=Pad empty lines around header blocks ('if' 'while' ..)
+# Warning: Using default value
 4406=Break closing header blocks
+# Warning: Using default value
 4407=Insert space padding around operators
+# Warning: Using default value
 4408=Insert space padding around parenthesis on the outside
+# Warning: Using default value
 4409=Insert space padding around parenthesis on the inside
+# Warning: Using default value
 4410=Parenthesis header padding
+# Warning: Using default value
 4411=Remove extra space padding around parenthesis
+# Warning: Using default value
 4412=Delete empty lines
+# Warning: Using default value
 4413=Fill empty lines with the whitespace of their previous lines
 
 # Hints
+# Warning: Using default value
 4414=Pad empty lines around header blocks (e.g. 'if', 'for', 'while'...).
+# Warning: Using default value
 4415=Pad empty lines around header blocks (e.g. 'if', 'for', 'while'...). Treat closing header blocks (e.g. 'else', 'catch') as \nstand-alone blocks.
+# Warning: Using default value
 4416=Insert space padding around operators. Any end of line comments will remain in the original column, if possible. \nNote that there is no option to unpad. Once padded, they stay padded.
+# Warning: Using default value
 4417=Insert space padding around parenthesis on the outside only. Any end of line comments will remain in the original column, \nif possible.
+# Warning: Using default value
 4418=Insert space padding around parenthesis on the inside only. Any end of line comments will remain in the original column, \nif possible.
+# Warning: Using default value
 4419=Insert space padding after paren headers only (e.g. 'if', 'for', 'while'...). Any end of line comments will remain in the \noriginal column, if possible.
+# Warning: Using default value
 4420=Remove extra space padding around parenthesis on the inside and outside. Any end of line comments will remain in the \noriginal column, if possible.
+# Warning: Using default value
 4421=Delete empty lines within a function or method. Empty lines outside of functions or methods are NOT deleted.
+# Warning: Using default value
 4422=Fill empty lines with the white space of the previous line.
 
 # Formatting
-4423=Formatting
-4424=Brackets style:
-4425=None
+4423=Formatowanie
+4424=Styl nawiasów:
+4425=Brak
+# Warning: Using default value
 4426=Break
+# Warning: Using default value
 4427=Attach
 4428=Linux
+# Warning: Using default value
 4429=Break closing headers brackets
+# Warning: Using default value
 4430=Break 'else if()' header combinations into separate lines
+# Warning: Using default value
 4431=Add brackets
+# Warning: Using default value
 4432=Add one line brackets
+# Warning: Using default value
 4433=Don't break one-line blocks
+# Warning: Using default value
 4434=Don't break complex statements and multiple statements residing in a single line
+# Warning: Using default value
 4435=Convert TABs to spaces
 
 # Hints
+# Warning: Using default value
 4436=When used with brackets=attach, brackets=linux, this breaks closing headers (e.g. 'else', 'catch', ...) from their\nimmediately preceding closing brackets. Closing header brackets are always broken with broken brackets, horstmann \nbrackets, indented blocks, and indented brackets.
+# Warning: Using default value
 4437=Break "else if" header combinations into separate lines. This option has no effect if keep one line statements is used, the\n"else if" statements will remain as they are.\nIf this option is NOT used, "else if" header combinations will be placed on a single line.
+# Warning: Using default value
 4438=Add brackets to unbracketed one line conditional statements (e.g. 'if', 'for', 'while'...). The statement must be on a single \nline. The brackets will be added according to the currently requested predefined style or bracket type. If no style or \nbracket type is requested the brackets will be attached. If add one line brackets is also used the result will be one line \nbrackets.
+# Warning: Using default value
 4439=Add one line brackets to unbracketed one line conditional statements  (e.g. 'if', 'for', 'while'...). The statement must be on\na single line. The option implies keep one line blocks and will not break the one line blocks.
+# Warning: Using default value
 4440=Don't break one-line blocks.
+# Warning: Using default value
 4441=Don't break complex statements and multiple statements residing on a single line.
+# Warning: Using default value
 4442=Converts tabs into spaces in the non-indentation part of the line. The number of spaces inserted will maintain the spacing \nof the tab. The current setting for spaces per tab is used. It may not produce the expected results if convert-tabs is used\nwhen changing spaces per tab. Tabs are not replaced in quotes.
-4443=Pointer align:
-4444=None
-4445=Type
-4446=Middle
-4447=Name
+4443=Wyrównanie operatora wskaźnika:
+4444=Brak
+4445=Do nazwy typu
+4446=Pomiędzy
+4447=Do nazwy zmiennej
+# Warning: Using default value
 4448=Attach a pointer or reference operator (* or &) to either the variable type (left) or variable name (right), or place it\nbetween the type and name (middle). The spacing between the type and name will be preserved, if possible. To format\nreferences separately use the following align-reference option.
 
 # Code Resources
+# Warning: Using default value
 4449=Code Resources
+# Warning: Using default value
 4450=Automatic features
-4451=Code completion
+4451=Uzupełnianie kodu
+# Warning: Using default value
 4452=Code parameters
+# Warning: Using default value
 4453=Tooltip expression evaluation
+# Warning: Using default value
 4454=Tooltip symbol
-4455=&Delay:
-4456=%.1f sec
+4455=&Opóźnienie
+4456=%.1f sek
+# Warning: Using default value
 4457=Completion List Colors
+# Warning: Using default value
 4458=Constant Symbol:
+# Warning: Using default value
 4459=Function Symbol:
+# Warning: Using default value
 4460=&Variable Symbol:
+# Warning: Using default value
 4461=Type Symbol:
+# Warning: Using default value
 4462=Typedef Symbol:
+# Warning: Using default value
 4463=Preprocessor:
+# Warning: Using default value
 4464=Selected:
+# Warning: Using default value
 4465=Background:
+# Warning: Using default value
 4466=Code Templates
+# Warning: Using default value
 4467=Custom Code Template File:
-4468=Open
-4469=Edit
+4468=Otwórz
+4469=Edytuj
 
 # Form Environment Options
-4569=Environment Options
+4569=Opcje środowiskowe
 
 # General
-4570=General
-4571=Default to C++ on new file
+4570=Ogólne
+4571=Domyślnie twórz plik C++
+# Warning: Using default value
 4572=Show toolbars in full screen
-4573=Remove file on close
-4574=One click to open file
-4575=Check for updates automatically
+4573=Usuń plik po zamknięciu
+4574=Otwieraj pliki jednym kliknięciem
+4575=Automatycznie sprawdzaj czy są nowe aktualizacje
+# Warning: Using default value
 4576=Create layout files
+# Warning: Using default value
 4577=Ask if you want to delete the project file
+# Warning: Using default value
 4578=Run console applications in console runner
-4579=Auto open
+4579=Otwieraj automatycznie
+# Warning: Using default value
 4580=All projects files
+# Warning: Using default value
 4581=All files of last section
+# Warning: Using default value
 4582=Only last open file
+# Warning: Using default value
 4583=Only first project
-4584=None
+4584=Brak
 
 # Interface
-4585=Interface
+4585=Interfejs
+# Warning: Using default value
 4586=Max files in reopen menu
-4587=Language:
-4588=Show splash screen
+4587=Język:
+4588=Pokazuj ekran powitalny
+# Warning: Using default value
 4589=Theme
 
 # Files and Directories
+# Warning: Using default value
 4590=Files and Directories
+# Warning: Using default value
 4591=Alternative configuration file
+# Warning: Using default value
 4592=Configuration file
-4593=User's default directory
+4593=Domyślny katalog użytkownika
+# Warning: Using default value
 4594=Templates directory
+# Warning: Using default value
 4595=Language files directory
+# Warning: Using default value
 4596=Projects directory
+# Warning: Using default value
 4597=Help/Documentation directory
+# Warning: Using default value
 4598=Examples directory
-4599=Open
+4599=Otwórz
+# Warning: Using default value
 4600=View
+# Warning: Using default value
 4601=Select
+# Warning: Using default value
 4602=Select directory
+# Warning: Using default value
 4603=Restart application to apply changes
+# Warning: Using default value
 4604=Configuration files
 
 # Form Code Templates
+# Warning: Using default value
 4704=Templates
+# Warning: Using default value
 4705=Code
+# Warning: Using default value
 4706=Invalid Name!
+# Warning: Using default value
 4707=Name already exist
+# Warning: Using default value
 4708=Add Code Template
+# Warning: Using default value
 4709=Edit Code Template
 
 # Form Prompt Code Templates
+# Warning: Using default value
 4808=Name
+# Warning: Using default value
 4809=Description
 
 # About Form
-4909=About
-4910=Compatibility: %s
-4911=Licence
-4912=Developers
-4913=Translators
-4914=Testers
+4909=O programie
+4910=Zgodność z: %s
+4911=Licencja
+4912=Twórcy
+4913=Tłumaczenie
+4914=Testerzy
 
 # Form Goto Line
+# Warning: Using default value
 5015=Goto Line
+# Warning: Using default value
 5016=Line (%d - %d):
 
 # Form Goto Function
+# Warning: Using default value
 5117=Goto Function
+# Warning: Using default value
 5118=Function name
+# Warning: Using default value
 5119=Name
+# Warning: Using default value
 5120=Return type
+# Warning: Using default value
 5121=Line
+# Warning: Using default value
 5122=File
 
 # Console Runner
+# Warning: Using default value
 6001=Process returned %ld   execution time : %0.3f s
-6002=Press any key to continue.
+6002=Naciśnij dowolny przycisk aby kontynuować.
 
 # Package Manager
 # Loading form
+# Warning: Using default value
 7001=Please wait while extract package...
-7002=unpacking data: %d%%
+7002=rozpakowywanie: %d%%
 
 # Wizard form
+# Warning: Using default value
 7101=%s Installation
-7102=< Back
-7103=Next >
-7104=Cancel
-7105=I &Agree
-7106=Install
-7107=Finish
+7102=< Wstecz
+7103=Dalej >
+7104=Anuluj
+7105=&Zgadzam się
+7106=Instaluj
+7107=Zakończ
+# Warning: Using default value
 7108=Want to restart the system?
-7109=Falcon C++ Installation Wizard
+7109=Kreator instalacji Falcon C++
+# Warning: Using default value
 7110=Are you sure you want to quit %s Installation?
+# Warning: Using default value
 7111=Error can't open file "%s".
+# Warning: Using default value
 7112=Error can't create file "%s".
+# Warning: Using default value
 7113=Error can't decompress file "%s".
+# Warning: Using default value
 7114=%s has been installed sucessfull.
+# Warning: Using default value
 7115=Package entry not found!
+# Warning: Using default value
 7116=Dependencies:
+# Warning: Using default value
 7117=Creating directory:
+# Warning: Using default value
 7118=Error creating directory:
+# Warning: Using default value
 7119=%s has been installed with errors\n folder '%s' couldn't be created.
+# Warning: Using default value
 7120=%s has been installed with errors\n%d couldn't be installed.
+# Warning: Using default value
 7121=Installation of %s has been aborted:\nError couldn't create directory: %s.
+# Warning: Using default value
 7122=Error opening file for writing:
+# Warning: Using default value
 7123=%s has been installed with errors\nfile '%s' couldn't be installed.
+# Warning: Using default value
 7124=Installation of %s has been aborted:\nError couldn't open file '%s' for writing.
+# Warning: Using default value
 7125=Error opening temp file:
+# Warning: Using default value
 7126=Removing temp files...
 
 # Welcome frame
+# Warning: Using default value
 7201=Welcome to the %s Package Installation Wizard
+# Warning: Using default value
 7202=This wizard will guide you through the instalation of %s.
+# Warning: Using default value
 7203=It is recommended that you close Falcon C++ application before starting Installation. This will make it possible to update all files on the compiler folder.
+# Warning: Using default value
 7204=Click Next to continue.
 
 # Install step frame
+# Warning: Using default value
 7301=Falcon C++ Install Package
 
 # Agreement frame
+# Warning: Using default value
 7401=If you accept the terms of the agreement, click I Agree to continue. You must accept the agreement to install %s.
-7402=License Agreement
+7402=Umowa licencyjna
+# Warning: Using default value
 7403=Please review the license terms before installing %s.
+# Warning: Using default value
 7404=Press Page Down to see the rest of the agreement.
 
 # Readme frame
-7501=Press Page Down to see the rest of the README.
-7502=Click Next to continue.
+7501=Naciśnij klawisz Page Down aby zobaczyć resztę pliku README.
+7502=Kliknij Dalej żeby kontynuować.
 7503=README
-7504=Please read the following README.
+7504=Prosimy przeczytać poniższy plik README.
 
 # Description frame
+# Warning: Using default value
 7601=Package description
+# Warning: Using default value
 7602=Package details of %s.
+# Warning: Using default value
 7603=Space required:
+# Warning: Using default value
 7604=Space available:
+# Warning: Using default value
 7605=Package description
+# Warning: Using default value
 7606=Name:
+# Warning: Using default value
 7607=Version:
+# Warning: Using default value
 7608=Website:
+# Warning: Using default value
 7609=Description:
+# Warning: Using default value
 7610=Click Install to start the installation.
 
 # Progress frame
-7701=Show details
+7701=Szczegóły
+# Warning: Using default value
 7702=Installing
+# Warning: Using default value
 7703=Please wait while %s Package is being installed.
+# Warning: Using default value
 7704=Click Abort to stop the instalation,\nRetry to try again, or\nIgnore to skip this file.
 
 # Finish frame
+# Warning: Using default value
 7801=Completing the %s Installation Wizard
-7802=Click Finish to close this wizard.
+7802=Kliknij Zakończ aby zamknąć to okno.
+# Warning: Using default value
 7803=Show Package Manager
 
 # Uninstall form
+# Warning: Using default value
 7901=Uninstalling package...
 7902=Ok
+# Warning: Using default value
 7903=Complete.
+# Warning: Using default value
 7904=Package "%s" not found
+# Warning: Using default value
 7905=Others Depends:
 
 # Package Manager form
-8001=Falcon C++ Package Manager
-8002=Packages
-8003=View
-8004=Help
-8005=Install
-8006=Uninstall
+8001=Menedżer pakietów Falcon C++
+8002=Pakiety
+8003=Widok
+8004=Pomoc
+8005=Instaluj
+8006=Odinstaluj
+# Warning: Using default value
 8007=-
-8008=Reload
+8008=Załaduj ponownie
+# Warning: Using default value
 8009=Check
+# Warning: Using default value
 8010=-
-8011=Exit
+8011=Zamknij
+# Warning: Using default value
 8012=Toolbar
+# Warning: Using default value
 8013=Details
+# Warning: Using default value
 8014=Statusbar
-8015=Help
+8015=Pomoc
+# Warning: Using default value
 8016=-
+# Warning: Using default value
 8017=About...
-8018=Install
-8019=Uninstall
-8020=Reload
+8018=Instaluj
+8019=Odinstaluj
+8020=Załaduj ponownie
+# Warning: Using default value
 8021=Check
-8022=Help
+8022=Pomoc
+# Warning: Using default value
 8023=About
-8024=Exit
+8024=Zamknij
+# Warning: Using default value
 8025=Information
+# Warning: Using default value
 8026=Files
-8027=Open Folder
+8027=Otwórz folder
+# Warning: Using default value
 8028=Copy FileName
+# Warning: Using default value
 8029=%d of %d Files not Found
+# Warning: Using default value
 8030=Intact package files!
+# Warning: Using default value
 8031=Remove "%s" - Version: %s ?
 
 # Help form
 8032=Ok
 
 # Download form
+# Warning: Using default value
 8101=Install packages
+# Warning: Using default value
 8102=Packages
+# Warning: Using default value
 8103=Name
+# Warning: Using default value
 8104=Version
+# Warning: Using default value
 8105=Size
+# Warning: Using default value
 8106=Status
+# Warning: Using default value
 8107=Show
+# Warning: Using default value
 8108=Updates/New
+# Warning: Using default value
 8109=Installed
+# Warning: Using default value
 8110=Search package:
+# Warning: Using default value
 8111=Install packages...
+# Warning: Using default value
 8112=Delete packages...
+# Warning: Using default value
 8113=Done loading packages.
+# Warning: Using default value
 8114=Loading packages...
+# Warning: Using default value
 8115=Error parsing xml.
+# Warning: Using default value
 8116=Retry
+# Warning: Using default value
 8117=Dependency "%s %s" to "%s %s" not found
+# Warning: Using default value
 8118=Downloading packages list %.2f%%.
+# Warning: Using default value
 8119=Downloading packages list...
+# Warning: Using default value
 8120=Install %d package...
+# Warning: Using default value
 8121=Install %d packages...
+# Warning: Using default value
 8122=Delete %d package...
+# Warning: Using default value
 8123=Delete %d packages...
+# Warning: Using default value
 8124=Download canceled.
+# Warning: Using default value
 8125=Download error invalid xml file.
+# Warning: Using default value
 8126=Uninstall
+# Warning: Using default value
 8127=Installed
+# Warning: Using default value
 8128=Install
+# Warning: Using default value
 8129=Not installed
+# Warning: Using default value
 8130=Do you cancel package installation?
+# Warning: Using default value
 8131=Package already installed!
+# Warning: Using default value
 8132=Package cannot be installed, a lowest dependency version already installed!
+# Warning: Using default value
 8133=Package cannot be uninstalled, other packages depend on!
+# Warning: Using default value
 8134=Error file %s not found
+# Warning: Using default value
 8135=Installing package %s...
+# Warning: Using default value
 8136=Done packages installation.
+# Warning: Using default value
 8137=Uninstalling package %s...
+# Warning: Using default value
 8138=Done packages uninstalled.
+# Warning: Using default value
 8139=Downloading package %s...
+# Warning: Using default value
 8140=Downloading package %s - %.1f%%...
+# Warning: Using default value
 8141=Error on install %s package
+# Warning: Using default value
 8142=Error on uninstall %s package
 
 # Compiler messages
@@ -880,7 +1338,7 @@ Version=1.0
 1802=invalid conversion from '$3' to '$4'
 1803=initializing argument $3 of '$4'
 1804=too few arguments to function '$3'
-1805=undefined reference to `$3'
+1805=undefined reference to `$4'
 1806=cannot convert '$3' to '$4' for argument '$5' to '$6'
 1807=value computed is not used
 1808='$3' is used uninitialized in this function

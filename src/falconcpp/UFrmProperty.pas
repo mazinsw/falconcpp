@@ -88,7 +88,7 @@ type
     procedure ListValuesEditColumn(Sender: TObject; ACol, ARow: Integer;
       var CanEdit: Boolean; var EditType: TEditType);
     procedure FormCreate(Sender: TObject);
-    procedure SetProject(Project: TProjectFile);
+    procedure SetProject(Project: TProjectBase);
     procedure Save;
     procedure BtnCancelClick(Sender: TObject);
     procedure BtnApplyClick(Sender: TObject);
@@ -141,7 +141,7 @@ type
     procedure CreateParams(var Params: TCreateParams); override;
   public
     { Public declarations }
-    Project: TProjectFile;
+    Project: TProjectBase;
     IconChanged, IsLoading: Boolean;
     AppIcon: TIcon;
   end;
@@ -294,7 +294,7 @@ begin
   LibList.Free;
 end;
 
-procedure TFrmProperty.SetProject(Project: TProjectFile);
+procedure TFrmProperty.SetProject(Project: TProjectBase);
 begin
   if (self.Project <> Project) then
   begin
@@ -649,7 +649,7 @@ begin
     begin
       ProjDir := ExtractFilePath(Project.FileName);
       Direct := ProjDir;
-      if BrowseDialog(Handle, STR_FRM_PROP[57], Direct) then
+      if BrowseDialog(Handle, STR_FRM_PROP[57], Direct, True) then
       begin
         Direct := ExtractRelativePath(ProjDir, Direct);
         if (Pos(' ', Direct) > 0) or (Pos(':', Direct) > 0) then
@@ -765,7 +765,7 @@ begin
   begin
     ProjDir := ExtractFilePath(Project.FileName);
     Direct := ProjDir;
-    if BrowseDialog(Handle, STR_FRM_PROP[55], Direct) then
+    if BrowseDialog(Handle, STR_FRM_PROP[55], Direct, True) then
     begin
       Direct := ExtractRelativePath(ProjDir, Direct);
       if (Pos(' ', Direct) > 0) or (Pos(':', Direct) > 0) then

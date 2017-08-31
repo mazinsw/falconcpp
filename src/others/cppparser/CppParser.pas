@@ -1048,7 +1048,7 @@ begin
           if StructToken <> nil then
           begin
             case StructToken.Token of
-              tkClass: TokenType := tkTypeStruct; // TODO: TypeClass?
+              tkClass: TokenType := tkTypeStruct;
               tkEnum: TokenType := tkTypeEnum;
               tkUnion: TokenType := tkTypeUnion;
             else

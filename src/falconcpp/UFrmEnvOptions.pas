@@ -88,7 +88,7 @@ var
 
 implementation
 
-uses UFrmMain, ULanguages, UConfig, UUtils, UTemplates;
+uses UFrmMain, ULanguages, UConfig, UUtils, UTemplates, SpTBXSkins;
 
 {$R *.dfm}
 
@@ -141,6 +141,8 @@ begin
 end;
 
 procedure TFrmEnvOptions.Load;
+var
+  Index: Integer;
 begin
   Loading := True;
   with FrmFalconMain.Config.Environment do
@@ -161,20 +163,13 @@ begin
     UpDownMaxFiles.Position := MaxFileInReopen;
     ReloadLanguages;
     CheckBoxShowSplashScreen.Checked := ShowSplashScreen;
-    if Theme = 'Default' then
-      RadioGroupTheme.ItemIndex := 0
-    else if Theme = 'Office2003' then
-      RadioGroupTheme.ItemIndex := 1
-    else if Theme = 'OfficeXP' then
-      RadioGroupTheme.ItemIndex := 2
-    else if Theme = 'Stripes' then
-      RadioGroupTheme.ItemIndex := 3
-    else if Theme = 'Professional' then
-      RadioGroupTheme.ItemIndex := 4
-    else if Theme = 'Aluminum' then
-      RadioGroupTheme.ItemIndex := 5
-    else
-      RadioGroupTheme.ItemIndex := 2;
+    RadioGroupTheme.Items.Clear;
+    SkinManager.SkinsList.GetSkinNames(RadioGroupTheme.Items);
+    Index := RadioGroupTheme.Items.IndexOf(SkinManager.CurrentSkinName);
+    RadioGroupTheme.ItemIndex := Index;
+    RadioGroupTheme.Height := (RadioGroupTheme.Height - RadioGroupTheme.ClientHeight) +
+      CheckBoxDefCpp.Height * SkinManager.SkinsList.Count +
+      ((CheckBoxDefCpp.Height div 3) * (SkinManager.SkinsList.Count - 1));
     //Files and Directories
     CheckBoxUseAltConfFile.Checked := AlternativeConfFile;
     CheckBoxEnableGroupClick(CheckBoxUseAltConfFile);
@@ -270,7 +265,7 @@ begin
   end;
   if not DirectoryExists(Dir) then
     Dir := Base;
-  if not BrowseDialog(Handle, Title, Dir) then
+  if not BrowseDialog(Handle, Title, Dir, True) then
     Exit;
   Dir := IncludeTrailingPathDelimiter(Dir);
   case TComponent(Sender).Tag of
@@ -352,14 +347,8 @@ begin
     EmptyTemplate := FrmFalconMain.Templates.Find('Basic', STR_FRM_MAIN[9]);
     ShowSplashScreen := CheckBoxShowSplashScreen.Checked;
     OldTheme := Theme;
-    case RadioGroupTheme.ItemIndex of
-      0: Theme := 'Default';
-      1: Theme := 'Office2003';
-      2: Theme := 'OfficeXP';
-      3: Theme := 'Stripes';
-      4: Theme := 'Professional';
-      5: Theme := 'Aluminum';
-    end;
+    if RadioGroupTheme.ItemIndex >= 0 then
+      Theme := RadioGroupTheme.Items[RadioGroupTheme.ItemIndex];
     if OldTheme <> Theme then
       FrmFalconMain.SelectTheme(Theme);
     //Files and Directories

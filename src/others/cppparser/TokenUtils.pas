@@ -1490,8 +1490,6 @@ begin
     end;
     Break;
   end;
-  { TODO -oMazin -c : hierarchy commented 26/02/2015 02:19:58 }
-  Result := {GetTreeHierarchy(Token, True, True) +} Result;
 end;
 
 function StringToScopeClass(const S: string): TScopeClass;

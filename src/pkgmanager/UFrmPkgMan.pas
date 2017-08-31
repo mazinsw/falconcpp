@@ -5,7 +5,8 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Controls, Forms, Graphics,
   Dialogs, Menus, ComCtrls, ToolWin, ImgList, StdCtrls, PNGImage,
-  RichEdit, FormEffect, IniFiles, ShellApi, ExtCtrls, Clipbrd;
+  RichEdit, FormEffect, IniFiles, ShellApi, ExtCtrls, Clipbrd, CommCtrl,
+  System.Generics.Collections;
 
 const
   WM_RELOADPKG  = WM_USER + $0112;
@@ -92,10 +93,15 @@ type
     procedure OpenFolder1Click(Sender: TObject);
     procedure FileListContextPopup(Sender: TObject; MousePos: TPoint;
       var Handled: Boolean);
+    procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
     PkgListWndProc: TWndMethod;
+    FDictionary: TDictionary<string, Integer>;
     function GetPathFromNode(Node: TTreeNode): string;
+    function GetImgIndex(const FileName: String): Integer;
+    function CreateNode(Prnt: TTreeNode; NCaption: String): TTreeNode;
+    function GetParentNode(const FileName: String): TTreeNode;
   public
     { Public declarations }
     function PackageInstalled(const Name, Version: string): Boolean;
@@ -138,84 +144,77 @@ begin
   inherited Destroy;
 end;
 
-procedure TFrmPkgMan.CreateTree(Files: TStrings; Expanded: Boolean = False);
+function TFrmPkgMan.GetImgIndex(const FileName: String): Integer;
+var
+  FindBy: String;
+begin
+  FindBy := ExtractFileExt(FileName);
+  if DirectoryExists(FileName) then
+    Exit(0);
+  if SameText(FindBy, '.EXE') then
+    FindBy := FileName;
+  if FDictionary.TryGetValue(FindBy, Result) then
+    Exit;
+  Result := GetIconIndex(FileName, ImgListMenu, SHGFI_SMALLICON);
+  if Result = -1 then
+    Exit;
+  FDictionary.Add(FindBy, Result);
+end;
 
-  function GetImgIndex(FileName: String): Integer;
-  var
-    Ext: String;
+function TFrmPkgMan.CreateNode(Prnt: TTreeNode; NCaption: String): TTreeNode;
+var
+  I: Integer;
+begin
+  if Assigned(Prnt) then
   begin
-    Result := 1;
-    Ext := UpperCase(ExtractFileExt(FileName));
-    if Ext = '.HTML' then
-      Result := 2
-    else if Ext = '.DLL' then
-      Result := 3
-    else if Ext = '.EXE' then
-      Result := 4
-    else if Ext = '.FTM' then
-      Result := 5
-    else if Ext = '.H' then
-      Result := 6
-    else if (Ext = '.A') or (Ext = '.O') then
-      Result := 7
-    else if Ext = '.CHM' then
-      Result := 8;
-  end;
-
-  function GetParentNode(FileName: String): TTreeNode;
-
-    function CreateNode(Prnt: TTreeNode; NCaption: String): TTreeNode;
-    var
-      I: Integer;
+    for I:= 0 to Pred(Prnt.Count) do
     begin
-      if Assigned(Prnt) then
+      if Prnt.Item[I].Text = NCaption then
       begin
-        for I:= 0 to Pred(Prnt.Count) do
-        begin
-          if Prnt.Item[I].Text = NCaption then
-          begin
-            Result := Prnt.Item[I];
-            Exit;
-          end;
-        end;
-        Result := FileList.Items.AddChild(Prnt, NCaption);
-      end
-      else
-      begin
-        for I:= 0 to Pred(FileList.Items.Count) do
-        begin
-          if FileList.Items.Item[I].Level = 0 then
-          begin
-            if FileList.Items.Item[I].Text = NCaption then
-            begin
-              Result := FileList.Items.Item[I];
-              Exit;
-            end;
-          end;
-        end;
-        Result := FileList.Items.AddChild(nil, NCaption);
+        Result := Prnt.Item[I];
+        Exit;
       end;
     end;
-
-  var
-    Capt, Rest: String;
-    I: Integer;
+    Result := FileList.Items.AddChild(Prnt, NCaption);
+  end
+  else
   begin
-    Rest := FileName;
-    Capt := FileName;
-    Result := nil;
-    repeat
-      I := Pos('\', Capt);
-      if (I > 0) then
+    for I:= 0 to Pred(FileList.Items.Count) do
+    begin
+      if FileList.Items.Item[I].Level = 0 then
       begin
-        Capt := Copy(Capt, 1, I - 1);
-        Delete(Rest, 1, I);
-        Result := CreateNode(Result, Capt);
-        Capt := Rest;
+        if FileList.Items.Item[I].Text = NCaption then
+        begin
+          Result := FileList.Items.Item[I];
+          Exit;
+        end;
       end;
-    until(I = 0);
+    end;
+    Result := FileList.Items.AddChild(nil, NCaption);
   end;
+end;
 
+function TFrmPkgMan.GetParentNode(const FileName: String): TTreeNode;
+var
+  Capt, Rest: String;
+  I: Integer;
+begin
+  Rest := FileName;
+  Capt := FileName;
+  Result := nil;
+  repeat
+    I := Pos('\', Capt);
+    if (I > 0) then
+    begin
+      Capt := Copy(Capt, 1, I - 1);
+      Delete(Rest, 1, I);
+      Result := CreateNode(Result, Capt);
+      Capt := Rest;
+    end;
+  until(I = 0);
+end;
+
+procedure TFrmPkgMan.CreateTree(Files: TStrings; Expanded: Boolean = False);
 var
   Node, LNode: TTreeNode;
   I: Integer;
@@ -229,7 +228,7 @@ begin
       LNode := GetParentNode(Files.Strings[I]);
     Node := FileList.Items.AddChild(LNode,
               ExtractFileName(Files.Strings[I]));
-    Node.ImageIndex := GetImgIndex(Files.Strings[I]);
+    Node.ImageIndex := GetImgIndex(GetFalconDir + Files.Strings[I]);
     Node.SelectedIndex := Node.ImageIndex;
     Last := ExtractFilePath(Files.Strings[I]);
   end;
@@ -297,6 +296,7 @@ end;
 
 procedure TFrmPkgMan.FormCreate(Sender: TObject);
 begin
+  FDictionary := TDictionary<string, Integer>.Create;
   ApplyTranslation;
   SetExplorerTheme(PkgList.Handle);
   SetExplorerTheme(FileList.Handle);
@@ -308,12 +308,18 @@ begin
 
   PageControl.DoubleBuffered := True;
   Screen.Cursors[crHandPoint] := LoadCursor(0, IDC_HAND);
+  TreeView_SetExtendedStyle(FileList.Handle, TVS_EX_FADEINOUTEXPANDOS, TVS_EX_FADEINOUTEXPANDOS);
 
-  addimages(ImgListToolbar, 'NORIMG');
-  addimages(HotImgListToolbar, 'HOTIMG');
-  addimages(ImgPkgList, 'PKGIMG');
+  AddImages(ImgListToolbar, 'NORIMG');
+  AddImages(HotImgListToolbar, 'HOTIMG');
+  AddImages(ImgPkgList, 'PKGIMG');
 
   LoadPackages;
+end;
+
+procedure TFrmPkgMan.FormDestroy(Sender: TObject);
+begin
+  FDictionary.Free;
 end;
 
 procedure TFrmPkgMan.PkgListProc(var Msg: TMessage);

@@ -6,3 +6,6 @@ don't prompting, file does not exist
 TODO don't showing after type //TODO
 find window don't fading when search text from back top border
 #include <GL/glext.h> + Ctrl + Space after < does not show code completion
+
+Can't Apply properties for read only header source (Erro Can't rename file) becouse adding "." at end of filename
+After drag project source, configuration cames with it

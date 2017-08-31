@@ -3,7 +3,7 @@ unit UTemplates;
 interface
 
 uses
-  Windows, SysUtils, IniFiles, Graphics, Classes, TBX, 
+  Windows, SysUtils, IniFiles, Graphics, Classes, SpTBXItem,
   Controls, Dialogs, CompressUtils, PNGImage, FormEffect;
 
 const
@@ -59,14 +59,14 @@ type
     property ResourceName[Index: Integer]: string read GetResourceName;
   end;
 
-  TDataMenuItem = class(TTBXItem)
+  TDataMenuItem = class(TSpTBXItem)
   private
     FHelpFile: string;
   public
     property HelpFile: string read FHelpFile write FHelpFile;
   end;
 
-  TDataSubMenuItem = class(TTBXSubmenuItem)
+  TDataSubMenuItem = class(TSpTBXSubmenuItem)
   private
     FHelpFile: string;
   public
@@ -90,10 +90,10 @@ type
     FCppSrcFiles: TTemplateFiles;
     FResources: TTemplateResources;
     FHelpMenu: TDataSubMenuItem;
-    function FindMenu(const S: string; FalconHelp: TTBXSubmenuItem;
+    function FindMenu(const S: string; FalconHelp: TSpTBXSubmenuItem;
       var aHelpMenu: TDataSubMenuItem): Boolean;
   public
-    function Load(Template: string; FalconHelp: TTBXSubmenuItem): Boolean;
+    function Load(Template: string; FalconHelp: TSpTBXSubmenuItem): Boolean;
     function GetFile(aFileName: string; Stream: TStream): Boolean;
     constructor Create;
     destructor Destroy; override;
@@ -341,7 +341,7 @@ begin
   Fs.Free;
 end;
 
-function TTemplate.FindMenu(const S: string; FalconHelp: TTBXSubmenuItem;
+function TTemplate.FindMenu(const S: string; FalconHelp: TSpTBXSubmenuItem;
   var aHelpMenu: TDataSubMenuItem): Boolean;
 var
   I: Integer;
@@ -375,7 +375,7 @@ begin
   Result := False;
 end;
 
-function TTemplate.Load(Template: string; FalconHelp: TTBXSubmenuItem): Boolean;
+function TTemplate.Load(Template: string; FalconHelp: TSpTBXSubmenuItem): Boolean;
 var
   I, FileType: Integer;
   ini: TMemIniFile;
@@ -383,7 +383,7 @@ var
   compiler: string;
   List: TStrings;
   SubMenu: TDataMenuItem;
-  ActualMenu: TTBXSubmenuItem;
+  ActualMenu: TSpTBXSubmenuItem;
   IsSubMn: Boolean;
   AIcon: TIcon;
   APng: TPngImage;
